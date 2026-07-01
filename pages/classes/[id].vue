@@ -59,14 +59,17 @@
           <div class="tabs-wrap">
             <div class="tabs-bar">
               <button :class="['tab-btn', { active: tab === 'lectures' }]" @click="tab = 'lectures'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
                 {{ t('class.lectures') }}
                 <span v-if="lectures.length" class="tab-num">{{ lectures.length }}</span>
               </button>
               <button :class="['tab-btn', { active: tab === 'materials' }]" @click="tab = 'materials'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 {{ t('class.materials') }}
                 <span v-if="materials.length" class="tab-num">{{ materials.length }}</span>
               </button>
               <button :class="['tab-btn', { active: tab === 'assignments' }]" @click="tab = 'assignments'; loadAssignments()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 {{ t('class.assignments') }}
                 <span v-if="assignments.length" class="tab-num">{{ assignments.length }}</span>
               </button>
