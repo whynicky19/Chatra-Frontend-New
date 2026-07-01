@@ -157,35 +157,35 @@ const sub = async () => {
 </script>
 
 <style scoped>
-.auth-card{background:#ffffff;border:1px solid rgba(0,177,201,0.2);border-radius:var(--r-2xl);padding:32px;width:100%;max-width:420px;margin:0 auto;box-shadow:0 8px 40px rgba(0,120,140,0.12)}
-.auth-title{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px;color:#0d2d33}
-.auth-sub{font-size:14px;color:#4a7a86;margin-bottom:24px}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-2xl);padding:32px;width:100%;max-width:420px;margin:0 auto;box-shadow:var(--sh-lg)}
+.auth-title{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px;color:var(--text1)}
+.auth-sub{font-size:14px;color:var(--text3);margin-bottom:24px}
 .auth-form{display:flex;flex-direction:column;gap:0}
 .nick-hint{font-size:12px;font-weight:500;margin-top:4px}
 .nick-hint.ok{color:var(--green)}.nick-hint.err{color:var(--red)}
 .str-row{display:flex;align-items:center;gap:10px;margin-top:6px}
-.str-bar{flex:1;height:3px;background:#e8eef0;border-radius:3px;overflow:hidden;max-width:100px}
+.str-bar{flex:1;height:3px;background:var(--surface3);border-radius:3px;overflow:hidden;max-width:100px}
 .str-fill{height:100%;border-radius:3px;transition:all .3s}
-.str-lbl{font-size:11px;color:#7aabb5}
-.auth-link-row{text-align:center;font-size:13px;color:#4a7a86;margin-top:20px}
-.input{background:#f5fafb!important;border-color:rgba(0,177,201,0.2)!important;color:#0d2d33!important}
-.input:focus{border-color:rgba(0,177,201,0.5)!important;box-shadow:0 0 0 3px rgba(0,177,201,0.1)!important}
-.input::placeholder{color:#7aabb5!important}
+.str-lbl{font-size:11px;color:var(--text4)}
+.auth-link-row{text-align:center;font-size:13px;color:var(--text3);margin-top:20px}
+.input{background:var(--input-bg)!important;border-color:var(--border)!important;color:var(--text1)!important}
+.input:focus{border-color:rgba(var(--teal-rgb),0.5)!important;box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.1)!important}
+.input::placeholder{color:var(--text4)!important}
 
 /* Выпадающий список групп */
-.group-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid rgba(0,177,201,0.3);border-radius:var(--r-md);box-shadow:0 4px 20px rgba(0,0,0,0.1);z-index:100;max-height:200px;overflow-y:auto;margin-top:2px}
-.group-item{padding:10px 14px;font-size:14px;color:#0d2d33;cursor:pointer;transition:background .15s}
-.group-item:hover{background:#e6f9fb;color:#00B1C9}
+.group-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-md);box-shadow:var(--sh-md);z-index:100;max-height:200px;overflow-y:auto;margin-top:2px}
+.group-item{padding:10px 14px;font-size:14px;color:var(--text1);cursor:pointer;transition:background .15s}
+.group-item:hover{background:var(--teal-l);color:var(--teal)}
 /* Org badge */
 .org-badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .org-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;padding:4px 10px;border-radius:100px}
-.org-badge.university{background:rgba(0,177,201,.1);color:#007a8e;border:1px solid rgba(0,177,201,.25)}
+.org-badge.university{background:rgba(var(--teal-rgb),.1);color:var(--teal-d);border:1px solid rgba(var(--teal-rgb),.25)}
 .org-badge.school{background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.25)}
-.org-switch-btn{font-size:11px;font-weight:600;color:#7aabb5;background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s}
-.org-switch-btn:hover{color:#00B1C9}
+.org-switch-btn{font-size:11px;font-weight:600;color:var(--text4);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s}
+.org-switch-btn:hover{color:var(--teal)}
 
 @media (max-width:768px) {
-  .auth-card { padding: 20px 14px 24px; border-radius: var(--r-xl); max-width: 100%; width: 100%; box-shadow: none; border: 1px solid rgba(0,177,201,0.15); }
+  .auth-card { padding: 20px 14px 24px; border-radius: var(--r-xl); max-width: 100%; width: 100%; box-shadow: none; border: 1px solid var(--border); }
   .auth-title { font-size: 18px; }
   .auth-sub { margin-bottom: 16px; font-size: 13px; }
   .input { font-size: 16px !important; }

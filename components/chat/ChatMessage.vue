@@ -138,7 +138,7 @@ onMounted(async () => {
 .sender-name{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:3px;padding-left:2px}
 .bubble{position:relative;border-radius:var(--r-lg);word-break:break-word;transition:box-shadow .15s}
 .b-other{background:var(--surface2);border:1px solid var(--border);border-bottom-left-radius:4px;color:var(--text1)}
-.b-own{background:linear-gradient(135deg,#007a8e,#00B1C9);color:#fff;border-bottom-right-radius:4px;box-shadow:0 4px 12px rgba(0,177,201,.3)}
+.b-own{background:linear-gradient(135deg,var(--teal-d),var(--teal));color:#fff;border-bottom-right-radius:4px;box-shadow:0 4px 12px rgba(var(--teal-rgb),.3)}
 .msg-text{font-size:14px;line-height:1.5;padding:9px 13px;white-space:pre-wrap}
 .msg-img{max-width:260px;max-height:220px;border-radius:var(--r-md);cursor:pointer;display:block;margin:6px}
 .msg-file{display:flex;align-items:center;gap:10px;padding:10px 13px;text-decoration:none;color:inherit}

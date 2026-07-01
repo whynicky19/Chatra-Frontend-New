@@ -63,33 +63,33 @@ const sub = async () => {
 }
 </script>
 <style scoped>
-.auth-card{background:#ffffff;border:1px solid rgba(0,177,201,0.2);border-radius:var(--r-2xl);padding:36px;width:100%;max-width:420px;margin:0 auto;box-shadow:0 8px 40px rgba(0,120,140,0.12),0 2px 8px rgba(0,120,140,0.08)}
-.auth-title{font-size:22px;font-weight:800;margin-bottom:4px;color:#0d2d33}
-.auth-sub{font-size:14px;color:#4a7a86;margin-bottom:26px}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-2xl);padding:36px;width:100%;max-width:420px;margin:0 auto;box-shadow:var(--sh-lg)}
+.auth-title{font-size:22px;font-weight:800;margin-bottom:4px;color:var(--text1)}
+.auth-sub{font-size:14px;color:var(--text3);margin-bottom:26px}
 .auth-form{display:flex;flex-direction:column}
 .frow{margin-bottom:14px}
-.flabel{font-size:12px;font-weight:600;color:#4a7a86;letter-spacing:.04em;display:block;margin-bottom:6px}
-.input{background:#f5fafb!important;border-color:rgba(0,177,201,0.2)!important;color:#0d2d33!important}
-.input:focus{border-color:rgba(0,177,201,0.5)!important;box-shadow:0 0 0 3px rgba(0,177,201,0.1)!important}
-.input::placeholder{color:#7aabb5!important}
-.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#7aabb5;background:none;border:none;cursor:pointer;padding:4px;transition:color .15s}
-.pw-eye:hover{color:#00B1C9}
-.auth-link-row{text-align:center;font-size:13px;color:#4a7a86;margin-top:20px}
-.auth-link{color:#00B1C9;font-weight:600;transition:color .15s}
-.auth-link:hover{color:#009aaf}
-.login-error{display:flex;align-items:center;gap:7px;padding:10px 14px;background:#fff1f1;border:1px solid #fca5a5;border-radius:var(--r-md);font-size:13px;font-weight:500;color:#dc2626;margin-bottom:6px}
-.input-err{border-color:#fca5a5!important;background:#fff8f8!important}
-.input-err:focus{border-color:#f87171!important;box-shadow:0 0 0 3px rgba(239,68,68,0.12)!important}
+.flabel{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.04em;display:block;margin-bottom:6px}
+.input{background:var(--input-bg)!important;border-color:var(--border)!important;color:var(--text1)!important}
+.input:focus{border-color:rgba(var(--teal-rgb),0.5)!important;box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.1)!important}
+.input::placeholder{color:var(--text4)!important}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text4);background:none;border:none;cursor:pointer;padding:4px;transition:color .15s}
+.pw-eye:hover{color:var(--teal)}
+.auth-link-row{text-align:center;font-size:13px;color:var(--text3);margin-top:20px}
+.auth-link{color:var(--teal);font-weight:600;transition:color .15s}
+.auth-link:hover{color:var(--teal-h)}
+.login-error{display:flex;align-items:center;gap:7px;padding:10px 14px;background:var(--red-l);border:1px solid var(--red);border-radius:var(--r-md);font-size:13px;font-weight:500;color:var(--red);margin-bottom:6px}
+.input-err{border-color:var(--red)!important;background:var(--red-l)!important}
+.input-err:focus{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(220,38,38,0.12)!important}
 /* Org badge */
 .org-badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .org-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;padding:4px 10px;border-radius:100px}
-.org-badge.university{background:rgba(0,177,201,.1);color:#007a8e;border:1px solid rgba(0,177,201,.25)}
+.org-badge.university{background:rgba(var(--teal-rgb),.1);color:var(--teal-d);border:1px solid rgba(var(--teal-rgb),.25)}
 .org-badge.school{background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.25)}
-.org-switch-btn{font-size:11px;font-weight:600;color:#7aabb5;background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s}
-.org-switch-btn:hover{color:#00B1C9}
+.org-switch-btn{font-size:11px;font-weight:600;color:var(--text4);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s}
+.org-switch-btn:hover{color:var(--teal)}
 
 @media (max-width:768px) {
-  .auth-card { padding: 20px 14px 24px; border-radius: var(--r-xl); width: 100%; max-width: 100%; box-shadow: none; border: 1px solid rgba(0,177,201,0.15); }
+  .auth-card { padding: 20px 14px 24px; border-radius: var(--r-xl); width: 100%; max-width: 100%; box-shadow: none; border: 1px solid var(--border); }
   .auth-title { font-size: 20px; }
   .auth-sub { margin-bottom: 18px; }
   .frow { margin-bottom: 12px; }

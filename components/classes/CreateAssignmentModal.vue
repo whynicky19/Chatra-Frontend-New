@@ -149,7 +149,7 @@
         <div class="field var-section">
           <div class="ref-header">
             <div class="ref-header-l">
-              <div class="ref-ico" style="background:rgba(0,177,201,.1);border-color:rgba(0,177,201,.25);color:var(--teal)">
+              <div class="ref-ico" style="background:rgba(var(--teal-rgb),.1);border-color:rgba(var(--teal-rgb),.25);color:var(--teal)">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
               </div>
               <div>
@@ -379,7 +379,7 @@ const submit = async () => {
 
 .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .modal-head-l { display: flex; align-items: center; gap: 12px; }
-.modal-ico { width: 38px; height: 38px; background: rgba(0,177,201,.12); border: 1px solid rgba(0,177,201,.2); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; color: var(--teal); }
+.modal-ico { width: 38px; height: 38px; background: rgba(var(--teal-rgb),.12); border: 1px solid rgba(var(--teal-rgb),.2); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; color: var(--teal); }
 .modal-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 16px; font-weight: 800; color: var(--text1); }
 .modal-sub { font-size: 12px; color: var(--text4); }
 
@@ -391,7 +391,7 @@ const submit = async () => {
 .field-label { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; }
 
 .inp { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 13px; color: var(--text1); font-size: 13px; width: 100%; transition: border-color .15s; }
-.inp:focus { border-color: rgba(0,177,201,.45); }
+.inp:focus { border-color: rgba(var(--teal-rgb),.45); }
 .inp-ta { resize: vertical; min-height: 80px; line-height: 1.6; }
 .inp-sm { padding: 8px 10px; font-size: 13px; }
 
@@ -407,7 +407,7 @@ const submit = async () => {
 .no-criteria { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 20px; color: var(--text4); font-size: 13px; }
 
 .file-drop { border: 2px dashed var(--border2); border-radius: var(--r-lg); padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all .18s; }
-.file-drop:hover, .file-drop.dragging { border-color: rgba(0,177,201,.45); background: rgba(0,177,201,.04); }
+.file-drop:hover, .file-drop.dragging { border-color: rgba(var(--teal-rgb),.45); background: rgba(var(--teal-rgb),.04); }
 .file-drop-ref { border-color: rgba(52,211,153,0.3); }
 .file-drop-ref:hover, .file-drop-ref.dragging { border-color: rgba(52,211,153,0.55); background: rgba(52,211,153,0.04); }
 .ref-formats { font-size: 11px; color: var(--text4); margin-top: 2px; }
@@ -440,10 +440,10 @@ const submit = async () => {
 .upload-prog span { font-size: 11px; color: var(--teal); }
 .spinner { border: 2px solid var(--border2); border-top-color: var(--teal); border-radius: 50%; animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.var-section { background: rgba(0,177,201,0.03); border: 1px solid rgba(0,177,201,.18); border-radius: var(--r-xl); padding: 16px; gap: 12px; }
+.var-section { background: rgba(var(--teal-rgb),0.03); border: 1px solid rgba(var(--teal-rgb),.18); border-radius: var(--r-xl); padding: 16px; gap: 12px; }
 .variant-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
 .variant-row:last-of-type { border-bottom: none; }
-.variant-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(0,177,201,.12); color: var(--teal); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.variant-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(var(--teal-rgb),.12); color: var(--teal); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .var-upload-btn { display: flex; align-items: center; gap: 5px; padding: 6px 12px; background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); border-radius: var(--r-md); color: var(--green); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .15s; }
 .var-upload-btn:hover { background: rgba(52,211,153,.15); }
 .var-file-chip { display: flex; align-items: center; gap: 6px; padding: 5px 10px; background: rgba(52,211,153,.07); border: 1px solid rgba(52,211,153,.2); border-radius: var(--r-md); font-size: 12px; color: var(--text2); white-space: nowrap; max-width: 160px; }

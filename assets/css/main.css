@@ -8,16 +8,17 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 img{display:block;max-width:100%}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(0,177,201,.25);border-radius:10px}
-::-webkit-scrollbar-thumb:hover{background:rgba(0,177,201,.5)}
+::-webkit-scrollbar-thumb{background:rgba(var(--teal-rgb),.25);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:rgba(var(--teal-rgb),.5)}
 
 :root{
   --teal:#00B1C9;
   --teal-h:#009AAF;
   --teal-d:#007a8e;
+  --teal-rgb:0,177,201;
   --teal-l:#E6F9FB;
-  --teal-m:rgba(0,177,201,.2);
-  --teal-glow:0 0 30px rgba(0,177,201,.35),0 0 60px rgba(0,177,201,.12);
+  --teal-m:rgba(var(--teal-rgb),.2);
+  --teal-glow:0 0 30px rgba(var(--teal-rgb),.35),0 0 60px rgba(var(--teal-rgb),.12);
   --purple:var(--teal);
   --purple-h:var(--teal-h);
   --purple-l:var(--teal-l);
@@ -31,8 +32,8 @@ img{display:block;max-width:100%}
   --surface:#ffffff;
   --surface2:#E5E5EA;
   --surface3:#D1D1D6;
-  --glass:rgba(0,177,201,.04);
-  --glass2:rgba(0,177,201,.08);
+  --glass:rgba(var(--teal-rgb),.04);
+  --glass2:rgba(var(--teal-rgb),.08);
   --text1:#1C1C1E;
   --text2:#3A3A3C;
   --text3:#6C6C70;
@@ -48,7 +49,7 @@ img{display:block;max-width:100%}
   --sh-lg:0 20px 40px rgba(0,0,0,.1),0 4px 8px rgba(0,0,0,.04);
   --r-xs:4px;--r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:20px;--r-2xl:22px;
   --sidebar:240px;--topbar:64px;
-  --msg-own-bg:linear-gradient(135deg,#00B1C9,#007a8e);
+  --msg-own-bg:linear-gradient(135deg,var(--teal),var(--teal-d));
   --msg-own-color:#fff;
   --msg-other-bg:#E5E5EA;
   --msg-other-color:#1C1C1E;
@@ -62,15 +63,16 @@ html.dark {
   --teal:#00B1C9;
   --teal-h:#009AAF;
   --teal-d:#007a8e;
-  --teal-l:rgba(0,177,201,.14);
-  --teal-m:rgba(0,177,201,.24);
+  --teal-rgb:0,177,201;
+  --teal-l:rgba(var(--teal-rgb),.14);
+  --teal-m:rgba(var(--teal-rgb),.24);
   --bg:#000000;
   --bg2:#1C1C1E;
   --surface:#1C1C1E;
   --surface2:#2C2C2E;
   --surface3:#38383A;
-  --glass:rgba(0,177,201,.05);
-  --glass2:rgba(0,177,201,.1);
+  --glass:rgba(var(--teal-rgb),.05);
+  --glass2:rgba(var(--teal-rgb),.1);
   --text1:#FFFFFF;
   --text2:#EBEBF0;
   --text3:#AEAEB2;
@@ -84,7 +86,7 @@ html.dark {
   --sh-sm:0 8px 20px rgba(0,0,0,.45),0 2px 4px rgba(0,0,0,.3);
   --sh-md:0 12px 32px rgba(0,0,0,.55),0 3px 6px rgba(0,0,0,.35);
   --sh-lg:0 20px 48px rgba(0,0,0,.65),0 4px 8px rgba(0,0,0,.4);
-  --msg-own-bg:linear-gradient(135deg,#00B1C9,#007a8e);
+  --msg-own-bg:linear-gradient(135deg,var(--teal),var(--teal-d));
   --msg-own-color:#fff;
   --msg-other-bg:#2C2C2E;
   --msg-other-color:#FFFFFF;
@@ -92,15 +94,15 @@ html.dark {
   --card-bg:#1C1C1E;
 }
 
-html.dark ::-webkit-scrollbar-thumb{background:rgba(0,177,201,.2)}
-html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(0,177,201,.4)}
+html.dark ::-webkit-scrollbar-thumb{background:rgba(var(--teal-rgb),.2)}
+html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(var(--teal-rgb),.4)}
 
 @media (max-width:768px) {
   html.dark .modal {
     background: rgba(8,14,16,0.82);
-    border: 1px solid rgba(0,177,201,0.18);
+    border: 1px solid rgba(var(--teal-rgb),0.18);
     border-bottom: none;
-    box-shadow: 0 -16px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(0,177,201,0.12);
+    box-shadow: 0 -16px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(var(--teal-rgb),0.12);
   }
   html.dark .overlay {
     background: rgba(0,0,0,0.6);
@@ -114,7 +116,7 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(0,177,201,.4)}
 @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes glow-pulse{0%,100%{box-shadow:0 0 20px rgba(0,177,201,.3)}50%{box-shadow:0 0 40px rgba(0,177,201,.6),0 0 80px rgba(0,177,201,.2)}}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 20px rgba(var(--teal-rgb),.3)}50%{box-shadow:0 0 40px rgba(var(--teal-rgb),.6),0 0 80px rgba(var(--teal-rgb),.2)}}
 @keyframes btn-press{0%{transform:scale(1)}50%{transform:scale(.95)}100%{transform:scale(1)}}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
@@ -137,8 +139,8 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(0,177,201,.4)}
 .btn:hover::after{background:rgba(255,255,255,.08)}
 .btn:active{transform:scale(.96)!important;transition:transform .1s}
 .btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
-.btn-blue,.btn-purple,.btn-teal{background:linear-gradient(135deg,#00B1C9,#007a8e);color:#fff;box-shadow:0 4px 20px rgba(0,177,201,.35)}
-.btn-blue:hover,.btn-purple:hover,.btn-teal:hover{box-shadow:0 6px 28px rgba(0,177,201,.55),0 0 0 1px rgba(0,177,201,.3);transform:translateY(-2px)}
+.btn-blue,.btn-purple,.btn-teal{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;box-shadow:0 4px 20px rgba(var(--teal-rgb),.35)}
+.btn-blue:hover,.btn-purple:hover,.btn-teal:hover{box-shadow:0 6px 28px rgba(var(--teal-rgb),.55),0 0 0 1px rgba(var(--teal-rgb),.3);transform:translateY(-2px)}
 .btn-white{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 .btn-white:hover{background:var(--surface3);color:var(--text1);border-color:var(--border2)}
 .btn-ghost{background:transparent;color:var(--text3)}
@@ -152,7 +154,7 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(0,177,201,.4)}
 
 /* ====== INPUTS ====== */
 .input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--input-bg);color:var(--text1);font-size:14px;transition:all .2s}
-.input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,177,201,.12),0 0 20px rgba(0,177,201,.08)}
+.input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(var(--teal-rgb),.12),0 0 20px rgba(var(--teal-rgb),.08)}
 .input::placeholder{color:var(--text4)}
 .input-sm{padding:7px 10px;font-size:13px}
 
@@ -355,7 +357,7 @@ h1,h2,h3,h4,h5,h6 { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Displa
 }
 .input:focus {
   border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(0,177,201,0.12), 0 0 20px rgba(0,177,201,0.06);
+  box-shadow: 0 0 0 3px rgba(var(--teal-rgb),0.12), 0 0 20px rgba(var(--teal-rgb),0.06);
 }
 
 /* ====== MODAL ENTER/LEAVE ====== */
@@ -486,8 +488,8 @@ h1,h2,h3,h4,h5,h6 { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Displa
 /* ====== SMOOTH SCROLLBAR ====== */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,177,201,0.2); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,177,201,0.45); }
+::-webkit-scrollbar-thumb { background: rgba(var(--teal-rgb),0.2); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(var(--teal-rgb),0.45); }
 
 /* ====== DARK MODE SMOOTH TRANSITION ====== */
 html {
@@ -506,27 +508,21 @@ html {
   --teal: #F59E0B;
   --teal-h: #D97706;
   --teal-d: #B45309;
-  --teal-l: rgba(245,158,11,.1);
-  --teal-m: rgba(245,158,11,.2);
-  --teal-glow: 0 0 30px rgba(245,158,11,.4),0 0 60px rgba(245,158,11,.15);
+  --teal-rgb: 245,158,11;
+  --teal-l: rgba(var(--teal-rgb),.1);
+  --teal-m: rgba(var(--teal-rgb),.2);
+  --teal-glow: 0 0 30px rgba(var(--teal-rgb),.4),0 0 60px rgba(var(--teal-rgb),.15);
   --purple: #F59E0B;
   --purple-h: #D97706;
-  --purple-l: rgba(245,158,11,.1);
+  --purple-l: rgba(var(--teal-rgb),.1);
   --cyan: #F59E0B;
-  --border: rgba(245,158,11,.14);
-  --border2: rgba(245,158,11,.28);
-  --sh-xs: 0 2px 8px rgba(180,83,9,.08);
-  --sh-sm: 0 4px 16px rgba(180,83,9,.1);
-  --sh-md: 0 8px 28px rgba(180,83,9,.14);
-  --msg-own-bg: linear-gradient(135deg,#F59E0B,#B45309);
+  --msg-own-bg: linear-gradient(135deg,var(--teal),var(--teal-d));
 }
 html.dark:root[data-org="school"] {
   --teal: #F59E0B;
   --teal-h: #D97706;
   --teal-d: #B45309;
-  --teal-l: rgba(245,158,11,.12);
-  --teal-m: rgba(245,158,11,.2);
-  --border: rgba(245,158,11,.12);
-  --border2: rgba(245,158,11,.24);
+  --teal-rgb: 245,158,11;
+  --teal-l: rgba(var(--teal-rgb),.12);
+  --teal-m: rgba(var(--teal-rgb),.2);
 }
-::-webkit-scrollbar-thumb { background: rgba(var(--teal-rgb, 0,177,201),.25); }

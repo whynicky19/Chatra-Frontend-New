@@ -231,7 +231,7 @@ const submit = async () => {
 .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .modal-head-l { display: flex; align-items: center; gap: 12px; }
 .modal-ico { width: 38px; height: 38px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; }
-.ico-av { background: rgba(0,177,201,.12); color: var(--teal); border: 1px solid rgba(0,177,201,.2); }
+.ico-av { background: rgba(var(--teal-rgb),.12); color: var(--teal); border: 1px solid rgba(var(--teal-rgb),.2); }
 .modal-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 16px; font-weight: 800; color: var(--text1); }
 .modal-sub { font-size: 12px; color: var(--text4); margin-top: 2px; }
 
@@ -244,10 +244,10 @@ const submit = async () => {
 .field { display: flex; flex-direction: column; gap: 7px; }
 .field-label { font-size: 11px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: .06em; }
 .inp { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 13px; color: var(--text1); font-size: 13px; width: 100%; transition: border-color .15s; }
-.inp:focus { border-color: rgba(0,177,201,.4); }
+.inp:focus { border-color: rgba(var(--teal-rgb),.4); }
 
 .file-drop { border: 2px dashed var(--border2); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all .18s; text-align: center; }
-.file-drop:hover { border-color: rgba(0,177,201,.45); background: rgba(0,177,201,.04); }
+.file-drop:hover { border-color: rgba(var(--teal-rgb),.45); background: rgba(var(--teal-rgb),.04); }
 .drop-icon { color: var(--text4); }
 .drop-text { font-size: 13px; color: var(--text3); }
 .drop-text strong { color: var(--teal); }
@@ -260,7 +260,7 @@ const submit = async () => {
 
 .voice-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
 .vtab { flex: 1; padding: 8px 12px; border-radius: var(--r-md); font-size: 12px; font-weight: 600; color: var(--text3); background: var(--surface2); border: 1px solid var(--border); cursor: pointer; transition: all .15s; }
-.vtab.active { background: rgba(0,177,201,.1); color: var(--teal); border-color: rgba(0,177,201,.3); }
+.vtab.active { background: rgba(var(--teal-rgb),.1); color: var(--teal); border-color: rgba(var(--teal-rgb),.3); }
 
 .record-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; }
 .record-controls { display: flex; align-items: center; gap: 14px; }

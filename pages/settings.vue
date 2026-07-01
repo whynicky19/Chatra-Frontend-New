@@ -191,7 +191,7 @@ onMounted(() => {
 .profile-form{display:flex;gap:28px;align-items:flex-start}
 .avatar-upload-area{position:relative;display:block;cursor:pointer;width:90px;height:90px;flex-shrink:0}
 .prof-av{width:90px;height:90px;border-radius:var(--r-md);object-fit:cover;border:2px solid var(--border)}
-.prof-av-init{width:90px;height:90px;border-radius:var(--r-md);background:linear-gradient(135deg,#00B1C9,#007a8e);color:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800}
+.prof-av-init{width:90px;height:90px;border-radius:var(--r-md);background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800}
 .av-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);border-radius:var(--r-md);opacity:0;display:flex;align-items:center;justify-content:center;transition:opacity .2s}
 .avatar-upload-area:hover .av-overlay{opacity:1}
 .fields-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -212,7 +212,7 @@ onMounted(() => {
 .theme-choice.sel{border-color:var(--teal);background:var(--teal-l);color:var(--teal)}
 .theme-icon{width:44px;height:44px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center}
 .light-icon{background:#f0f4f5;color:#0d2d33;border:1px solid var(--border)}
-.dark-icon{background:#111b1e;color:#e8f4f6;border:1px solid rgba(0,177,201,.2)}
+.dark-icon{background:#111b1e;color:#e8f4f6;border:1px solid rgba(var(--teal-rgb),.2)}
 .follow-sys{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border)}
 .follow-info{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3)}
 .deactivate-card{display:flex;align-items:center;gap:16px;padding:18px 24px}
@@ -247,7 +247,7 @@ onMounted(() => {
 /* Org switch card */
 .org-switch-card{display:flex;align-items:center;gap:16px;padding:18px 24px}
 .org-switch-icon{width:40px;height:40px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.org-switch-icon.university{background:rgba(0,177,201,.1);color:var(--teal);border:1px solid rgba(0,177,201,.2)}
+.org-switch-icon.university{background:rgba(var(--teal-rgb),.1);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.2)}
 .org-switch-icon.school{background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.2)}
 .org-switch-info{flex:1}
 .org-switch-title{font-size:15px;font-weight:600;color:var(--text1)}

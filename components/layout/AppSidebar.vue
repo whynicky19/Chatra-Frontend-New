@@ -231,7 +231,7 @@ onMounted(() => {
     background:var(--teal) !important;
     color:#fff !important;
     transform:scale(1.08);
-    box-shadow:0 4px 16px rgba(0,177,201,0.4);
+    box-shadow:0 4px 16px rgba(var(--teal-rgb),0.4);
     border-left:none;
   }
   .sb-item.active .item-icon{color:#fff}

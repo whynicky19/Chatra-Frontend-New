@@ -263,7 +263,7 @@ onMounted(async () => {
 .cal-cell.other-month{cursor:default}
 .cal-cell.other-month:hover{background:transparent}
 .cal-cell.today .cal-num{background:var(--teal);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700}
-.cal-cell.selected:not(.today) .cal-num{background:rgba(0,177,201,.15);border:1.5px solid var(--teal);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:var(--teal)}
+.cal-cell.selected:not(.today) .cal-num{background:rgba(var(--teal-rgb),.15);border:1.5px solid var(--teal);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:var(--teal)}
 .cal-num{font-size:13px;font-weight:500;color:var(--text1)}
 .dot-single{display:block;width:6px;height:6px;border-radius:50%}
 .dot-multi{display:block;width:10px;height:6px;border-radius:3px;background:var(--red)}
@@ -273,8 +273,8 @@ onMounted(async () => {
 .strip-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;-webkit-overflow-scrolling:touch}
 .strip-day{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;transition:all .15s;flex-shrink:0;min-width:60px}
 .strip-day:hover{border-color:var(--border2);background:var(--surface2)}
-.strip-day.strip-today{border-color:rgba(0,177,201,.4);background:rgba(0,177,201,.06)}
-.strip-day.strip-sel{border-color:var(--teal);background:rgba(0,177,201,.12)}
+.strip-day.strip-today{border-color:rgba(var(--teal-rgb),.4);background:rgba(var(--teal-rgb),.06)}
+.strip-day.strip-sel{border-color:var(--teal);background:rgba(var(--teal-rgb),.12)}
 .strip-dow{font-size:10px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.05em}
 .strip-num{font-size:16px;font-weight:700;color:var(--text1)}
 .strip-badge{background:var(--teal);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:100px}
@@ -287,7 +287,7 @@ onMounted(async () => {
 .detail-card:last-child{border-bottom:none}
 .detail-card:hover{background:var(--surface2)}
 .detail-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text4)}
-.detail-check.done{background:rgba(0,177,201,.12);border-color:var(--teal);color:var(--teal)}
+.detail-check.done{background:rgba(var(--teal-rgb),.12);border-color:var(--teal);color:var(--teal)}
 .detail-info{flex:1;min-width:0}
 .detail-class{font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .detail-title{font-size:13px;font-weight:600;color:var(--text1);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

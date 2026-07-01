@@ -180,8 +180,8 @@ onBeforeUnmount(() => {
 .slide-img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
 .slide-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 .slide-placeholder-text { color: var(--text4); font-size: 13px; }
-.avatar-corner { position: absolute; bottom: 14px; right: 14px; width: 92px; height: 92px; border-radius: 16px; overflow: hidden; border: 2px solid rgba(0,177,201,.5); box-shadow: 0 6px 20px rgba(0,0,0,.4); background: var(--surface2); display: flex; align-items: center; justify-content: center; }
-.avatar-corner.talking { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(0,177,201,.2), 0 6px 20px rgba(0,0,0,.4); }
+.avatar-corner { position: absolute; bottom: 14px; right: 14px; width: 92px; height: 92px; border-radius: 16px; overflow: hidden; border: 2px solid rgba(var(--teal-rgb),.5); box-shadow: 0 6px 20px rgba(0,0,0,.4); background: var(--surface2); display: flex; align-items: center; justify-content: center; }
+.avatar-corner.talking { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(var(--teal-rgb),.2), 0 6px 20px rgba(0,0,0,.4); }
 .avatar-media { width: 100%; height: 100%; object-fit: cover; }
 .avatar-fallback { display:flex;align-items:center;justify-content:center;color:var(--text4,#aaa); }
 .talk-indicator { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px; }
@@ -198,8 +198,8 @@ onBeforeUnmount(() => {
 .ctrl-btn:hover:not(:disabled) { background: var(--surface3); color: var(--text1); }
 .ctrl-btn:disabled { opacity: .35; cursor: not-allowed; }
 .ctrl-summary { width: auto; border-radius: var(--r-lg); padding: 0 16px; gap: 6px; font-size: 12px; font-weight: 600; }
-.ctrl-main { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #00B1C9, #009aaf); color: #fff; border: none; box-shadow: 0 4px 16px rgba(0,177,201,.4); }
-.ctrl-main:hover { box-shadow: 0 6px 22px rgba(0,177,201,.55); }
+.ctrl-main { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--teal-h)); color: #fff; border: none; box-shadow: 0 4px 16px rgba(var(--teal-rgb),.4); }
+.ctrl-main:hover { box-shadow: 0 6px 22px rgba(var(--teal-rgb),.55); }
 .summary-stage { padding: 20px 22px 22px; overflow-y: auto; }
 .summary-head-row { margin-bottom: 14px; }
 .back-to-lecture { display: flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 7px 13px; font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; transition: all .15s; }

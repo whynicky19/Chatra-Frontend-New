@@ -329,17 +329,17 @@ onMounted(()=>{ load() })
 
 /* Class card — new design */
 .class-card{background:var(--surface);border-radius:var(--r-xl);overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--sh-xs);border:1px solid var(--border)}
-.class-card:hover{transform:translateY(-4px);box-shadow:var(--sh-md);border-color:rgba(0,177,201,.2)}
+.class-card:hover{transform:translateY(-4px);box-shadow:var(--sh-md);border-color:rgba(var(--teal-rgb),.2)}
 
-.card-cover{position:relative;height:200px;overflow:hidden;background:linear-gradient(135deg,#006475,#009aaf)}
+.card-cover{position:relative;height:200px;overflow:hidden;background:linear-gradient(135deg,#006475,var(--teal-h))}
 .card-cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .card-code-chip{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(0,0,0,.5);color:rgba(255,255,255,.95);padding:4px 10px;border-radius:6px;letter-spacing:.1em;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.18);cursor:pointer;transition:all .15s}
-.card-code-chip:hover{background:rgba(0,177,201,.6)}
+.card-code-chip:hover{background:rgba(var(--teal-rgb),.6)}
 
 .card-body{padding:18px 18px 16px}
 .card-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
 .card-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:17px;font-weight:800;color:var(--text1);line-height:1.25;flex:1}
-.card-subject-icon{width:30px;height:30px;border-radius:var(--r-sm);background:var(--teal-l);border:1px solid rgba(0,177,201,.2);display:flex;align-items:center;justify-content:center;color:var(--teal);flex-shrink:0}
+.card-subject-icon{width:30px;height:30px;border-radius:var(--r-sm);background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.2);display:flex;align-items:center;justify-content:center;color:var(--teal);flex-shrink:0}
 .card-desc{font-size:13px;color:var(--text4);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card-meta{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text4);margin-bottom:14px}
 .card-footer{border-top:1px solid var(--border);padding-top:14px}
@@ -353,9 +353,9 @@ onMounted(()=>{ load() })
 
 /* Add card */
 .add-card{background:var(--surface);border:2px dashed var(--border);cursor:pointer;transition:all .2s;min-height:310px;display:flex}
-.add-card:hover{border-color:rgba(0,177,201,.4);background:var(--teal-l)}
+.add-card:hover{border-color:rgba(var(--teal-rgb),.4);background:var(--teal-l)}
 .add-card-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:12px;flex:1}
-.add-plus{width:48px;height:48px;border-radius:50%;border:2px dashed rgba(0,177,201,.4);color:var(--text4);display:flex;align-items:center;justify-content:center;background:var(--surface2)}
+.add-plus{width:48px;height:48px;border-radius:50%;border:2px dashed rgba(var(--teal-rgb),.4);color:var(--text4);display:flex;align-items:center;justify-content:center;background:var(--surface2)}
 .add-card:hover .add-plus{border-color:var(--teal);color:var(--teal)}
 .add-title{font-size:15px;font-weight:700;color:var(--text2);line-height:1.3}
 .add-sub{font-size:13px;color:var(--text4);max-width:160px;line-height:1.5}
@@ -372,20 +372,20 @@ onMounted(()=>{ load() })
 
 /* Empty state */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;gap:12px;text-align:center}
-.es-icon-wrap{width:72px;height:72px;border-radius:20px;background:var(--teal-l);border:1px solid rgba(0,177,201,.2);display:flex;align-items:center;justify-content:center;color:var(--teal);margin-bottom:8px}
+.es-icon-wrap{width:72px;height:72px;border-radius:20px;background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.2);display:flex;align-items:center;justify-content:center;color:var(--teal);margin-bottom:8px}
 .es-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:20px;font-weight:700;color:var(--text2)}
 .es-sub{font-size:14px;color:var(--text4);max-width:300px;line-height:1.6}
 .es-btn{margin-top:8px}
 
 /* Join modal */
 .join-modal{max-width:400px;width:100%}
-.join-icon-wrap{width:50px;height:50px;border-radius:14px;background:var(--teal-l);border:1px solid rgba(0,177,201,.2);display:flex;align-items:center;justify-content:center;color:var(--teal);margin:0 auto 12px}
+.join-icon-wrap{width:50px;height:50px;border-radius:14px;background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.2);display:flex;align-items:center;justify-content:center;color:var(--teal);margin:0 auto 12px}
 .join-hint{font-size:13px;color:var(--text3);text-align:center;margin-bottom:20px;line-height:1.6}
 .code-boxes{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
 .code-box{width:44px;height:52px;border:2px solid var(--border);border-radius:var(--r-md);background:var(--surface2);color:var(--text1);font-size:22px;font-weight:800;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,monospace;letter-spacing:.05em;transition:all .15s;outline:none}
-.code-box:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,177,201,.15);background:rgba(0,177,201,.05)}
+.code-box:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(var(--teal-rgb),.15);background:rgba(var(--teal-rgb),.05)}
 .join-err{font-size:12px;color:var(--red);text-align:center;font-weight:500;margin-top:4px}
-.join-found{margin-top:12px;border-radius:var(--r-lg);overflow:hidden;border:1px solid rgba(0,177,201,.25)}
+.join-found{margin-top:12px;border-radius:var(--r-lg);overflow:hidden;border:1px solid rgba(var(--teal-rgb),.25)}
 .found-cover{position:relative;height:60px;background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:10px 14px}
 .found-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent)}
 .found-name{position:relative;z-index:1;font-size:14px;font-weight:700;color:#fff}

@@ -175,11 +175,11 @@ const submit = async () => {
 .field { display: flex; flex-direction: column; gap: 7px; }
 .field-label { font-size: 11px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: .06em; }
 .inp { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 13px; color: var(--text1); font-size: 13px; width: 100%; transition: border-color .15s; }
-.inp:focus { border-color: rgba(0,177,201,.4); }
+.inp:focus { border-color: rgba(var(--teal-rgb),.4); }
 .inp-ta { resize: vertical; min-height: 90px; line-height: 1.6; }
 
 .file-drop { border: 2px dashed var(--border2); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all .18s; }
-.file-drop:hover, .file-drop.dragging { border-color: rgba(0,177,201,.45); background: rgba(0,177,201,.04); }
+.file-drop:hover, .file-drop.dragging { border-color: rgba(var(--teal-rgb),.45); background: rgba(var(--teal-rgb),.04); }
 .drop-icon { color: var(--text4); }
 .drop-text { font-size: 13px; color: var(--text3); }
 .drop-text strong { color: var(--teal); }

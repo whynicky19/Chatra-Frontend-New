@@ -372,7 +372,7 @@ watch(() => chatsStore.activeMsgs.length, () => scrollBottom())
 }
 .cw-head-l{display:flex;align-items:center;gap:12px}
 .cw-av{flex-shrink:0;position:relative}
-.cw-av-img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,177,201,.2)}
+.cw-av-img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(var(--teal-rgb),.2)}
 .cw-name{font-size:15px;font-weight:700;color:var(--text1)}
 .cw-sub{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text4);margin-top:1px}
 .st-dot-on{width:7px;height:7px;border-radius:50%;background:#22c55e;flex-shrink:0}
@@ -401,7 +401,7 @@ watch(() => chatsStore.activeMsgs.length, () => scrollBottom())
 .msg-inp{flex:1;border:none;background:none;font-size:14px;line-height:1.4;resize:none;max-height:140px;color:var(--text1);outline:none}
 .msg-inp::placeholder{color:var(--text4)}
 .send-btn{width:40px;height:40px;border-radius:50%;background:var(--surface3);color:var(--text4);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;border:none;transition:all .2s}
-.send-btn.active{background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(0,177,201,.4)}
+.send-btn.active{background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(var(--teal-rgb),.4)}
 .send-btn.active:hover{background:var(--teal-h);transform:scale(1.05)}
 .send-btn:disabled{opacity:.5;cursor:not-allowed}
 .add-search{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-md);padding:8px 10px}
