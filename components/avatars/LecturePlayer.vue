@@ -11,7 +11,9 @@
         </button>
       </div>
 
-      <div v-if="!showSummary" class="stage">
+      <!-- v-show, не v-if: при открытии конспекта <audio> остаётся в DOM
+           и аватар продолжает читать лекцию на фоне -->
+      <div v-show="!showSummary" class="stage">
         <div class="slide-area">
           <img v-if="currentSlide?.slide_image_url" :src="currentSlide.slide_image_url" class="slide-img" />
           <div v-else class="slide-placeholder">
@@ -73,7 +75,7 @@
         </div>
       </div>
 
-      <div v-else class="summary-stage">
+      <div v-if="showSummary" class="summary-stage">
         <div class="summary-head-row">
           <button class="back-to-lecture" @click="showSummary = false">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>

@@ -381,7 +381,7 @@
                   </div>
                   <!-- Actions -->
                   <div class="av-card-actions">
-                    <button v-if="isTeacher && (lec.status==='pending_approval' || lec.status==='rejected' || lec.status==='failed')" class="item-del" @click.stop="deleteAvatarLecture(lec.id)">
+                    <button v-if="canDeleteLecture(lec)" class="item-del" @click.stop="deleteAvatarLecture(lec)">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
                     </button>
                     <div v-if="lec.status === 'ready'" class="av-watch-btn">
@@ -708,11 +708,18 @@ const onLectureCreated = (l: AvatarLecture) => {
   showCreateLecture.value = false
 }
 
-const deleteAvatarLecture = async (id: number) => {
+// Удалять может владелец лекции или админ (это же правило на бэке)
+const canDeleteLecture = (lec: AvatarLecture) =>
+  auth.user?.role === 'admin' || (isTeacher.value && lec.created_by === auth.user?.id)
+
+const deleteAvatarLecture = async (lec: AvatarLecture) => {
+  if (!confirm(lang.value==='ru'
+    ? `Удалить лекцию «${lec.title}»? Действие необратимо.`
+    : `Delete lecture "${lec.title}"? Action is irreversible.`)) return
   try {
-    await avatarsSvc.deleteLecture(id)
-    avatarLectures.value = avatarLectures.value.filter(l => l.id !== id)
-    toast.ok('Лекция удалена')
+    await avatarsSvc.deleteLecture(lec.id)
+    avatarLectures.value = avatarLectures.value.filter(l => l.id !== lec.id)
+    toast.ok(lang.value==='ru' ? 'Лекция удалена' : 'Lecture deleted')
   } catch (e: any) {
     toast.err(e?.response?.data?.detail || 'Не удалось удалить лекцию')
   }
@@ -1266,6 +1273,9 @@ onMounted(async () => {
 .av-card-status.status-pending{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
 .av-card-status.status-late{background:var(--red-l);color:var(--red);border:1px solid rgba(220,38,38,.2)}
 .av-card-actions{padding:0 16px 14px;display:flex;justify-content:space-between;align-items:center}
+/* .item-del по умолчанию opacity:0 (ховер-паттерн списков .item-row) —
+   в карточке лекции аватара кнопка видна всегда */
+.av-lecture-card .item-del{opacity:1}
 .av-watch-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--teal);color:#fff;border-radius:var(--r-md);font-size:13px;font-weight:700;transition:opacity .15s;cursor:pointer}
 .av-watch-btn:hover{opacity:.85}
 .av-empty{border:2px dashed var(--border2)}
