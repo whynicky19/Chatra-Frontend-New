@@ -224,6 +224,7 @@ const onCodeInput = (e: Event, i: number) => {
   const val = (e.target as HTMLInputElement).value.toUpperCase().replace(/[^A-Z0-9]/g,'')
   codeChars.value[i] = val.slice(-1)
   if (val && i < 5) codeRefs.value[i+1]?.focus()
+  else if (!val && i > 0) { codeRefs.value[i-1]?.focus(); codeRefs.value[i-1]?.select() }
   joinError.value = ''
 }
 const onCodeKey = (e: KeyboardEvent, i: number) => {
