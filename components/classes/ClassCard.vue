@@ -3,7 +3,7 @@
     <div class="cc-cover" :style="coverBg">
       <img v-if="coverImage" :src="coverImage" class="cc-cover-img"/>
       <div class="cc-cover-overlay"></div>
-      <div class="cc-title-over">{{cls.title}}</div>
+      <div class="cc-title-over">{{cls.name}}</div>
       <div v-if="hwCount>0" class="cc-due-badge">{{hwCount}} due</div>
     </div>
     <div class="cc-body">
@@ -23,7 +23,7 @@
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'
-const props = defineProps<{cls:{id:number;title:string;body:string;user_id:number};hwCount?:number}>()
+const props = defineProps<{cls:{id:number;name:string;description?:string;cover_image?:string;teacher?:string;created_by:number};hwCount?:number}>()
 defineEmits<{open:[]}>()
 
 const gradients = [
@@ -34,13 +34,12 @@ const gradients = [
   'linear-gradient(135deg,#1a0a0a,#4a1a1a)',
 ]
 
-const parsed = computed(() => { try { return JSON.parse(props.cls.body) } catch { return {} } })
-const coverImage = computed(() => parsed.value.cover_image || null)
-const classDesc = computed(() => parsed.value.description || '')
+const coverImage = computed(() => props.cls.cover_image || null)
+const classDesc = computed(() => props.cls.description || '')
 const coverBg = computed(() => coverImage.value ? {} : { background: gradients[props.cls.id % gradients.length] })
 const teacherName = computed(() => {
-  if (parsed.value.teacher) return parsed.value.teacher
-  try { const reg = JSON.parse(localStorage.getItem('_nick_registry')||'{}'); return reg[props.cls.user_id] || 'Преподаватель' } catch { return 'Преподаватель' }
+  if (props.cls.teacher) return props.cls.teacher
+  try { const reg = JSON.parse(localStorage.getItem('_nick_registry')||'{}'); return reg[props.cls.created_by] || 'Преподаватель' } catch { return 'Преподаватель' }
 })
 const hwCount = computed(() => props.hwCount || 0)
 </script>

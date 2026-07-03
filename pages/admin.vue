@@ -322,7 +322,6 @@
               <div class="cl-sub">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 {{ cl.teacher || creatorName(cl.created_by) }}
-                <template v-if="cl.group"> · {{ cl.group }}</template>
               </div>
             </div>
           </div>
@@ -340,7 +339,6 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
           <div class="cl-modal-title">{{ selectedClass?.name }}</div>
-          <div v-if="selectedClass?.group" class="cl-modal-group">{{ selectedClass.group }}</div>
         </div>
 
         <div class="cl-modal-body">
@@ -374,7 +372,7 @@
                 <div :class="['av','av-sm',colorFor(m.id)]">{{ (m.full_name||m.email||'?')[0].toUpperCase() }}</div>
                 <div class="member-info">
                   <div class="member-name">{{ m.full_name || m.email.split('@')[0] }}</div>
-                  <div class="member-email">{{ m.email }}{{ m.group ? ' · ' + m.group : '' }}</div>
+                  <div class="member-email">{{ m.email }}</div>
                 </div>
                 <span class="badge badge-gray" style="font-size:10px">{{ m.role }}</span>
               </div>
@@ -408,16 +406,14 @@ import { useNotificationsStore } from '~/stores/notifications.store'
 import { useToast } from '~/composables/useToast'
 import { useAdminSvc } from '~/services/admin'
 import { useClassesSvc } from '~/services/classes'
-import { useAssignmentsSvc } from '~/services/assignments'
 import { useChatsSvc } from '~/services/chats'
-import { usePostsSvc } from '~/services/posts'
 import { useI18n } from '~/composables/useI18n'
 import { useAvatarsSvc, type TeacherAvatar, type AvatarLecture } from '~/services/avatars'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const toast = useToast(); const adminSvc = useAdminSvc()
 const notifStore = useNotificationsStore()
 const { t, lang } = useI18n()
-const chatsSvc = useChatsSvc(); const postsSvc = usePostsSvc(); const classesSvc = useClassesSvc(); const assignSvc = useAssignmentsSvc()
+const chatsSvc = useChatsSvc(); const classesSvc = useClassesSvc()
 const avatarsSvc = useAvatarsSvc()
 const tab = ref('users'); const users = ref<any[]>([]); const loadingU = ref(false); const sq = ref(''); const showCreate = ref(false); const crU = ref(false)
 const togglingAi = ref<Record<number, boolean>>({})
@@ -568,50 +564,12 @@ const selectedClass = ref<any>(null)
 const classCreator = computed(() => selectedClass.value?.created_by ? users.value.find(u => u.id === selectedClass.value.created_by) ?? null : null)
 const creatorName = (id: number) => { const u = users.value.find(u => u.id === id); return u ? (u.full_name || u.email) : id ? '#' + id : '—' }
 
-const loadClassesFromPosts = async () => {
-  const allPosts = await postsSvc.list()
-  const classPosts = allPosts.filter((p: any) => {
-    try { return JSON.parse(p.body).type === 'class' } catch { return false }
-  })
-  return classPosts.map((p: any) => {
-    let body: any = {}
-    try { body = JSON.parse(p.body) } catch {}
-    return {
-      id: p.id,
-      name: p.title,
-      // body.created_by is stored by CreateClassModal; fall back to any post-level field
-      created_by: body.created_by ?? p.author_id ?? p.user_id ?? p.created_by ?? null,
-      cover_image: body.cover_image || null,
-      description: body.description || '',
-      teacher: body.teacher || '',
-      group: body.group || '',
-    }
-  })
-}
-
 const openClass = async (cl: any) => {
   selectedClass.value = cl
   showMembers.value = true
   membersList.value = []; loadingMembers.value = true
   try {
-    const memberIds = new Set<number>()
-
-    // 1. Users who called the join API
-    const joinMembers: any[] = await classesSvc.members(cl.id).catch(() => [])
-    joinMembers.forEach(m => memberIds.add(m.id))
-
-    // 2. Users who submitted work in this class (tracked in assignment system)
-    const assignments: any[] = await assignSvc.list(cl.id).catch(() => [])
-    const subLists = await Promise.all(
-      assignments.map(a => assignSvc.getSubmissions(a.id).catch(() => []))
-    )
-    subLists.flat().forEach((s: any) => { if (s.student_id) memberIds.add(s.student_id) })
-
-    // 3. The creator (if tracked)
-    if (cl.created_by) memberIds.add(cl.created_by)
-
-    // Resolve to full user objects from the admin users list
-    membersList.value = users.value.filter(u => memberIds.has(u.id))
+    membersList.value = await classesSvc.members(cl.id)
   } catch {}
   finally { loadingMembers.value = false }
 }
@@ -619,7 +577,7 @@ const switchToClasses = async () => {
   tab.value = 'classes'
   if (classes.value.length || loadingCl.value) return
   loadingCl.value = true
-  try { classes.value = await loadClassesFromPosts(); classesCount.value = classes.value.length } catch { toast.err('Ошибка загрузки классов') }
+  try { classes.value = await classesSvc.listAll(); classesCount.value = classes.value.length } catch { toast.err('Ошибка загрузки классов') }
   finally { loadingCl.value = false }
 }
 
@@ -718,7 +676,6 @@ onMounted(async () => {
 .cl-modal-close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(4px)}
 .cl-modal-close:hover{background:rgba(0,0,0,.65)}
 .cl-modal-title{font-size:20px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);margin:0}
-.cl-modal-group{font-size:12px;color:rgba(255,255,255,.8);margin-top:3px;font-weight:600}
 .cl-modal-body{padding:0 20px 20px}
 .cl-section{margin-top:20px}
 .cl-section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin-bottom:10px;display:flex;align-items:center;gap:8px}

@@ -91,12 +91,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from '#app'
 import { useAssignmentsSvc } from '~/services/assignments'
-import { usePostsSvc } from '~/services/posts'
+import { useClassesSvc } from '~/services/classes'
 definePageMeta({ layout: 'default' })
 
 const router = useRouter()
 const assignSvc = useAssignmentsSvc()
-const postsSvc = usePostsSvc()
+const classesSvc = useClassesSvc()
 const loading = ref(false)
 
 interface DlItem {
@@ -207,17 +207,13 @@ const goToAssignment = (item: DlItem) => {
 onMounted(async () => {
   loading.value = true
   try {
-    const [allPosts, subs] = await Promise.all([
-      postsSvc.list(),
+    const [classes, subs] = await Promise.all([
+      classesSvc.list(),
       assignSvc.mySubmissions().catch(() => [] as any[]),
     ])
 
-    // Classes are stored as posts with type==='class'; their post IDs are the class_ids used in assignments
-    const classPosts = allPosts.filter((p: any) => {
-      try { return JSON.parse(p.body).type === 'class' } catch { return false }
-    })
-    const classIds = classPosts.map((p: any) => p.id)
-    const classMap = new Map<number, string>(classPosts.map((p: any) => [p.id, p.title || `Класс #${p.id}`]))
+    const classIds = classes.map((c: any) => c.id)
+    const classMap = new Map<number, string>(classes.map((c: any) => [c.id, c.name || `Класс #${c.id}`]))
 
     const perClass = await Promise.all(
       classIds.map((id: number) => assignSvc.list(id).catch(() => [] as any[]))

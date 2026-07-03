@@ -43,8 +43,8 @@
               <h1 class="page-title" :class="{'title-dark': classMeta.cover_image}">{{ classTitle }}</h1>
               <p class="page-sub" :class="{'sub-dark': classMeta.cover_image}">{{ classMeta.description || classMeta.period || '' }}</p>
             </div>
-            <!-- Code chip — always visible, teachers can copy for students -->
-            <div class="class-code-row">
+            <!-- Code chip — only visible to those who can see the invite code (creator/admin) -->
+            <div class="class-code-row" v-if="classCode">
               <div class="class-code-chip" @click="copyCode" :title="lang==='ru'?'Нажмите чтобы скопировать код':'Click to copy code'">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                 {{ lang==='ru' ? 'Код класса:' : 'Class code:' }}
@@ -743,14 +743,9 @@ const ratingData = ref({ avg_score: 0, avg_percent: 0, graded_count: 0, total_sc
 const loadingRating = ref(false)
 const assignmentsLoaded = ref(false)
 
-const classPost = computed(() =>
-  allPosts.value.find(p => {
-    if (p.id !== classId.value) return false
-    try { const b = JSON.parse(p.body); return b.type === 'class' } catch { return false }
-  }) ?? null
-)
-const classMeta = computed(() => { if (!classPost.value) return {}; try { return JSON.parse(classPost.value.body) } catch { return {} } })
-const classTitle = computed(() => classPost.value?.title || `Класс #${classId.value}`)
+const currentClass = ref<any>(null)
+const classMeta = computed(() => currentClass.value ?? {})
+const classTitle = computed(() => currentClass.value?.name || `Класс #${classId.value}`)
 
 const heroStyle = computed(() => {
   const img = classMeta.value.cover_image
@@ -858,7 +853,7 @@ const onBodyClick = (e: MouseEvent) => {
   openPreview(target.dataset.previewUrl!, target.dataset.previewName!)
 }
 
-const classCode = computed(() => { const id = classId.value; const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code = ''; let n = id*1337+42; for (let i=0;i<6;i++){code+=chars[n%chars.length];n=Math.floor(n/chars.length)+id*7}; return code.slice(0,6) })
+const classCode = computed(() => currentClass.value?.invite_code || '')
 const copyCode = () => { navigator.clipboard?.writeText(classCode.value).then(() => toast.ok(t('class.code_copied') + ' ' + classCode.value)).catch(() => toast.ok(t('class.code') + ' ' + classCode.value)) }
 
 const viewPost = (p: any, type: string) => { viewingPost.value = { ...p, type } }
@@ -970,7 +965,11 @@ onMounted(async () => {
   }
 
   loading.value = true
-  try { const posts = await postsSvc.list(); allPosts.value = posts } catch { toast.err(t('general.error')) } finally { loading.value = false }
+  try {
+    const [cls, posts] = await Promise.all([classesSvc.get(classId.value), postsSvc.list()])
+    currentClass.value = cls
+    allPosts.value = posts
+  } catch { toast.err(t('general.error')) } finally { loading.value = false }
   if (!isTeacher.value) loadRating()
   if (isTeacher.value) loadMyAvatar()
 })

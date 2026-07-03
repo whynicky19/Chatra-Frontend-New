@@ -49,16 +49,16 @@
               <div class="card-cover" :style="cls.cover_image ? {} : {background: coverGrad(cls.id)}">
                 <img v-if="cls.cover_image" :src="cls.cover_image" class="card-cover-img" loading="lazy" decoding="async"/>
                 <!-- Code chip for teachers -->
-                <div v-if="auth.isTeacher || auth.isAdmin" class="card-code-chip" @click.stop="copyClassCode(cls.id)">
+                <div v-if="(auth.isTeacher || auth.isAdmin) && cls.invite_code" class="card-code-chip" @click.stop="copyClassCode(cls)">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                  {{ codeFor(cls.id) }}
+                  {{ cls.invite_code }}
                 </div>
               </div>
 
               <!-- Card body -->
               <div class="card-body">
                 <div class="card-title-row">
-                  <h3 class="card-name">{{ cls.title }}</h3>
+                  <h3 class="card-name">{{ cls.name }}</h3>
                   <div class="card-subject-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
                   </div>
@@ -141,13 +141,6 @@
             <input v-for="(_, i) in 6" :key="i" :ref="el => { if(el) codeRefs[i] = el as HTMLInputElement }" class="code-box" maxlength="1" :value="codeChars[i]" @input="onCodeInput($event, i)" @keydown="onCodeKey($event, i)" @paste="onCodePaste" inputmode="text" autocomplete="off" style="text-transform:uppercase"/>
           </div>
           <div v-if="joinError" class="join-err">{{joinError}}</div>
-          <div v-if="foundClass" class="join-found">
-            <div class="found-cover" :style="foundClass.cover_image ? `background-image:url(${foundClass.cover_image})` : `background:${coverGrad(foundClass.id)}`">
-              <div class="found-overlay"></div>
-              <span class="found-name">{{foundClass.title}}</span>
-            </div>
-            <div class="found-meta">{{foundClass.teacher || (lang==='ru'?'Преподаватель':'Teacher')}}</div>
-          </div>
         </div>
         <div class="modal-foot">
           <button class="btn btn-white" @click="showJoin=false">{{ t('general.cancel') }}</button>
@@ -170,7 +163,7 @@
         </div>
         <div class="del-body">
           <div class="del-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>
-          <p class="del-text">{{ t('classes.delete_confirm') }} <strong>«{{deletingClass.title}}»</strong>? {{ t('classes.delete_warn') }}</p>
+          <p class="del-text">{{ t('classes.delete_confirm') }} <strong>«{{deletingClass.name}}»</strong>? {{ t('classes.delete_warn') }}</p>
         </div>
         <div class="modal-foot">
           <button class="btn btn-white" @click="deletingClass=null">{{ t('general.cancel') }}</button>
@@ -189,12 +182,13 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from '#app'
 import { useAuthStore } from '~/stores/auth.store'
 import { usePostsSvc } from '~/services/posts'
+import { useClassesSvc } from '~/services/classes'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
 definePageMeta({ layout: 'default' })
-const auth = useAuthStore(); const postsSvc = usePostsSvc(); const toast = useToast(); const router = useRouter()
+const auth = useAuthStore(); const postsSvc = usePostsSvc(); const classesSvc = useClassesSvc(); const toast = useToast(); const router = useRouter()
 const { t, lang } = useI18n()
-const allPosts = ref<any[]>([]); const loading = ref(true); const showCreate = ref(false)
+const allClasses = ref<any[]>([]); const allPosts = ref<any[]>([]); const loading = ref(true); const showCreate = ref(false)
 const showJoin = ref(false); const joining = ref(false); const joinError = ref('')
 const deletingClass = ref<any>(null); const deleting = ref(false)
 
@@ -233,11 +227,6 @@ const covers = [
 ]
 const coverGrad = (id: number) => covers[id % covers.length]
 
-const allClasses = computed(() =>
-  allPosts.value
-    .map(p => { try { const b=JSON.parse(p.body); return b.type==='class' ? {...p,...b,title:p.title,cover_image:b.cover_image||null,description:b.description||''} : null } catch { return null } })
-    .filter((c): c is NonNullable<typeof c> => c !== null)
-)
 const visibleClasses = computed(() => auth.isAdmin ? allClasses.value : allClasses.value.filter(c => joinedIds.value.includes(c.id)))
 const lectureCount = (classId: number) => allPosts.value.filter(p => p.title?.startsWith(`[LECTURE][${classId}]`)).length
 
@@ -246,16 +235,6 @@ const getActionLabel = (cls: any) => {
   if (count === 0) return lang.value === 'ru' ? 'Начать обучение' : 'Start learning'
   return lang.value === 'ru' ? 'Продолжить обучение' : 'Continue learning'
 }
-
-const codeFor = (id: number) => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code = ''; let n = id*1337+42
-  for(let i=0;i<6;i++){code+=chars[n%chars.length];n=Math.floor(n/chars.length)+id*7}
-  return code.slice(0,6)
-}
-const foundClass = computed(() => {
-  if (joinCode.value.length < 6) return null
-  return allClasses.value.find(c => codeFor(c.id) === joinCode.value.toUpperCase()) || null
-})
 
 const upcomingAssignments = computed(() => {
   const now = new Date()
@@ -277,32 +256,49 @@ const fmtDeadline = (d: string) => {
   } catch { return d }
 }
 
-const joinClass = () => {
+const joinClass = async () => {
   joining.value = true; joinError.value = ''
-  const found = foundClass.value
-  setTimeout(() => {
-    if (!found) { joinError.value = t('classes.not_found'); joining.value=false; return }
-    if (!joinedIds.value.includes(found.id)) { joinedIds.value.push(found.id); saveJoined() }
-    joining.value=false; showJoin.value=false; codeChars.value=['','','','','','']
-    toast.ok(`${t('classes.joined')} ${found.title}`)
-  }, 400)
+  try {
+    const cls = await classesSvc.joinByCode(joinCode.value)
+    if (!joinedIds.value.includes(cls.id)) { joinedIds.value.push(cls.id); saveJoined() }
+    await load()
+    showJoin.value = false; codeChars.value = ['','','','','','']
+    toast.ok(`${t('classes.joined')} ${cls.name}`)
+  } catch (e: any) {
+    const detail = e?.response?.data?.detail
+    joinError.value = detail === 'class_not_found' ? t('classes.not_found') : (detail || t('general.error'))
+  } finally {
+    joining.value = false
+  }
 }
-const leaveClass = (id: number) => { joinedIds.value = joinedIds.value.filter(i => i !== id); saveJoined(); toast.ok(t('classes.left_ok')) }
+const leaveClass = async (id: number) => {
+  try { await classesSvc.leave(id) } catch {}
+  joinedIds.value = joinedIds.value.filter(i => i !== id); saveJoined(); toast.ok(t('classes.left_ok'))
+}
 const confirmDelete = (cls: any) => { deletingClass.value = cls }
 const doDelete = async () => {
   if (!deletingClass.value) return
   deleting.value = true
-  try { await postsSvc.remove(deletingClass.value.id); allPosts.value = allPosts.value.filter(p => p.id !== deletingClass.value.id); toast.ok(t('general.delete')); deletingClass.value = null }
+  try { await classesSvc.delete(deletingClass.value.id); allClasses.value = allClasses.value.filter(c => c.id !== deletingClass.value.id); toast.ok(t('general.delete')); deletingClass.value = null }
   catch(e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
   finally { deleting.value = false }
 }
 const goClass = (id: number) => router.push(`/classes/${id}`)
-const copyClassCode = (id: number) => {
-  const code = codeFor(id)
+const copyClassCode = (cls: any) => {
+  const code = cls.invite_code
+  if (!code) return
   navigator.clipboard?.writeText(code).then(() => toast.ok(`Код скопирован: ${code}`)).catch(() => toast.ok(`Код: ${code}`))
 }
-const onCreated = async (cls: any) => { showCreate.value=false; await load(); if (cls?.id && !joinedIds.value.includes(cls.id)) { joinedIds.value.push(cls.id); saveJoined() } }
-const load = async () => { loading.value=true; try { allPosts.value=await postsSvc.list() } catch { toast.err(t('general.error')) } finally { loading.value=false } }
+const onCreated = async (cls: any) => { showCreate.value=false; await load(); if (cls?.id) { try { await classesSvc.join(cls.id) } catch {}; if (!joinedIds.value.includes(cls.id)) { joinedIds.value.push(cls.id); saveJoined() } } }
+const load = async () => {
+  loading.value = true
+  try {
+    const [classes, posts] = await Promise.all([classesSvc.list(), postsSvc.list()])
+    allClasses.value = classes
+    allPosts.value = posts
+  } catch { toast.err(t('general.error')) }
+  finally { loading.value = false }
+}
 watch(() => auth.user?.id, (id) => { if (id) loadJoined() }, { immediate: true })
 onMounted(()=>{ load() })
 </script>

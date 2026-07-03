@@ -29,33 +29,6 @@
         <div v-if="emailTouched && !email" class="nick-hint err">{{ t('register.email_required') }}</div>
       </div>
 
-      <!-- ГРУППА -->
-      <div class="frow" style="position:relative">
-        <label class="flabel">Группа <span style="color:var(--red)">*</span></label>
-        <input
-          v-model="groupQuery"
-          class="input"
-          placeholder="Например: ИСУ-21"
-          autocomplete="off"
-          @input="onGroupInput"
-          @blur="onGroupBlur"
-          @focus="showDropdown = true"
-        />
-        <!-- Выпадающий список -->
-        <div v-if="showDropdown && groupSuggestions.length" class="group-dropdown">
-          <div
-            v-for="g in groupSuggestions"
-            :key="g"
-            class="group-item"
-            @mousedown.prevent="selectGroup(g)"
-          >
-            {{ g }}
-          </div>
-        </div>
-        <div v-if="groupTouched && !group" class="nick-hint err">Выбери группу из списка</div>
-        <div v-if="group" class="nick-hint ok">✓ {{ group }}</div>
-      </div>
-
       <div class="frow">
         <label class="flabel">{{ t('login.password') }}</label>
         <input v-model="pw" type="password" class="input" :placeholder="t('register.pw_placeholder')" required minlength="6"/>
@@ -80,14 +53,12 @@ import { navigateTo } from '#app'
 import { useAuth } from '~/composables/useAuth'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
-import { useApi } from '~/services/api'
 import { useOrgStore } from '~/stores/org.store'
 definePageMeta({ layout: 'auth' })
 
 const { register } = useAuth()
 const toast = useToast()
 const { t, lang } = useI18n()
-const api = useApi()
 const org = useOrgStore()
 
 const switchOrg = () => { org.clear(); if (import.meta.client) window.location.href = '/org' }
@@ -96,43 +67,10 @@ const nick = ref(''); const fullname = ref(''); const email = ref(''); const pw 
 const role = ref('student'); const loading = ref(false)
 const emailTouched = ref(false)
 
-// группа
-const group = ref('')
-const groupQuery = ref('')
-const groupSuggestions = ref<string[]>([])
-const showDropdown = ref(false)
-const groupTouched = ref(false)
-
-// ← заменили на запрос к бэкенду
-const onGroupInput = async () => {
-  groupTouched.value = true
-  group.value = ''
-  const q = groupQuery.value.trim()
-  if (!q) { groupSuggestions.value = []; showDropdown.value = false; return }
-  try {
-    const { data } = await api.get(`/auth/groups/search?q=${encodeURIComponent(q)}`)
-    groupSuggestions.value = data
-    showDropdown.value = groupSuggestions.value.length > 0
-  } catch {
-    groupSuggestions.value = []
-  }
-}
-
-const selectGroup = (g: string) => {
-  group.value = g
-  groupQuery.value = g
-  showDropdown.value = false
-}
-
-const onGroupBlur = () => {
-  setTimeout(() => { showDropdown.value = false }, 150)
-  groupTouched.value = true
-}
-
 const emailOk = computed(() => /^[^\s@]+@(gmail\.com|icloud\.com)$/.test(email.value.trim()))
 const onEmailInput = () => { emailTouched.value = true }
 const fullnameOk = computed(() => fullname.value.trim().split(' ').filter(Boolean).length >= 2)
-const canSubmit = computed(() => fullnameOk.value && emailOk.value && pw.value.length >= 6 && !!group.value)
+const canSubmit = computed(() => fullnameOk.value && emailOk.value && pw.value.length >= 6)
 
 const pwScore = computed(() => {
   const p = pw.value; if (!p) return 0; let s = 0
@@ -147,7 +85,7 @@ const scoreLabel = computed(() => score.value<=40?t('register.pw_weak'):score.va
 const sub = async () => {
   if (!canSubmit.value) return
   loading.value = true
-  const ok = await register(email.value, pw.value, role.value, fullname.value.trim(), group.value)
+  const ok = await register(email.value, pw.value, role.value, fullname.value.trim())
   if (ok) {
     localStorage.setItem('_pending_fullname', fullname.value.trim())
     await navigateTo('/login')
@@ -172,10 +110,6 @@ const sub = async () => {
 .input:focus{border-color:rgba(var(--teal-rgb),0.5)!important;box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.1)!important}
 .input::placeholder{color:var(--text4)!important}
 
-/* Выпадающий список групп */
-.group-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-md);box-shadow:var(--sh-md);z-index:100;max-height:200px;overflow-y:auto;margin-top:2px}
-.group-item{padding:10px 14px;font-size:14px;color:var(--text1);cursor:pointer;transition:background .15s}
-.group-item:hover{background:var(--teal-l);color:var(--teal)}
 /* Org badge */
 .org-badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .org-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;padding:4px 10px;border-radius:100px}
@@ -191,7 +125,6 @@ const sub = async () => {
   .input { font-size: 16px !important; }
   .btn-lg { min-height: 50px; font-size: 15px; }
   .frow { margin-bottom: 12px; }
-  .group-item { min-height: 44px; display: flex; align-items: center; }
 }
 @media (max-width:480px) {
   .auth-card { padding: 16px 12px 20px; }

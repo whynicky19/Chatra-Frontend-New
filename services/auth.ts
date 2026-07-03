@@ -21,7 +21,6 @@ export const useAuthSvc = () => {
       pw: string,
       role: string,
       full_name?: string,
-      group?: string,
       orgType = 'university'
     ) => {
       const { data } = await api.post('/auth/register', {
@@ -29,7 +28,6 @@ export const useAuthSvc = () => {
         password: pw,
         role,
         full_name,
-        group,
         org_type: orgType,
       })
       return data
@@ -40,8 +38,8 @@ export const useAuthSvc = () => {
       return data
     },
 
-    updateMe: async (full_name: string, group?: string) => {
-      const { data } = await api.patch('/auth/me', { full_name, group })
+    updateMe: async (full_name: string) => {
+      const { data } = await api.patch('/auth/me', { full_name })
       return data
     },
   }

@@ -23,22 +23,30 @@ export const useClassesSvc = () => {
     leave: async (classId: number): Promise<void> => {
       await api.delete(`/classes/${classId}/leave`)
     },
-    create: async (name: string, description?: string): Promise<any> => {
-      const { data } = await api.post('/classes/', { name, description })
+    create: async (
+      name: string,
+      description?: string,
+      teacher?: string,
+      period?: string,
+      cover_image?: string,
+    ): Promise<any> => {
+      const { data } = await api.post('/classes/', { name, description, teacher, period, cover_image })
       return data
     },
     delete: async (classId: number): Promise<void> => {
       await api.delete(`/classes/${classId}`)
     },
+    update: async (classId: number, body: Record<string, any>): Promise<any> => {
+      const { data } = await api.put(`/classes/${classId}`, body)
+      return data
+    },
+    joinByCode: async (code: string): Promise<any> => {
+      const { data } = await api.post('/classes/join-by-code', { code })
+      return data
+    },
     members: async (classId: number): Promise<any[]> => {
-      // Try the classes endpoint first, fall back to admin endpoint
-      try {
-        const { data } = await api.get(`/classes/${classId}/members`)
-        return data as any[]
-      } catch {
-        const { data } = await api.get(`/admin/classes/${classId}/members`)
-        return data as any[]
-      }
+      const { data } = await api.get(`/classes/${classId}/members`)
+      return data as any[]
     },
   }
 }

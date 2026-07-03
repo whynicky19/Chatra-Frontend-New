@@ -50,12 +50,11 @@ export const useAuth = () => {
     email: string,
     pw: string,
     role = 'student',
-    full_name?: string,
-    group?: string
+    full_name?: string
   ) => {
     try {
       const orgType = org.orgTypeString
-      await svc.register(email, pw, role, full_name, group, orgType)
+      await svc.register(email, pw, role, full_name, orgType)
       toast.ok('Аккаунт создан')
       return true
     } catch (e: any) {

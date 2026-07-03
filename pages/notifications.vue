@@ -40,13 +40,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAssignmentsSvc } from '~/services/assignments'
-import { usePostsSvc } from '~/services/posts'
+import { useClassesSvc } from '~/services/classes'
 import { useNotificationsStore } from '~/stores/notifications.store'
 definePageMeta({ layout: 'default' })
 
 const auth = useAuthStore()
 const assignSvc = useAssignmentsSvc()
-const postsSvc = usePostsSvc()
+const classesSvc = useClassesSvc()
 const notifStore = useNotificationsStore()
 
 interface NotifItem {
@@ -107,15 +107,12 @@ onMounted(async () => {
   loadSeen()
   loading.value = true
   try {
-    const [allPosts, subs] = await Promise.all([
-      postsSvc.list(),
+    const [classes, subs] = await Promise.all([
+      classesSvc.list(),
       assignSvc.mySubmissions().catch(() => [] as any[]),
     ])
 
-    // Classes are stored as posts with type==='class'; their post IDs are the class_ids used in assignments
-    const classIds = allPosts
-      .filter((p: any) => { try { return JSON.parse(p.body).type === 'class' } catch { return false } })
-      .map((p: any) => p.id)
+    const classIds = classes.map((c: any) => c.id)
 
     const perClass = await Promise.all(
       classIds.map((id: number) => assignSvc.list(id).catch(() => [] as any[]))
