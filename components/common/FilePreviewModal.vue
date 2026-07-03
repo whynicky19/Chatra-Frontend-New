@@ -99,7 +99,9 @@ const load = async () => {
       const wb = XLSX.read(buf, { type: 'array' })
       const sheetName = wb.SheetNames[0]
       const sheet = wb.Sheets[sheetName]
-      sheetHtml.value = XLSX.utils.sheet_to_html(sheet, { editable: false })
+      // sheet_to_html вставляет содержимое ячеек как HTML — санитизируем перед v-html
+      const { default: DOMPurify } = await import('dompurify')
+      sheetHtml.value = DOMPurify.sanitize(XLSX.utils.sheet_to_html(sheet, { editable: false }))
     } else if (k === 'text') {
       textContent.value = await res.text()
     }

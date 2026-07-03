@@ -16,17 +16,18 @@ export const useAuthSvc = () => {
       return data as { access_token: string; refresh_token: string }
     },
 
+    // role больше не отправляется: бэкенд всегда регистрирует student,
+    // роли teacher/admin выдаёт только администратор
     register: async (
       email: string,
       pw: string,
-      role: string,
+      _role: string,
       full_name?: string,
       orgType = 'university'
     ) => {
       const { data } = await api.post('/auth/register', {
         email,
         password: pw,
-        role,
         full_name,
         org_type: orgType,
       })

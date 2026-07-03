@@ -193,7 +193,9 @@ const tips = [
   'Проверь мой текст',
 ]
 
+// Сначала экранируем HTML, потом markdown-замены — иначе XSS через v-html
 const fmt = (t: string) => t
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/```(\w+)?\n?([^`]*?)```/gs, '<pre class="code-bl"><code>$2</code></pre>')
   .replace(/`([^`]+)`/g, '<code class="ic">$1</code>')
   .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')

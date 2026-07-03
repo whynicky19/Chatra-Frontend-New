@@ -31,7 +31,7 @@
 
       <div class="frow">
         <label class="flabel">{{ t('login.password') }}</label>
-        <input v-model="pw" type="password" class="input" :placeholder="t('register.pw_placeholder')" required minlength="6"/>
+        <input v-model="pw" type="password" class="input" :placeholder="t('register.pw_placeholder')" required minlength="8"/>
         <div v-if="pw" class="str-row">
           <div class="str-bar"><div :style="{width:score+'%',background:scoreColor}" class="str-fill"></div></div>
           <span class="str-lbl">{{scoreLabel}}</span>
@@ -70,7 +70,7 @@ const emailTouched = ref(false)
 const emailOk = computed(() => /^[^\s@]+@(gmail\.com|icloud\.com)$/.test(email.value.trim()))
 const onEmailInput = () => { emailTouched.value = true }
 const fullnameOk = computed(() => fullname.value.trim().split(' ').filter(Boolean).length >= 2)
-const canSubmit = computed(() => fullnameOk.value && emailOk.value && pw.value.length >= 6)
+const canSubmit = computed(() => fullnameOk.value && emailOk.value && pw.value.length >= 8)
 
 const pwScore = computed(() => {
   const p = pw.value; if (!p) return 0; let s = 0

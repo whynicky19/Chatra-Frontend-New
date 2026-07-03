@@ -116,7 +116,9 @@ const uInit = computed(() => (auth.nickname || auth.user?.email || '?')[0]?.toUp
 const tips = ['Фото задания — прочитаю', 'Объясни тему кратко', 'Помоги с домашним заданием', 'Составь план урока', 'Проверь мой текст']
 const ts = (d: Date) => d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
+// Сначала экранируем HTML, потом markdown-замены — иначе XSS через v-html
 const fmt = (t: string) => t
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/```(\w+)?\n?([^`]*?)```/g, '<pre class="code-bl"><code>$2</code></pre>')
   .replace(/`([^`]+)`/g, '<code class="ic">$1</code>')
   .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
