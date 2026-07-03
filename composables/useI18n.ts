@@ -107,6 +107,10 @@ export const translations: Record<string, Record<Lang, string>> = {
   'classes.course': { ru: 'Курс', en: 'Course', kk: 'Курс' },
   'classes.left': { ru: 'покинуть', en: 'leave', kk: 'шығу' },
   'classes.left_ok': { ru: 'Вы покинули класс', en: 'You left the class', kk: 'Сіз сыныпты тастадыңыз' },
+  'classes.leave_title': { ru: 'Покинуть класс', en: 'Leave Class', kk: 'Сыныптан шығу' },
+  'classes.leave_confirm': { ru: 'Вы уверены, что хотите покинуть класс', en: 'Are you sure you want to leave class', kk: 'Сыныптан шыққыңыз келетініне сенімдісіз бе' },
+  'classes.leave_warn': { ru: 'Чтобы вернуться, потребуется код приглашения.', en: 'You will need the invite code to rejoin.', kk: 'Қайта кіру үшін шақыру коды қажет болады.' },
+  'classes.leave_btn': { ru: 'Покинуть', en: 'Leave', kk: 'Шығу' },
   'classes.joined': { ru: 'Вы вошли в класс:', en: 'You joined class:', kk: 'Сіз сыныпқа кірдіңіз:' },
   'classes.not_found': { ru: 'Класс с таким кодом не найден. Проверьте код.', en: 'Class with this code not found. Check the code.', kk: 'Бұл кодпен сынып табылмады. Кодты тексеріңіз.' },
 

@@ -86,7 +86,7 @@
                     <button v-if="!auth.isTeacher" class="card-action-btn" @click.stop="goClass(cls.id)">{{ getActionLabel(cls) }} →</button>
                     <button v-else class="card-action-btn" @click.stop="goClass(cls.id)">{{ lang === 'ru' ? 'Открыть курс' : lang === 'kk' ? 'Курсты ашу' : 'Open course' }} →</button>
                     <div class="card-controls">
-                      <button v-if="!auth.isTeacher" class="ctrl-btn" @click.stop="leaveClass(cls.id)" :title="t('classes.left')">
+                      <button v-if="!auth.isTeacher" class="ctrl-btn" @click.stop="confirmLeave(cls)" :title="t('classes.left')">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                       </button>
                       <button v-if="auth.isTeacher" class="ctrl-del ctrl-btn" @click.stop="confirmDelete(cls)">
@@ -205,6 +205,29 @@
         </div>
       </div>
     </div>
+
+    <!-- Leave confirm modal -->
+    <div v-if="leavingClass" class="overlay" @click.self="leavingClass=null">
+      <div class="modal anim-scale" style="max-width:400px">
+        <div class="modal-head">
+          <span class="modal-title">{{ t('classes.leave_title') }}</span>
+          <button class="btn btn-icon btn-ghost" @click="leavingClass=null">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="del-body">
+          <div class="del-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+          <p class="del-text">{{ t('classes.leave_confirm') }} <strong>«{{leavingClass.name}}»</strong>? {{ t('classes.leave_warn') }}</p>
+        </div>
+        <div class="modal-foot">
+          <button class="btn btn-white" @click="leavingClass=null">{{ t('general.cancel') }}</button>
+          <button class="btn btn-danger" :disabled="leaving" @click="doLeave">
+            <div v-if="leaving" class="spinner" style="width:13px;height:13px;border-width:2px;border-color:rgba(220,38,38,.3);border-top-color:#dc2626"></div>
+            <span v-else>{{ t('classes.leave_btn') }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -222,6 +245,7 @@ const { t, lang, setLang } = useI18n()
 const allClasses = ref<any[]>([]); const allPosts = ref<any[]>([]); const loading = ref(true); const showCreate = ref(false)
 const showJoin = ref(false); const joining = ref(false); const joinError = ref('')
 const deletingClass = ref<any>(null); const deleting = ref(false)
+const leavingClass = ref<any>(null); const leaving = ref(false)
 const editingClass = ref<any>(null)
 const editForm = ref({ title: '', description: '', teacher: '', cover_image: '' })
 const editSaving = ref(false)
@@ -336,9 +360,15 @@ const joinClass = async () => {
     joining.value = false
   }
 }
-const leaveClass = async (id: number) => {
+const confirmLeave = (cls: any) => { leavingClass.value = cls }
+const doLeave = async () => {
+  if (!leavingClass.value) return
+  const id = leavingClass.value.id
+  leaving.value = true
   try { await classesSvc.leave(id) } catch {}
-  joinedIds.value = joinedIds.value.filter(i => i !== id); saveJoined(); toast.ok(t('classes.left_ok'))
+  joinedIds.value = joinedIds.value.filter(i => i !== id); saveJoined()
+  leaving.value = false; leavingClass.value = null
+  toast.ok(t('classes.left_ok'))
 }
 const confirmDelete = (cls: any) => { deletingClass.value = cls }
 const doDelete = async () => {
