@@ -322,6 +322,18 @@
                 </div>
               </div>
 
+              <!-- Профиль одобренного аватара: даёт вкладке «лицо» вместо голой кнопки -->
+              <div v-if="isTeacher && myAvatar && myAvatar.status === 'approved'" class="avatar-profile-card">
+                <div class="apc-photo">
+                  <img v-if="myAvatar.photo_url" :src="myAvatar.photo_url" alt=""/>
+                  <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/></svg>
+                </div>
+                <div class="apc-info">
+                  <div class="apc-name">{{ myAvatar.display_name || (lang==='ru'?'Ваш аватар':'Your avatar') }}</div>
+                  <div class="apc-status"><span class="apc-dot"></span>{{ lang==='ru'?'Активен — читает лекции на английском':'Active — lectures in English' }}</div>
+                </div>
+              </div>
+
               <div v-if="isTeacher && myAvatar && myAvatar.status === 'approved' && myAvatar.voice_clone_warning" class="avatar-status-card pending">
                 <div class="asc-icon">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -1089,6 +1101,12 @@ onMounted(async () => {
 
 /* Avatar tab */
 .avatar-tab-actions{display:flex;gap:8px}
+.avatar-profile-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--r-lg);background:linear-gradient(120deg,var(--teal-l),transparent 70%);border:1px solid var(--border);margin-bottom:8px}
+.apc-photo{width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--teal-l);color:var(--teal);display:flex;align-items:center;justify-content:center;border:2px solid var(--teal)}
+.apc-photo img{width:100%;height:100%;object-fit:cover}
+.apc-name{font-size:14px;font-weight:800;color:var(--text1)}
+.apc-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3);margin-top:3px}
+.apc-dot{width:7px;height:7px;border-radius:50%;background:var(--green,#16a34a);flex-shrink:0}
 .avatar-status-card{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:var(--r-lg);margin-bottom:4px}
 .avatar-status-card.pending{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:#f59e0b}
 .avatar-status-card.rejected{background:var(--red-l);border:1px solid rgba(220,38,38,.2);color:var(--red)}
@@ -1269,7 +1287,9 @@ onMounted(async () => {
 .av-card-meta{display:flex;flex-wrap:wrap;gap:6px}
 .av-meta-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--text4);background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:3px 9px}
 .av-card-status{font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;display:inline-flex;align-self:flex-start}
-.av-card-status.status-progress{background:rgba(var(--teal-rgb),.1);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.2)}
+.av-card-status.status-progress{background:rgba(var(--teal-rgb),.1);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.2);animation:avpulse 1.8s ease-in-out infinite}
+@keyframes avpulse{0%,100%{opacity:1}50%{opacity:.55}}
+@media (prefers-reduced-motion: reduce){.av-card-status.status-progress{animation:none}}
 .av-card-status.status-pending{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
 .av-card-status.status-late{background:var(--red-l);color:var(--red);border:1px solid rgba(220,38,38,.2)}
 .av-card-actions{padding:0 16px 14px;display:flex;justify-content:space-between;align-items:center}

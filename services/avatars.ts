@@ -29,6 +29,8 @@ export interface AvatarLecture {
   created_by: number
   title: string
   source_filename?: string | null
+  source_file_url?: string | null
+  class_name?: string | null
   duration_minutes: number
   style: 'school' | 'university' | 'professional'
   auto_summary: boolean

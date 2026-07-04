@@ -297,6 +297,11 @@
                   Примерная стоимость: <strong>${{ l.estimated_cost_usd.toFixed(2) }}</strong>
                   ({{ l.estimated_chars.toLocaleString() }} символов озвучки)
                 </div>
+                <a v-if="l.source_file_url" :href="l.source_file_url" target="_blank" rel="noopener" class="lec-src-file">
+                  <span class="lec-src-badge">{{ (l.source_filename || '').toLowerCase().endsWith('.pdf') ? 'PDF' : 'PPTX' }}</span>
+                  <span class="lec-src-name">{{ l.source_filename || 'Презентация' }}</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
                 <div v-if="l.status === 'rejected' && l.rejection_reason" class="avatar-req-reason">Причина отклонения: {{ l.rejection_reason }}</div>
                 <div v-if="l.status === 'failed' && l.error_message" class="avatar-req-reason">Ошибка: {{ l.error_message }}</div>
               </div>
@@ -709,6 +714,10 @@ onMounted(async () => {
 .avatar-req-name{font-size:14px;font-weight:700;color:var(--text1)}
 .avatar-req-meta{font-size:12px;color:var(--text4)}
 .avatar-req-cost{font-size:12px;color:var(--text3)}
+.lec-src-file{display:inline-flex;align-items:center;gap:8px;margin-top:8px;padding:7px 12px;border-radius:10px;background:var(--teal-l);border:1px solid var(--border);color:var(--teal);font-size:12px;font-weight:600;text-decoration:none;max-width:100%;transition:filter .15s}
+.lec-src-file:hover{filter:brightness(0.96)}
+.lec-src-badge{font-size:9px;font-weight:800;letter-spacing:.5px;background:var(--teal);color:#fff;border-radius:5px;padding:2px 5px;flex-shrink:0}
+.lec-src-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .avatar-req-cost strong{color:var(--teal)}
 .avatar-req-reason{font-size:12px;color:var(--red);margin-top:2px}
 .avatar-req-warning{font-size:12px;color:#f59e0b;margin-top:2px}
