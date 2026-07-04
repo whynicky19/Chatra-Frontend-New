@@ -10,7 +10,12 @@
             <div class="chat-sub">{{ tt('Ваш учебный ассистент', 'Сіздің оқу көмекшіңіз', 'Your learning assistant') }}</div>
           </div>
         </div>
-        <div class="online-pill">● Онлайн</div>
+        <div class="chat-head-r">
+          <button v-if="msgs.length" class="clear-btn" :title="tt('Очистить чат', 'Чатты тазалау', 'Clear chat')" @click="clearChat">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+          <div class="online-pill">● Онлайн</div>
+        </div>
       </div>
 
       <!-- Messages area -->
@@ -197,6 +202,15 @@ const quick = async (prompt: string) => {
   await send()
 }
 
+const clearChat = () => {
+  if (!import.meta.client) return
+  if (window.confirm(tt('Очистить чат? История переписки будет удалена.',
+    'Чатты тазалау керек пе? Хат алмасу тарихы жойылады.',
+    'Clear the chat? The conversation history will be deleted.'))) {
+    ai.clear()
+  }
+}
+
 watch(() => ai.msgs.value.length, () => scroll())
 </script>
 
@@ -215,6 +229,9 @@ watch(() => ai.msgs.value.length, () => scroll())
 .chatra-glyph.xl { width: 44px; height: 44px }
 .chat-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 20px; font-weight: 800; color: var(--text1) }
 .chat-sub { font-size: 12px; color: var(--text4); margin-top: 1px }
+.chat-head-r { display: flex; align-items: center; gap: 10px }
+.clear-btn { width: 34px; height: 34px; border-radius: 10px; background: rgba(var(--teal-rgb),.08); color: var(--teal); display: flex; align-items: center; justify-content: center; transition: all .18s }
+.clear-btn:hover { background: rgba(var(--teal-rgb),.16) }
 .online-pill { font-size: 12px; font-weight: 600; color: var(--green); background: var(--green-l); padding: 5px 14px; border-radius: 100px; border: 1px solid rgba(74,222,128,.2) }
 
 /* Messages */

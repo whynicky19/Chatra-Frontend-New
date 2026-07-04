@@ -1,5 +1,5 @@
 
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useApi } from '~/services/api'
 import { useToast } from '~/composables/useToast'
 import { useAuthStore } from '~/stores/auth.store'
@@ -24,6 +24,50 @@ const fileToBase64 = (file: File): Promise<string> =>
 
 const isImageFile = (file: File) => file.type.startsWith('image/')
 
+// История чата: модульный стейт + localStorage. Ключ содержит id
+// пользователя — у каждого аккаунта своя история, и она переживает
+// выход из аккаунта (при logout ключи не удаляются).
+const LEGACY_CHAT_KEY = '_ai_chat_history'
+const chatKeyFor = (uid: number | null | undefined) => `_ai_chat_history_${uid ?? 'anon'}`
+const _msgs = ref<Msg[]>([])
+let _loadedKey: string | null = null
+let _nextId = 0
+
+const loadMsgsFor = (key: string, migrateLegacy: boolean) => {
+  if (_loadedKey === key || !import.meta.client) return
+  _loadedKey = key
+  _msgs.value = []
+  _nextId = 0
+  try {
+    let raw = localStorage.getItem(key)
+    // Миграция: история, сохранённая до разделения по аккаунтам,
+    // достаётся первому вошедшему пользователю (но не анониму).
+    if (!raw && migrateLegacy) {
+      const legacy = localStorage.getItem(LEGACY_CHAT_KEY)
+      if (legacy) {
+        raw = legacy
+        localStorage.setItem(key, legacy)
+        localStorage.removeItem(LEGACY_CHAT_KEY)
+      }
+    }
+    if (raw) {
+      const arr = JSON.parse(raw) as Msg[]
+      if (Array.isArray(arr)) {
+        _msgs.value = arr
+        _nextId = arr.reduce((m, x) => Math.max(m, x.id || 0), 0)
+      }
+    }
+  } catch {}
+}
+
+const persistMsgs = () => {
+  if (!import.meta.client || !_loadedKey) return
+  try {
+    // base64-превью изображений не сохраняем — иначе быстро упрёмся в квоту localStorage
+    localStorage.setItem(_loadedKey, JSON.stringify(_msgs.value.map(({ imagePreview, ...rest }) => rest)))
+  } catch {}
+}
+
 // Module-level reactive cache so count stays in sync across components
 const _aiCountCache = ref<Record<number, number>>({})
 
@@ -45,12 +89,15 @@ export const incrementAiCount = (userId: number) => {
 }
 
 export const useAi = () => {
-  const msgs = ref<Msg[]>([])
+  const msgs = _msgs
   const loading = ref(false)
   const api = useApi()
   const toast = useToast()
   const auth = useAuthStore()
-  let n = 0
+
+  // Подхватываем историю текущего аккаунта; при смене пользователя
+  // (в т.ч. после повторного входа) загружается его собственная.
+  watch(() => auth.user?.id, (id) => loadMsgsFor(chatKeyFor(id), id != null), { immediate: true })
 
   const isStudent = computed(() => auth.user?.role === 'student')
   const aiUnlimited = computed(() => !isStudent.value || !!auth.user?.ai_unlimited)
@@ -83,13 +130,14 @@ export const useAi = () => {
     }
 
     const um: Msg = {
-      id: ++n,
+      id: ++_nextId,
       role: 'user',
       text: displayText,
       imagePreview: imageBase64,
       ts: new Date(),
     }
     msgs.value = [...msgs.value, um]
+    persistMsgs()
     loading.value = true
 
     try {
@@ -131,8 +179,9 @@ export const useAi = () => {
 
       msgs.value = [
         ...msgs.value,
-        { id: ++n, role: 'assistant', text: data.content || '', ts: new Date() },
+        { id: ++_nextId, role: 'assistant', text: data.content || '', ts: new Date() },
       ]
+      persistMsgs()
 
       if (isStudent.value && auth.user) {
         writeAiCount(auth.user.id, readAiCount(auth.user.id) + 1)
@@ -140,12 +189,16 @@ export const useAi = () => {
     } catch (e: any) {
       toast.err('AI: ' + (e?.response?.data?.detail || e.message || 'ошибка'))
       msgs.value = msgs.value.filter(m => m.id !== um.id)
+      persistMsgs()
     } finally {
       loading.value = false
     }
   }
 
-  const clear = () => { msgs.value = [] }
+  const clear = () => {
+    msgs.value = []
+    if (import.meta.client && _loadedKey) { try { localStorage.removeItem(_loadedKey) } catch {} }
+  }
 
   return { msgs, loading, send, clear, aiCount, aiRemaining, aiUnlimited, aiLimitReached, AI_LIMIT }
 }

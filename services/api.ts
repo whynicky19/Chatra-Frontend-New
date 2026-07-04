@@ -27,7 +27,11 @@ export const useApi = (): AxiosInstance => {
   if (_api && _baseURL === base) return _api
 
   _baseURL = base
-  _api = axios.create({ baseURL: base })
+  _api = axios.create({
+    baseURL: base,
+    // ngrok free показывает браузеру HTML-заглушку без этого заголовка
+    headers: { 'ngrok-skip-browser-warning': 'true' },
+  })
 
   // ── Request interceptor ───────────────────────────────────────────────────
   // Get token lazily inside the interceptor — Pinia is always ready here
