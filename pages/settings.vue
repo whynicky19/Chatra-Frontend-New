@@ -260,6 +260,7 @@ onMounted(() => {
   .theme-btns { gap: 8px; }
   .theme-choice { padding: 14px 8px; font-size: 12px; min-height: 80px; }
   .toggle { min-height: 44px; min-width: 44px; justify-content: flex-end; }
+  .theme-toggle { min-height: 44px; min-width: 56px; justify-content: flex-end; }
 }
 /* Org switch card */
 .org-switch-card{display:flex;align-items:center;gap:16px;padding:18px 24px}

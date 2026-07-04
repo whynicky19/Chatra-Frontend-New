@@ -309,6 +309,7 @@ watch(() => ai.msgs.value.length, () => scroll())
   .chat-title { font-size: 16px; }
   .chat-sub { display: none; }
   .online-pill { font-size: 11px; padding: 4px 10px; }
+  .clear-btn { width: 44px; height: 44px; border-radius: 12px; }
   .chat-area { padding: 14px 12px; }
   .chat-msg { max-width: 90%; }
   .msg-bubble { padding: 10px 14px; font-size: 13px; }

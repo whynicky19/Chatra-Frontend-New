@@ -211,7 +211,7 @@ onBeforeUnmount(() => {
 .summary-body :deep(ul) { margin: 8px 0; padding-left: 20px; }
 .summary-body :deep(li) { margin: 4px 0; }
 @media (max-width: 768px) {
-  .player-sheet { max-height: 96vh; }
+  .player-sheet { max-height: 96vh; max-height: 96dvh; }
   .avatar-corner { width: 64px; height: 64px; bottom: 8px; right: 8px; }
   .controls-row { gap: 8px; }
 }
