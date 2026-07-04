@@ -1,14 +1,12 @@
 <template>
   <div class="org-shell">
-    <div class="org-content">
-      <!-- Logo -->
-      <div class="org-brand">
-        <img src="/logo.png" class="org-logo" alt="Chatra" />
-        <span class="org-brand-name">Chatra</span>
-      </div>
+    <!-- Мягкое цветное «дыхание» по углам: выбранный тип проступает сильнее -->
+    <div class="glow glow-uni" :class="{ strong: picked === 'university' }"></div>
+    <div class="glow glow-school" :class="{ strong: picked === 'school' }"></div>
 
+    <div class="org-content">
       <!-- Lang switcher -->
-      <div class="lang-row">
+      <div class="lang-row r0">
         <button v-for="l in langs" :key="l.code"
           :class="['lang-btn', { active: lang === l.code }]"
           @click="setLang(l.code as any)">
@@ -16,52 +14,74 @@
         </button>
       </div>
 
-      <!-- Card -->
-      <div class="org-card anim-scale">
-        <h1 class="org-title">{{ lang === 'ru' ? 'Добро пожаловать' : lang === 'kk' ? 'Қош келдіңіз' : 'Welcome' }}</h1>
-        <p class="org-sub">{{ lang === 'ru' ? 'Выберите тип вашей организации' : lang === 'kk' ? 'Ұйым түрін таңдаңыз' : 'Select your organization type' }}</p>
+      <!-- Логотип: «примеряет» цвет выбранной организации -->
+      <div class="org-brand r1">
+        <span class="logo-glow" :style="{ background: accent, opacity: picked ? .34 : .18 }"></span>
+        <span class="logo-mark" :style="{ backgroundColor: accent }"></span>
+      </div>
 
-        <div class="org-options">
-          <!-- University -->
-          <button class="org-option university" @click="select('university')">
-            <div class="org-option-icon university-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-              </svg>
-            </div>
-            <div class="org-option-body">
-              <div class="org-option-title">{{ lang === 'ru' ? 'Университет' : lang === 'kk' ? 'Университет' : 'University' }}</div>
-              <div class="org-option-sub">{{ lang === 'ru' ? 'Высшее образование' : lang === 'kk' ? 'Жоғары білім' : 'Higher education' }}</div>
-            </div>
-            <svg class="org-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </button>
+      <!-- Заголовок -->
+      <div class="org-head r2">
+        <h1 class="org-title">{{ tt('Добро пожаловать', 'Қош келдіңіз', 'Welcome') }}</h1>
+        <h1 class="org-title accent" :style="{ color: picked ? accent : 'var(--text1)' }">
+          {{ tt('в Chatra', 'Chatra-ға', 'to Chatra') }}
+        </h1>
+        <p class="org-sub">{{ tt('Выберите тип организации — оформление настроится под него.',
+          'Ұйым түрін таңдаңыз — безендіру соған бейімделеді.',
+          'Choose your organization type — the theme will adapt to it.') }}</p>
+      </div>
 
-          <!-- School -->
-          <button class="org-option school" @click="select('school')">
-            <div class="org-option-icon school-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
-                <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
-                <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
-              </svg>
-            </div>
-            <div class="org-option-body">
-              <div class="org-option-title">{{ lang === 'ru' ? 'Школа' : lang === 'kk' ? 'Мектеп' : 'School' }}</div>
-              <div class="org-option-sub">{{ lang === 'ru' ? 'Среднее образование' : lang === 'kk' ? 'Орта білім' : 'Secondary education' }}</div>
-            </div>
-            <svg class="org-arrow school-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 18l6-6-6-6"/>
+      <!-- Карточки -->
+      <div class="org-options">
+        <button class="org-option r3" :class="{ selected: picked === 'university' }"
+          :style="picked === 'university' ? selStyle(TEAL) : {}"
+          @click="pick('university')">
+          <span class="org-option-icon uni-tile"><span class="uni-glyph"></span></span>
+          <span class="org-option-body">
+            <span class="org-option-title">{{ tt('Университет', 'Университет', 'University') }}</span>
+            <span class="org-option-sub">{{ tt('Высшее образование', 'Жоғары білім', 'Higher education') }}</span>
+          </span>
+          <span class="radio" :class="{ on: picked === 'university' }" :style="picked === 'university' ? { background: TEAL, borderColor: TEAL } : {}">
+            <svg v-if="picked === 'university'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+        </button>
+
+        <button class="org-option r4" :class="{ selected: picked === 'school' }"
+          :style="picked === 'school' ? selStyle(AMBER) : {}"
+          @click="pick('school')">
+          <span class="org-option-icon school-tile">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+              <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
             </svg>
-          </button>
-        </div>
+          </span>
+          <span class="org-option-body">
+            <span class="org-option-title">{{ tt('Школа', 'Мектеп', 'School') }}</span>
+            <span class="org-option-sub">{{ tt('Среднее образование', 'Орта білім', 'Secondary education') }}</span>
+          </span>
+          <span class="radio" :class="{ on: picked === 'school' }" :style="picked === 'school' ? { background: AMBER, borderColor: AMBER } : {}">
+            <svg v-if="picked === 'school'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+        </button>
+      </div>
+
+      <!-- Продолжить -->
+      <div class="org-footer r5">
+        <button class="continue-btn" :disabled="!picked"
+          :style="picked ? { background: accent, boxShadow: `0 7px 22px -4px ${accent}55` } : {}"
+          @click="proceed">
+          {{ tt('Продолжить', 'Жалғастыру', 'Continue') }}
+        </button>
+        <p class="org-note">{{ tt('Тип организации можно изменить на экране входа',
+          'Ұйым түрін кіру бетінде өзгертуге болады',
+          'You can change this on the sign-in screen') }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useOrgStore } from '~/stores/org.store'
 import { useI18n } from '~/composables/useI18n'
 
@@ -70,198 +90,195 @@ definePageMeta({ layout: false })
 const org = useOrgStore()
 const { lang, setLang } = useI18n()
 
+const TEAL = '#00B1C9'
+const AMBER = '#F59E0B'
+
 const langs = [
   { code: 'ru', label: 'RU' },
   { code: 'en', label: 'EN' },
   { code: 'kk', label: 'KZ' },
 ]
 
-const select = (type: 'university' | 'school') => {
-  org.select(type)
+const picked = ref<'university' | 'school' | null>(null)
+const accent = computed(() => picked.value === 'school' ? AMBER : TEAL)
+
+const tt = (ru: string, kk: string, en: string) =>
+  lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
+
+const selStyle = (c: string) => ({
+  borderColor: c,
+  boxShadow: `0 7px 22px -4px ${c}44`,
+})
+
+const pick = (type: 'university' | 'school') => { picked.value = type }
+
+const proceed = () => {
+  if (!picked.value) return
+  org.select(picked.value)
   if (import.meta.client) window.location.href = '/login'
 }
 </script>
 
 <style scoped>
 .org-shell {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1E293B, #0F172A);
+  min-height: 100vh; min-height: 100dvh;
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
 }
-.org-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 32px 20px;
-  width: 100%;
-  max-width: 480px;
-}
 
-/* Brand */
-.org-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 28px;
+/* Угловые свечения */
+.glow {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: .07;
+  transition: opacity .5s ease;
 }
-.org-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-}
-.org-brand-name {
-  font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;
-  font-size: 26px;
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: -.04em;
+html.dark .glow { opacity: .1; }
+.glow.strong { opacity: .16 !important; }
+.glow-uni    { background: radial-gradient(circle at 0% 0%,   #00B1C9 0%, transparent 55%); }
+.glow-school { background: radial-gradient(circle at 100% 100%, #F59E0B 0%, transparent 55%); }
+
+.org-content {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 32px 24px;
+  width: 100%; max-width: 440px;
 }
 
 /* Lang row */
 .lang-row {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 28px;
-  background: rgba(255,255,255,.08);
+  display: flex; gap: 4px;
+  margin-bottom: 30px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 100px;
   padding: 3px;
+  box-shadow: var(--sh-xs);
 }
 .lang-btn {
-  padding: 5px 14px;
-  border-radius: 100px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .05em;
-  cursor: pointer;
-  transition: all .15s;
-  background: none;
-  border: none;
-  color: rgba(255,255,255,.5);
-  font-family: inherit;
+  padding: 5px 14px; border-radius: 100px;
+  font-size: 12px; font-weight: 700; letter-spacing: .05em;
+  transition: all .18s;
+  color: var(--text4);
 }
-.lang-btn:hover { color: rgba(255,255,255,.8); }
-.lang-btn.active { background: rgba(255,255,255,.15); color: #fff; }
+.lang-btn:hover { color: var(--text2); }
+.lang-btn.active { background: var(--teal); color: #fff; }
 
-/* Card */
-.org-card {
-  width: 100%;
-  background: rgba(255,255,255,.06);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 28px;
-  padding: 36px 32px;
+/* Логотип: PNG как маска, чтобы перекрашивать в цвет выбора */
+.org-brand { position: relative; width: 104px; height: 104px; margin-bottom: 24px; }
+.logo-glow {
+  position: absolute; left: 50%; top: 50%;
+  width: 64px; height: 64px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  filter: blur(30px);
+  transition: background .45s ease, opacity .45s ease;
 }
+.logo-mark {
+  position: absolute; inset: 0;
+  -webkit-mask: url('/logo-icon.png') center / contain no-repeat;
+  mask: url('/logo-icon.png') center / contain no-repeat;
+  transition: background-color .45s ease;
+}
+
+/* Заголовок */
+.org-head { text-align: center; margin-bottom: 32px; }
 .org-title {
-  font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;
-  font-size: 26px;
-  font-weight: 900;
-  color: #fff;
-  text-align: center;
-  margin-bottom: 8px;
+  font-size: 30px; font-weight: 800;
+  letter-spacing: -.02em; line-height: 1.12;
+  color: var(--text1);
 }
+.org-title.accent { transition: color .45s ease; }
 .org-sub {
-  font-size: 14px;
-  color: rgba(255,255,255,.55);
-  text-align: center;
-  margin-bottom: 32px;
+  margin-top: 10px;
+  font-size: 14.5px; color: var(--text4); line-height: 1.45;
+  max-width: 320px; margin-left: auto; margin-right: auto;
 }
 
-/* Options */
-.org-options {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+/* Карточки */
+.org-options { display: flex; flex-direction: column; gap: 13px; width: 100%; }
 .org-option {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 20px 22px;
+  display: flex; align-items: center; gap: 14px;
+  padding: 15px 16px;
   border-radius: 20px;
-  border: 1.5px solid transparent;
-  cursor: pointer;
-  transition: all .22s;
+  border: 2px solid transparent;
+  background: var(--surface);
+  box-shadow: var(--sh-sm);
   text-align: left;
-  font-family: inherit;
-  background: rgba(255,255,255,.06);
+  transition: transform .16s ease, border-color .22s ease, box-shadow .22s ease, background .22s ease;
 }
-.university {
-  border-color: rgba(0,177,201,.3);
-}
-.university:hover {
-  background: rgba(0,177,201,.1);
-  border-color: rgba(0,177,201,.6);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0,177,201,.2);
-}
-.school {
-  border-color: rgba(245,158,11,.3);
-}
-.school:hover {
-  background: rgba(245,158,11,.1);
-  border-color: rgba(245,158,11,.6);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(245,158,11,.2);
-}
+.org-option:hover { transform: translateY(-1px); }
+.org-option:active { transform: scale(.978); }
 
 .org-option-icon {
-  width: 54px;
-  height: 54px;
+  width: 54px; height: 54px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.uni-tile    { background: linear-gradient(135deg, #006475, #009AAF); }
+.school-tile { background: linear-gradient(135deg, #B45309, #F59E0B); }
+.uni-glyph {
+  width: 28px; height: 28px; display: block;
+  background: #fff;
+  -webkit-mask: url('/uni-logo.png') center / contain no-repeat;
+  mask: url('/uni-logo.png') center / contain no-repeat;
+}
+
+.org-option-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.org-option-title { font-size: 16.5px; font-weight: 700; letter-spacing: -.01em; color: var(--text1); }
+.org-option-sub   { font-size: 13px; color: var(--text4); margin-top: 2px; }
+
+/* Радио-отметка в стиле списков iOS */
+.radio {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 1.6px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all .22s ease;
+}
+
+/* Продолжить */
+.org-footer { width: 100%; margin-top: 26px; display: flex; flex-direction: column; align-items: center; }
+.continue-btn {
+  width: 100%; height: 52px;
   border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  background: var(--surface2);
+  color: var(--text4);
+  font-size: 16px; font-weight: 700;
+  transition: all .3s ease;
 }
-.university-icon {
-  background: linear-gradient(135deg, #006475, #009AAF);
-  box-shadow: 0 4px 16px rgba(0,177,201,.35);
-}
-.school-icon {
-  background: linear-gradient(135deg, #B45309, #F59E0B);
-  box-shadow: 0 4px 16px rgba(245,158,11,.35);
-}
+.continue-btn:not(:disabled) { color: #fff; }
+.continue-btn:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.05); }
+.continue-btn:not(:disabled):active { transform: scale(.98); }
+.continue-btn:disabled { cursor: not-allowed; }
+.org-note { margin-top: 12px; font-size: 12px; color: var(--text4); text-align: center; }
 
-.org-option-body {
-  flex: 1;
-  min-width: 0;
+/* Ступенчатое появление */
+.r0, .r1, .r2, .r3, .r4, .r5 { animation: rise .5s cubic-bezier(.16,1,.3,1) both; }
+.r1 { animation-delay: .05s; }
+.r2 { animation-delay: .12s; }
+.r3 { animation-delay: .2s; }
+.r4 { animation-delay: .27s; }
+.r5 { animation-delay: .35s; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.org-option-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 3px;
-}
-.org-option-sub {
-  font-size: 13px;
-  color: rgba(255,255,255,.5);
-}
-.org-arrow {
-  color: rgba(0,177,201,.6);
-  flex-shrink: 0;
-}
-.school-arrow {
-  color: rgba(245,158,11,.6);
-}
-
-.anim-scale {
-  animation: scaleIn .4s cubic-bezier(.34,1.56,.64,1) both;
-}
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(.92) translateY(12px); }
-  to   { opacity: 1; transform: scale(1)  translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .r0, .r1, .r2, .r3, .r4, .r5 { animation: none; }
+  .glow, .logo-mark, .logo-glow, .org-title.accent, .org-option, .radio, .continue-btn { transition: none; }
 }
 
 @media (max-width: 480px) {
-  .org-card { padding: 24px 18px; border-radius: 24px; }
-  .org-title { font-size: 22px; }
-  .org-option { padding: 16px 16px; gap: 14px; }
-  .org-option-icon { width: 46px; height: 46px; border-radius: 13px; }
+  .org-content { padding: 24px 18px; }
+  .org-title { font-size: 26px; }
+  .org-brand { width: 88px; height: 88px; margin-bottom: 20px; }
+  .org-option { padding: 13px 14px; }
+  .org-option-icon { width: 48px; height: 48px; border-radius: 14px; }
+  .uni-glyph { width: 24px; height: 24px; }
 }
 </style>

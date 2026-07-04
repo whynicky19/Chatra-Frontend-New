@@ -33,7 +33,7 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         {{ errorMsg }}
       </div>
-      <button type="submit" class="btn btn-teal w-full btn-lg" :disabled="loading" style="margin-top:6px">
+      <button type="submit" class="btn btn-teal w-full btn-lg auth-submit" :disabled="loading" style="margin-top:6px">
         <div v-if="loading" class="spinner" style="width:15px;height:15px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
         <span v-else>{{ t('login.submit') }}</span>
       </button>
@@ -63,25 +63,27 @@ const sub = async () => {
 }
 </script>
 <style scoped>
-.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-2xl);padding:36px;width:100%;max-width:420px;margin:0 auto;box-shadow:var(--sh-lg)}
-.auth-title{font-size:22px;font-weight:800;margin-bottom:4px;color:var(--text1)}
-.auth-sub{font-size:14px;color:var(--text3);margin-bottom:26px}
+/* Без карточки — контент прямо на фоне, как в приложении */
+.auth-card{background:transparent;padding:0 8px;width:100%;max-width:400px;margin:0 auto}
+.auth-title{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-bottom:6px;color:var(--text1);text-align:center}
+.auth-sub{font-size:15px;color:var(--text4);margin-bottom:28px;text-align:center;line-height:1.4}
 .auth-form{display:flex;flex-direction:column}
 .frow{margin-bottom:14px}
 .flabel{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.04em;display:block;margin-bottom:6px}
-.input{background:var(--input-bg)!important;border-color:var(--border)!important;color:var(--text1)!important}
-.input:focus{border-color:rgba(var(--teal-rgb),0.5)!important;box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.1)!important}
+.input{background:var(--surface)!important;border:none!important;border-radius:16px!important;padding:13px 18px!important;box-shadow:var(--sh-xs);color:var(--text1)!important}
+.input:focus{box-shadow:0 0 0 2px var(--teal), var(--sh-xs)!important}
 .input::placeholder{color:var(--text4)!important}
 .pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text4);background:none;border:none;cursor:pointer;padding:4px;transition:color .15s}
 .pw-eye:hover{color:var(--teal)}
 .auth-link-row{text-align:center;font-size:13px;color:var(--text3);margin-top:20px}
 .auth-link{color:var(--teal);font-weight:600;transition:color .15s}
 .auth-link:hover{color:var(--teal-h)}
-.login-error{display:flex;align-items:center;gap:7px;padding:10px 14px;background:var(--red-l);border:1px solid var(--red);border-radius:var(--r-md);font-size:13px;font-weight:500;color:var(--red);margin-bottom:6px}
+.login-error{display:flex;align-items:center;gap:7px;padding:10px 14px;background:var(--red-l);border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px}
 .input-err{border-color:var(--red)!important;background:var(--red-l)!important}
 .input-err:focus{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(220,38,38,0.12)!important}
 /* Org badge */
-.org-badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.auth-submit{height:52px;border-radius:16px;font-size:15px;font-weight:700}
+.org-badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .org-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;padding:4px 10px;border-radius:100px}
 .org-badge.university{background:rgba(var(--teal-rgb),.1);color:var(--teal-d);border:1px solid rgba(var(--teal-rgb),.25)}
 .org-badge.school{background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.25)}
@@ -89,8 +91,8 @@ const sub = async () => {
 .org-switch-btn:hover{color:var(--teal)}
 
 @media (max-width:768px) {
-  .auth-card { padding: 20px 14px 24px; border-radius: var(--r-xl); width: 100%; max-width: 100%; box-shadow: none; border: 1px solid var(--border); }
-  .auth-title { font-size: 20px; }
+  .auth-card { padding: 0 4px; width: 100%; max-width: 100%; }
+  .auth-title { font-size: 24px; }
   .auth-sub { margin-bottom: 18px; }
   .frow { margin-bottom: 12px; }
   .input { font-size: 16px !important; }
@@ -98,6 +100,6 @@ const sub = async () => {
   .pw-eye { min-width: 44px; min-height: 44px; right: 0; }
 }
 @media (max-width:480px) {
-  .auth-card { padding: 20px 12px 24px; }
+  .auth-card { padding: 0 2px; }
 }
 </style>

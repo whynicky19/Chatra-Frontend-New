@@ -2,7 +2,8 @@
   <div class="auth-shell">
     <div class="auth-content">
       <div class="auth-brand">
-        <img src="/logo.png" class="auth-logo-img" alt="Chatra"/>
+        <span class="auth-logo-glow"></span>
+        <span class="auth-logo-mark" role="img" aria-label="Chatra"></span>
       </div>
       <div class="lang-switcher">
         <button v-for="l in langs" :key="l.code" @click="setLang(l.code)" :class="['lang-btn', { active: lang === l.code }]">
@@ -46,6 +47,13 @@ onUnmounted(() => {
   cursor: default;
   background: var(--bg);
 }
+.auth-shell::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 0% 0%, rgba(var(--teal-rgb), .09) 0%, transparent 55%),
+              radial-gradient(circle at 100% 100%, rgba(var(--teal-rgb), .05) 0%, transparent 55%);
+}
 .auth-content {
   position: relative; z-index: 10;
   display: flex; flex-direction: column; align-items: center;
@@ -64,8 +72,24 @@ onUnmounted(() => {
 }
 .auth-brand {
   flex-shrink: 0;
+  position: relative;
+  width: 150px; height: 150px;
 }
-.auth-logo-img { width: 160px; height: auto; object-fit: contain; display: block; }
+.auth-logo-glow {
+  position: absolute; left: 50%; top: 50%;
+  width: 70px; height: 70px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--teal);
+  opacity: .22;
+  filter: blur(32px);
+}
+.auth-logo-mark {
+  position: absolute; inset: 0;
+  background: var(--teal);
+  -webkit-mask: url('/logo.png') center / contain no-repeat;
+  mask: url('/logo.png') center / contain no-repeat;
+}
 .lang-switcher {
   display: flex; align-items: center; gap: 4px;
   background: var(--surface); border: 1px solid var(--border); border-radius: 30px;
@@ -84,11 +108,11 @@ onUnmounted(() => {
 @media (max-width:768px) {
   .auth-shell { cursor: default; }
   .auth-content { padding: 14px 12px; gap: 14px; max-width: 100%; }
-  .auth-logo-img { width: 110px; }
+  .auth-brand { width: 110px; height: 110px; }
   .lang-btn { padding: 5px 12px; font-size: 11px; }
 }
 @media (max-width:480px) {
   .auth-content { padding: 10px; gap: 10px; }
-  .auth-logo-img { width: 90px; }
+  .auth-brand { width: 92px; height: 92px; }
 }
 </style>

@@ -38,7 +38,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-teal w-full btn-lg" :disabled="loading||!canSubmit">
+      <button type="submit" class="btn btn-teal w-full btn-lg auth-submit" :disabled="loading||!canSubmit">
         <div v-if="loading" class="spinner" style="width:15px;height:15px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
         <span v-else>{{ t('register.submit') }}</span>
       </button>
@@ -95,9 +95,10 @@ const sub = async () => {
 </script>
 
 <style scoped>
-.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-2xl);padding:32px;width:100%;max-width:420px;margin:0 auto;box-shadow:var(--sh-lg)}
-.auth-title{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px;color:var(--text1)}
-.auth-sub{font-size:14px;color:var(--text3);margin-bottom:24px}
+/* Без карточки — контент прямо на фоне, как в приложении */
+.auth-card{background:transparent;padding:0 8px;width:100%;max-width:400px;margin:0 auto}
+.auth-title{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-bottom:6px;color:var(--text1);text-align:center}
+.auth-sub{font-size:15px;color:var(--text4);margin-bottom:26px;text-align:center;line-height:1.4}
 .auth-form{display:flex;flex-direction:column;gap:0}
 .nick-hint{font-size:12px;font-weight:500;margin-top:4px}
 .nick-hint.ok{color:var(--green)}.nick-hint.err{color:var(--red)}
@@ -106,12 +107,13 @@ const sub = async () => {
 .str-fill{height:100%;border-radius:3px;transition:all .3s}
 .str-lbl{font-size:11px;color:var(--text4)}
 .auth-link-row{text-align:center;font-size:13px;color:var(--text3);margin-top:20px}
-.input{background:var(--input-bg)!important;border-color:var(--border)!important;color:var(--text1)!important}
-.input:focus{border-color:rgba(var(--teal-rgb),0.5)!important;box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.1)!important}
+.input{background:var(--surface)!important;border:none!important;border-radius:16px!important;padding:13px 18px!important;box-shadow:var(--sh-xs);color:var(--text1)!important}
+.input:focus{box-shadow:0 0 0 2px var(--teal), var(--sh-xs)!important}
 .input::placeholder{color:var(--text4)!important}
 
 /* Org badge */
-.org-badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.auth-submit{height:52px;border-radius:16px;font-size:15px;font-weight:700;margin-top:6px}
+.org-badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .org-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;padding:4px 10px;border-radius:100px}
 .org-badge.university{background:rgba(var(--teal-rgb),.1);color:var(--teal-d);border:1px solid rgba(var(--teal-rgb),.25)}
 .org-badge.school{background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.25)}
@@ -119,14 +121,14 @@ const sub = async () => {
 .org-switch-btn:hover{color:var(--teal)}
 
 @media (max-width:768px) {
-  .auth-card { padding: 20px 14px 24px; border-radius: var(--r-xl); max-width: 100%; width: 100%; box-shadow: none; border: 1px solid var(--border); }
-  .auth-title { font-size: 18px; }
+  .auth-card { padding: 0 4px; max-width: 100%; width: 100%; }
+  .auth-title { font-size: 24px; }
   .auth-sub { margin-bottom: 16px; font-size: 13px; }
   .input { font-size: 16px !important; }
   .btn-lg { min-height: 50px; font-size: 15px; }
   .frow { margin-bottom: 12px; }
 }
 @media (max-width:480px) {
-  .auth-card { padding: 16px 12px 20px; }
+  .auth-card { padding: 0 2px; }
 }
 </style>

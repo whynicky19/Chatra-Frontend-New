@@ -4,30 +4,10 @@
       <!-- Header -->
       <div class="chat-head">
         <div class="chat-head-l">
-          <div class="ai-logo-wrap">
-            <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
-              <circle cx="20" cy="20" r="7" stroke="url(#nh1)" stroke-width="2.5" fill="none"/>
-              <circle cx="8" cy="8" r="3" fill="url(#nh2)" opacity="0.8"/>
-              <circle cx="32" cy="8" r="3" fill="url(#nh2)" opacity="0.8"/>
-              <circle cx="8" cy="32" r="3" fill="url(#nh2)" opacity="0.8"/>
-              <circle cx="32" cy="32" r="3" fill="url(#nh2)" opacity="0.8"/>
-              <line x1="8" y1="8" x2="14" y2="14" stroke="url(#nh1)" stroke-width="1.5" opacity="0.6"/>
-              <line x1="32" y1="8" x2="26" y2="14" stroke="url(#nh1)" stroke-width="1.5" opacity="0.6"/>
-              <line x1="8" y1="32" x2="14" y2="26" stroke="url(#nh1)" stroke-width="1.5" opacity="0.6"/>
-              <line x1="32" y1="32" x2="26" y2="26" stroke="url(#nh1)" stroke-width="1.5" opacity="0.6"/>
-              <defs>
-                <linearGradient id="nh1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#4dd6e8"/><stop offset="1" stop-color="#06b6d4"/>
-                </linearGradient>
-                <linearGradient id="nh2" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#99e6f0"/><stop offset="1" stop-color="#67e8f9"/>
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
+          <div class="ai-logo-wrap"><span class="chatra-glyph lg"></span></div>
           <div>
-            <div class="chat-title">AI <span style="color:var(--teal)">Ассистент</span></div>
-            <div class="chat-sub">Спросите что угодно</div>
+            <div class="chat-title">Chatra <span style="color:var(--teal)">AI</span></div>
+            <div class="chat-sub">{{ tt('Ваш учебный ассистент', 'Сіздің оқу көмекшіңіз', 'Your learning assistant') }}</div>
           </div>
         </div>
         <div class="online-pill">● Онлайн</div>
@@ -36,55 +16,25 @@
       <!-- Messages area -->
       <div ref="area" class="chat-area">
         <div v-if="!msgs.length" class="chat-empty-state">
-          <div class="ai-empty-logo">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <circle cx="20" cy="20" r="8" stroke="url(#ee1)" stroke-width="2" fill="none"/>
-              <circle cx="7" cy="7" r="3.5" fill="url(#ee2)" opacity="0.9"/>
-              <circle cx="33" cy="7" r="3.5" fill="url(#ee2)" opacity="0.9"/>
-              <circle cx="7" cy="33" r="3.5" fill="url(#ee2)" opacity="0.9"/>
-              <circle cx="33" cy="33" r="3.5" fill="url(#ee2)" opacity="0.9"/>
-              <circle cx="20" cy="4" r="2.5" fill="url(#ee2)" opacity="0.7"/>
-              <circle cx="36" cy="20" r="2.5" fill="url(#ee2)" opacity="0.7"/>
-              <circle cx="20" cy="36" r="2.5" fill="url(#ee2)" opacity="0.7"/>
-              <circle cx="4" cy="20" r="2.5" fill="url(#ee2)" opacity="0.7"/>
-              <line x1="7" y1="7" x2="13" y2="13" stroke="url(#ee1)" stroke-width="1.2" opacity="0.5"/>
-              <line x1="33" y1="7" x2="27" y2="13" stroke="url(#ee1)" stroke-width="1.2" opacity="0.5"/>
-              <line x1="7" y1="33" x2="13" y2="27" stroke="url(#ee1)" stroke-width="1.2" opacity="0.5"/>
-              <line x1="33" y1="33" x2="27" y2="27" stroke="url(#ee1)" stroke-width="1.2" opacity="0.5"/>
-              <line x1="20" y1="4" x2="20" y2="12" stroke="url(#ee1)" stroke-width="1.2" opacity="0.5"/>
-              <line x1="36" y1="20" x2="28" y2="20" stroke="url(#ee1)" stroke-width="1.2" opacity="0.5"/>
-              <line x1="20" y1="36" x2="20" y2="28" stroke="url(#ee1)" stroke-width="1.2" opacity="0.5"/>
-              <line x1="4" y1="20" x2="12" y2="20" stroke="url(#ee1)" stroke-width="1.2" opacity="0.5"/>
-              <defs>
-                <linearGradient id="ee1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#4dd6e8"/><stop offset="1" stop-color="#06b6d4"/>
-                </linearGradient>
-                <linearGradient id="ee2" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#99e6f0"/><stop offset="1" stop-color="#67e8f9"/>
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-          <p class="empty-hint">Ваш личный ИИ</p>
-          <div class="empty-chips">
-            <button v-for="t in tips" :key="t" class="e-chip" @click="quick(t)">{{t}}</button>
+          <div class="ai-empty-logo"><span class="chatra-glyph xl"></span></div>
+          <div class="empty-title">Chatra AI</div>
+          <p class="empty-hint">{{ tt('Спросите что угодно об учёбе — объясню, помогу, проверю',
+            'Оқу туралы кез келген нәрсе сұраңыз — түсіндіремін, көмектесемін, тексеремін',
+            "Ask anything about your studies — I'll explain, help, and review") }}</p>
+          <div class="tip-grid">
+            <button v-for="(tip, i) in tipCards" :key="i" class="tip-card" :style="{ animationDelay: (i * 60) + 'ms' }" @click="quick(tip.prompt)">
+              <span class="tip-icon" v-html="tip.icon"></span>
+              <span class="tip-title">{{ tip.title }}</span>
+              <span class="tip-desc">{{ tip.desc }}</span>
+            </button>
           </div>
         </div>
 
         <div v-else class="chat-msgs">
           <div v-for="m in msgs" :key="m.id" :class="['chat-msg', m.role]">
             <div v-if="m.role==='assistant'" class="msg-avatar">
-              <div class="ai-av-icon">
-                <svg width="13" height="13" viewBox="0 0 40 40" fill="none">
-                  <circle cx="20" cy="20" r="8" stroke="url(#am1)" stroke-width="3" fill="none"/>
-                  <circle cx="8" cy="8" r="3" fill="url(#am1)"/>
-                  <circle cx="32" cy="8" r="3" fill="url(#am1)"/>
-                  <circle cx="8" cy="32" r="3" fill="url(#am1)"/>
-                  <circle cx="32" cy="32" r="3" fill="url(#am1)"/>
-                  <defs><linearGradient id="am1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#4dd6e8"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
-                </svg>
-              </div>
-              <span class="msg-sender">AI</span>
+              <div class="ai-av-icon"><span class="chatra-glyph sm"></span></div>
+              <span class="msg-sender">Chatra AI</span>
             </div>
             <!-- Image preview if user sent image -->
             <img v-if="m.imagePreview" :src="m.imagePreview" class="msg-img-preview" alt="uploaded"/>
@@ -94,17 +44,8 @@
           <!-- Typing indicator -->
           <div v-if="loading" class="chat-msg assistant">
             <div class="msg-avatar">
-              <div class="ai-av-icon">
-                <svg width="13" height="13" viewBox="0 0 40 40" fill="none">
-                  <circle cx="20" cy="20" r="8" stroke="url(#at1)" stroke-width="3" fill="none"/>
-                  <circle cx="8" cy="8" r="3" fill="url(#at1)"/>
-                  <circle cx="32" cy="8" r="3" fill="url(#at1)"/>
-                  <circle cx="8" cy="32" r="3" fill="url(#at1)"/>
-                  <circle cx="32" cy="32" r="3" fill="url(#at1)"/>
-                  <defs><linearGradient id="at1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#4dd6e8"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
-                </svg>
-              </div>
-              <span class="msg-sender">AI</span>
+              <div class="ai-av-icon"><span class="chatra-glyph sm"></span></div>
+              <span class="msg-sender">Chatra AI</span>
             </div>
             <div class="msg-bubble assistant">
               <div class="typing"><span></span><span></span><span></span></div>
@@ -185,13 +126,28 @@ const txt = ref('')
 const pendingFile = ref<File | null>(null)
 const pendingPreview = ref<string | null>(null)
 
-const tips = [
-  'Давай пообщаемся',
-  'Объясни тему кратко',
-  'Помоги с кодом',
-  'Составь план урока',
-  'Проверь мой текст',
-]
+const tt = (ru: string, kk: string, en: string) =>
+  lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
+
+const icoBook = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>'
+const icoBulb = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18h6M10 22h4M12 2a7 7 0 00-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0012 2z"/></svg>'
+const icoPen = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>'
+const icoWarn = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+
+const tipCards = computed(() => [
+  { icon: icoBook, title: tt('Объяснить тему', 'Тақырыпты түсіндір', 'Explain a topic'),
+    desc: tt('Разбери сложную концепцию простыми словами', 'Күрделі тұжырымды қарапайым сөздермен', 'Break down a complex concept in simple words'),
+    prompt: tt('Объясни тему простыми словами', 'Тақырыпты қарапайым сөздермен түсіндір', 'Explain a topic in simple words') },
+  { icon: icoBulb, title: tt('Разобрать концепции', 'Тұжырымдарды ашу', 'Break down concepts'),
+    desc: tt('Помоги понять разницу между подходами', 'Тәсілдер арасындағы айырмашылықты түсін', 'Understand the difference between approaches'),
+    prompt: tt('Помоги понять разницу между подходами', 'Тәсілдер арасындағы айырмашылықты түсінуге көмектес', 'Help me understand the difference between approaches') },
+  { icon: icoPen, title: tt('Помочь с заданием', 'Тапсырмаға көмек', 'Help with a task'),
+    desc: tt('Подскажи, с чего начать решение', 'Шешімді қайдан бастау керектігін айт', 'Tell me where to start the solution'),
+    prompt: tt('Подскажи, с чего начать решение задания', 'Тапсырманы шешуді қайдан бастау керектігін айт', 'Tell me where to start solving the task') },
+  { icon: icoWarn, title: tt('Найти ошибки', 'Қателерді тап', 'Find mistakes'),
+    desc: tt('Проверь мой код и укажи на проблемы', 'Кодымды тексеріп, мәселелерді көрсет', 'Review my code and point out issues'),
+    prompt: tt('Проверь мой код и укажи на ошибки', 'Кодымды тексеріп, қателерді көрсет', 'Review my code and point out mistakes') },
+])
 
 // Сначала экранируем HTML, потом markdown-замены — иначе XSS через v-html
 const fmt = (t: string) => t
@@ -236,9 +192,8 @@ const send = async () => {
   scroll()
 }
 
-const quick = async (t: string) => {
-  // Strip emoji prefix for chip tips
-  txt.value = t.replace(/^[^\s]+\s/, '')
+const quick = async (prompt: string) => {
+  txt.value = prompt
   await send()
 }
 
@@ -252,7 +207,12 @@ watch(() => ai.msgs.value.length, () => scroll())
 /* Header */
 .chat-head { display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: var(--topbar); border-bottom: 1px solid var(--border); background: var(--surface); backdrop-filter: blur(12px); position: relative; z-index: 2; flex-shrink: 0 }
 .chat-head-l { display: flex; align-items: center; gap: 14px }
-.ai-logo-wrap { width: 44px; height: 44px; border-radius: 14px; background: radial-gradient(circle at 30% 30%, rgba(var(--teal-rgb),.25), rgba(6,182,212,.08)); border: 1px solid rgba(var(--teal-rgb),.25); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(var(--teal-rgb),.25), inset 0 1px 0 rgba(255,255,255,.06); flex-shrink: 0 }
+.ai-logo-wrap { width: 44px; height: 44px; border-radius: 14px; background: rgba(var(--teal-rgb),.08); border: 1px solid rgba(var(--teal-rgb),.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0 }
+/* Знак Chatra: PNG как маска, красится в цвет темы */
+.chatra-glyph { display: block; background: var(--teal); -webkit-mask: url('/logo-icon.png') center / contain no-repeat; mask: url('/logo-icon.png') center / contain no-repeat }
+.chatra-glyph.sm { width: 16px; height: 16px }
+.chatra-glyph.lg { width: 28px; height: 28px }
+.chatra-glyph.xl { width: 44px; height: 44px }
 .chat-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 20px; font-weight: 800; color: var(--text1) }
 .chat-sub { font-size: 12px; color: var(--text4); margin-top: 1px }
 .online-pill { font-size: 12px; font-weight: 600; color: var(--green); background: var(--green-l); padding: 5px 14px; border-radius: 100px; border: 1px solid rgba(74,222,128,.2) }
@@ -261,12 +221,19 @@ watch(() => ai.msgs.value.length, () => scroll())
 .chat-area { flex: 1; overflow-y: auto; padding: 28px; position: relative; z-index: 1 }
 
 /* Empty state */
-.chat-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 16px }
-.ai-empty-logo { width: 80px; height: 80px; border-radius: 24px; background: radial-gradient(circle at 30% 30%, rgba(var(--teal-rgb),.2), rgba(6,182,212,.06)); border: 1px solid rgba(var(--teal-rgb),.2); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(var(--teal-rgb),.2) }
-.empty-hint { font-size: 14px; color: var(--text3); font-weight: 500 }
-.empty-chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 520px }
-.e-chip { padding: 10px 20px; background: rgba(var(--teal-rgb),.07); backdrop-filter: blur(8px); border: 1px solid rgba(var(--teal-rgb),.15); border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; transition: all .2s }
-.e-chip:hover { background: rgba(var(--teal-rgb),.15); border-color: rgba(var(--teal-rgb),.3); color: var(--teal); transform: translateY(-2px) }
+.chat-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; gap: 8px }
+.ai-empty-logo { width: 84px; height: 84px; border-radius: 24px; background: var(--surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(var(--teal-rgb),.18), var(--sh-xs); margin-bottom: 6px }
+.empty-title { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--text1) }
+.empty-hint { font-size: 13.5px; color: var(--text4); font-weight: 500; text-align: center; max-width: 380px; line-height: 1.45 }
+.tip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 560px; margin-top: 16px }
+.tip-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 16px; background: var(--surface); border-radius: 20px; box-shadow: var(--sh-sm); text-align: left; transition: transform .16s ease, box-shadow .2s ease; animation: rise .4s cubic-bezier(.16,1,.3,1) both }
+.tip-card:hover { transform: translateY(-2px); box-shadow: var(--sh-md) }
+.tip-card:active { transform: scale(.98) }
+.tip-icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(var(--teal-rgb),.10); color: var(--teal); display: flex; align-items: center; justify-content: center; margin-bottom: 12px }
+.tip-title { font-size: 14px; font-weight: 800; color: var(--text1); line-height: 1.2 }
+.tip-desc { font-size: 12px; color: var(--text4); line-height: 1.4; margin-top: 5px }
+@keyframes rise { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
+@media (prefers-reduced-motion: reduce) { .tip-card { animation: none } }
 
 /* Chat messages */
 .chat-msgs { display: flex; flex-direction: column; gap: 20px }
@@ -274,15 +241,15 @@ watch(() => ai.msgs.value.length, () => scroll())
 .chat-msg.user { align-self: flex-end; align-items: flex-end }
 .chat-msg.assistant { align-self: flex-start }
 .msg-avatar { display: flex; align-items: center; gap: 8px }
-.ai-av-icon { width: 26px; height: 26px; border-radius: 8px; background: radial-gradient(circle at 30% 30%, rgba(var(--teal-rgb),.3), rgba(6,182,212,.1)); border: 1px solid rgba(var(--teal-rgb),.2); display: flex; align-items: center; justify-content: center }
+.ai-av-icon { width: 26px; height: 26px; border-radius: 8px; background: var(--surface); border: 1px solid rgba(var(--teal-rgb),.2); box-shadow: var(--sh-xs); display: flex; align-items: center; justify-content: center }
 .msg-sender { font-size: 12px; font-weight: 700; color: var(--teal) }
 
 /* Image preview in message */
 .msg-img-preview { max-width: 240px; max-height: 200px; border-radius: 12px; object-fit: cover; border: 1px solid rgba(var(--teal-rgb),.2); box-shadow: 0 4px 16px rgba(0,0,0,.3) }
 
-.msg-bubble { padding: 13px 18px; border-radius: var(--r-lg); font-size: 14px; line-height: 1.6 }
-.msg-bubble.user { background: linear-gradient(135deg, var(--teal), var(--teal-h)); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 20px rgba(var(--teal-rgb),.3) }
-.msg-bubble.assistant { background: var(--surface); border: 1px solid var(--border); color: var(--text1); border-bottom-left-radius: 4px }
+.msg-bubble { padding: 13px 18px; border-radius: 20px; font-size: 14px; line-height: 1.6 }
+.msg-bubble.user { background: linear-gradient(135deg, var(--teal), var(--teal-h)); color: #fff; border-bottom-right-radius: 6px; box-shadow: 0 4px 20px rgba(var(--teal-rgb),.3) }
+.msg-bubble.assistant { background: var(--surface); color: var(--text1); border-top-left-radius: 6px; box-shadow: var(--sh-xs) }
 
 /* Typing */
 .typing { display: flex; gap: 5px; padding: 4px 0 }
@@ -297,7 +264,7 @@ watch(() => ai.msgs.value.length, () => scroll())
 .file-prev { display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; background: rgba(var(--teal-rgb),.08); border-top: 1px solid rgba(var(--teal-rgb),.12); font-size: 13px; font-weight: 500; color: var(--teal); position: relative; z-index: 2; flex-shrink: 0 }
 .fp-info { display: flex; align-items: center; gap: 10px }
 .fp-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(var(--teal-rgb),.2) }
-.fp-badge { font-size: 11px; font-weight: 600; background: rgba(6,182,212,.12); color: #06b6d4; border: 1px solid rgba(6,182,212,.2); border-radius: 100px; padding: 2px 8px }
+.fp-badge { font-size: 11px; font-weight: 600; background: rgba(var(--teal-rgb),.12); color: var(--teal); border: 1px solid rgba(var(--teal-rgb),.2); border-radius: 100px; padding: 2px 8px }
 .fp-rm { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 20px; padding: 0; line-height: 1; transition: color .15s }
 .fp-rm:hover { color: var(--red) }
 
@@ -332,16 +299,17 @@ watch(() => ai.msgs.value.length, () => scroll())
   .chat-field { font-size: 16px; padding: 10px 14px; }
   .send-btn { width: 44px; height: 44px; }
   .attach-icon { width: 44px; height: 44px; }
-  .empty-chips { gap: 8px; padding: 0 8px; }
-  .e-chip { font-size: 12px; padding: 8px 14px; }
-  .ai-empty-logo { width: 64px; height: 64px; }
+  .tip-grid { gap: 8px; padding: 0 4px; }
+  .tip-card { padding: 12px; border-radius: 16px; }
+  .tip-icon { width: 34px; height: 34px; margin-bottom: 8px; }
+  .ai-empty-logo { width: 64px; height: 64px; border-radius: 18px; }
+  .chatra-glyph.xl { width: 34px; height: 34px; }
   :deep(.code-bl) { font-size: 12px; overflow-x: auto; }
 }
 @media (max-width:480px) {
   .chat-head { padding: 0 10px; }
   .ai-logo-wrap { width: 36px; height: 36px; border-radius: 10px; }
   .chat-area { padding: 10px 10px; }
-  .empty-chips { flex-direction: column; align-items: stretch; }
-  .e-chip { text-align: center; }
+  .tip-grid { grid-template-columns: 1fr; }
 }
 </style>
