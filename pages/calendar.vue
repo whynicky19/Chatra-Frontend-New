@@ -1,10 +1,13 @@
 <template>
   <div class="pg">
     <div class="pg-head">
-      <h1 class="pg-title">
+      <div class="head-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Дедлайны
-      </h1>
+      </div>
+      <div>
+        <h1 class="pg-title">Дедлайны</h1>
+        <p class="pg-sub">{{ upcomingCount ? 'Предстоящих заданий: ' + upcomingCount : 'Нет предстоящих дедлайнов' }}</p>
+      </div>
     </div>
     <div class="pg-body">
       <div v-if="loading" style="display:flex;justify-content:center;padding:40px"><div class="spinner"></div></div>
@@ -40,6 +43,11 @@
               <span v-else-if="cell.dots.length > 1" class="dot-multi"></span>
             </div>
           </div>
+          <div class="cal-legend">
+            <span class="lg-item"><i class="lg-dot" style="background:var(--teal)"></i>дедлайн</span>
+            <span class="lg-item"><i class="lg-dot" style="background:var(--red)"></i>несколько</span>
+            <span class="lg-item"><i class="lg-dot" style="background:var(--green)"></i>сдано</span>
+          </div>
         </div>
 
         <!-- 7-day strip -->
@@ -62,7 +70,10 @@
         <!-- Day detail — right column -->
         <div class="cal-right">
           <div class="day-detail">
-            <div class="detail-label">{{ selectedDateLabel || 'Выберите день' }}</div>
+            <div class="detail-label-row">
+              <div class="detail-label">{{ selectedDateLabel || 'Выберите день' }}</div>
+              <span v-if="dayItems.length" class="detail-count">{{ dayItems.length }}</span>
+            </div>
             <div v-if="!selectedDateStr || !dayItems.length" class="detail-empty">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <span>Нет заданий с дедлайном</span>
@@ -136,7 +147,7 @@ const dotsArr = computed(() => {
     const ds = d.deadline.slice(0, 10)
     if (new Date(ds) < today) continue
     if (!m[ds]) m[ds] = []
-    m[ds].push(d.submitted ? 'var(--teal)' : 'var(--red)')
+    m[ds].push(d.submitted ? 'var(--green)' : 'var(--teal)')
   }
   return m
 })
@@ -184,6 +195,10 @@ const strip = computed(() =>
 )
 
 const selectDay = (ds: string) => { selectedDateStr.value = ds }
+
+const upcomingCount = computed(() =>
+  dlItems.value.filter(d => d.deadline && new Date(d.deadline.slice(0, 10)) >= today).length
+)
 
 const dayItems = computed(() =>
   dlItems.value
@@ -238,8 +253,10 @@ onMounted(async () => {
 </script>
 <style scoped>
 .pg{height:100%;overflow-y:auto;background:var(--bg);width:100%}
-.pg-head{padding:24px 32px 0;display:flex;align-items:center}
-.pg-title{font-size:20px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.pg-head{padding:28px 32px 0;display:flex;align-items:center;gap:14px}
+.head-icon{width:44px;height:44px;border-radius:14px;background:rgba(var(--teal-rgb),.10);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pg-sub{font-size:13px;color:var(--text4);margin-top:2px}
+.pg-title{font-size:24px;font-weight:800;letter-spacing:-.02em}
 .pg-body{padding:20px 32px 32px}
 
 /* Two-column layout on desktop */
@@ -248,36 +265,44 @@ onMounted(async () => {
 .cal-right{}
 
 /* Calendar */
-.cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:20px}
+.cal-wrap{background:var(--surface);border-radius:20px;padding:20px;margin-bottom:20px;box-shadow:var(--sh-sm)}
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .cal-month-label{font-size:15px;font-weight:700;color:var(--text1);text-transform:capitalize}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .cal-dow{text-align:center;font-size:11px;font-weight:700;color:var(--text4);padding:6px 0;text-transform:uppercase;letter-spacing:.04em}
-.cal-cell{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:var(--r-sm);cursor:pointer;transition:background .12s;min-height:46px;justify-content:center}
-.cal-cell:hover{background:var(--surface2)}
+.cal-cell{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:12px;cursor:pointer;transition:background .12s;min-height:46px;justify-content:center}
+.cal-cell:hover .cal-num{background:var(--surface2)}
 .cal-cell.other-month .cal-num{color:var(--text4);opacity:.35}
 .cal-cell.other-month{cursor:default}
-.cal-cell.other-month:hover{background:transparent}
-.cal-cell.today .cal-num{background:var(--teal);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700}
-.cal-cell.selected:not(.today) .cal-num{background:rgba(var(--teal-rgb),.15);border:1.5px solid var(--teal);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:var(--teal)}
-.cal-num{font-size:13px;font-weight:500;color:var(--text1)}
+.cal-cell.other-month:hover .cal-num{background:transparent}
+.cal-num{font-size:13px;font-weight:500;color:var(--text1);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .16s}
+.cal-cell.today .cal-num{background:rgba(var(--teal-rgb),.12);color:var(--teal);font-weight:800}
+.cal-cell.selected .cal-num{background:var(--teal)!important;color:#fff!important;font-weight:800;box-shadow:0 4px 14px -2px rgba(var(--teal-rgb),.5)}
 .dot-single{display:block;width:6px;height:6px;border-radius:50%}
 .dot-multi{display:block;width:10px;height:6px;border-radius:3px;background:var(--red)}
+.cal-legend{display:flex;justify-content:center;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.lg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text4);font-weight:500}
+.lg-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
 
 /* 7-day strip */
 .strip-label{font-size:11px;font-weight:800;color:var(--text4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
 .strip-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;-webkit-overflow-scrolling:touch}
-.strip-day{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;transition:all .15s;flex-shrink:0;min-width:60px}
-.strip-day:hover{border-color:var(--border2);background:var(--surface2)}
-.strip-day.strip-today{border-color:rgba(var(--teal-rgb),.4);background:rgba(var(--teal-rgb),.06)}
-.strip-day.strip-sel{border-color:var(--teal);background:rgba(var(--teal-rgb),.12)}
+.strip-day{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;background:var(--surface);border-radius:16px;cursor:pointer;transition:all .18s;flex-shrink:0;min-width:60px;box-shadow:var(--sh-xs)}
+.strip-day:hover{transform:translateY(-1px);box-shadow:var(--sh-sm)}
+.strip-day.strip-today:not(.strip-sel){box-shadow:inset 0 0 0 1.5px rgba(var(--teal-rgb),.4), var(--sh-xs)}
+.strip-day.strip-sel{background:var(--teal);box-shadow:0 6px 18px -3px rgba(var(--teal-rgb),.5)}
+.strip-day.strip-sel .strip-dow{color:rgba(255,255,255,.75)}
+.strip-day.strip-sel .strip-num{color:#fff}
+.strip-day.strip-sel .strip-badge{background:rgba(255,255,255,.25)}
 .strip-dow{font-size:10px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.05em}
-.strip-num{font-size:16px;font-weight:700;color:var(--text1)}
+.strip-num{font-size:16px;font-weight:800;color:var(--teal)}
 .strip-badge{background:var(--teal);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:100px}
 
 /* Day detail — right column */
-.day-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;position:sticky;top:0}
-.detail-label{font-size:15px;font-weight:700;color:var(--text1);margin-bottom:16px;text-transform:capitalize}
+.day-detail{background:var(--surface);border-radius:20px;padding:20px;position:sticky;top:0;box-shadow:var(--sh-sm)}
+.detail-label-row{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.detail-label{font-size:15px;font-weight:700;color:var(--text1);text-transform:capitalize}
+.detail-count{background:rgba(var(--teal-rgb),.10);color:var(--teal);font-size:11px;font-weight:800;padding:2px 8px;border-radius:100px}
 .detail-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:40px 0;color:var(--text4);font-size:13px}
 .detail-card{display:flex;align-items:center;gap:12px;padding:12px 8px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:var(--r-md);transition:background .12s;margin:0 -8px}
 .detail-card:last-child{border-bottom:none}

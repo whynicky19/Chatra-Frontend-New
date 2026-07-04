@@ -59,6 +59,13 @@
         <div class="pref-list">
           <div class="pref-row">
             <div class="pref-info">
+              <div class="pref-title">{{ lang==='ru'?'Тёмная тема':lang==='kk'?'Қараңғы тақырып':'Dark mode' }}</div>
+              <div class="pref-sub">{{ lang==='ru'?'Тёмное оформление интерфейса':lang==='kk'?'Интерфейстің қараңғы безендірілуі':'Dark interface appearance' }}</div>
+            </div>
+            <label class="toggle"><input type="checkbox" v-model="isDark" @change="setTheme(isDark)"/><span class="tog-t"></span></label>
+          </div>
+          <div class="pref-row">
+            <div class="pref-info">
               <div class="pref-title">{{ t('settings.email_notif') }}</div>
               <div class="pref-sub">{{ t('settings.email_notif_sub') }}</div>
             </div>
@@ -117,7 +124,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAuthSvc } from '~/services/auth'
 import { useToast } from '~/composables/useToast'
@@ -158,6 +165,10 @@ const setTheme = (dark: boolean) => {
   if (dark) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark') }
   else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light') }
 }
+watch(emailNotif, v => localStorage.setItem('emailNotif', v ? '1' : '0'))
+watch(aiInsights, v => localStorage.setItem('aiInsights', v ? '1' : '0'))
+watch(desktopPopups, v => localStorage.setItem('desktopPopups', v ? '1' : '0'))
+
 onMounted(() => {
   const theme = localStorage.getItem('theme')
   isDark.value = theme === 'dark'
@@ -174,7 +185,7 @@ onMounted(() => {
 .pg-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:26px;font-weight:800;color:var(--text1);margin-bottom:4px}
 .pg-sub{font-size:14px;color:var(--text4)}
 .pg-body{padding:20px 32px 40px;display:flex;flex-direction:column;gap:20px}
-.scard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:24px}
+.scard{background:var(--surface);border-radius:20px;padding:24px;box-shadow:var(--sh-sm)}
 .scard-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px}
 .scard-head-sm{display:flex;align-items:center;gap:10px;margin-bottom:18px}
 .scard-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:20px;font-weight:800;color:var(--text1);margin-bottom:4px}
@@ -182,14 +193,15 @@ onMounted(() => {
 .scard-h3{font-size:16px;font-weight:700;color:var(--text1)}
 .profile-form{display:flex;gap:28px;align-items:flex-start}
 .avatar-upload-area{position:relative;display:block;cursor:pointer;width:90px;height:90px;flex-shrink:0}
-.prof-av{width:90px;height:90px;border-radius:var(--r-md);object-fit:cover;border:2px solid var(--border)}
-.prof-av-init{width:90px;height:90px;border-radius:var(--r-md);background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800}
-.av-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);border-radius:var(--r-md);opacity:0;display:flex;align-items:center;justify-content:center;transition:opacity .2s}
+.prof-av{width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--surface);box-shadow:var(--sh-sm)}
+.prof-av-init{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;box-shadow:0 6px 18px -3px rgba(var(--teal-rgb),.45)}
+.av-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);border-radius:50%;opacity:0;display:flex;align-items:center;justify-content:center;transition:opacity .2s}
 .avatar-upload-area:hover .av-overlay{opacity:1}
 .fields-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .field-group{display:flex;flex-direction:column;gap:6px}
-.field-label{font-size:10px;font-weight:700;color:var(--text4);letter-spacing:.1em}
-.field-input{background:var(--surface2)!important;border-color:var(--border)!important}
+.field-label{font-size:11px;font-weight:700;color:var(--text4);letter-spacing:.08em;text-transform:uppercase}
+.field-input{background:var(--bg2)!important;border:none!important;border-radius:14px!important;padding:12px 16px!important}
+.field-input:focus{box-shadow:0 0 0 2px var(--teal)!important}
 .field-locked{display:flex;align-items:center;color:var(--text2)}
 .nick-hint{font-size:11px;font-weight:500}.nick-hint.ok{color:var(--green)}.nick-hint.err{color:var(--red)}
 .two-col-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -208,7 +220,7 @@ onMounted(() => {
 .follow-sys{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border)}
 .follow-info{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3)}
 .deactivate-card{display:flex;align-items:center;gap:16px;padding:18px 24px}
-.deactivate-icon{width:40px;height:40px;border-radius:var(--r-md);background:var(--red-l);border:1px solid rgba(220,38,38,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.deactivate-icon{width:40px;height:40px;border-radius:12px;background:var(--red-l);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .deactivate-info{flex:1}
 .deactivate-title{font-size:15px;font-weight:600;color:var(--text1)}
 .deactivate-sub{font-size:13px;color:var(--text4);margin-top:2px}
@@ -239,8 +251,8 @@ onMounted(() => {
 /* Org switch card */
 .org-switch-card{display:flex;align-items:center;gap:16px;padding:18px 24px}
 .org-switch-icon{width:40px;height:40px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.org-switch-icon.university{background:rgba(var(--teal-rgb),.1);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.2)}
-.org-switch-icon.school{background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.2)}
+.org-switch-icon.university{background:rgba(var(--teal-rgb),.1);color:var(--teal)}
+.org-switch-icon.school{background:rgba(245,158,11,.1);color:#b45309}
 .org-switch-info{flex:1}
 .org-switch-title{font-size:15px;font-weight:600;color:var(--text1)}
 .org-switch-sub{font-size:13px;font-weight:600;margin-top:2px}
