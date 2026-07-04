@@ -44,9 +44,9 @@
             </div>
           </div>
           <div class="cal-legend">
-            <span class="lg-item"><i class="lg-dot" style="background:var(--teal)"></i>дедлайн</span>
-            <span class="lg-item"><i class="lg-dot" style="background:var(--red)"></i>несколько</span>
-            <span class="lg-item"><i class="lg-dot" style="background:var(--green)"></i>сдано</span>
+            <span class="lg-item"><i class="lg-dot" style="background:var(--teal)"></i>{{ tt('есть задание', 'тапсырма бар', 'assignment due') }}</span>
+            <span class="lg-item"><i class="lg-dot" style="background:var(--red)"></i>{{ tt('несколько заданий', 'бірнеше тапсырма', 'several due') }}</span>
+            <span class="lg-item"><i class="lg-dot" style="background:var(--green)"></i>{{ tt('всё сдано', 'бәрі тапсырылды', 'all submitted') }}</span>
           </div>
         </div>
 
@@ -103,9 +103,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from '#app'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useClassesSvc } from '~/services/classes'
+import { useI18n } from '~/composables/useI18n'
 definePageMeta({ layout: 'default' })
 
 const router = useRouter()
+const { lang } = useI18n()
+const tt = (ru: string, kk: string, en: string) =>
+  lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
 const assignSvc = useAssignmentsSvc()
 const classesSvc = useClassesSvc()
 const loading = ref(false)
@@ -280,7 +284,7 @@ onMounted(async () => {
 .cal-cell.selected .cal-num{background:var(--teal)!important;color:#fff!important;font-weight:800;box-shadow:0 4px 14px -2px rgba(var(--teal-rgb),.5)}
 .dot-single{display:block;width:6px;height:6px;border-radius:50%}
 .dot-multi{display:block;width:10px;height:6px;border-radius:3px;background:var(--red)}
-.cal-legend{display:flex;justify-content:center;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.cal-legend{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
 .lg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text4);font-weight:500}
 .lg-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
 

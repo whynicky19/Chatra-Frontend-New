@@ -62,7 +62,14 @@
               <div class="pref-title">{{ lang==='ru'?'Тёмная тема':lang==='kk'?'Қараңғы тақырып':'Dark mode' }}</div>
               <div class="pref-sub">{{ lang==='ru'?'Тёмное оформление интерфейса':lang==='kk'?'Интерфейстің қараңғы безендірілуі':'Dark interface appearance' }}</div>
             </div>
-            <label class="toggle"><input type="checkbox" v-model="isDark" @change="setTheme(isDark)"/><span class="tog-t"></span></label>
+            <button class="theme-toggle" @click="setTheme(!isDark)" :title="isDark ? 'Светлая тема' : 'Тёмная тема'">
+              <div class="toggle-track" :class="{dark: isDark}">
+                <div class="toggle-thumb">
+                  <svg v-if="isDark" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                  <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                </div>
+              </div>
+            </button>
           </div>
           <div class="pref-row">
             <div class="pref-info">
@@ -210,6 +217,12 @@ onMounted(() => {
 .pref-row:last-child{border-bottom:none;padding-bottom:0}
 .pref-title{font-size:14px;font-weight:600;color:var(--text1);margin-bottom:2px}
 .pref-sub{font-size:12px;color:var(--text4)}
+/* Переключатель темы — тот же, что был на главной */
+.theme-toggle{background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center}
+.toggle-track{width:46px;height:26px;border-radius:100px;background:var(--surface3);border:1.5px solid var(--border2);position:relative;transition:all .25s;display:flex;align-items:center}
+.toggle-track.dark{background:var(--teal-d,#1a3a44);border-color:var(--teal)}
+.toggle-thumb{width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);position:absolute;left:2px;display:flex;align-items:center;justify-content:center;transition:transform .25s cubic-bezier(.34,1.56,.64,1);color:#888}
+.toggle-track.dark .toggle-thumb{transform:translateX(20px);color:var(--teal)}
 .theme-btns{display:flex;gap:12px;margin-bottom:16px}
 .theme-choice{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 12px;border-radius:var(--r-lg);border:2px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .18s;font-size:13px;font-weight:600;color:var(--text2)}
 .theme-choice:hover{border-color:var(--border2);color:var(--text1)}
