@@ -291,7 +291,7 @@
               <div class="avatar-req-body">
                 <div class="avatar-req-name">{{ l.title }}</div>
                 <div class="avatar-req-meta">
-                  Класс #{{ l.class_id }} · {{ l.duration_minutes }} мин · {{ styleLabelRu(l.style) }} · {{ fmtDate(l.created_at) }}
+                  {{ l.class_name || ('Класс #' + l.class_id) }} · {{ l.duration_minutes }} мин · {{ styleLabelRu(l.style) }} · {{ fmtDate(l.created_at) }}
                 </div>
                 <div class="avatar-req-cost">
                   Примерная стоимость: <strong>${{ l.estimated_cost_usd.toFixed(2) }}</strong>
@@ -433,7 +433,9 @@ const aiFilterClass = ref<number | null>(null)
 const aiTotalTokens = computed(() => aiSummary.value.filter((s: any) => aiFilterClass.value === null || s.class_id === aiFilterClass.value).reduce((sum: number, s: any) => sum + (s.total_tokens || 0), 0))
 const userMap = computed(() => { const m: Record<number, string> = {}; for (const u of users.value) m[u.id] = u.full_name || u.email; return m })
 const getUserEmail = (uid: number | null) => uid ? (userMap.value[uid] || '#' + uid) : '—'
-const fmtDate = (iso: string) => { if (!iso) return '—'; try { const d = new Date(iso); return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) } catch { return iso } }
+// Бэкенд шлёт naive-UTC без таймзоны — без 'Z' браузер считал бы время локальным
+// и показывал бы его со сдвигом на часовой пояс.
+const fmtDate = (iso: string) => { if (!iso) return '—'; try { const withTz = /Z$|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : iso + 'Z'; const d = new Date(withTz); return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) } catch { return iso } }
 const loadAiUsage = async (page = 1) => { aiLoading.value = true; aiPage.value = page; try { const params: any = { page, page_size: aiPageSize }; if (aiFilterClass.value !== null) params.class_id = aiFilterClass.value; const res = await adminSvc.aiUsage(params); aiLogs.value = res.items; aiTotal.value = res.total } catch { toast.err('Ошибка загрузки данных ИИ') } finally { aiLoading.value = false } }
 const loadAiSummary = async () => { try { aiSummary.value = await adminSvc.aiUsageSummary() } catch {} }
 const setClassFilter = (classId: number | null) => { aiFilterClass.value = aiFilterClass.value === classId ? null : classId; loadAiUsage(1) }
