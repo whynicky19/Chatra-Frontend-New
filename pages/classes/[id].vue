@@ -258,7 +258,7 @@
                         <div class="item-title">{{ a.title }}</div>
                         <div :class="['status-badge', getStatusClass(a)]">{{ getStatusLabel(a) }}</div>
                       </div>
-                      <div class="item-desc">{{ a.description }}</div>
+                      <div class="item-desc">{{ stripFilesFromText(a.description) }}</div>
                       <div class="item-meta">
                         <span class="meta-date">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -532,6 +532,15 @@
             <label class="field-label">{{ lang==='ru'?'ОПИСАНИЕ':'DESCRIPTION' }}</label>
             <textarea v-model="editAsgForm.description" class="field-textarea" rows="3" :placeholder="lang==='ru'?'Описание...':'Description...'"></textarea>
           </div>
+          <div v-if="editAsgFiles.length" class="edit-field">
+            <label class="field-label">{{ lang==='ru'?'ПРИКРЕПЛЁННЫЕ ФАЙЛЫ':'ATTACHED FILES' }}</label>
+            <div class="edit-asg-files">
+              <div v-for="(f, i) in editAsgFiles" :key="f.url" class="edit-asg-file">
+                <span class="eaf-name">{{ f.name }}</span>
+                <button class="eaf-rm" :title="lang==='ru'?'Удалить файл':'Remove file'" @click="editAsgFiles.splice(i,1)">×</button>
+              </div>
+            </div>
+          </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div class="edit-field">
               <label class="field-label">{{ lang==='ru'?'МАКС. БАЛЛ':'MAX SCORE' }}</label>
@@ -615,6 +624,7 @@ import { useAvatarsSvc, type AvatarLecture, type AvatarLectureFull, type Teacher
 import { useAuthStore } from '~/stores/auth.store'
 import { useI18n } from '~/composables/useI18n'
 import { useFilePreview } from '~/composables/useFilePreview'
+import { extractFilesFromText, stripFilesFromText } from '~/composables/useAttachments'
 import type { Assignment, Submission } from '~/services/assignments'
 
 definePageMeta({ layout: 'default' })
@@ -755,6 +765,8 @@ const editPostSaving = ref(false)
 
 const editingAssignment = ref<any>(null)
 const editAsgForm = ref<{ title: string; description: string; max_score: number; deadline: string; criteria: Array<{name:string;weight:number;description:string}> }>({ title: '', description: '', max_score: 100, deadline: '', criteria: [] })
+// Файлы задания живут в description как URL — в форме показываем чипами, а не текстом
+const editAsgFiles = ref<{ name: string; url: string }[]>([])
 const editAsgSaving = ref(false)
 const loadingAssignments = ref(false)
 
@@ -916,7 +928,8 @@ const openEditAssignment = (a: any) => {
   let criteria: Array<{name:string;weight:number;description:string}> = []
   try { criteria = JSON.parse(a.criteria || '[]') } catch {}
   if (!criteria.length) criteria = [{ name: '', weight: 10, description: '' }]
-  editAsgForm.value = { title: a.title || '', description: a.description || '', max_score: a.max_score || 100, deadline: dl, criteria }
+  editAsgFiles.value = extractFilesFromText(a.description)
+  editAsgForm.value = { title: a.title || '', description: stripFilesFromText(a.description), max_score: a.max_score || 100, deadline: dl, criteria }
 }
 
 const addCriterion = () => { editAsgForm.value.criteria.push({ name: '', weight: 10, description: '' }) }
@@ -926,9 +939,12 @@ const saveEditAssignment = async () => {
   if (!editingAssignment.value) return
   editAsgSaving.value = true
   try {
+    // Пришиваем сохранённые файлы обратно в description (бэкенд не хранит file_urls у заданий)
+    const fileLines = editAsgFiles.value.map(f => f.url).join('\n')
+    const descWithFiles = [stripFilesFromText(editAsgForm.value.description), fileLines].filter(Boolean).join('\n')
     const updated = await assignmentsSvc.update(editingAssignment.value.id, {
       title: editAsgForm.value.title,
-      description: editAsgForm.value.description,
+      description: descWithFiles,
       max_score: editAsgForm.value.max_score,
       deadline: editAsgForm.value.deadline ? new Date(editAsgForm.value.deadline).toISOString() : undefined,
       criteria: editAsgForm.value.criteria,
@@ -1131,6 +1147,11 @@ onMounted(async () => {
 .field-input:focus{border-color:var(--teal);background:rgba(var(--teal-rgb),.04)}
 .field-textarea{padding:10px 14px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--surface2);color:var(--text1);font-size:14px;font-family:inherit;resize:vertical;transition:border-color .15s;outline:none}
 .field-textarea:focus{border-color:var(--teal);background:rgba(var(--teal-rgb),.04)}
+.edit-asg-files{display:flex;flex-direction:column;gap:4px}
+.edit-asg-file{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(var(--teal-rgb),.07);border:1px solid rgba(var(--teal-rgb),.18);border-radius:var(--r-md)}
+.eaf-name{flex:1;font-size:12px;font-weight:600;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eaf-rm{width:20px;height:20px;border-radius:50%;background:var(--surface3);color:var(--text4);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
+.eaf-rm:hover{background:var(--red-l);color:var(--red)}
 /* Criteria editing */
 .btn-add-criterion{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--teal);background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.2);border-radius:var(--r-sm);padding:5px 12px;cursor:pointer;font-family:inherit;transition:all .15s}
 .btn-add-criterion:hover{background:var(--teal-m)}

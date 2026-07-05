@@ -204,6 +204,7 @@ import { ref, computed } from 'vue'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useUploadSvc } from '~/services/uploads'
 import { useToast } from '~/composables/useToast'
+import { withNameFragment } from '~/composables/useAttachments'
 
 const emit = defineEmits(['close', 'created'])
 const props = defineProps<{ classId: number }>()
@@ -308,11 +309,13 @@ const submit = async () => {
         uploadIdx.value = i + 1
         uploadPct.value = Math.round(((i + 1) / taskFiles.value.length) * 100)
         const { file_url } = await uploadSvc.upload(taskFiles.value[i])
-        urls.push(`📎 [${taskFiles.value[i].name}](${file_url})`)
+        // Оригинальное имя — во фрагменте URL (единый формат с приложением);
+        // клиенты скрывают эти строки при отображении описания
+        urls.push(withNameFragment(file_url, taskFiles.value[i].name))
       }
       uploadingTask.value = false
       if (urls.length) {
-        description = (description ? description + '\n\n' : '') + urls.join('\n')
+        description = (description ? description + '\n' : '') + urls.join('\n')
       }
     }
 

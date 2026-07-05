@@ -352,6 +352,7 @@ import { useUsersSvc } from '~/services/users'
 import { useToast } from '~/composables/useToast'
 import { useAuthStore } from '~/stores/auth.store'
 import { useFilePreview } from '~/composables/useFilePreview'
+import { extractFilesFromText, stripFilesFromText, fileNameFromUrl, withNameFragment } from '~/composables/useAttachments'
 import type { Assignment, Submission, Variant } from '~/services/assignments'
 
 const props = defineProps<{ assignment: Assignment; isTeacher?: boolean }>()
@@ -409,27 +410,8 @@ const parseFileUrls = (raw?: string | null): string[] => {
 const parsedSubmittedUrls = computed(() => parseFileUrls(mySubmission.value?.file_urls))
 const parsedActiveUrls = computed(() => parseFileUrls(activeSub.value?.file_urls))
 
-const assignmentFiles = computed(() => {
-  const desc = props.assignment.description || ''
-  const extRe = /\.(pdf|doc|docx|txt|md|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|webp)(\?[^\s]*)?$/i
-  const files: {name: string; url: string}[] = []
-  const seen = new Set<string>()
-  const attachmentRe = /📎\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g
-  for (const m of [...desc.matchAll(attachmentRe)]) {
-    files.push({ url: m[2], name: m[1] })
-    seen.add(m[2])
-  }
-  const urlRe = /(https?:\/\/[^\s\n"'<>]+)/g
-  for (const m of [...desc.matchAll(urlRe)]) {
-    const url = m[1].replace(/[.,;:!?)]+$/, '')
-    if (extRe.test(url) && !seen.has(url)) {
-      files.push({ url, name: getFileName(url) })
-      seen.add(url)
-    }
-  }
-  return files
-})
-const descriptionText = computed(() => (props.assignment.description || '').replace(/📎\s*\[[^\]]+\]\([^)]+\)/g, '').trim())
+const assignmentFiles = computed(() => extractFilesFromText(props.assignment.description))
+const descriptionText = computed(() => stripFilesFromText(props.assignment.description))
 
 const parseUtc = (d: string) => new Date(d.endsWith('Z') || d.includes('+') ? d : d + 'Z')
 const parsedDeadline = computed(() => props.assignment.deadline ? parseUtc(props.assignment.deadline) : null)
@@ -445,7 +427,7 @@ const getStudentName = (id: number) => studentMap.value[id] || `Студент #
 const getStudentInitials = (id: number) => { const fn = studentMap.value[id]; if (!fn) return String(id); const parts = fn.trim().split(' ').filter(Boolean); return parts.map((p:string) => p[0]).join('').toUpperCase().slice(0, 2) || String(id) }
 const statusLabel = (s: string) => ({ submitted: 'Выполнено', grading: 'Проверяется', graded: 'Оценено', late: 'Просрочено' }[s] || s)
 const fmtDate = (d: string) => parseUtc(d).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-const getFileName = (url: string) => { try { return decodeURIComponent(new URL(url).pathname.split('/').pop() || url) } catch { return url.slice(-40) } }
+const getFileName = (url: string) => fileNameFromUrl(url)
 const getEmoji = (url: string) => {
   const e = url.split('.').pop()?.split('?')[0]?.toLowerCase() || ''
   if (e === 'pdf') return 'PDF'
@@ -594,7 +576,8 @@ const doSubmit = async () => {
         uploadIdxSub.value = i + 1
         uploadPctSub.value = Math.round(((i + 1) / submittedFiles.value.length) * 100)
         const res = await uploadSvc.upload(submittedFiles.value[i])
-        fileUrls.push(res.file_url)
+        // Оригинальное имя файла сохраняем во фрагменте URL — иначе везде виден UUID
+        fileUrls.push(withNameFragment(res.file_url, submittedFiles.value[i].name))
       }
       uploading.value = false
     }
