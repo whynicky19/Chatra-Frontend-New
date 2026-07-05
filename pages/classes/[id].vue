@@ -1231,7 +1231,8 @@ onMounted(async () => {
 @media (max-width:768px){
   .cd-page { overflow-x: hidden; max-width: 100vw; }
   .cd-topbar{
-    padding:0 12px;
+    padding:env(safe-area-inset-top, 0px) 12px 0;
+    height:calc(52px + env(safe-area-inset-top, 0px));
   }
   .topbar-breadcrumb{max-width:160px;overflow:hidden}
   .cd-sidebar{display:none}
@@ -1258,7 +1259,8 @@ onMounted(async () => {
   .item-desc{font-size:12px}
   .item-actions{gap:4px}
   .item-del,.item-edit{opacity:1;width:44px;height:44px}
-  .post-sheet{padding:18px 14px 24px;border-radius:var(--r-2xl) var(--r-2xl) 0 0;max-height:92dvh}
+  .post-sheet{padding:12px 16px calc(28px + env(safe-area-inset-bottom, 0px));border-radius:28px 28px 0 0;max-height:92dvh}
+  .post-sheet::before{content:'';display:block;width:36px;height:5px;border-radius:3px;background:var(--surface3);margin:0 auto 16px}
   .post-overlay{padding:0;align-items:flex-end}
   .sheet-title{font-size:20px}
   .field-input,.field-textarea{font-size:16px}

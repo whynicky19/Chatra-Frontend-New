@@ -265,8 +265,8 @@ onMounted(async () => {
 
 /* Two-column layout on desktop */
 .cal-layout{display:grid;grid-template-columns:minmax(320px,480px) 1fr;gap:24px;align-items:start}
-.cal-left{}
-.cal-right{}
+.cal-left{min-width:0}
+.cal-right{min-width:0}
 
 /* Calendar */
 .cal-wrap{background:var(--surface);border-radius:20px;padding:20px;margin-bottom:20px;box-shadow:var(--sh-sm)}
@@ -290,8 +290,9 @@ onMounted(async () => {
 
 /* 7-day strip */
 .strip-label{font-size:11px;font-weight:800;color:var(--text4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
-.strip-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;-webkit-overflow-scrolling:touch}
-.strip-day{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;background:var(--surface);border-radius:16px;cursor:pointer;transition:all .18s;flex-shrink:0;min-width:60px;box-shadow:var(--sh-xs)}
+.strip-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;-webkit-overflow-scrolling:touch;max-width:100%;scroll-snap-type:x proximity;scrollbar-width:none}
+.strip-scroll::-webkit-scrollbar{display:none}
+.strip-day{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;background:var(--surface);border-radius:16px;cursor:pointer;transition:all .18s;flex-shrink:0;min-width:60px;box-shadow:var(--sh-xs);scroll-snap-align:start}
 .strip-day:hover{transform:translateY(-1px);box-shadow:var(--sh-sm)}
 .strip-day.strip-today:not(.strip-sel){box-shadow:inset 0 0 0 1.5px rgba(var(--teal-rgb),.4), var(--sh-xs)}
 .strip-day.strip-sel{background:var(--teal);box-shadow:0 6px 18px -3px rgba(var(--teal-rgb),.5)}
@@ -323,7 +324,19 @@ onMounted(async () => {
   .day-detail{position:static}
 }
 @media(max-width:768px){
-  .pg-head{padding:16px 14px 0}
-  .pg-body{padding:14px 14px 24px}
+  .pg{overflow-x:hidden}
+  .pg-head{padding:calc(18px + env(safe-area-inset-top, 0px)) 16px 0}
+  .head-icon{display:none}
+  .pg-body{padding:14px 16px 28px}
+  .cal-layout{gap:16px}
+  .cal-wrap{padding:16px 12px;margin-bottom:16px}
+  .cal-grid{gap:2px}
+  .cal-cell{min-height:44px;padding:4px 0}
+  .cal-num{width:32px;height:32px;font-size:14px}
+  .cal-legend{gap:6px 12px}
+  .lg-item{font-size:10px}
+  .strip-scroll{margin:0 -16px 16px;padding:2px 16px 6px}
+  .day-detail{padding:16px 14px}
+  .detail-card{min-height:56px}
 }
 </style>

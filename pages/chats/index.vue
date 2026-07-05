@@ -186,20 +186,28 @@ onUnmounted(()=>{if(import.meta.client)window.removeEventListener('resize',_resi
   .mobile-list .chat-main{display:none}
   .mobile-chat .chat-list-panel{display:none}
   .mobile-chat .chat-main{display:flex;width:100%}
-  .clp-head{padding:14px 12px 8px}
-  .clp-head .btn-icon{min-width:44px;min-height:44px}
-  .clp-title{font-size:18px}
-  .chat-item{margin:1px 4px;min-height:60px;padding:12px}
-  .chat-name{font-size:15px}
-  .chat-preview{font-size:12px}
+  /* Крупный заголовок как в iOS */
+  .clp-head{padding:calc(16px + env(safe-area-inset-top, 0px)) 16px 6px}
+  .clp-head .btn-icon{min-width:44px;min-height:44px;background:var(--surface2);border-radius:50%;color:var(--teal)}
+  .clp-title{font-size:28px;font-weight:800;letter-spacing:-.03em}
+  /* Поиск как в iOS: без рамки, мягкий фон, крупный радиус */
+  .clp-search{padding:6px 16px 10px}
+  .search-wrap{border:none;background:var(--bg);border-radius:12px;padding:10px 12px}
+  html.dark .search-wrap{background:var(--surface2)}
   .search-inp{font-size:16px}
-  .av-img{width:40px;height:40px}
+  .chat-item{margin:1px 8px;min-height:64px;padding:12px;border-radius:14px}
+  .chat-item.active{border-left:none}
+  .chat-item:active{background:var(--surface2)}
+  .chat-name{font-size:15px;font-weight:600}
+  .chat-preview{font-size:13px;margin-top:2px}
+  .av-img{width:44px;height:44px}
+  .item-av .av{width:44px;height:44px;font-size:16px}
   .sr-btn{width:44px;height:44px}
-  .sr-item{min-height:56px;padding:12px 14px}
+  .sr-item{min-height:56px;padding:12px 16px}
   .search-clear{min-width:44px;min-height:44px;font-size:20px}
+  .chats-scroll{padding-bottom:8px}
 }
 @media (max-width:480px){
-  .clp-head{padding:12px 10px 6px}
-  .clp-search{padding:0 10px 8px}
+  .clp-head{padding:calc(12px + env(safe-area-inset-top, 0px)) 16px 4px}
 }
 </style>

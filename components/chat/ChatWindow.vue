@@ -357,16 +357,18 @@ watch(() => chatsStore.activeMsgs.length, () => scrollBottom())
 .back-btn{margin-right:4px;flex-shrink:0}
 .cw-head{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:60px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)}
 @media (max-width:768px){
-  .cw-head{padding:0 10px;height:56px}
+  .cw-head{padding:env(safe-area-inset-top, 0px) 10px 0;height:calc(56px + env(safe-area-inset-top, 0px))}
   .cw-head-r{gap:0}
   .cw-head-r .btn-icon{min-width:44px;min-height:44px}
-  .back-btn{min-width:44px;min-height:44px}
-  .inp-row{padding:8px 10px;gap:6px}
+  .back-btn{min-width:44px;min-height:44px;color:var(--teal)}
+  .inp-row{padding:8px 10px;gap:4px;align-items:flex-end}
   .emoji-btn{width:44px;height:44px}
   .attach-icon{width:44px;height:44px}
-  .send-btn{width:44px;height:44px}
-  .msg-inp{font-size:16px}
-  .cw-name{font-size:14px}
+  .send-btn{width:40px;height:40px;margin-bottom:2px}
+  /* Поле ввода — пузырёк как в iMessage */
+  .msg-inp{font-size:16px;background:var(--bg2);border-radius:20px;padding:10px 14px;min-height:40px}
+  html.dark .msg-inp{background:var(--surface2)}
+  .cw-name{font-size:15px}
   .cw-role{display:none}
   .chip-remove{min-width:44px;min-height:44px}
 }

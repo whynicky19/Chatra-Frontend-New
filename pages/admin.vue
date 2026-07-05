@@ -729,8 +729,8 @@ onMounted(async () => {
 .badge-red{background:var(--red-l);color:var(--red);border:1px solid rgba(220,38,38,.2)}
 
 @media (max-width:768px) {
-  .pg-head { padding: 16px 14px 0; }
-  .pg-body { padding: 14px 14px 24px; }
+  .pg-head { padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 0; }
+  .pg-body { padding: 14px 16px 28px; }
   .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
   .stat-card { padding: 12px 8px; flex-direction: column; align-items: flex-start; gap: 6px; }
   .stat-val { font-size: 18px; }

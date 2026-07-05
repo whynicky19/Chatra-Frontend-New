@@ -92,6 +92,16 @@
             </div>
             <label class="toggle"><input type="checkbox" v-model="desktopPopups"/><span class="tog-t"></span></label>
           </div>
+          <div class="pref-row">
+            <div class="pref-info">
+              <div class="pref-title">{{ lang==='ru'?'Язык':lang==='kk'?'Тіл':'Language' }}</div>
+              <div class="pref-sub">{{ lang==='ru'?'Язык интерфейса':lang==='kk'?'Интерфейс тілі':'Interface language' }}</div>
+            </div>
+            <div class="lang-seg">
+              <button v-for="l in [{code:'ru',label:'RU'},{code:'en',label:'EN'},{code:'kk',label:'KZ'}]" :key="l.code"
+                :class="['lang-seg-btn',{active:lang===l.code}]" @click="setLang(l.code as any)">{{ l.label }}</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -127,6 +137,12 @@
         </div>
         <button class="deactivate-btn">{{ t('settings.start_process') }}</button>
       </div>
+
+      <!-- Logout -->
+      <button class="scard logout-card" @click="doLogout">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        {{ t('nav.logout') }}
+      </button>
     </div>
   </div>
 </template>
@@ -137,9 +153,14 @@ import { useAuthSvc } from '~/services/auth'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
 import { useOrgStore } from '~/stores/org.store'
+import { useChatsStore } from '~/stores/chats.store'
+import { useAuth } from '~/composables/useAuth'
 definePageMeta({ layout: 'default' })
-const auth = useAuthStore(); const authSvc = useAuthSvc(); const toast = useToast(); const { t, lang } = useI18n()
+const auth = useAuthStore(); const authSvc = useAuthSvc(); const toast = useToast(); const { t, lang, setLang } = useI18n()
 const org = useOrgStore()
+const chatsStore = useChatsStore()
+const { logout } = useAuth()
+const doLogout = () => { chatsStore.disconnectAll(); logout() }
 const changeOrg = () => { org.clear(); if (import.meta.client) window.location.href = '/org' }
 const fullnameInput = ref(''); const nickOk = ref<boolean|null>(null); const nickChecking = ref(false)
 const emailNotif = ref(true); const aiInsights = ref(true); const desktopPopups = ref(false)
@@ -208,6 +229,7 @@ onMounted(() => {
 .field-group{display:flex;flex-direction:column;gap:6px}
 .field-label{font-size:11px;font-weight:700;color:var(--text4);letter-spacing:.08em;text-transform:uppercase}
 .field-input{background:var(--bg2)!important;border:none!important;border-radius:14px!important;padding:12px 16px!important}
+html.dark .field-input{background:var(--surface2)!important}
 .field-input:focus{box-shadow:0 0 0 2px var(--teal)!important}
 .field-locked{display:flex;align-items:center;color:var(--text2)}
 .nick-hint{font-size:11px;font-weight:500}.nick-hint.ok{color:var(--green)}.nick-hint.err{color:var(--red)}
@@ -240,12 +262,17 @@ onMounted(() => {
 .deactivate-btn{color:var(--red);font-size:14px;font-weight:600;background:none;border:none;cursor:pointer;flex-shrink:0}
 .deactivate-btn:hover{opacity:.7}
 .save-btn-mobile { display: none; }
+.lang-seg{display:flex;gap:2px;background:var(--bg2);border-radius:10px;padding:3px;flex-shrink:0}
+.lang-seg-btn{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.03em;transition:all .15s;border:none;background:none;cursor:pointer}
+.lang-seg-btn.active{background:var(--surface);color:var(--teal);box-shadow:var(--sh-xs)}
+.logout-card{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--red);font-size:15px;font-weight:600;cursor:pointer;padding:16px 24px;border:none;width:100%;transition:background .15s,transform .12s}
+.logout-card:hover{background:var(--red-l)}
+.logout-card:active{transform:scale(.98)}
 @media (max-width:768px){
   .pg { overflow-x: hidden; overflow-y: auto; }
-  .pg-head { padding: 16px 14px 0; }
-  .pg-title { font-size: 22px; }
-  .pg-body { padding: 12px 12px 80px; gap: 14px; }
-  .scard { padding: 16px; }
+  .pg-head { padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 0; }
+  .pg-body { padding: 14px 16px 90px; gap: 14px; }
+  .scard { padding: 18px 16px; border-radius: 20px; }
   .scard-head { flex-direction: column; gap: 12px; margin-bottom: 16px; }
   .save-btn-desktop { display: none; }
   .save-btn-mobile { display: flex; width: 100%; min-height: 50px; margin-top: 16px; }
@@ -273,8 +300,8 @@ onMounted(() => {
 .org-switch-sub.university{color:var(--teal)}
 .org-switch-sub.school{color:#b45309}
 @media (max-width:480px){
-  .pg-head { padding: 12px 12px 0; }
-  .pg-body { padding: 10px 10px 80px; }
-  .scard { padding: 14px; }
+  .pg-head { padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 0; }
+  .pg-body { padding: 12px 14px 90px; }
+  .scard { padding: 16px 14px; }
 }
 </style>

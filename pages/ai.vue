@@ -305,14 +305,16 @@ watch(() => ai.msgs.value.length, () => scroll())
 
 @media (max-width:768px) {
   .ai-page { overflow-x: hidden; }
-  .chat-head { padding: 0 14px; height: 54px; }
-  .chat-title { font-size: 16px; }
+  .chat-head { padding: env(safe-area-inset-top, 0px) 14px 0; height: calc(54px + env(safe-area-inset-top, 0px)); }
+  .chat-title { font-size: 17px; }
   .chat-sub { display: none; }
   .online-pill { font-size: 11px; padding: 4px 10px; }
   .clear-btn { width: 44px; height: 44px; border-radius: 12px; }
   .chat-area { padding: 14px 12px; }
-  .chat-msg { max-width: 90%; }
-  .msg-bubble { padding: 10px 14px; font-size: 13px; }
+  .chat-msg { max-width: 88%; }
+  .msg-bubble { padding: 11px 15px; font-size: 15px; border-radius: 18px; }
+  .msg-bubble.user { border-bottom-right-radius: 6px; }
+  .msg-bubble.assistant { border-top-left-radius: 6px; }
   .chat-inp { padding: 10px 12px; gap: 6px; }
   .chat-field { font-size: 16px; padding: 10px 14px; }
   .send-btn { width: 44px; height: 44px; }

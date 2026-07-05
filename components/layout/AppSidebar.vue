@@ -23,7 +23,7 @@
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
         </div>
-        <span class="item-label" v-if="!isCollapsed && !isMobile">{{ t('nav.classes') }}</span>
+        <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('nav.classes') }}</span>
       </NuxtLink>
 
       <NuxtLink to="/chats" class="sb-item" :class="{active:route.path==='/chats'||route.path.startsWith('/chats')}">
@@ -31,7 +31,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
           <span v-if="totalUnread>0" class="notif-dot">{{totalUnread>9?'9+':totalUnread}}</span>
         </div>
-        <span class="item-label" v-if="!isCollapsed && !isMobile">{{ t('nav.chats') }}</span>
+        <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('nav.chats') }}</span>
         <span v-if="!isCollapsed && !isMobile && totalUnread>0" class="notif-pill">{{totalUnread>99?'99+':totalUnread}}</span>
       </NuxtLink>
 
@@ -40,7 +40,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
           <span v-if="adminPending>0" class="notif-dot notif-dot-orange">{{adminPending>9?'9+':adminPending}}</span>
         </div>
-        <span class="item-label" v-if="!isCollapsed && !isMobile">{{ t('nav.participants') }}</span>
+        <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('nav.participants') }}</span>
         <span v-if="!isCollapsed && !isMobile && adminPending>0" class="notif-pill notif-pill-orange">{{adminPending>99?'99+':adminPending}}</span>
       </NuxtLink>
 
@@ -48,14 +48,14 @@
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9 2c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5Z"/><path d="M17.5 12c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3Z"/></svg>
         </div>
-        <span class="item-label" v-if="!isCollapsed && !isMobile">{{ t('nav.ai') }}</span>
+        <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('nav.ai') }}</span>
       </NuxtLink>
 
       <NuxtLink to="/settings" class="sb-item" :class="{active:route.path==='/settings'}">
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         </div>
-        <span class="item-label" v-if="!isCollapsed && !isMobile">{{ t('nav.settings') }}</span>
+        <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('nav.settings') }}</span>
       </NuxtLink>
     </nav>
 
@@ -75,13 +75,13 @@
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
-        <span class="item-label" v-if="!isCollapsed && !isMobile">{{ t('chats.help_center') }}</span>
+        <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('chats.help_center') }}</span>
       </a>
       <div class="sb-item logout-item" @click="doLogout" :title="t('nav.logout')">
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </div>
-        <span class="item-label" v-if="!isCollapsed && !isMobile">{{ t('nav.logout') }}</span>
+        <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('nav.logout') }}</span>
       </div>
     </div>
   </aside>
@@ -181,83 +181,76 @@ onMounted(() => {
 .lang-switch-mobile{display:none}
 
 @media (max-width:768px){
+  /* iOS-таб-бар: матовое стекло, иконки с подписями */
   .sb{
     position:fixed!important;
-    bottom:calc(12px + env(safe-area-inset-bottom, 0px));left:12px;right:12px;top:auto!important;
+    bottom:calc(10px + env(safe-area-inset-bottom, 0px));left:10px;right:10px;top:auto!important;
     width:auto!important;
-    height:64px;
+    height:66px;
     flex-direction:row;
     border-right:none;
     border:1px solid var(--border);
-    border-radius:24px;
+    border-radius:26px;
     z-index:200;
     overflow:visible;
-    background:var(--surface);
-    box-shadow:0 8px 32px rgba(0,120,140,0.18),0 2px 8px rgba(0,0,0,0.08);
-    padding:0 8px;
+    background:rgba(255,255,255,.78);
+    -webkit-backdrop-filter:blur(24px) saturate(180%);
+    backdrop-filter:blur(24px) saturate(180%);
+    box-shadow:0 8px 32px rgba(0,60,70,.14),0 2px 8px rgba(0,0,0,.06);
+    padding:0 6px;
   }
   html.dark .sb{
-    box-shadow:0 8px 32px rgba(0,0,0,0.5),0 2px 8px rgba(0,0,0,0.3);
-    border-color:var(--border2);
+    background:rgba(28,28,30,.75);
+    box-shadow:0 8px 32px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3);
+    border-color:rgba(255,255,255,.1);
   }
   .sb.collapsed{width:auto!important}
-  .sb-logo{display:none}
-  .lang-switch{display:none}
-  .fio-nudge{display:none}
+  .sb-logo,.lang-switch,.fio-nudge,.sb-bottom{display:none}
   .sb-nav{
     flex-direction:row;
     flex:1;
-    padding:8px 0;
-    gap:4px;
+    padding:6px 2px;
+    gap:2px;
     overflow:visible;
-    align-items:center;
+    align-items:stretch;
     justify-content:space-around;
   }
   .sb-item{
     flex-direction:column;
-    padding:8px 16px;
+    padding:5px 4px 4px;
     gap:3px;
-    border-radius:16px;
+    border-radius:18px;
     justify-content:center;
     align-items:center;
     flex:1;
-    min-width:44px;
-    min-height:48px;
+    min-width:0;
     white-space:nowrap;
-    transition:all .2s cubic-bezier(.34,1.56,.64,1);
+    transition:color .18s;
   }
-  .sb-item .item-label{display:none}
-  .sb-item.active{
-    background:var(--teal) !important;
-    color:#fff !important;
-    transform:scale(1.08);
-    box-shadow:0 4px 16px rgba(var(--teal-rgb),0.4);
-    border-left:none;
+  .sb-item:hover{background:transparent;color:var(--text3)}
+  .sb-item .item-label{
+    display:block;flex:none;
+    font-size:10px;font-weight:600;letter-spacing:.01em;
+    max-width:100%;overflow:hidden;text-overflow:ellipsis;
   }
-  .sb-item.active .item-icon{color:#fff}
+  .item-icon{
+    width:auto;height:30px;min-width:52px;padding:0 12px;
+    border-radius:100px;
+    transition:background .2s,color .2s,box-shadow .2s;
+  }
+  .sb-item.active{background:transparent!important;color:var(--teal)!important;box-shadow:none;border-left:none}
+  .sb-item.active .item-icon{background:var(--teal);color:#fff;box-shadow:0 3px 12px rgba(var(--teal-rgb),.35)}
   .sb-item.active .item-icon svg{stroke:#fff}
   .sb-item.active::before{display:none}
   .sb-item.active::after{display:none}
-  .sb-item:not(.active):hover{background:var(--teal-l)}
-  .item-icon{width:22px;height:22px}
-  .notif-dot{border-color:var(--surface)}
+  .sb-item:active .item-icon{transform:scale(.92);transition:transform .1s}
+  .notif-dot{border-color:var(--surface);top:-4px;right:6px}
   .notif-pill{display:none}
-  .sb-bottom{
-    flex-direction:row;
-    border-top:none;
-    padding:8px 0;
-    gap:4px;
-    align-items:center;
-  }
-  .sb-bottom .sb-item{flex:1}
-  .help-item{display:none}
   .collapsed .sb-item{justify-content:center}
-  .collapsed .sb-logo{display:none}
   .lang-switch-mobile{display:none}
 }
 @media (max-width:480px){
-  .sb{bottom:10px;left:10px;right:10px;height:60px}
-  .sb-item{padding:6px 12px;min-height:44px}
-  .item-icon{width:20px;height:20px}
+  .sb{bottom:calc(8px + env(safe-area-inset-bottom, 0px));left:8px;right:8px;height:62px}
+  .item-icon{height:28px;min-width:46px;padding:0 10px}
 }
 </style>

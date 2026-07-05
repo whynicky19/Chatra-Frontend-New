@@ -194,8 +194,13 @@ onMounted(async () => {
 .notif-date{font-size:11px;color:var(--text4)}
 .unread-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
 @media(max-width:768px){
-  .pg-head{padding:16px 14px 0}
-  .pg-body{padding:14px 14px 24px}
+  .pg-head{padding:calc(18px + env(safe-area-inset-top, 0px)) 16px 0}
+  .pg-title svg{display:none}
+  .pg-head .btn-ghost{color:var(--teal);font-weight:600;flex-shrink:0}
+  .pg-body{padding:14px 16px 28px}
   .notif-list{grid-template-columns:1fr}
+  .notif-card{border-radius:16px;padding:14px}
+  .notif-card:active{background:var(--surface2)}
+  .empty-state{min-height:55vh;justify-content:center;padding:0}
 }
 </style>
