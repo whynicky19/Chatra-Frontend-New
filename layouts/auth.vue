@@ -107,12 +107,21 @@ onUnmounted(() => {
 }
 @media (max-width:768px) {
   .auth-shell { cursor: default; }
-  .auth-content { padding: 14px 12px; gap: 14px; max-width: 100%; }
-  .auth-brand { width: 110px; height: 110px; }
-  .lang-btn { padding: 5px 12px; font-size: 11px; }
+  .auth-content {
+    padding: calc(14px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+    gap: 14px; max-width: 100%;
+  }
+  .auth-brand { width: 104px; height: 104px; }
+  .lang-btn { padding: 6px 13px; font-size: 11px; }
 }
 @media (max-width:480px) {
-  .auth-content { padding: 10px; gap: 10px; }
-  .auth-brand { width: 92px; height: 92px; }
+  .auth-content { padding: calc(10px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom)); gap: 12px; }
+  .auth-brand { width: 88px; height: 88px; }
+}
+/* Низкие экраны (клавиатура открыта / landscape) — прижимаем контент к верху, чтобы форма не обрезалась */
+@media (max-height:640px) {
+  .auth-shell { justify-content: flex-start; }
+  .auth-brand { width: 72px; height: 72px; }
+  .auth-content { gap: 10px; }
 }
 </style>

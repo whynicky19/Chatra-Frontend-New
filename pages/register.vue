@@ -95,8 +95,8 @@ const sub = async () => {
 </script>
 
 <style scoped>
-/* Без карточки — контент прямо на фоне, как в приложении */
-.auth-card{background:transparent;padding:0 8px;width:100%;max-width:400px;margin:0 auto}
+/* Карточка вокруг формы, чтобы не сливалась с фоном */
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;box-shadow:var(--sh-md);padding:28px 26px;width:100%;max-width:400px;margin:0 auto}
 .auth-title{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-bottom:6px;color:var(--text1);text-align:center}
 .auth-sub{font-size:15px;color:var(--text4);margin-bottom:26px;text-align:center;line-height:1.4}
 .auth-form{display:flex;flex-direction:column;gap:0}
@@ -107,8 +107,8 @@ const sub = async () => {
 .str-fill{height:100%;border-radius:3px;transition:all .3s}
 .str-lbl{font-size:11px;color:var(--text4)}
 .auth-link-row{text-align:center;font-size:13px;color:var(--text3);margin-top:20px}
-.input{background:var(--surface)!important;border:none!important;border-radius:16px!important;padding:13px 18px!important;box-shadow:var(--sh-xs);color:var(--text1)!important}
-.input:focus{box-shadow:0 0 0 2px var(--teal), var(--sh-xs)!important}
+.input{background:var(--bg)!important;border:1px solid var(--border)!important;border-radius:16px!important;padding:13px 18px!important;color:var(--text1)!important}
+.input:focus{border-color:var(--teal)!important;box-shadow:0 0 0 2px rgba(var(--teal-rgb),.25)!important}
 .input::placeholder{color:var(--text4)!important}
 
 /* Org badge */
@@ -121,14 +121,17 @@ const sub = async () => {
 .org-switch-btn:hover{color:var(--teal)}
 
 @media (max-width:768px) {
-  .auth-card { padding: 0 4px; max-width: 100%; width: 100%; }
-  .auth-title { font-size: 24px; }
-  .auth-sub { margin-bottom: 16px; font-size: 13px; }
-  .input { font-size: 16px !important; }
+  .auth-card { padding: 22px 18px; border-radius: 20px; max-width: 100%; width: 100%; box-shadow: var(--sh-sm); }
+  .auth-title { font-size: 23px; }
+  .auth-sub { margin-bottom: 16px; font-size: 14px; }
+  .input { font-size: 16px !important; padding: 12px 15px !important; }
   .btn-lg { min-height: 50px; font-size: 15px; }
+  .auth-submit { height: 50px; }
   .frow { margin-bottom: 12px; }
+  .org-badge-row { margin-bottom: 14px; }
 }
 @media (max-width:480px) {
-  .auth-card { padding: 0 2px; }
+  .auth-card { padding: 20px 16px; border-radius: 18px; }
+  .auth-title { font-size: 21px; }
 }
 </style>
