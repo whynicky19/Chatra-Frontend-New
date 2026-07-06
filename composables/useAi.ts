@@ -32,6 +32,9 @@ const chatKeyFor = (uid: number | null | undefined) => `_ai_chat_history_${uid ?
 const _msgs = ref<Msg[]>([])
 let _loadedKey: string | null = null
 let _nextId = 0
+// Ключ треда, уже синхронизированного с сервером (чтобы не дёргать /ai/history
+// повторно из каждого компонента, который вызвал useAi()).
+let _syncedKey: string | null = null
 
 const loadMsgsFor = (key: string, migrateLegacy: boolean) => {
   if (_loadedKey === key || !import.meta.client) return
@@ -95,9 +98,35 @@ export const useAi = () => {
   const toast = useToast()
   const auth = useAuthStore()
 
+  // Серверная история → _msgs (синхронизация с приложением). Если на сервере
+  // пусто, а локально есть — разово заливаем локальную историю (миграция).
+  const syncFromServer = async (uid: number | null | undefined) => {
+    if (!import.meta.client || uid == null) return
+    const key = chatKeyFor(uid)
+    if (_syncedKey === key) return
+    _syncedKey = key
+    try {
+      let rows = (await api.get('/ai/history')).data as any[]
+      if ((!rows || rows.length === 0) && _msgs.value.length) {
+        rows = (await api.post('/ai/history/import', {
+          messages: _msgs.value.map(m => ({ role: m.role, content: m.text })),
+        })).data
+      }
+      if (Array.isArray(rows)) {
+        _msgs.value = rows.map((r, i) => ({
+          id: i + 1, role: r.role, text: r.content,
+          ts: r.created_at ? new Date(r.created_at) : new Date(),
+        }))
+        _nextId = _msgs.value.length
+        _loadedKey = key
+        persistMsgs()
+      }
+    } catch { _syncedKey = null }
+  }
+
   // Подхватываем историю текущего аккаунта; при смене пользователя
   // (в т.ч. после повторного входа) загружается его собственная.
-  watch(() => auth.user?.id, (id) => loadMsgsFor(chatKeyFor(id), id != null), { immediate: true })
+  watch(() => auth.user?.id, (id) => { loadMsgsFor(chatKeyFor(id), id != null); syncFromServer(id) }, { immediate: true })
 
   const isStudent = computed(() => auth.user?.role === 'student')
   const aiUnlimited = computed(() => !isStudent.value || !!auth.user?.ai_unlimited)
@@ -198,6 +227,8 @@ export const useAi = () => {
   const clear = () => {
     msgs.value = []
     if (import.meta.client && _loadedKey) { try { localStorage.removeItem(_loadedKey) } catch {} }
+    // Чистим и на сервере — иначе история «воскреснет» на другом устройстве.
+    try { api.delete('/ai/history') } catch {}
   }
 
   return { msgs, loading, send, clear, aiCount, aiRemaining, aiUnlimited, aiLimitReached, AI_LIMIT }

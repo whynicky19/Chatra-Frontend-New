@@ -41,12 +41,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useClassesSvc } from '~/services/classes'
+import { useNotificationsSvc } from '~/services/notifications'
 import { useNotificationsStore } from '~/stores/notifications.store'
 definePageMeta({ layout: 'default' })
 
 const auth = useAuthStore()
 const assignSvc = useAssignmentsSvc()
 const classesSvc = useClassesSvc()
+const notifSvc = useNotificationsSvc()
 const notifStore = useNotificationsStore()
 
 interface NotifItem {
@@ -62,30 +64,21 @@ interface NotifItem {
 const loading = ref(false)
 const items = ref<NotifItem[]>([])
 
-const seenKey = computed(() => `notif_seen_${auth.user?.id}`)
-const readSet = ref<Set<string>>(new Set())
-
-const loadSeen = () => {
-  if (!import.meta.client) return
-  try {
-    const raw = localStorage.getItem(seenKey.value)
-    readSet.value = new Set(raw ? JSON.parse(raw) : [])
-  } catch { readSet.value = new Set() }
-}
-const saveSeen = () => {
-  if (!import.meta.client) return
-  localStorage.setItem(seenKey.value, JSON.stringify([...readSet.value]))
-}
+// Состояние (read/dismissed) — серверная истина, синхронно с приложением.
+const stateMap = ref<Record<string, { read: boolean; dismissed: boolean }>>({})
 
 const markRead = (key: string) => {
-  readSet.value.add(key)
-  saveSeen()
   const it = items.value.find(i => i.key === key)
   if (it) it.read = true
+  stateMap.value[key] = { read: true, dismissed: stateMap.value[key]?.dismissed || false }
+  notifStore.setUnread(items.value.filter(i => !i.read).length)
+  notifSvc.setState(key, { read: true })
 }
 const markAllRead = () => {
-  items.value.forEach(i => { readSet.value.add(i.key); i.read = true })
-  saveSeen()
+  const keys = items.value.filter(i => !i.read).map(i => i.key)
+  items.value.forEach(i => { i.read = true; stateMap.value[i.key] = { read: true, dismissed: stateMap.value[i.key]?.dismissed || false } })
+  notifStore.setUnread(0)
+  if (keys.length) notifSvc.readAll(keys)
 }
 
 const unreadCount = computed(() => items.value.filter(i => !i.read).length)
@@ -103,14 +96,20 @@ const fmtDate = (iso: string) => {
   } catch { return iso }
 }
 
+const isDismissed = (key: string) => stateMap.value[key]?.dismissed === true
+const isRead = (key: string) => stateMap.value[key]?.read === true
+
 onMounted(async () => {
-  loadSeen()
   loading.value = true
   try {
-    const [classes, subs] = await Promise.all([
+    const [classes, subs, states] = await Promise.all([
       classesSvc.list(),
       assignSvc.mySubmissions().catch(() => [] as any[]),
+      notifSvc.states(),
     ])
+    stateMap.value = Object.fromEntries(
+      states.map(s => [s.notif_key, { read: s.read, dismissed: s.dismissed }])
+    )
 
     const classIds = classes.map((c: any) => c.id)
 
@@ -127,14 +126,15 @@ onMounted(async () => {
     for (const a of allAssignments) {
       const age = now - new Date(a.created_at).getTime()
       if (age > sevenDays) continue
-      const key = `assignment-${a.id}`
+      const key = `assignment:${a.id}`
+      if (isDismissed(key)) continue
       collected.push({
         key, type: 'assignment',
         title: 'Новое задание',
         desc: a.title,
         date: a.created_at,
         color: '#6366f1',
-        read: readSet.value.has(key),
+        read: isRead(key),
       })
     }
 
@@ -145,14 +145,15 @@ onMounted(async () => {
       if (!a.deadline || submittedIds.has(a.id)) continue
       const dl = new Date(a.deadline).getTime()
       if (dl < now || dl - now > fortyEightH) continue
-      const key = `deadline-${a.id}`
+      const key = `deadline:${a.id}`
+      if (isDismissed(key)) continue
       collected.push({
         key, type: 'deadline',
         title: 'Дедлайн близко',
         desc: `${a.title} — до ${new Date(a.deadline).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`,
         date: a.deadline,
         color: 'var(--red)',
-        read: readSet.value.has(key),
+        read: isRead(key),
       })
     }
 
@@ -160,14 +161,15 @@ onMounted(async () => {
     for (const s of subs) {
       if (s.status !== 'graded') continue
       const a = allAssignments.find((x: any) => x.id === s.assignment_id)
-      const key = `grade-${s.id}`
+      const key = `grade:${s.id}`
+      if (isDismissed(key)) continue
       collected.push({
         key, type: 'grade',
         title: 'Работа проверена',
         desc: a ? `${a.title} — оценка выставлена` : `Работа #${s.id} проверена`,
         date: s.grade?.graded_at || s.submitted_at,
         color: 'var(--teal)',
-        read: readSet.value.has(key),
+        read: isRead(key),
       })
     }
 

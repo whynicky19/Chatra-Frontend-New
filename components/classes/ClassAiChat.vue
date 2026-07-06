@@ -649,6 +649,7 @@ const send = async () => {
       ],
       max_tokens: 2500,
       temperature: 0.55,
+      class_id: props.classId,  // тред ИИ-вкладки класса (не глобальный)
     })
 
     const reply = data.content || '...'
@@ -668,6 +669,29 @@ const send = async () => {
 const clearAll = () => {
   msgs.value = []
   try { sessionStorage.removeItem(storageKey.value) } catch {}
+  // Чистим тред этого класса и на сервере (синхронно с приложением).
+  if (props.classId != null) { try { api.delete('/ai/history', { params: { class_id: props.classId } }) } catch {} }
+}
+
+// Серверная история треда класса → msgs (синхронно с приложением). Если на
+// сервере пусто, а локально (сессия) есть — разово заливаем на сервер.
+const syncFromServer = async () => {
+  if (props.classId == null) return
+  try {
+    let rows = (await api.get('/ai/history', { params: { class_id: props.classId } })).data as any[]
+    if ((!rows || rows.length === 0) && msgs.value.length) {
+      rows = (await api.post('/ai/history/import', {
+        class_id: props.classId,
+        messages: msgs.value.map(m => ({ role: m.role, content: m.text })),
+      })).data
+    }
+    if (Array.isArray(rows)) {
+      msgs.value = rows.map((r, i) => ({ id: i + 1, role: r.role, text: r.content }))
+      nextId = msgs.value.length
+      persist()
+      nextTick(scrollBottom)
+    }
+  } catch {}
 }
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
@@ -677,6 +701,7 @@ watch(msgs, scrollBottom)
 
 onMounted(() => {
   restore()
+  syncFromServer()
   nextTick(scrollBottom)
   loadAllFiles()
   loadPending()
