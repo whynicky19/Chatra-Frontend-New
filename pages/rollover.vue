@@ -199,7 +199,7 @@ const toggle = (id: number) => {
   selected.value = s
 }
 
-const goBack = () => router.push('/classes')
+const goBack = () => router.push('/')
 
 const load = async () => {
   loading.value = true
@@ -293,7 +293,7 @@ const publishAll = async (grp: ResultGroup) => {
 onMounted(() => {
   // Только преподаватель/админ
   if (!(auth.user?.role === 'teacher' || auth.user?.role === 'admin')) {
-    router.replace('/classes')
+    router.replace('/')
     return
   }
   load()

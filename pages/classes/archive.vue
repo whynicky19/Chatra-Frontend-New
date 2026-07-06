@@ -98,7 +98,7 @@ const covers = [
 ]
 const coverGrad = (id: number) => covers[id % covers.length]
 
-const goBack = () => router.push('/classes')
+const goBack = () => router.push('/')
 const goClass = (id: number) => router.push(`/classes/${id}`)
 const doLeave = async (cls: ClassResponse) => {
   try { await classesSvc.leave(cls.id) } catch {}
