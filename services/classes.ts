@@ -86,6 +86,15 @@ export const useClassesSvc = () => {
       return data as any[]
     },
 
+    // Студенты из архивных потоков, которых можно вернуть (админ/владелец).
+    rejoinableStudents: async (classId: number): Promise<any[]> => {
+      const { data } = await api.get(`/classes/${classId}/rejoinable-students`)
+      return data as any[]
+    },
+    addMember: async (classId: number, userId: number): Promise<void> => {
+      await api.post(`/classes/${classId}/members`, { user_id: userId })
+    },
+
     // ── Потоки (когорты) — только владелец класса / админ ──────────────────
     listCohorts: async (classId: number): Promise<CohortResponse[]> => {
       const { data } = await api.get(`/classes/${classId}/cohorts`)

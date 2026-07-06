@@ -383,6 +383,33 @@
               </div>
             </div>
           </div>
+
+          <!-- Вернуть студента из архива (доступ даёт админ) -->
+          <div class="cl-section">
+            <div class="cl-section-label">
+              Вернуть студента
+              <span v-if="!loadingRejoin && rejoinable.length" class="cl-count-badge">{{ rejoinable.length }}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text4);margin:-4px 0 10px">Состоявшие в классе в прошлые учебные годы</div>
+            <div v-if="loadingRejoin" style="display:flex;justify-content:center;padding:16px"><div class="spinner"></div></div>
+            <div v-else-if="!rejoinable.length" class="cl-empty">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>
+              <span>Нет студентов из прошлых лет для возврата</span>
+            </div>
+            <div v-else class="members-list">
+              <div v-for="u in rejoinable" :key="u.id" class="member-row">
+                <div :class="['av','av-sm',colorFor(u.id)]">{{ (u.full_name||u.email||'?')[0].toUpperCase() }}</div>
+                <div class="member-info">
+                  <div class="member-name">{{ u.full_name || u.email.split('@')[0] }}</div>
+                  <div class="member-email">{{ u.email }}</div>
+                </div>
+                <button class="btn btn-blue btn-sm" :disabled="addingId===u.id" @click="returnStudent(u)">
+                  <div v-if="addingId===u.id" class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
+                  <span v-else>Вернуть</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -571,14 +598,34 @@ const selectedClass = ref<any>(null)
 const classCreator = computed(() => selectedClass.value?.created_by ? users.value.find(u => u.id === selectedClass.value.created_by) ?? null : null)
 const creatorName = (id: number) => { const u = users.value.find(u => u.id === id); return u ? (u.full_name || u.email) : id ? '#' + id : '—' }
 
+const rejoinable = ref<any[]>([]); const loadingRejoin = ref(false); const addingId = ref<number|null>(null)
+
 const openClass = async (cl: any) => {
   selectedClass.value = cl
   showMembers.value = true
   membersList.value = []; loadingMembers.value = true
+  rejoinable.value = []; loadingRejoin.value = true
   try {
     membersList.value = await classesSvc.members(cl.id)
   } catch {}
   finally { loadingMembers.value = false }
+  // Кандидаты на возврат — студенты из архивных потоков, не в активном.
+  try { rejoinable.value = await classesSvc.rejoinableStudents(cl.id) } catch {}
+  finally { loadingRejoin.value = false }
+}
+
+// Вернуть студента в активный поток (доступ даёт админ).
+const returnStudent = async (u: any) => {
+  if (!selectedClass.value) return
+  addingId.value = u.id
+  try {
+    await classesSvc.addMember(selectedClass.value.id, u.id)
+    rejoinable.value = rejoinable.value.filter(x => x.id !== u.id)
+    membersList.value = await classesSvc.members(selectedClass.value.id)
+    toast.ok('Студент возвращён в класс')
+  } catch (e: any) {
+    toast.err(e?.response?.data?.detail || 'Не удалось вернуть студента')
+  } finally { addingId.value = null }
 }
 const switchToClasses = async () => {
   tab.value = 'classes'

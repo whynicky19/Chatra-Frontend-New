@@ -217,9 +217,9 @@ export const translations: Record<string, Record<Lang, string>> = {
   'cohort.archived_badge': { ru: 'Архив', en: 'Archived', kk: 'Мұрағат' },
   'cohort.archived_section': { ru: 'Архив', en: 'Archive', kk: 'Мұрағат' },
   'cohort.archived_rejoin_blocked': {
-    ru: 'Ваш учебный год в архиве. Попросите преподавателя добавить вас.',
-    en: 'Your academic year is archived. Ask your teacher to add you.',
-    kk: 'Оқу жылыңыз мұрағатта. Мұғалімнен сізді қосуын сұраңыз.',
+    ru: 'Ваш учебный год в архиве. Попросите администратора добавить вас.',
+    en: 'Your academic year is archived. Ask an administrator to add you.',
+    kk: 'Оқу жылыңыз мұрағатта. Әкімшіден сізді қосуын сұраңыз.',
   },
   'cohort.readonly_notice': {
     ru: 'Ваш учебный год в архиве — класс доступен только для чтения',
