@@ -305,7 +305,12 @@ const covers = [
 ]
 const coverGrad = (id: number) => covers[id % covers.length]
 
-const visibleClasses = computed(() => auth.isAdmin ? allClasses.value : allClasses.value.filter(c => joinedIds.value.includes(c.id)))
+// Членство — серверная истина: GET /classes/ уже возвращает нужный набор для
+// роли (студенту — его классы, включая архив; преподавателю/админу — все).
+// Раньше список ещё фильтровался по localStorage joinedIds, из-за чего на новом
+// браузере/устройстве классы не показывались (не синхронизировались). Теперь
+// показываем ровно то, что вернул сервер — одинаково в приложении и на сайте.
+const visibleClasses = computed(() => allClasses.value)
 const activeClasses = computed(() => visibleClasses.value.filter(c => !c.is_archived_for_user))
 const archivedClasses = computed(() => visibleClasses.value.filter(c => c.is_archived_for_user))
 const lectureCount = (classId: number) => allPosts.value.filter(p => p.title?.startsWith(`[LECTURE][${classId}]`)).length
@@ -391,6 +396,9 @@ const joinClass = async () => {
   } catch (e: any) {
     const detail = e?.response?.data?.detail
     if (detail === 'class_not_found') joinError.value = t('classes.not_found')
+    // Ученик уже был в классе, его поток в архиве — вернуть доступ может
+    // только преподаватель/админ.
+    else if (detail === 'archived_rejoin_blocked') joinError.value = t('cohort.archived_rejoin_blocked')
     else if (cohortErrors.isNoActiveCohort(e)) joinError.value = t('cohort.no_active_cohort')
     else joinError.value = detail || t('general.error')
   } finally {
@@ -403,6 +411,8 @@ const doLeave = async () => {
   const id = leavingClass.value.id
   leaving.value = true
   try { await classesSvc.leave(id) } catch {}
+  // Оптимистично убираем из списка (сервер больше не вернёт этот класс).
+  allClasses.value = allClasses.value.filter(c => c.id !== id)
   joinedIds.value = joinedIds.value.filter(i => i !== id); saveJoined()
   leaving.value = false; leavingClass.value = null
   toast.ok(t('classes.left_ok'))
@@ -439,22 +449,29 @@ const load = async () => {
   finally { loading.value = false }
 }
 
-// Sync any locally-tracked class memberships to the backend on startup
+// Миграция: классы, вступление в которые раньше хранилось только в localStorage
+// (старые сборки), проталкиваем на сервер, затем перезагружаем список, чтобы
+// они появились как серверное членство и синхронизировались на всех устройствах.
 const syncMemberships = async (ids: number[]) => {
-  await Promise.all(ids.map(id => classesSvc.join(id).catch(() => {})))
+  const serverIds = new Set(allClasses.value.map(c => c.id))
+  const missing = ids.filter(id => !serverIds.has(id))
+  if (!missing.length) return
+  await Promise.all(missing.map(id => classesSvc.join(id).catch(() => {})))
+  await load()
 }
 
 onMounted(async () => {
   loadJoined()
   await load()
-  if (joinedIds.value.length) syncMemberships(joinedIds.value)
+  if (joinedIds.value.length) await syncMemberships(joinedIds.value)
 })
 
 // Re-load joined IDs whenever the logged-in user changes (fixes disappearing classes after re-login)
 watch(() => auth.user?.id, async (newId) => {
   if (newId) {
     loadJoined()
-    if (joinedIds.value.length) syncMemberships(joinedIds.value)
+    await load()
+    if (joinedIds.value.length) await syncMemberships(joinedIds.value)
   }
 })
 </script>

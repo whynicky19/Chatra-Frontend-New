@@ -81,13 +81,10 @@ const { t, lang } = useI18n()
 const allClasses = ref<ClassResponse[]>([])
 const loading = ref(true)
 
-const joinedKey = computed(() => `_joined_${auth.user?.id || 0}`)
-const joinedIds = ref<number[]>([])
-const loadJoined = () => { try { joinedIds.value = JSON.parse(localStorage.getItem(joinedKey.value) || '[]') } catch { joinedIds.value = [] } }
-const saveJoined = () => localStorage.setItem(joinedKey.value, JSON.stringify(joinedIds.value))
-
-const visible = computed(() => auth.isAdmin ? allClasses.value : allClasses.value.filter(c => joinedIds.value.includes(c.id)))
-const archivedClasses = computed(() => visible.value.filter(c => c.is_archived_for_user))
+// Членство — серверная истина (как на главной и в приложении): GET /classes/
+// возвращает нужный набор per-user, поэтому не фильтруем по localStorage —
+// иначе на новом браузере/устройстве архив был бы пуст.
+const archivedClasses = computed(() => allClasses.value.filter(c => c.is_archived_for_user))
 
 const covers = [
   'linear-gradient(135deg,#006475,#009aaf)',
@@ -102,7 +99,7 @@ const goBack = () => router.push('/')
 const goClass = (id: number) => router.push(`/classes/${id}`)
 const doLeave = async (cls: ClassResponse) => {
   try { await classesSvc.leave(cls.id) } catch {}
-  joinedIds.value = joinedIds.value.filter(i => i !== cls.id); saveJoined()
+  allClasses.value = allClasses.value.filter(c => c.id !== cls.id)
   toast.ok(t('classes.left_ok'))
 }
 
@@ -110,7 +107,7 @@ const load = async () => {
   loading.value = true
   try { allClasses.value = await classesSvc.list() } catch { toast.err(t('general.error')) } finally { loading.value = false }
 }
-watch(() => auth.user?.id, (id) => { if (id) loadJoined() }, { immediate: true })
+watch(() => auth.user?.id, (id) => { if (id) load() })
 onMounted(() => load())
 </script>
 
