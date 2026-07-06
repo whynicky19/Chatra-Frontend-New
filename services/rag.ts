@@ -36,11 +36,5 @@ export const useRagSvc = () => {
     delete: async (docId: number): Promise<void> => {
       await api.delete(`/rag/documents/${docId}`)
     },
-
-    /** Ask a RAG question */
-    ask: async (question: string, classId?: number): Promise<{ answer: string; sources?: string[] }> => {
-      const { data } = await api.post('/rag/ask', { question, class_id: classId })
-      return data
-    }
   }
 }

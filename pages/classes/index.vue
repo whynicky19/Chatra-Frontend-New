@@ -9,6 +9,10 @@
             <p class="pg-sub">{{ lang === 'ru' ? 'Исследуйте новые горизонты знаний с нашими интерактивными модулями.' : 'Explore new horizons of knowledge with our interactive modules.' }}</p>
           </div>
           <div class="pg-head-r">
+            <button v-if="auth.isTeacher || auth.isAdmin" class="btn btn-outline-teal" @click="router.push('/rollover')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+              {{ t('rollover.nav') }}
+            </button>
             <button v-if="auth.isTeacher" class="btn btn-outline-teal" @click="showCreate=true">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
               {{ t('classes.create') }}
@@ -44,7 +48,7 @@
 
           <template v-if="!loading && visibleClasses.length">
             <!-- Class cards -->
-            <div v-for="cls in visibleClasses" :key="cls.id" class="class-card" @click="goClass(cls.id)">
+            <div v-for="cls in activeClasses" :key="cls.id" class="class-card" @click="goClass(cls.id)">
               <!-- Cover image -->
               <div class="card-cover" :style="cls.cover_image ? {} : {background: coverGrad(cls.id)}">
                 <img v-if="cls.cover_image" :src="cls.cover_image" class="card-cover-img" loading="lazy" decoding="async"/>
@@ -102,6 +106,16 @@
           </template>
         </div>
 
+        <!-- Archived classes — dedicated entry (WhatsApp-style), opens separate screen -->
+        <button v-if="!loading && archivedClasses.length" class="archive-entry" @click="router.push('/classes/archive')">
+          <div class="ae-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+          </div>
+          <span class="ae-label">{{ t('cohort.archived_section') }}</span>
+          <span class="ae-count">{{ archivedClasses.length }}</span>
+          <svg class="ae-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
         <!-- Upcoming deadlines -->
         <div v-if="upcomingAssignments.length" class="deadlines-section">
           <div class="deadlines-label">{{ t('classes.upcoming') }}</div>
@@ -140,11 +154,23 @@
           <div class="code-boxes">
             <input v-for="(_, i) in 6" :key="i" :ref="el => { if(el) codeRefs[i] = el as HTMLInputElement }" class="code-box" maxlength="1" :value="codeChars[i]" @input="onCodeInput($event, i)" @keydown="onCodeKey($event, i)" @paste="onCodePaste" inputmode="text" autocomplete="off" style="text-transform:uppercase"/>
           </div>
+          <!-- Live "class found" preview (no join) -->
+          <div v-if="lookingUp" class="lookup-status">
+            <div class="spinner" style="width:13px;height:13px;border-width:2px;border-color:var(--border2);border-top-color:var(--teal)"></div>
+            {{ lang==='ru' ? 'Проверяем код…' : 'Checking code…' }}
+          </div>
+          <div v-else-if="foundClass" class="join-found">
+            <div class="found-cover" :style="foundClass.cover_image ? {backgroundImage:`url(${foundClass.cover_image})`} : {background: coverGrad(foundClass.id)}">
+              <div class="found-overlay"></div>
+              <div class="found-name">{{ foundClass.name }}</div>
+            </div>
+            <div class="found-meta">{{ foundClass.teacher || (lang==='ru' ? 'Преподаватель' : 'Teacher') }}</div>
+          </div>
           <div v-if="joinError" class="join-err">{{joinError}}</div>
         </div>
         <div class="modal-foot">
           <button class="btn btn-white" @click="showJoin=false">{{ t('general.cancel') }}</button>
-          <button class="btn btn-teal" :disabled="joinCode.length<6||joining" @click="joinClass">
+          <button class="btn btn-teal" :disabled="joinCode.length<6||joining||notFoundForCode" @click="joinClass">
             <div v-if="joining" class="spinner" style="width:13px;height:13px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
             <span v-else>{{ t('classes.join') }}</span>
           </button>
@@ -208,9 +234,11 @@ import { usePostsSvc } from '~/services/posts'
 import { useClassesSvc } from '~/services/classes'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
+import { useCohortErrors } from '~/composables/useCohortErrors'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const postsSvc = usePostsSvc(); const classesSvc = useClassesSvc(); const toast = useToast(); const router = useRouter()
 const { t, lang } = useI18n()
+const cohortErrors = useCohortErrors()
 const allClasses = ref<any[]>([]); const allPosts = ref<any[]>([]); const loading = ref(true); const showCreate = ref(false)
 const showJoin = ref(false); const joining = ref(false); const joinError = ref('')
 const deletingClass = ref<any>(null); const deleting = ref(false)
@@ -219,6 +247,34 @@ const leavingClass = ref<any>(null); const leaving = ref(false)
 const codeChars = ref<string[]>(['','','','','',''])
 const codeRefs = ref<HTMLInputElement[]>([])
 const joinCode = computed(() => codeChars.value.join(''))
+
+// Живой предпросмотр класса по коду (без вступления) — как в приложении.
+const lookingUp = ref(false)
+const foundClass = ref<any>(null)
+const notFoundForCode = ref(false)
+let lookupTimer: ReturnType<typeof setTimeout> | null = null
+watch(joinCode, (code) => {
+  if (lookupTimer) clearTimeout(lookupTimer)
+  if (code.length < 6) { lookingUp.value = false; foundClass.value = null; notFoundForCode.value = false; return }
+  lookingUp.value = true; foundClass.value = null; notFoundForCode.value = false
+  lookupTimer = setTimeout(async () => {
+    try {
+      const cls = await classesSvc.lookupByCode(code)
+      if (joinCode.value !== code) return
+      foundClass.value = cls; lookingUp.value = false
+    } catch {
+      if (joinCode.value !== code) return
+      lookingUp.value = false; notFoundForCode.value = true; joinError.value = t('classes.not_found')
+    }
+  }, 400)
+})
+watch(showJoin, (open) => {
+  if (!open) {
+    codeChars.value = ['','','','','','']
+    foundClass.value = null; notFoundForCode.value = false; lookingUp.value = false; joinError.value = ''
+    if (lookupTimer) clearTimeout(lookupTimer)
+  }
+})
 
 const onCodeInput = (e: Event, i: number) => {
   const val = (e.target as HTMLInputElement).value.toUpperCase().replace(/[^A-Z0-9]/g,'')
@@ -253,6 +309,8 @@ const covers = [
 const coverGrad = (id: number) => covers[id % covers.length]
 
 const visibleClasses = computed(() => auth.isAdmin ? allClasses.value : allClasses.value.filter(c => joinedIds.value.includes(c.id)))
+const activeClasses = computed(() => visibleClasses.value.filter(c => !c.is_archived_for_user))
+const archivedClasses = computed(() => visibleClasses.value.filter(c => c.is_archived_for_user))
 const lectureCount = (classId: number) => allPosts.value.filter(p => p.title?.startsWith(`[LECTURE][${classId}]`)).length
 
 const getActionLabel = (cls: any) => {
@@ -291,7 +349,9 @@ const joinClass = async () => {
     toast.ok(`${t('classes.joined')} ${cls.name}`)
   } catch (e: any) {
     const detail = e?.response?.data?.detail
-    joinError.value = detail === 'class_not_found' ? t('classes.not_found') : (detail || t('general.error'))
+    if (detail === 'class_not_found') joinError.value = t('classes.not_found')
+    else if (cohortErrors.isNoActiveCohort(e)) joinError.value = t('cohort.no_active_cohort')
+    else joinError.value = detail || t('general.error')
   } finally {
     joining.value = false
   }
@@ -387,6 +447,15 @@ onMounted(()=>{ load() })
 .add-title{font-size:15px;font-weight:700;color:var(--text2);line-height:1.3}
 .add-sub{font-size:13px;color:var(--text4);max-width:160px;line-height:1.5}
 
+/* Archive entry — WhatsApp-style row opening a separate screen */
+.archive-entry{display:flex;align-items:center;gap:14px;width:100%;padding:14px 18px;margin-bottom:32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-xs);cursor:pointer;font-family:inherit;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s}
+.archive-entry:hover{transform:translateY(-1px);box-shadow:var(--sh-sm)}
+.archive-entry:active{transform:scale(.99)}
+.ae-icon{width:38px;height:38px;border-radius:11px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0}
+.ae-label{font-size:15px;font-weight:600;color:var(--text1)}
+.ae-count{margin-left:auto;font-size:13px;font-weight:600;color:var(--text4)}
+.ae-chevron{color:var(--text4);flex-shrink:0}
+
 /* Deadlines */
 .deadlines-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px 22px}
 .deadlines-label{font-size:11px;font-weight:800;color:var(--text4);letter-spacing:.1em;margin-bottom:14px}
@@ -412,6 +481,7 @@ onMounted(()=>{ load() })
 .code-box{width:44px;height:52px;border:2px solid var(--border);border-radius:var(--r-md);background:var(--surface2);color:var(--text1);font-size:22px;font-weight:800;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,monospace;letter-spacing:.05em;transition:all .15s;outline:none}
 .code-box:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(var(--teal-rgb),.15);background:rgba(var(--teal-rgb),.05)}
 .join-err{font-size:12px;color:var(--red);text-align:center;font-weight:500;margin-top:4px}
+.lookup-status{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:12px;color:var(--text4);font-weight:500}
 .join-found{margin-top:12px;border-radius:var(--r-lg);overflow:hidden;border:1px solid rgba(var(--teal-rgb),.25)}
 .found-cover{position:relative;height:60px;background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:10px 14px}
 .found-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent)}

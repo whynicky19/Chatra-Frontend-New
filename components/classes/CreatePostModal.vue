@@ -128,15 +128,18 @@ const submit = async () => {
   uploadCurrent.value = 0
   uploadPct.value = 0
   try {
-    let finalBody = body.value
-    const urls: string[] = []
+    // Тело поста в едином с приложением формате JSON: {content, files:["<url>#<имя>"]}
+    const files: string[] = []
     for (let i = 0; i < selFiles.value.length; i++) {
       uploadCurrent.value = i + 1
       uploadPct.value = Math.round(((i + 1) / selFiles.value.length) * 100)
       const { file_url } = await uploadSvc.upload(selFiles.value[i])
-      urls.push(`📎 [${selFiles.value[i].name}](${file_url})`)
+      files.push(`${file_url}#${encodeURIComponent(selFiles.value[i].name)}`)
     }
-    if (urls.length > 0) finalBody += '\n\n' + urls.join('\n')
+    const finalBody = JSON.stringify({
+      content: body.value,
+      ...(files.length ? { files } : {}),
+    })
 
     const p = await postsSvc.create(
       `[${type.value.toUpperCase()}][${props.classId}] ${title.value}`,

@@ -137,8 +137,11 @@ export const useAssignmentsSvc = () => {
       return data
     },
 
-    getSubmissions: async (assignmentId: number): Promise<Submission[]> => {
-      const { data } = await api.get(`/assignments/${assignmentId}/submissions`)
+    // cohortId — просмотр сдач прошлых учебных лет преподавателем.
+    // По умолчанию бэкенд отдаёт только сдачи активного потока.
+    getSubmissions: async (assignmentId: number, cohortId?: number): Promise<Submission[]> => {
+      const params = cohortId != null ? `?cohort_id=${cohortId}` : ''
+      const { data } = await api.get(`/assignments/${assignmentId}/submissions${params}`)
       return data
     },
 

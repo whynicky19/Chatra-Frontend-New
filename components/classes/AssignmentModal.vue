@@ -27,7 +27,7 @@
           Работы <span v-if="submissions.length" class="tab-count">{{ submissions.length }}</span>
         </button>
         <button v-if="!canSeeSubmissions" :class="['am-tab', { active: tab === 'submit' }]" @click="tab = 'submit'">
-          {{ mySubmission ? 'Моя работа' : 'Сдать' }}
+          {{ mySubmission ? 'Моя работа' : (readonly ? 'Просмотр' : 'Сдать') }}
         </button>
       </div>
 
@@ -119,12 +119,18 @@
             ИИ проверяет вашу работу...
           </div>
 
-          <!-- Retract button (only if not graded) -->
-          <button v-if="mySubmission.status !== 'graded'" class="btn btn-ghost retract-btn" :disabled="retracting" @click="retract">
+          <!-- Retract button (only if not graded, not archived) -->
+          <button v-if="mySubmission.status !== 'graded' && !readonly" class="btn btn-ghost retract-btn" :disabled="retracting" @click="retract">
             <div v-if="retracting" class="spinner"></div>
             <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
             {{ retracting ? 'Отмена...' : 'Отозвать и сдать заново' }}
           </button>
+        </div>
+
+        <!-- Read-only notice for archived students (no submission) -->
+        <div v-else-if="readonly" class="readonly-panel">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          Класс доступен только для чтения: ваш учебный год в архиве
         </div>
 
         <!-- Submit form -->
@@ -355,7 +361,7 @@ import { useFilePreview } from '~/composables/useFilePreview'
 import { extractFilesFromText, stripFilesFromText, fileNameFromUrl, withNameFragment } from '~/composables/useAttachments'
 import type { Assignment, Submission, Variant } from '~/services/assignments'
 
-const props = defineProps<{ assignment: Assignment; isTeacher?: boolean }>()
+const props = defineProps<{ assignment: Assignment; isTeacher?: boolean; readonly?: boolean; cohortId?: number }>()
 const emit = defineEmits(['close', 'submitted'])
 
 const { openPreview } = useFilePreview()
@@ -458,7 +464,7 @@ const loadSubs = async () => {
   loadingSubs.value = true
   try {
     const [subs, users] = await Promise.all([
-      svc.getSubmissions(props.assignment.id),
+      svc.getSubmissions(props.assignment.id, props.cohortId),
       usersSvc.all()
     ])
     submissions.value = subs
@@ -667,6 +673,7 @@ onMounted(async () => {
 .task-files-hint { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text4); flex-wrap: wrap; padding: 10px 12px; background: var(--surface2); border-radius: var(--r-md); border: 1px solid var(--border); }
 
 /* Submitted state */
+.readonly-panel { display: flex; align-items: center; gap: 8px; padding: 14px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); font-size: 13px; color: var(--text3); line-height: 1.5; }
 .submitted-panel { display: flex; flex-direction: column; gap: 16px; }
 .sub-status-bar { display: flex; align-items: center; gap: 12px; }
 .sub-status-chip { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 700; }

@@ -40,7 +40,13 @@
               <span class="header-subject" :class="{'subject-dark': classMeta.cover_image}">{{ (classMeta.subject || '').toUpperCase() }}</span>
             </div>
             <div class="page-header-body">
-              <h1 class="page-title" :class="{'title-dark': classMeta.cover_image}">{{ classTitle }}</h1>
+              <div class="page-title-row">
+                <h1 class="page-title" :class="{'title-dark': classMeta.cover_image}">{{ classTitle }}</h1>
+                <span v-if="isArchivedForUser" class="header-archive-badge">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                  {{ t('cohort.archived_badge') }}
+                </span>
+              </div>
               <p class="page-sub" :class="{'sub-dark': classMeta.cover_image}">{{ classMeta.description || classMeta.period || '' }}</p>
             </div>
             <!-- Code chip — only visible to those who can see the invite code (creator/admin) -->
@@ -51,6 +57,40 @@
                 <strong>{{ classCode }}</strong>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.6"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2"/><rect x="8" y="8" width="12" height="12" rx="2"/></svg>
               </div>
+            </div>
+
+            <!-- Teacher/admin cohort controls: academic-year picker + class settings -->
+            <div class="class-cohort-row" v-if="isOwnerOrAdmin">
+              <div v-if="isYearly && cohorts.length > 1" class="year-picker">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="year-picker-label">{{ t('cohort.academic_year') }}</span>
+                <select class="year-select" :value="selectedCohortId ?? ''" @change="onCohortChange($event)">
+                  <option v-for="c in cohorts" :key="c.id" :value="c.id">
+                    {{ c.academic_year }}{{ c.status === 'active' ? ` (${t('cohort.active')})` : '' }}
+                  </option>
+                </select>
+              </div>
+              <button class="class-settings-btn" @click="openSettings" :title="t('cohort.settings')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+              </button>
+            </div>
+
+            <!-- Notice when teacher is viewing a past (archived) cohort -->
+            <div v-if="viewingArchiveCohort" class="cohort-view-notice">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              {{ t('cohort.viewing_archive') }}
+            </div>
+
+            <!-- Teacher create actions — moved out of the tab bar so tabs never overflow -->
+            <div class="header-actions" v-if="canManage">
+              <button class="btn btn-white btn-sm" @click="showCreateAssignment = true">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                {{ t('class.assignment_btn') }}
+              </button>
+              <button class="btn btn-teal btn-sm" @click="showCreate = true">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                {{ t('class.add') }}
+              </button>
             </div>
 
           </div>
@@ -78,32 +118,17 @@
                 {{ lang==='ru'?'Аватар':lang==='kk'?'Аватар':'Avatar' }}
                 <span v-if="avatarLectures.length" class="tab-num">{{ avatarLectures.length }}</span>
               </button>
-              <button :class="['tab-btn tab-ai', { active: tab === 'ai' }]" @click="tab = 'ai'; loadAssignments()">
+              <button v-if="!isArchivedForUser" :class="['tab-btn tab-ai', { active: tab === 'ai' }]" @click="tab = 'ai'; loadAssignments()">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                 {{ t('class.ai_chat') }}
               </button>
-              <div class="tabs-actions tabs-actions-desktop" v-if="isTeacher">
-                <button class="btn btn-white btn-sm" @click="showCreateAssignment = true">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                  {{ t('class.assignment_btn') }}
-                </button>
-                <button class="btn btn-teal btn-sm" @click="showCreate = true">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                  {{ t('class.add') }}
-                </button>
-              </div>
             </div>
-            <!-- Teacher actions — separate row on mobile -->
-            <div class="tabs-actions-mobile" v-if="isTeacher">
-              <button class="btn btn-white btn-sm" @click="showCreateAssignment = true">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                {{ t('class.assignment_btn') }}
-              </button>
-              <button class="btn btn-teal btn-sm" @click="showCreate = true">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                {{ t('class.add') }}
-              </button>
-            </div>
+          </div>
+
+          <!-- Read-only notice for archived students -->
+          <div v-if="isArchivedForUser" class="archive-notice">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            {{ t('cohort.readonly_notice') }}
           </div>
 
           <!-- Рейтинг и дедлайн для студентов — только мобайл -->
@@ -172,10 +197,10 @@
                     </div>
                   </div>
                   <div class="item-actions">
-                    <button v-if="isTeacher" class="item-edit" @click.stop="openEditPost(p, 'lecture')" title="Редактировать">
+                    <button v-if="canManage" class="item-edit" @click.stop="openEditPost(p, 'lecture')" title="Редактировать">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
-                    <button v-if="isTeacher" class="item-del" @click.stop="deletePost(p.id)">
+                    <button v-if="canManage" class="item-del" @click.stop="deletePost(p.id)">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
                     </button>
                     <div class="item-open-btn">{{ lang==='ru'?'Открыть':'Open' }} →</div>
@@ -216,10 +241,10 @@
                     </div>
                   </div>
                   <div class="item-actions">
-                    <button v-if="isTeacher" class="item-edit" @click.stop="openEditPost(p, 'material')" title="Редактировать">
+                    <button v-if="canManage" class="item-edit" @click.stop="openEditPost(p, 'material')" title="Редактировать">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
-                    <button v-if="isTeacher" class="item-del" @click.stop="deletePost(p.id)">
+                    <button v-if="canManage" class="item-del" @click.stop="deletePost(p.id)">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
                     </button>
                     <div class="item-open-btn">{{ lang==='ru'?'Открыть':'Open' }} →</div>
@@ -271,10 +296,10 @@
                       </div>
                     </div>
                     <div class="item-actions">
-                      <button v-if="isTeacher" class="item-edit" @click.stop="openEditAssignment(a)" title="Редактировать">
+                      <button v-if="canManage" class="item-edit" @click.stop="openEditAssignment(a)" title="Редактировать">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       </button>
-                      <button v-if="isTeacher" class="item-del" @click.stop="deleteAssignment(a)">
+                      <button v-if="canManage" class="item-del" @click.stop="deleteAssignment(a)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
                       </button>
                       <button v-if="!isTeacher && isLate(a)" class="btn-late" @click.stop="openAssignment(a)">{{ t('class.submit_late') }}</button>
@@ -456,7 +481,7 @@
           </div>
 
           <!-- AI learning guide -->
-          <div class="sidebar-card">
+          <div class="sidebar-card" v-if="!isArchivedForUser">
             <div class="ai-guide-head">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               {{ t('class.ai_guide') }}
@@ -473,7 +498,37 @@
     <!-- Modals -->
     <LazyCreatePostModal v-if="showCreate" :class-id="classId" @close="showCreate = false" @created="onPostCreated" />
     <LazyCreateAssignmentModal v-if="showCreateAssignment" :class-id="classId" @close="showCreateAssignment = false" @created="onAssignmentCreated" />
-    <LazyAssignmentModal v-if="activeAssignment" :assignment="activeAssignment" :is-teacher="isTeacher" @close="activeAssignment = null" @submitted="onSubmitted" />
+    <LazyAssignmentModal v-if="activeAssignment" :assignment="activeAssignment" :is-teacher="isTeacher" :readonly="isArchivedForUser" :cohort-id="teacherViewCohortId" @close="activeAssignment = null" @submitted="onSubmitted" />
+
+    <!-- Class settings (rotation mode) — owner/admin -->
+    <div v-if="showSettings" class="overlay" @click.self="showSettings=false">
+      <div class="modal anim-scale" style="max-width:460px;width:100%">
+        <div class="modal-head">
+          <span class="modal-title">{{ t('cohort.settings') }}</span>
+          <button class="btn btn-icon btn-ghost" @click="showSettings=false">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="settings-body">
+          <div class="rotation-row">
+            <div class="rotation-info">
+              <div class="rotation-title">{{ t('cohort.rotation_title') }}</div>
+              <div class="rotation-desc">{{ t('cohort.rotation_desc') }}</div>
+            </div>
+            <button
+              class="toggle-switch"
+              :class="{ on: rotationYearly }"
+              :disabled="savingRotation"
+              @click="toggleRotation"
+              role="switch"
+              :aria-checked="rotationYearly"
+            >
+              <span class="toggle-knob"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Avatar modals -->
     <LazyCreateAvatarModal v-if="showCreateAvatar" @close="showCreateAvatar = false" @created="onAvatarCreated" />
@@ -619,7 +674,7 @@ import { useToast } from '~/composables/useToast'
 import { usePostsSvc } from '~/services/posts'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useRatingSvc } from '~/services/rating'
-import { useClassesSvc } from '~/services/classes'
+import { useClassesSvc, type CohortResponse, type RotationMode } from '~/services/classes'
 import { useAvatarsSvc, type AvatarLecture, type AvatarLectureFull, type TeacherAvatar } from '~/services/avatars'
 import { useAuthStore } from '~/stores/auth.store'
 import { useI18n } from '~/composables/useI18n'
@@ -776,6 +831,56 @@ const assignmentsLoaded = ref(false)
 
 const currentClass = ref<any>(null)
 const classMeta = computed(() => currentClass.value ?? {})
+// true только для ученика архивного потока — класс доступен только для чтения.
+const isArchivedForUser = computed(() => !!currentClass.value?.is_archived_for_user)
+
+// ── Потоки (учебные годы) — управление преподавателем-владельцем / админом ──
+const isOwnerOrAdmin = computed(() => auth.user?.role === 'admin' || currentClass.value?.created_by === auth.user?.id)
+const isYearly = computed(() => currentClass.value?.rotation_mode === 'yearly')
+const cohorts = ref<CohortResponse[]>([])
+const selectedCohortId = ref<number | null>(null)
+const activeCohort = computed(() => cohorts.value.find(c => c.status === 'active') || null)
+// Преподаватель смотрит архивный поток → режим просмотра (нельзя добавлять/править).
+const viewingArchiveCohort = computed(() =>
+  isOwnerOrAdmin.value && selectedCohortId.value != null &&
+  activeCohort.value != null && selectedCohortId.value !== activeCohort.value.id
+)
+// cohort_id для загрузки сдач прошлых лет (undefined = активный поток).
+const teacherViewCohortId = computed<number | undefined>(() =>
+  viewingArchiveCohort.value ? selectedCohortId.value ?? undefined : undefined)
+const canManage = computed(() => isTeacher.value && !viewingArchiveCohort.value)
+
+const showSettings = ref(false)
+const rotationYearly = ref(false)
+const savingRotation = ref(false)
+
+const loadCohorts = async () => {
+  if (!isOwnerOrAdmin.value || !isYearly.value) return
+  try {
+    cohorts.value = await classesSvc.listCohorts(classId.value)
+    if (selectedCohortId.value == null) selectedCohortId.value = activeCohort.value?.id ?? null
+  } catch {}
+}
+const onCohortChange = (e: Event) => {
+  const v = (e.target as HTMLSelectElement).value
+  selectedCohortId.value = v ? Number(v) : null
+  // Перезагружаем сдачи при следующем открытии задания — cohort_id проброшен в модалку.
+}
+const openSettings = () => { rotationYearly.value = isYearly.value; showSettings.value = true }
+const toggleRotation = async () => {
+  if (savingRotation.value) return
+  const next: RotationMode = rotationYearly.value ? 'manual' : 'yearly'
+  savingRotation.value = true
+  try {
+    const updated = await classesSvc.setRotationMode(classId.value, next)
+    currentClass.value = { ...currentClass.value, ...updated }
+    rotationYearly.value = next === 'yearly'
+    toast.ok(t('cohort.rotation_saved'))
+    if (next === 'yearly') await loadCohorts()
+    else { cohorts.value = []; selectedCohortId.value = null }
+  } catch (e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
+  finally { savingRotation.value = false }
+}
 const classTitle = computed(() => currentClass.value?.name || `Класс #${classId.value}`)
 
 const heroStyle = computed(() => {
@@ -854,7 +959,41 @@ const lateCount = computed(() => mySubmissions.value.filter(s => s.status === 'l
 
 const cleanTitle = (t: string) => t.replace(/^\[(LECTURE|HW)\]\[\d+\]\s*/, '').trim()
 const fmtDate = (d: string) => { if (!d) return ''; try { return new Date(d).toLocaleDateString(lang.value === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return d } }
-const getFullBody = (p: any): string => { try { const b = JSON.parse(p.body); return b.content || b.description || p.body || '' } catch { return p.body || '' } }
+// Файл из тела-JSON приложения приходит как "<url>#<имя>" (или битые легаси-строки).
+// Приводим к единому виду вложения сайта: 📎 [имя](url).
+const fileEntryToLink = (entry: any): string => {
+  if (typeof entry !== 'string' || !entry.trim()) return ''
+  if (/^https?:\/\//i.test(entry)) {
+    const hash = entry.indexOf('#')
+    if (hash !== -1) {
+      const url = entry.slice(0, hash)
+      let name = entry.slice(hash + 1)
+      try { name = decodeURIComponent(name) } catch {}
+      return `📎 [${name}](${url})`
+    }
+    return entry // голый URL — renderBody сам оформит
+  }
+  // Не-URL (легаси/битые данные): показываем только имя, без сырого JSON
+  return entry.split('\n').pop()?.trim() || ''
+}
+// Понимает оба формата тела поста: текст сайта (📎-ссылки) и JSON приложения
+// {content, files:[...]}. Никогда не возвращает сырой JSON.
+const getFullBody = (p: any): string => {
+  const raw = p?.body || ''
+  try {
+    const b = JSON.parse(raw)
+    if (b && typeof b === 'object') {
+      let text = (typeof b.content === 'string' ? b.content : (b.description || '')) || ''
+      const files = Array.isArray(b.files) ? b.files : []
+      if (files.length) {
+        const links = files.map(fileEntryToLink).filter(Boolean).join('\n')
+        if (links) text = text ? `${text}\n\n${links}` : links
+      }
+      return text
+    }
+    return raw
+  } catch { return raw }
+}
 const ATTACHMENT_LINK = /📎\s*\[([^\]]+)\]\(([^)]+)\)/g
 const getPreview = (p: any): string => { const body = getFullBody(p); const clean = body.replace(ATTACHMENT_LINK, '').replace(/(https?:\/\/[^\s]+)/g, '').replace(/\s+/g, ' ').trim(); return clean.length > 100 ? clean.slice(0, 100) + '…' : clean || (lang.value==='ru'?'Нет описания':'No description') }
 const FILE_EXT = /\.(pdf|doc|docx|txt|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|webp|md)(\?[^\s]*)?/i
@@ -1004,6 +1143,10 @@ onMounted(async () => {
     const [cls, posts] = await Promise.all([classesSvc.get(classId.value), postsSvc.list()])
     currentClass.value = cls
     allPosts.value = posts
+    // Архивному ученику ИИ-чат недоступен — не открываем эту вкладку.
+    if (isArchivedForUser.value && tab.value === 'ai') tab.value = 'lectures'
+    // Преподавателю/админу yearly-класса — подгрузить список учебных лет.
+    if (isOwnerOrAdmin.value && isYearly.value) loadCohorts()
   } catch { toast.err(t('general.error')) } finally { loading.value = false }
   if (!isTeacher.value) loadRating()
   if (isTeacher.value) loadMyAvatar()
@@ -1053,6 +1196,34 @@ onMounted(async () => {
 .title-dark{color:#fff!important;text-shadow:0 2px 8px rgba(0,0,0,.4)}
 .sub-dark{color:rgba(255,255,255,.7)!important}
 .page-header-top{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.page-title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.header-archive-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:4px 10px;border-radius:100px;letter-spacing:.03em}
+.archive-notice{display:flex;align-items:center;gap:8px;margin:0 24px 4px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);color:var(--text3);font-size:13px;font-weight:500}
+
+/* Cohort controls in class header */
+.class-cohort-row{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.year-picker{display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.42);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:6px 8px 6px 13px;color:rgba(255,255,255,.96)}
+.page-header:not([style*="url"]) .year-picker{background:var(--surface2);border-color:var(--border);color:var(--text2)}
+.year-picker-label{font-size:12px;font-weight:600;opacity:.8}
+.year-select{background:transparent;border:none;color:inherit;font-size:13px;font-weight:700;cursor:pointer;outline:none;font-family:inherit;padding-right:2px}
+.year-select option{color:var(--text1);background:var(--surface)}
+.class-settings-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.42);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.96);cursor:pointer;transition:all .2s}
+.page-header:not([style*="url"]) .class-settings-btn{background:var(--surface2);border-color:var(--border);color:var(--text3)}
+.class-settings-btn:hover{color:var(--teal);border-color:rgba(var(--teal-rgb),.5);transform:rotate(30deg)}
+.cohort-view-notice{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:7px 14px;background:rgba(0,0,0,.38);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.18);border-radius:100px;color:rgba(255,255,255,.94);font-size:12.5px;font-weight:600}
+.page-header:not([style*="url"]) .cohort-view-notice{background:var(--surface2);border-color:var(--border);color:var(--text3)}
+
+/* Settings modal — rotation toggle */
+.settings-body{padding:6px 0 10px}
+.rotation-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.rotation-info{flex:1}
+.rotation-title{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:6px}
+.rotation-desc{font-size:12.5px;color:var(--text4);line-height:1.6}
+.toggle-switch{position:relative;width:46px;height:26px;border-radius:100px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;flex-shrink:0;transition:background .2s,border-color .2s;padding:0}
+.toggle-switch.on{background:var(--teal);border-color:var(--teal)}
+.toggle-switch:disabled{opacity:.6;cursor:default}
+.toggle-knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+.toggle-switch.on .toggle-knob{transform:translateX(20px)}
 .back-link{font-size:12px;color:var(--text4);text-decoration:none;transition:color .15s}.back-link:hover{color:var(--teal)}
 .header-sep{font-size:10px;color:var(--text4)}
 .header-subject{font-size:11px;font-weight:700;color:var(--teal);letter-spacing:.08em}
@@ -1067,14 +1238,15 @@ onMounted(async () => {
 
 /* Tabs */
 .tabs-wrap{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border)}
-.tabs-actions-mobile{display:none}
 .tabs-bar{display:flex;align-items:center;padding:0 24px;gap:0}
 .tab-btn{display:flex;align-items:center;gap:8px;padding:14px 18px;font-size:13px;font-weight:500;color:var(--text4);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
 .tab-btn:hover{color:var(--text1)}
 .tab-btn.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:600}
 .tab-ai.active{color:var(--teal)}
 .tab-num{font-size:11px;font-weight:700;background:var(--teal-l);color:var(--teal);padding:2px 8px;border-radius:100px}
-.tabs-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* Teacher create actions — pinned to the header, out of the tab bar */
+.header-actions{position:absolute;top:16px;right:20px;z-index:2;display:flex;gap:8px}
 
 /* Tab content */
 .tab-content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px}
@@ -1263,12 +1435,15 @@ onMounted(async () => {
   .tabs-wrap{
     overflow:hidden;
   }
-  .tabs-bar{padding:0;overflow-x:hidden;flex-wrap:nowrap}
-  .tab-btn{flex:1;justify-content:center;padding:12px 4px;font-size:11px;white-space:nowrap;min-width:0;min-height:44px}
+  /* Без скролла: кнопки создания вынесены в шапку, вкладки помещаются целиком.
+     Иконки скрыты на мобильном — остаётся только подпись, чтобы не обрезалось. */
+  .tabs-bar{padding:0 4px;overflow-x:hidden;flex-wrap:nowrap}
+  .tab-btn{flex:1;justify-content:center;padding:12px 4px;font-size:12px;white-space:nowrap;min-width:0;min-height:44px;gap:0}
+  .tab-btn svg{display:none}
   .tab-num{display:none}
-  .tabs-actions-desktop{display:none}
-  .tabs-actions-mobile{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--border)}
-  .tabs-actions-mobile .btn{flex:1;justify-content:center;min-height:44px;font-size:12px}
+  /* Кнопки создания в шапке — отдельная строка на мобильном */
+  .header-actions{position:static;top:auto;right:auto;margin-top:12px;gap:8px}
+  .header-actions .btn{flex:1;justify-content:center;min-height:44px;font-size:12px}
   .tab-content{padding:10px 12px 80px;overflow-x:hidden}
   .page-header{padding:14px 12px 12px}
   .page-title{font-size:20px}
@@ -1287,7 +1462,7 @@ onMounted(async () => {
   .field-input,.field-textarea{font-size:16px}
 }
 @media (max-width:480px){
-  .tab-btn{font-size:10px;padding:10px 2px}
+  .tab-btn{font-size:11px;padding:11px 3px;letter-spacing:-.01em}
   .tab-content{padding:8px 10px 80px}
   .item-row{padding:12px 10px;gap:10px}
   .page-title{font-size:18px}

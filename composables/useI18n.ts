@@ -205,6 +205,82 @@ export const translations: Record<string, Record<Lang, string>> = {
   'general.today': { ru: 'СЕГОДНЯ', en: 'TODAY', kk: 'БҮГІН' },
   'general.online': { ru: 'В сети', en: 'Online', kk: 'Желіде' },
   'general.search': { ru: 'Поиск...', en: 'Search...', kk: 'Іздеу...' },
+  'general.continue': { ru: 'Продолжить', en: 'Continue', kk: 'Жалғастыру' },
+  'general.back': { ru: 'Назад', en: 'Back', kk: 'Артқа' },
+
+  // Cohorts / academic years / rollover
+  'cohort.no_active_cohort': {
+    ru: 'У этого класса пока нет активного учебного года, обратитесь к преподавателю',
+    en: 'This class has no active academic year yet, please contact your teacher',
+    kk: 'Бұл сыныпта әзірге белсенді оқу жылы жоқ, мұғаліммен хабарласыңыз',
+  },
+  'cohort.archived_badge': { ru: 'Архив', en: 'Archived', kk: 'Мұрағат' },
+  'cohort.archived_section': { ru: 'Архив', en: 'Archive', kk: 'Мұрағат' },
+  'cohort.readonly_notice': {
+    ru: 'Ваш учебный год в архиве — класс доступен только для чтения',
+    en: 'Your academic year is archived — this class is read-only',
+    kk: 'Оқу жылыңыз мұрағатта — сынып тек оқуға қолжетімді',
+  },
+  'cohort.academic_year': { ru: 'Учебный год', en: 'Academic year', kk: 'Оқу жылы' },
+  'cohort.active': { ru: 'активный', en: 'active', kk: 'белсенді' },
+  'cohort.viewing_archive': {
+    ru: 'Просмотр архивного потока — режим только для чтения',
+    en: 'Viewing an archived cohort — read-only mode',
+    kk: 'Мұрағат ағынын қарау — тек оқу режимі',
+  },
+  'cohort.students_short': { ru: 'учеников', en: 'students', kk: 'оқушы' },
+
+  // Rotation mode (class settings)
+  'cohort.settings': { ru: 'Настройки класса', en: 'Class settings', kk: 'Сынып параметрлері' },
+  'cohort.rotation_title': { ru: 'Годовой поток', en: 'Yearly cohort', kk: 'Жылдық ағын' },
+  'cohort.rotation_desc': {
+    ru: 'Каждый год ученики автоматически уходят в архив, новые перваши попадают в новый поток по тому же коду.',
+    en: 'Each year students are automatically archived, and new students join a fresh cohort using the same code.',
+    kk: 'Жыл сайын оқушылар автоматты түрде мұрағатқа өтеді, ал жаңа оқушылар сол кодпен жаңа ағынға түседі.',
+  },
+  'cohort.rotation_saved': { ru: 'Режим потока обновлён', en: 'Rotation mode updated', kk: 'Ағын режимі жаңартылды' },
+
+  // Rollover
+  'rollover.title': { ru: 'Новый учебный год', en: 'New academic year', kk: 'Жаңа оқу жылы' },
+  'rollover.nav': { ru: 'Новый учебный год', en: 'New academic year', kk: 'Жаңа оқу жылы' },
+  'rollover.subtitle': {
+    ru: 'Переведите годовые классы на новый учебный год: старые потоки уйдут в архив, откроются новые.',
+    en: 'Move yearly classes to a new academic year: old cohorts are archived and new ones open.',
+    kk: 'Жылдық сыныптарды жаңа оқу жылына көшіріңіз: ескі ағындар мұрағатқа өтеді, жаңалары ашылады.',
+  },
+  'rollover.no_classes': {
+    ru: 'Нет классов с режимом «Годовой поток». Включите его в настройках класса.',
+    en: 'No classes with “Yearly cohort” mode. Enable it in class settings.',
+    kk: '«Жылдық ағын» режиміндегі сыныптар жоқ. Оны сынып параметрлерінде қосыңыз.',
+  },
+  'rollover.select_classes': { ru: 'Выберите классы', en: 'Select classes', kk: 'Сыныптарды таңдаңыз' },
+  'rollover.new_year': { ru: 'Учебный год', en: 'Academic year', kk: 'Оқу жылы' },
+  'rollover.start_date': { ru: 'Дата начала семестра', en: 'Semester start date', kk: 'Семестр басталу күні' },
+  'rollover.continue': { ru: 'Продолжить', en: 'Continue', kk: 'Жалғастыру' },
+  'rollover.confirm_title': { ru: 'Подтвердите переход', en: 'Confirm rollover', kk: 'Көшуді растаңыз' },
+  'rollover.confirm_intro': {
+    ru: 'Эти классы будут архивированы, для них откроется новый учебный год:',
+    en: 'These classes will be archived and a new academic year will open for them:',
+    kk: 'Бұл сыныптар мұрағатталады, олар үшін жаңа оқу жылы ашылады:',
+  },
+  'rollover.confirm_btn': { ru: 'Архивировать и создать новый год', en: 'Archive and create new year', kk: 'Мұрағаттап, жаңа жыл ашу' },
+  'rollover.processing': { ru: 'Выполняется переход...', en: 'Processing rollover...', kk: 'Көшу орындалуда...' },
+  'rollover.done_title': { ru: 'Черновики дедлайнов', en: 'Deadline drafts', kk: 'Мерзім жобалары' },
+  'rollover.done_intro': {
+    ru: 'Пока дедлайны не опубликованы, задания не видны ученикам. Проверьте даты и опубликуйте.',
+    en: 'Until deadlines are published, assignments are hidden from students. Review the dates and publish.',
+    kk: 'Мерзімдер жарияланғанша тапсырмалар оқушыларға көрінбейді. Күндерді тексеріп, жариялаңыз.',
+  },
+  'rollover.publish_all': { ru: 'Опубликовать все', en: 'Publish all', kk: 'Барлығын жариялау' },
+  'rollover.publish': { ru: 'Опубликовать', en: 'Publish', kk: 'Жариялау' },
+  'rollover.published': { ru: 'Опубликовано', en: 'Published', kk: 'Жарияланды' },
+  'rollover.draft': { ru: 'Черновик', en: 'Draft', kk: 'Жоба' },
+  'rollover.no_deadlines': { ru: 'В этом потоке нет дедлайнов', en: 'No deadlines in this cohort', kk: 'Бұл ағында мерзімдер жоқ' },
+  'rollover.status_rolled': { ru: 'Переведён', en: 'Rolled over', kk: 'Көшірілді' },
+  'rollover.status_already': { ru: 'Уже переведён', en: 'Already rolled', kk: 'Бұрын көшірілген' },
+  'rollover.status_no_cohort': { ru: 'Нет активного потока', en: 'No active cohort', kk: 'Белсенді ағын жоқ' },
+  'rollover.status_conflict': { ru: 'Конфликт, повторите', en: 'Conflict, retry', kk: 'Қайшылық, қайталаңыз' },
+  'rollover.all_published': { ru: 'Все дедлайны опубликованы', en: 'All deadlines published', kk: 'Барлық мерзімдер жарияланды' },
 }
 
 export const useI18n = () => {
