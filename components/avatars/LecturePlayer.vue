@@ -103,8 +103,18 @@ const slideProgressPct = ref(0)
 
 const currentSlide = computed(() => props.lecture.slides[currentIndex.value])
 
+// SEC-7: summary_text генерируется из слайдов преподавателя — это недоверенный
+// ввод. Экранируем HTML ДО применения markdown, иначе <script>/onerror из
+// конспекта исполнялись бы через v-html (XSS).
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
 const renderedSummary = computed(() => {
-  const text = props.lecture.summary_text || ''
+  const text = escapeHtml(props.lecture.summary_text || '')
   return text
     .replace(/^### (.*$)/gim, '<h4>$1</h4>')
     .replace(/^## (.*$)/gim, '<h3>$1</h3>')
