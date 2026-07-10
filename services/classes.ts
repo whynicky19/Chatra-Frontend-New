@@ -110,5 +110,11 @@ export const useClassesSvc = () => {
       const { data } = await api.patch(`/classes/${classId}/rotation-mode`, { rotation_mode: mode })
       return data
     },
+    // Перегенерация инвайт-кода — только владелец класса / админ.
+    // Старый код перестаёт работать, возвращается новый.
+    regenerateCode: async (classId: number): Promise<string> => {
+      const { data } = await api.post(`/classes/${classId}/regenerate-code`, {})
+      return (data as { invite_code: string }).invite_code
+    },
   }
 }

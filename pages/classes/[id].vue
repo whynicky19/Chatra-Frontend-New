@@ -57,6 +57,10 @@
                 <strong>{{ classCode }}</strong>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.6"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2"/><rect x="8" y="8" width="12" height="12" rx="2"/></svg>
               </div>
+              <button v-if="isOwnerOrAdmin" class="class-code-regen" :disabled="regeneratingCode" @click="regenerateCode" :title="t('class.regenerate_code')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                {{ t('class.regenerate_code') }}
+              </button>
             </div>
 
             <!-- Teacher/admin cohort controls: academic-year picker + class settings -->
@@ -1011,6 +1015,22 @@ const onBodyClick = (e: MouseEvent) => {
 const classCode = computed(() => currentClass.value?.invite_code || '')
 const copyCode = () => { navigator.clipboard?.writeText(classCode.value).then(() => toast.ok(t('class.code_copied') + ' ' + classCode.value)).catch(() => toast.ok(t('class.code') + ' ' + classCode.value)) }
 
+const regeneratingCode = ref(false)
+const regenerateCode = async () => {
+  if (regeneratingCode.value) return
+  if (!confirm(t('class.regenerate_confirm'))) return
+  regeneratingCode.value = true
+  try {
+    const newCode = await classesSvc.regenerateCode(classId.value)
+    if (currentClass.value) currentClass.value.invite_code = newCode
+    toast.ok(t('class.regenerate_ok') + ' ' + newCode)
+  } catch (e: any) {
+    toast.err(e?.response?.data?.detail || t('class.regenerate_failed'))
+  } finally {
+    regeneratingCode.value = false
+  }
+}
+
 const viewPost = (p: any, type: string) => { viewingPost.value = { ...p, type } }
 const onPostCreated = (p: any) => { allPosts.value.unshift(p) }
 const deletePost = async (id: number) => {
@@ -1216,7 +1236,10 @@ onMounted(async () => {
 .page-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:26px;font-weight:900;color:var(--text1);margin-bottom:6px;letter-spacing:-.02em}
 .page-sub{font-size:13px;color:var(--text4);line-height:1.5;max-width:500px}
 .page-header-actions{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-.class-code-row{margin-bottom:12px}
+.class-code-row{margin-bottom:12px;display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.class-code-regen{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:transparent;border:1px solid rgba(var(--teal-rgb),.25);border-radius:var(--r-md);font-size:12px;color:var(--teal);cursor:pointer;transition:all .15s;font-weight:500}
+.class-code-regen:hover:not(:disabled){background:var(--teal-l);border-color:rgba(var(--teal-rgb),.4)}
+.class-code-regen:disabled{opacity:.5;cursor:default}
 .class-code-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.25);border-radius:var(--r-md);font-size:13px;color:var(--teal);cursor:pointer;transition:all .15s;font-weight:500}
 .class-code-chip strong{font-weight:800;letter-spacing:.12em;font-size:14px}
 .class-code-chip:hover{background:var(--teal-m);border-color:rgba(var(--teal-rgb),.4)}
