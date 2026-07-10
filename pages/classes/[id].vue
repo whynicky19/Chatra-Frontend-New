@@ -718,34 +718,16 @@ const showCreateLecture = ref(false)
 const activeLecture = ref<AvatarLectureFull | null>(null)
 const activeLectureAvatarPhoto = ref<string | null>(null)
 
-const styleLabel = (style: string) => {
-  const map: Record<string, string> = lang.value === 'ru'
-    ? { school: 'Школьный', university: 'Университетский', professional: 'Профессиональный' }
-    : { school: 'School', university: 'University', professional: 'Professional' }
-  return map[style] || style
-}
+// FE-3: метки берём из единого словаря (ru/en/kk), без инлайн-тернаров.
+const KNOWN_LECTURE_STYLES = new Set(['school', 'university', 'professional'])
+const styleLabel = (style: string) =>
+  KNOWN_LECTURE_STYLES.has(style) ? t(`lecture.style.${style}`) : style
 
-const lectureStatusLabel = (status: string) => {
-  const map: Record<string, Record<string, string>> = {
-    ru: {
-      pending_approval: 'Ожидает одобрения',
-      approved: 'Одобрено',
-      generating: 'Генерируется...',
-      ready: 'Готово',
-      rejected: 'Отклонено',
-      failed: 'Ошибка',
-    },
-    en: {
-      pending_approval: 'Pending approval',
-      approved: 'Approved',
-      generating: 'Generating...',
-      ready: 'Ready',
-      rejected: 'Rejected',
-      failed: 'Failed',
-    },
-  }
-  return (map[lang.value] || map.en)[status] || status
-}
+const KNOWN_LECTURE_STATUSES = new Set([
+  'pending_approval', 'approved', 'generating', 'ready', 'rejected', 'failed',
+])
+const lectureStatusLabel = (status: string) =>
+  KNOWN_LECTURE_STATUSES.has(status) ? t(`lecture.status.${status}`) : status
 
 const lectureStatusClass = (status: string) => {
   if (status === 'ready') return 'status-done'
@@ -769,7 +751,7 @@ const loadAvatarLectures = async () => {
     await loadMyAvatar()
     avatarLectures.value = await avatarsSvc.classLectures(classId.value)
   } catch (e: any) {
-    toast.err(e?.response?.data?.detail || 'Не удалось загрузить лекции аватара')
+    toast.err(e?.response?.data?.detail || t('lecture.load_failed'))
   } finally {
     loadingAvatarLectures.value = false
   }
@@ -796,9 +778,9 @@ const deleteAvatarLecture = async (lec: AvatarLecture) => {
   try {
     await avatarsSvc.deleteLecture(lec.id)
     avatarLectures.value = avatarLectures.value.filter(l => l.id !== lec.id)
-    toast.ok(lang.value==='ru' ? 'Лекция удалена' : 'Lecture deleted')
+    toast.ok(t('lecture.delete_ok'))
   } catch (e: any) {
-    toast.err(e?.response?.data?.detail || 'Не удалось удалить лекцию')
+    toast.err(e?.response?.data?.detail || t('lecture.delete_failed'))
   }
 }
 
@@ -809,7 +791,7 @@ const openLecturePlayer = async (lec: AvatarLecture) => {
     activeLecture.value = full
     activeLectureAvatarPhoto.value = myAvatar.value?.photo_url || null
   } catch (e: any) {
-    toast.err(e?.response?.data?.detail || 'Не удалось открыть лекцию')
+    toast.err(e?.response?.data?.detail || t('lecture.open_failed'))
   }
 }
 
@@ -948,10 +930,10 @@ const getStatusClass = (a: Assignment) => {
 }
 const getStatusLabel = (a: Assignment) => {
   const sub = mySubmissionsMap.value[a.id]
-  if (sub?.status === 'graded') return lang.value === 'ru' ? 'ОЦЕНЕНО' : 'GRADED'
-  if (sub?.status === 'submitted') return lang.value === 'ru' ? 'В ПРОЦЕССЕ' : 'IN PROGRESS'
-  if (isLate(a)) return lang.value === 'ru' ? 'ПРОСРОЧЕНО' : 'OVERDUE'
-  return lang.value === 'ru' ? 'НЕ НАЧАТО' : 'NOT STARTED'
+  if (sub?.status === 'graded') return t('assign.status.graded')
+  if (sub?.status === 'submitted') return t('assign.status.in_progress')
+  if (isLate(a)) return t('assign.status.overdue')
+  return t('assign.status.not_started')
 }
 const pendingCount = computed(() => assignments.value.filter(a => !mySubmissionsMap.value[a.id] && a.is_active).length)
 const doneCount = computed(() => mySubmissions.value.filter(s => s.status === 'submitted' || s.status === 'graded').length)

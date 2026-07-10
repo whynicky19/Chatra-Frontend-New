@@ -410,8 +410,16 @@ const doLeave = async () => {
   if (!leavingClass.value) return
   const id = leavingClass.value.id
   leaving.value = true
-  try { await classesSvc.leave(id) } catch {}
-  // Оптимистично убираем из списка (сервер больше не вернёт этот класс).
+  // FE-2: раньше ошибка выхода глоталась (catch{}), а класс всё равно убирался
+  // из UI — при 403 (архивный поток) пользователь видел «вышел», хотя членство
+  // осталось. Теперь UI меняем только после успеха, на ошибке — тост и откат.
+  try {
+    await classesSvc.leave(id)
+  } catch (e: any) {
+    toast.err(cohortErrors.cohortErrorMessage(e, t('classes.leave_failed')))
+    leaving.value = false
+    return
+  }
   allClasses.value = allClasses.value.filter(c => c.id !== id)
   joinedIds.value = joinedIds.value.filter(i => i !== id); saveJoined()
   leaving.value = false; leavingClass.value = null

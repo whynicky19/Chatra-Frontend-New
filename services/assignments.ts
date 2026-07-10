@@ -67,9 +67,12 @@ export const useAssignmentsSvc = () => {
   const api = useApi()
 
   return {
-    list: async (classId?: number): Promise<Assignment[]> => {
-      const params = classId !== undefined ? `?class_id=${classId}` : ''
-      const { data } = await api.get(`/assignments/${params}`)
+    list: async (classId?: number, opts?: { limit?: number; offset?: number }): Promise<Assignment[]> => {
+      const params: Record<string, any> = {}
+      if (classId !== undefined) params.class_id = classId
+      if (opts?.limit != null) params.limit = opts.limit
+      if (opts?.offset != null) params.offset = opts.offset
+      const { data } = await api.get('/assignments/', { params })
       return data
     },
 
@@ -132,16 +135,22 @@ export const useAssignmentsSvc = () => {
     },
 
     // Fixed path: /assignments/student/my-submissions (avoids route conflict with /{id})
-    mySubmissions: async (): Promise<Submission[]> => {
-      const { data } = await api.get('/assignments/student/my-submissions')
+    mySubmissions: async (opts?: { limit?: number; offset?: number }): Promise<Submission[]> => {
+      const params: Record<string, any> = {}
+      if (opts?.limit != null) params.limit = opts.limit
+      if (opts?.offset != null) params.offset = opts.offset
+      const { data } = await api.get('/assignments/student/my-submissions', { params })
       return data
     },
 
     // cohortId — просмотр сдач прошлых учебных лет преподавателем.
     // По умолчанию бэкенд отдаёт только сдачи активного потока.
-    getSubmissions: async (assignmentId: number, cohortId?: number): Promise<Submission[]> => {
-      const params = cohortId != null ? `?cohort_id=${cohortId}` : ''
-      const { data } = await api.get(`/assignments/${assignmentId}/submissions${params}`)
+    getSubmissions: async (assignmentId: number, cohortId?: number, opts?: { limit?: number; offset?: number }): Promise<Submission[]> => {
+      const params: Record<string, any> = {}
+      if (cohortId != null) params.cohort_id = cohortId
+      if (opts?.limit != null) params.limit = opts.limit
+      if (opts?.offset != null) params.offset = opts.offset
+      const { data } = await api.get(`/assignments/${assignmentId}/submissions`, { params })
       return data
     },
 

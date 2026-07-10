@@ -34,13 +34,19 @@ export const useClassesSvc = () => {
   const api = useApi()
 
   return {
-    list: async (): Promise<ClassResponse[]> => {
-      const { data } = await api.get('/classes/')
+    list: async (opts?: { limit?: number; offset?: number }): Promise<ClassResponse[]> => {
+      const params: Record<string, any> = {}
+      if (opts?.limit != null) params.limit = opts.limit
+      if (opts?.offset != null) params.offset = opts.offset
+      const { data } = await api.get('/classes/', { params })
       return data as ClassResponse[]
     },
-    listAll: async (): Promise<ClassResponse[]> => {
+    listAll: async (opts?: { limit?: number; offset?: number }): Promise<ClassResponse[]> => {
       // Returns all classes (for join-by-code search)
-      const { data } = await api.get('/classes/all')
+      const params: Record<string, any> = {}
+      if (opts?.limit != null) params.limit = opts.limit
+      if (opts?.offset != null) params.offset = opts.offset
+      const { data } = await api.get('/classes/all', { params })
       return data as ClassResponse[]
     },
     get: async (id: number): Promise<ClassResponse> => {

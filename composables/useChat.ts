@@ -13,17 +13,33 @@ export const useChat = () => {
   const chatSvc = useChatsSvc()
   const toast = useToast()
 
+  // FE-1: размер страницы истории чата. Начальная загрузка — последние
+  // MSG_PAGE_SIZE сообщений; при скролле вверх догружаем предыдущие порции.
+  const MSG_PAGE_SIZE = 50
+
   const loadMsgs = async (id: number) => {
     store.loadingMsgs = true
     try {
-      const m = await msgSvc.list(id)
+      const m = await msgSvc.list(id, { limit: MSG_PAGE_SIZE })
       store.setMsgs(id, m)
     } catch {} finally { store.loadingMsgs = false }
   }
 
+  // Догрузить более старые сообщения. Возвращает количество добавленных
+  // (0 или < MSG_PAGE_SIZE — значит достигли начала истории).
+  const loadOlderMsgs = async (id: number): Promise<number> => {
+    const existing = store.messages[id] || []
+    const oldestId = existing.length ? existing[0].id : undefined
+    if (oldestId == null) return 0
+    try {
+      const older = await msgSvc.list(id, { limit: MSG_PAGE_SIZE, beforeId: oldestId })
+      return store.prependMsgs(id, older)
+    } catch { return 0 }
+  }
+
   const refreshMsgs = async (id: number) => {
     try {
-      const m = await msgSvc.list(id)
+      const m = await msgSvc.list(id, { limit: MSG_PAGE_SIZE })
       store.mergeMsgs(id, m)
     } catch {}
   }
@@ -130,5 +146,5 @@ export const useChat = () => {
     } catch { toast.err('Ошибка удаления') }
   }
 
-  return { loadMsgs, refreshMsgs, loadUsers, connectWs, sendMsg, delMsg, startChatPoller }
+  return { loadMsgs, loadOlderMsgs, refreshMsgs, loadUsers, connectWs, sendMsg, delMsg, startChatPoller, MSG_PAGE_SIZE }
 }

@@ -107,6 +107,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'classes.course': { ru: 'Курс', en: 'Course', kk: 'Курс' },
   'classes.left': { ru: 'покинуть', en: 'leave', kk: 'шығу' },
   'classes.left_ok': { ru: 'Вы покинули класс', en: 'You left the class', kk: 'Сіз сыныпты тастадыңыз' },
+  'classes.leave_failed': { ru: 'Не удалось покинуть класс', en: 'Failed to leave the class', kk: 'Сыныптан шығу мүмкін болмады' },
   'classes.leave_title': { ru: 'Покинуть класс', en: 'Leave Class', kk: 'Сыныптан шығу' },
   'classes.leave_confirm': { ru: 'Вы уверены, что хотите покинуть класс', en: 'Are you sure you want to leave class', kk: 'Сыныптан шыққыңыз келетініне сенімдісіз бе' },
   'classes.leave_warn': { ru: 'Чтобы вернуться, потребуется код приглашения.', en: 'You will need the invite code to rejoin.', kk: 'Қайта кіру үшін шақыру коды қажет болады.' },
@@ -286,6 +287,31 @@ export const translations: Record<string, Record<Lang, string>> = {
   'rollover.status_no_cohort': { ru: 'Нет активного потока', en: 'No active cohort', kk: 'Белсенді ағын жоқ' },
   'rollover.status_conflict': { ru: 'Конфликт, повторите', en: 'Conflict, retry', kk: 'Қайшылық, қайталаңыз' },
   'rollover.all_published': { ru: 'Все дедлайны опубликованы', en: 'All deadlines published', kk: 'Барлық мерзімдер жарияланды' },
+
+  // FE-3: метки стилей лекции аватара (тип организации)
+  'lecture.style.school': { ru: 'Школьный', en: 'School', kk: 'Мектеп' },
+  'lecture.style.university': { ru: 'Университетский', en: 'University', kk: 'Университеттік' },
+  'lecture.style.professional': { ru: 'Профессиональный', en: 'Professional', kk: 'Кәсіби' },
+
+  // FE-3: статусы лекции аватара
+  'lecture.status.pending_approval': { ru: 'Ожидает одобрения', en: 'Pending approval', kk: 'Мақұлдауды күтуде' },
+  'lecture.status.approved': { ru: 'Одобрено', en: 'Approved', kk: 'Мақұлданды' },
+  'lecture.status.generating': { ru: 'Генерируется...', en: 'Generating...', kk: 'Жасалуда...' },
+  'lecture.status.ready': { ru: 'Готово', en: 'Ready', kk: 'Дайын' },
+  'lecture.status.rejected': { ru: 'Отклонено', en: 'Rejected', kk: 'Қабылданбады' },
+  'lecture.status.failed': { ru: 'Ошибка', en: 'Failed', kk: 'Қате' },
+
+  // FE-3: тосты/подтверждения по лекциям аватара
+  'lecture.load_failed': { ru: 'Не удалось загрузить лекции аватара', en: 'Failed to load avatar lectures', kk: 'Аватар дәрістерін жүктеу мүмкін болмады' },
+  'lecture.delete_ok': { ru: 'Лекция удалена', en: 'Lecture deleted', kk: 'Дәріс жойылды' },
+  'lecture.delete_failed': { ru: 'Не удалось удалить лекцию', en: 'Failed to delete lecture', kk: 'Дәрісті жою мүмкін болмады' },
+  'lecture.open_failed': { ru: 'Не удалось открыть лекцию', en: 'Failed to open lecture', kk: 'Дәрісті ашу мүмкін болмады' },
+
+  // FE-3: статусы задания у студента
+  'assign.status.graded': { ru: 'ОЦЕНЕНО', en: 'GRADED', kk: 'БАҒАЛАНДЫ' },
+  'assign.status.in_progress': { ru: 'В ПРОЦЕССЕ', en: 'IN PROGRESS', kk: 'ОРЫНДАЛУДА' },
+  'assign.status.overdue': { ru: 'ПРОСРОЧЕНО', en: 'OVERDUE', kk: 'МЕРЗІМІ ӨТКЕН' },
+  'assign.status.not_started': { ru: 'НЕ НАЧАТО', en: 'NOT STARTED', kk: 'БАСТАЛМАҒАН' },
 }
 
 export const useI18n = () => {

@@ -53,7 +53,10 @@
     </Transition>
 
     <!-- Messages -->
-    <div ref="area" class="msg-area">
+    <div ref="area" class="msg-area" @scroll="onMsgScroll">
+      <div v-if="loadingOlder" class="msg-older-spinner">
+        <div class="spinner" style="width:18px;height:18px;border-width:2px"></div>
+      </div>
       <div v-if="chatsStore.loadingMsgs" class="empty">
         <div class="spinner" style="width:24px;height:24px;border-width:3px"></div>
       </div>
@@ -188,7 +191,7 @@ const emit = defineEmits<{ (e: 'back'): void }>()
 const auth = useAuthStore()
 const chatsStore = useChatsStore()
 const { lang } = useI18n()
-const { loadMsgs, loadUsers, connectWs, sendMsg, delMsg } = useChat()
+const { loadMsgs, loadOlderMsgs, loadUsers, connectWs, sendMsg, delMsg, MSG_PAGE_SIZE } = useChat()
 
 const otherUserId = computed(() => {
   const users = chatsStore.activeUsers
@@ -275,6 +278,28 @@ const shouldShowName = (msgs: any[], i: number) => {
 const isMember = (uid: number) => chatsStore.activeUsers.some(u => u.id === uid)
 
 const scrollBottom = () => nextTick(() => { if (area.value) area.value.scrollTop = area.value.scrollHeight })
+
+// FE-1: подгрузка более ранних сообщений при скролле вверх. loadingOlder не даёт
+// параллельных запросов, noMoreOlder — когда достигли начала истории. При
+// добавлении сообщений в начало сохраняем позицию скролла (anchor), чтобы список
+// не «прыгал» и watcher на length не утаскивал вниз.
+const loadingOlder = ref(false)
+const noMoreOlder = ref(false)
+const onMsgScroll = async () => {
+  const el = area.value
+  if (!el || loadingOlder.value || noMoreOlder.value || searchQ.value) return
+  if (el.scrollTop > 80) return
+  const chat = chatsStore.active
+  if (!chat) return
+  loadingOlder.value = true
+  const prevHeight = el.scrollHeight
+  const prevTop = el.scrollTop
+  const added = await loadOlderMsgs(chat.id)
+  if (added < MSG_PAGE_SIZE) noMoreOlder.value = true
+  await nextTick()
+  if (area.value) area.value.scrollTop = prevTop + (area.value.scrollHeight - prevHeight)
+  loadingOlder.value = false
+}
 const resizeTA = () => { if (!ta.value) return; ta.value.style.height='auto'; ta.value.style.height=Math.min(ta.value.scrollHeight,140)+'px' }
 const onFilePick = (e: Event) => { const f=(e.target as HTMLInputElement).files?.[0]; if(f) pendingFile.value=f }
 
@@ -344,13 +369,16 @@ const deleteMsg = (id: number) => { if (chatsStore.active) delMsg(chatsStore.act
 watch(() => chatsStore.active, async c => {
   if (c) {
     searchQ.value = ''
+    noMoreOlder.value = false
     await Promise.all([loadMsgs(c.id), loadUsers(c.id)])
     connectWs(c.id)
     scrollBottom()
   }
 }, { immediate: true })
 
-watch(() => chatsStore.activeMsgs.length, () => scrollBottom())
+// FE-1: авто-прокрутка вниз только когда мы НЕ догружаем старые сообщения
+// (иначе подгрузка вверх мгновенно утаскивала бы список обратно вниз).
+watch(() => chatsStore.activeMsgs.length, () => { if (!loadingOlder.value) scrollBottom() })
 </script>
 <style scoped>
 .cw{display:flex;flex-direction:column;height:100%;background:var(--bg)}
@@ -391,6 +419,7 @@ watch(() => chatsStore.activeMsgs.length, () => scrollBottom())
 .chip-remove{background:none;border:none;cursor:pointer;color:var(--text4);font-size:14px;padding:0;line-height:1;margin-left:2px;transition:color .12s;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center}
 .chip-remove:hover{color:var(--red)}
 .msg-area{flex:1;overflow-y:auto;background:var(--bg)}
+.msg-older-spinner{display:flex;justify-content:center;padding:8px 0}
 .msgs{display:flex;flex-direction:column;gap:1px}
 .inp-wrap{border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .file-preview{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:var(--teal-l);border-bottom:1px solid var(--teal-m);font-size:13px;color:var(--teal);font-weight:500}

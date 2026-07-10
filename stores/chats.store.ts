@@ -52,6 +52,16 @@ export const useChatsStore = defineStore('chats', {
       if (toAdd.length) this.messages[id].push(...toAdd)
     },
 
+    // FE-1: добавляет более старые сообщения в начало (пагинация вверх).
+    // Возвращает сколько реально добавлено, чтобы вызывающий понял, есть ли ещё.
+    prependMsgs(id: number, m: Msg[]): number {
+      if (!this.messages[id]) { this.messages[id] = m; return m.length }
+      const existingIds = new Set(this.messages[id].map(x => x.id))
+      const toAdd = m.filter(x => !existingIds.has(x.id))
+      if (toAdd.length) this.messages[id] = [...toAdd, ...this.messages[id]]
+      return toAdd.length
+    },
+
     addMsg(id: number, m: Msg, myId: number) {
       if (!this.messages[id]) this.messages[id] = []
       if (!this.messages[id].find(x => x.id === m.id)) {
