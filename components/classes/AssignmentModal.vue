@@ -9,7 +9,7 @@
           <div>
             <div class="am-title">{{ assignment.title }}</div>
             <div class="am-badges">
-              <span class="badge-score">{{ assignment.max_score }} баллов</span>
+              <span class="badge-score">{{ assignment.max_score }} {{ t('am.points') }}</span>
               <span v-if="deadlineStr" :class="['badge-due', isOverdue ? 'overdue' : '']">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 {{ deadlineStr }}
@@ -22,12 +22,12 @@
 
       <!-- Tabs -->
       <div class="am-tabs">
-        <button :class="['am-tab', { active: tab === 'info' }]" @click="tab = 'info'">Задание</button>
+        <button :class="['am-tab', { active: tab === 'info' }]" @click="tab = 'info'">{{ t('am.tab_task') }}</button>
         <button v-if="canSeeSubmissions" :class="['am-tab', { active: tab === 'submissions' }]" @click="tab = 'submissions'; loadSubs()">
-          Работы <span v-if="submissions.length" class="tab-count">{{ submissions.length }}</span>
+          {{ t('am.tab_works') }} <span v-if="submissions.length" class="tab-count">{{ submissions.length }}</span>
         </button>
         <button v-if="!canSeeSubmissions" :class="['am-tab', { active: tab === 'submit' }]" @click="tab = 'submit'">
-          {{ mySubmission ? 'Моя работа' : (readonly ? 'Просмотр' : 'Сдать') }}
+          {{ mySubmission ? t('am.my_work') : (readonly ? t('am.view') : t('am.submit_tab')) }}
         </button>
       </div>
 
@@ -37,7 +37,7 @@
 
         <!-- Assignment files (if teacher attached) -->
         <div v-if="assignmentFiles.length" class="section">
-          <div class="section-label">Файлы задания</div>
+          <div class="section-label">{{ t('am.task_files') }}</div>
           <div class="files-row">
             <a v-for="f in assignmentFiles" :key="f.url" href="#" class="file-chip" @click.prevent="openPreview(f.url, f.name)">
               <span class="ftb ftb-sm">{{ getEmoji(f.url) }}</span> {{ f.name }}
@@ -46,7 +46,7 @@
         </div>
 
         <div v-if="canSeeSubmissions" class="section">
-          <div class="section-label">Критерии оценивания</div>
+          <div class="section-label">{{ t('am.criteria') }}</div>
           <div class="criteria-list">
             <div v-for="c in parsedCriteria" :key="c.name" class="criterion">
               <div class="criterion-top">
@@ -72,12 +72,12 @@
               <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               {{ statusLabel(mySubmission.status) }}
             </div>
-            <span v-if="mySubmission.variant_number" class="variant-badge">Вариант {{ mySubmission.variant_number }}</span>
+            <span v-if="mySubmission.variant_number" class="variant-badge">{{ t('am.variant') }} {{mySubmission.variant_number }}</span>
             <span class="sub-date">{{ fmtDate(mySubmission.submitted_at) }}</span>
           </div>
 
           <div v-if="mySubmission.text_content" class="preview-block">
-            <div class="preview-label">Ваш ответ</div>
+            <div class="preview-label">{{ t('am.your_answer') }}</div>
             <div class="preview-text">{{ mySubmission.text_content }}</div>
           </div>
 
@@ -96,16 +96,16 @@
                 <div class="grade-by-tag">
                   <svg v-if="mySubmission.grade.graded_by === 'ai'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                   <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  {{ mySubmission.grade.graded_by === 'ai' ? 'ИИ' : 'Учитель' }}
+                  {{ mySubmission.grade.graded_by === 'ai' ? t('am.ai') : t('am.teacher') }}
                 </div>
               </div>
             </div>
             <div v-if="mySubmission.grade.feedback" class="grade-feedback">
-              <div class="section-label">Фидбек</div>
+              <div class="section-label">{{ t('am.feedback') }}</div>
               <div class="feedback-text">{{ mySubmission.grade.feedback }}</div>
             </div>
             <div v-if="parsedCriteriaScores" class="grade-criteria">
-              <div class="section-label">По критериям</div>
+              <div class="section-label">{{ t('am.by_criteria') }}</div>
               <div v-for="cs in parsedCriteriaScores" :key="cs.name" class="cs-item">
                 <div class="cs-top"><span class="cs-name">{{ cs.name }}</span><span class="cs-pts">{{ cs.score }} / {{ cs.max }}</span></div>
                 <div v-if="cs.comment" class="cs-comment">{{ cs.comment }}</div>
@@ -116,68 +116,68 @@
 
           <div v-else-if="mySubmission.status === 'grading'" class="grading-pending">
             <div class="grading-dots"><span></span><span></span><span></span></div>
-            ИИ проверяет вашу работу...
+            {{ t('am.ai_checking_yours') }}
           </div>
 
           <!-- Retract button (only if not graded, not archived) -->
           <button v-if="mySubmission.status !== 'graded' && !readonly" class="btn btn-ghost retract-btn" :disabled="retracting" @click="retract">
             <div v-if="retracting" class="spinner"></div>
             <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-            {{ retracting ? 'Отмена...' : 'Отозвать и сдать заново' }}
+            {{ retracting ? t('am.canceling') : t('am.retract_resubmit') }}
           </button>
         </div>
 
         <!-- Read-only notice for archived students (no submission) -->
         <div v-else-if="readonly" class="readonly-panel">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          Класс доступен только для чтения: ваш учебный год в архиве
+          {{ t('am.readonly_archive') }}
         </div>
 
         <!-- Submit form -->
         <div v-else class="submit-form">
           <div v-if="isOverdue" class="overdue-warn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Дедлайн истёк — работа будет помечена как просроченная
+            {{ t('am.overdue_warn') }}
           </div>
 
           <!-- Assignment files hint -->
           <div v-if="assignmentFiles.length" class="task-files-hint">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Файлы задания:
+            {{ t('am.task_files') }}:
             <a v-for="f in assignmentFiles" :key="f.url" href="#" class="file-chip small" @click.prevent="openPreview(f.url, f.name)"><span class="ftb ftb-sm">{{ getEmoji(f.url) }}</span> {{ f.name }}</a>
           </div>
 
           <!-- Variant selector -->
           <div v-if="assignmentVariants.length" class="field">
-            <label class="field-label">Ваш вариант *</label>
+            <label class="field-label">{{ t('am.your_variant') }}</label>
             <div class="variant-chips">
               <button v-for="v in assignmentVariants" :key="v.id"
                 :class="['variant-chip', { active: form.variantNumber === v.variant_number }]"
                 @click="form.variantNumber = v.variant_number">
-                Вариант {{ v.variant_number }}{{ v.title ? ': ' + v.title : '' }}
+                {{ t('am.variant') }} {{v.variant_number }}{{ v.title ? ': ' + v.title : '' }}
               </button>
             </div>
-            <div v-if="assignmentVariants.length && !form.variantNumber" class="field-hint-warn">Выберите вариант перед сдачей</div>
+            <div v-if="assignmentVariants.length && !form.variantNumber" class="field-hint-warn">{{ t('am.pick_variant') }}</div>
           </div>
 
           <div class="field">
-            <label class="field-label">Текст ответа</label>
-            <textarea v-model="form.text" class="inp inp-ta" rows="6" placeholder="Напишите ваш ответ..."></textarea>
+            <label class="field-label">{{ t('am.answer_text') }}</label>
+            <textarea v-model="form.text" class="inp inp-ta" rows="6" :placeholder="t('am.answer_placeholder')"></textarea>
           </div>
 
           <div class="field">
-            <label class="field-label">Прикрепить файлы</label>
+            <label class="field-label">{{ t('am.attach_files') }}</label>
             <div class="file-drop" :class="{ 'has-file': submittedFiles.length }" @click="fileInputEl?.click()" @dragover.prevent @drop.prevent="onDrop">
               <input ref="fileInputEl" type="file" style="display:none" multiple @change="onFileSelect" />
               <template v-if="!submittedFiles.length">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text4)"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                <span class="drop-text">Перетащите или <strong>нажмите для выбора</strong></span>
-                <span class="drop-hint">PDF, DOCX, Word, Excel, TXT, изображения — можно несколько</span>
+                <span class="drop-text">{{ t('am.drop_or') }} <strong>{{ t('am.click_choose') }}</strong></span>
+                <span class="drop-hint">{{ t('am.file_types') }}</span>
               </template>
               <template v-else>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--green)"><polyline points="20 6 9 17 4 12"/></svg>
-                <span style="font-size:13px;font-weight:600;color:var(--text1)">{{ submittedFiles.length }} файл(ов) выбрано</span>
-                <button class="btn btn-ghost btn-sm" @click.stop="clearFiles">Убрать все</button>
+                <span style="font-size:13px;font-weight:600;color:var(--text1)">{{ submittedFiles.length }} {{ t('am.files_chosen') }}</span>
+                <button class="btn btn-ghost btn-sm" @click.stop="clearFiles">{{ t('am.clear_all') }}</button>
               </template>
             </div>
             <div v-if="submittedFiles.length" class="attached-files-list">
@@ -190,14 +190,14 @@
             </div>
             <div v-if="uploading" class="upload-prog-sm">
               <div class="upload-bar-sm" :style="{ transform: `scaleX(${uploadPctSub / 100})` }"></div>
-              <span>Загрузка {{ uploadIdxSub }}/{{ submittedFiles.length }}...</span>
+              <span>{{ t('am.uploading') }} {{ uploadIdxSub }}/{{ submittedFiles.length }}...</span>
             </div>
           </div>
 
           <button class="btn btn-purple btn-full" :disabled="!canSubmit || submitting" @click="doSubmit">
             <div v-if="submitting" class="spinner"></div>
             <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-            {{ submitting ? (uploading ? 'Загрузка файла...' : 'Отправка...') : 'Сдать работу' }}
+            {{ submitting ? (uploading ? t('am.uploading_file') : t('am.sending')) : t('am.submit_work_btn') }}
           </button>
         </div>
       </div>
@@ -210,7 +210,7 @@
         <div v-else-if="activeSub" class="sub-detail">
           <button class="back-sub-btn" @click="activeSub = null">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Назад к списку
+            {{ t('am.back_to_list') }}
           </button>
           <div class="sub-detail-header">
             <div class="sub-av-lg">{{ getStudentInitials(activeSub.student_id) }}</div>
@@ -218,18 +218,18 @@
               <div class="sub-student-name">{{ getStudentName(activeSub.student_id) }}</div>
               <div class="sub-student-date" style="display:flex;align-items:center;gap:8px">
                 {{ fmtDate(activeSub.submitted_at) }}
-                <span v-if="activeSub.variant_number" class="variant-badge">Вариант {{ activeSub.variant_number }}</span>
+                <span v-if="activeSub.variant_number" class="variant-badge">{{ t('am.variant') }} {{activeSub.variant_number }}</span>
               </div>
             </div>
           </div>
 
           <div v-if="activeSub.text_content" class="sub-text-section">
-            <div class="section-label">Ответ студента</div>
+            <div class="section-label">{{ t('am.student_answer') }}</div>
             <div class="sub-text">{{ activeSub.text_content }}</div>
           </div>
 
           <div v-if="activeSub.file_url || parsedActiveUrls.length" class="sub-file-section">
-            <div class="section-label">Прикреплённые файлы</div>
+            <div class="section-label">{{ t('am.attached_files') }}</div>
             <a v-for="url in (parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url])" :key="url" href="#" class="file-chip" @click.prevent="openPreview(url, getFileName(url))">
               <span class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
             </a>
@@ -241,15 +241,15 @@
               <div class="grade-score"><span class="grade-num">{{ activeSub.grade.score }}</span><span class="grade-denom">/ {{ assignment.max_score }}</span></div>
               <div class="grade-by-tag">
                 <svg v-if="activeSub.grade.graded_by === 'ai'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                {{ activeSub.grade.graded_by === 'ai' ? 'ИИ-проверка' : 'Учитель' }}
+                {{ activeSub.grade.graded_by === 'ai' ? t('am.ai_check') : t('am.teacher') }}
               </div>
             </div>
             <div v-if="activeSub.grade.feedback" class="grade-feedback">
-              <div class="section-label">Фидбек</div>
+              <div class="section-label">{{ t('am.feedback') }}</div>
               <div class="feedback-text">{{ activeSub.grade.feedback }}</div>
             </div>
             <div v-if="parsedActiveScores" class="grade-criteria">
-              <div class="section-label">По критериям</div>
+              <div class="section-label">{{ t('am.by_criteria') }}</div>
               <div v-for="cs in parsedActiveScores" :key="cs.name" class="cs-item">
                 <div class="cs-top"><span class="cs-name">{{ cs.name }}</span><span class="cs-pts">{{ cs.score }} / {{ cs.max }}</span></div>
                 <div v-if="cs.comment" class="cs-comment">{{ cs.comment }}</div>
@@ -262,31 +262,31 @@
             <button class="btn btn-purple" :disabled="grading" @click="runAiGrade">
               <div v-if="grading" class="spinner"></div>
               <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              {{ grading ? 'ИИ читает файл и проверяет...' : (activeSub.grade ? 'Перепроверить ИИ' : 'Проверить ИИ') }}
+              {{ grading ? t('am.ai_reading') : (activeSub.grade ? t('am.recheck_ai') : t('am.check_ai')) }}
             </button>
             <button class="btn btn-teal" @click="showManualGrade = !showManualGrade">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              {{ activeSub.grade ? 'Выставить вручную' : 'Оценить вручную' }}
+              {{ activeSub.grade ? t('am.set_manual') : t('am.grade_manual') }}
             </button>
           </div>
 
           <!-- Manual grade form -->
           <div v-if="showManualGrade" class="manual-grade-form">
-            <div class="mgf-title">Ручная оценка</div>
+            <div class="mgf-title">{{ t('am.manual_grade') }}</div>
             <div class="mgf-score-row">
-              <label class="mgf-label">Балл (0 – {{ assignment.max_score }})</label>
+              <label class="mgf-label">{{ t('am.score') }} (0 – {{ assignment.max_score }})</label>
               <input v-model.number="manualScore" type="number" :min="0" :max="assignment.max_score" class="mgf-input" />
               <div class="mgf-pct">{{ manualScore > 0 ? Math.round(manualScore / assignment.max_score * 100) + '%' : '0%' }}</div>
             </div>
             <div class="mgf-field">
-              <label class="mgf-label">Комментарий (необязательно)</label>
-              <textarea v-model="manualFeedback" class="mgf-textarea" rows="3" placeholder="Напишите фидбек для студента..."></textarea>
+              <label class="mgf-label">{{ t('am.comment_optional') }}</label>
+              <textarea v-model="manualFeedback" class="mgf-textarea" rows="3" :placeholder="t('am.feedback_placeholder')"></textarea>
             </div>
             <div class="mgf-actions">
-              <button class="btn btn-ghost" @click="showManualGrade = false">Отмена</button>
+              <button class="btn btn-ghost" @click="showManualGrade = false">{{ t('am.cancel') }}</button>
               <button class="btn btn-teal" :disabled="savingGrade || manualScore < 0" @click="saveManualGrade">
                 <div v-if="savingGrade" class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
-                <span v-else>Сохранить оценку</span>
+                <span v-else>{{ t('am.save_grade') }}</span>
               </button>
             </div>
           </div>
@@ -296,13 +296,13 @@
         <div v-else>
           <div v-if="!submissions.length" class="empty-block">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.25"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            Работы ещё не сданы
+            {{ t('am.no_submissions') }}
           </div>
           <div v-else>
             <div class="subs-stats">
-              <div class="stat-chip"><span class="stat-n">{{ submissions.length }}</span><span class="stat-l">Всего</span></div>
-              <div class="stat-chip ok"><span class="stat-n">{{ submissions.filter(s=>s.status==='graded').length }}</span><span class="stat-l">Проверено</span></div>
-              <div class="stat-chip wait"><span class="stat-n">{{ submissions.filter(s=>s.status==='submitted' || s.status==='late').length }}</span><span class="stat-l">Ожидают</span></div>
+              <div class="stat-chip"><span class="stat-n">{{ submissions.length }}</span><span class="stat-l">{{ t('am.total') }}</span></div>
+              <div class="stat-chip ok"><span class="stat-n">{{ submissions.filter(s=>s.status==='graded').length }}</span><span class="stat-l">{{ t('am.checked') }}</span></div>
+              <div class="stat-chip wait"><span class="stat-n">{{ submissions.filter(s=>s.status==='submitted' || s.status==='late').length }}</span><span class="stat-l">{{ t('am.pending') }}</span></div>
             </div>
             <button
               v-if="submissions.filter(s=>s.status==='submitted'||s.status==='late').length > 0"
@@ -312,15 +312,15 @@
             >
               <svg v-if="!bulkGrading" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <div v-else class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
-              {{ bulkGrading ? `Проверяю ${bulkDone}/${bulkTotal}...` : `Проверить все ожидающие (${submissions.filter(s=>s.status==='submitted'||s.status==='late').length})` }}
+              {{ bulkGrading ? `${t('am.grading_progress')} ${bulkDone}/${bulkTotal}...` : `${t('am.grade_all_pending')} (${submissions.filter(s=>s.status==='submitted'||s.status==='late').length})` }}
             </button>
             <div class="subs-search">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input v-model="searchQuery" class="subs-search-inp" type="text" placeholder="Поиск по ФИО студента..." />
+              <input v-model="searchQuery" class="subs-search-inp" type="text" :placeholder="t('am.search_student')" />
               <button v-if="searchQuery" class="subs-search-clear" @click="searchQuery = ''">×</button>
             </div>
             <div v-if="filteredSubmissions.length === 0 && searchQuery" class="empty-block" style="padding:20px">
-              Студент не найден
+              {{ t('am.student_not_found') }}
             </div>
             <div class="subs-list">
               <div v-for="s in filteredSubmissions" :key="s.id" class="sub-row" @click="activeSub = s">
@@ -329,11 +329,11 @@
                   <div class="sub-student">{{ getStudentName(s.student_id) }}</div>
                   <div class="sub-meta">
                     <span>{{ fmtDate(s.submitted_at) }}</span>
-                    <span v-if="s.variant_number" class="variant-badge">В{{ s.variant_number }}</span>
+                    <span v-if="s.variant_number" class="variant-badge">{{ t('am.variant_short') }}{{ s.variant_number }}</span>
                     <span v-if="s.text_content" class="sub-tag">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </span>
-                    <span v-if="s.file_urls || s.file_url" class="sub-tag"><span class="ftb ftb-sm">{{ getEmoji(s.file_url || '') }}</span> {{ parseFileUrls(s.file_urls).length > 1 ? parseFileUrls(s.file_urls).length + ' файла' : '' }}</span>
+                    <span v-if="s.file_urls || s.file_url" class="sub-tag"><span class="ftb ftb-sm">{{ getEmoji(s.file_url || '') }}</span> {{ parseFileUrls(s.file_urls).length > 1 ? parseFileUrls(s.file_urls).length + ' ' + t('am.files_word') : '' }}</span>
                   </div>
                 </div>
                 <div class="sub-right">
@@ -356,6 +356,8 @@ import { useAssignmentsSvc } from '~/services/assignments'
 import { useUploadSvc } from '~/services/uploads'
 import { useUsersSvc } from '~/services/users'
 import { useToast } from '~/composables/useToast'
+import { useI18n } from '~/composables/useI18n'
+import { useCohortErrors } from '~/composables/useCohortErrors'
 import { useAuthStore } from '~/stores/auth.store'
 import { useFilePreview } from '~/composables/useFilePreview'
 import { extractFilesFromText, stripFilesFromText, fileNameFromUrl, withNameFragment } from '~/composables/useAttachments'
@@ -372,6 +374,10 @@ const svc = useAssignmentsSvc()
 const uploadSvc = useUploadSvc()
 const usersSvc = useUsersSvc()
 const toast = useToast()
+const { t, lang } = useI18n()
+const cohortErrors = useCohortErrors()
+// Локаль дат по языку интерфейса (раньше было жёстко 'ru-RU').
+const dateLocale = computed(() => ({ ru: 'ru-RU', en: 'en-US', kk: 'kk-KZ' }[lang.value] || 'ru-RU'))
 
 const studentMap = ref<Record<number, string>>({})
 
@@ -422,17 +428,24 @@ const descriptionText = computed(() => stripFilesFromText(props.assignment.descr
 const parseUtc = (d: string) => new Date(d.endsWith('Z') || d.includes('+') ? d : d + 'Z')
 const parsedDeadline = computed(() => props.assignment.deadline ? parseUtc(props.assignment.deadline) : null)
 const isOverdue = computed(() => parsedDeadline.value ? parsedDeadline.value < new Date() : false)
-const deadlineStr = computed(() => parsedDeadline.value?.toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) ?? '')
+const deadlineStr = computed(() => parsedDeadline.value?.toLocaleString(dateLocale.value, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) ?? '')
 const canSubmit = computed(() =>
   (form.value.text.trim() || submittedFiles.value.length) &&
   !submitting.value &&
   (assignmentVariants.value.length === 0 || form.value.variantNumber !== null)
 )
 
-const getStudentName = (id: number) => studentMap.value[id] || `Студент #${id}`
+const getStudentName = (id: number) => studentMap.value[id] || `${t('am.student_hash')} #${id}`
 const getStudentInitials = (id: number) => { const fn = studentMap.value[id]; if (!fn) return String(id); const parts = fn.trim().split(' ').filter(Boolean); return parts.map((p:string) => p[0]).join('').toUpperCase().slice(0, 2) || String(id) }
-const statusLabel = (s: string) => ({ submitted: 'Выполнено', grading: 'Проверяется', graded: 'Оценено', late: 'Просрочено' }[s] || s)
-const fmtDate = (d: string) => parseUtc(d).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+// Единая терминология с приложением и карточкой задания: submitted → СДАНО,
+// graded → ОЦЕНЕНО, late → ПРОСРОЧЕНО, grading → ПРОВЕРЯЕТСЯ.
+const statusLabel = (s: string) => ({
+  submitted: t('assign.status.submitted'),
+  grading: t('assign.status.grading'),
+  graded: t('assign.status.graded'),
+  late: t('assign.status.overdue'),
+}[s] || s)
+const fmtDate = (d: string) => parseUtc(d).toLocaleString(dateLocale.value, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 const getFileName = (url: string) => fileNameFromUrl(url)
 const getEmoji = (url: string) => {
   const e = url.split('.').pop()?.split('?')[0]?.toLowerCase() || ''
@@ -472,7 +485,7 @@ const loadSubs = async () => {
     const nickReg: Record<number, string> = JSON.parse(localStorage.getItem('_nick_registry') || '{}')
     const map: Record<number, string> = {}
     for (const u of users) {
-      map[u.id] = u.full_name || u.fullName || fnReg[u.id] || nickReg[u.id] || u.name || u.email || `Студент #${u.id}`
+      map[u.id] = u.full_name || u.fullName || fnReg[u.id] || nickReg[u.id] || u.name || u.email || `${t('am.student_hash')} #${u.id}`
     }
     for (const sub of subs) {
       if (sub.student_name && sub.student_id) {
@@ -481,7 +494,7 @@ const loadSubs = async () => {
     }
     studentMap.value = map
   }
-  catch { toast.err('Ошибка загрузки работ') }
+  catch { toast.err(t('am.err_load_subs')) }
   finally { loadingSubs.value = false }
 }
 
@@ -493,8 +506,8 @@ const runAiGrade = async () => {
     activeSub.value = { ...activeSub.value, grade, status: 'graded' }
     const idx = submissions.value.findIndex(s => s.id === activeSub.value!.id)
     if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], grade, status: 'graded' }
-    toast.ok(`ИИ проверил: ${grade.score} / ${props.assignment.max_score}`)
-  } catch (e: any) { toast.err(e?.response?.data?.detail || 'Ошибка ИИ-проверки') }
+    toast.ok(`${t('am.ai_checked')}: ${grade.score} / ${props.assignment.max_score}`)
+  } catch (e: any) { toast.err(e?.response?.data?.detail || t('am.err_ai_grade')) }
   finally { grading.value = false }
 }
 
@@ -528,11 +541,11 @@ const saveManualGrade = async () => {
     activeSub.value = { ...activeSub.value, grade, status: 'graded' }
     const idx = submissions.value.findIndex(s => s.id === activeSub.value!.id)
     if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], grade, status: 'graded' }
-    toast.ok(`Оценка сохранена: ${grade.score} / ${props.assignment.max_score}`)
+    toast.ok(`${t('am.grade_saved')}: ${grade.score} / ${props.assignment.max_score}`)
     showManualGrade.value = false
     manualScore.value = 0
     manualFeedback.value = ''
-  } catch (e: any) { toast.err(e?.response?.data?.detail || 'Ошибка сохранения оценки') }
+  } catch (e: any) { toast.err(e?.response?.data?.detail || t('am.err_save_grade')) }
   finally { savingGrade.value = false }
 }
 
@@ -554,7 +567,7 @@ const runBulkAiGrade = async () => {
     bulkDone.value++
   }
   bulkGrading.value = false
-  toast.ok(`ИИ проверил ${ok} из ${pending.length} работ`)
+  toast.ok(`${t('am.ai_checked')} ${ok} / ${pending.length}`)
 }
 
 const retract = async () => {
@@ -565,9 +578,9 @@ const retract = async () => {
     mySubmission.value = null
     form.value = { text: '', file: null }
     uploadedUrl.value = ''
-    toast.ok('Сдача отозвана — можно отправить заново')
+    toast.ok(t('am.retracted'))
     emit('submitted', null)
-  } catch (e: any) { toast.err(e?.response?.data?.detail || 'Ошибка отзыва сдачи') }
+  } catch (e: any) { toast.err(e?.response?.data?.detail || t('am.err_retract')) }
   finally { retracting.value = false }
 }
 
@@ -594,9 +607,13 @@ const doSubmit = async () => {
       student_name: auth.fullname || undefined,
     })
     mySubmission.value = sub
-    toast.ok('Работа успешно сдана!')
+    toast.ok(t('am.work_submitted'))
     emit('submitted', sub)
-  } catch (e: any) { toast.err(e?.response?.data?.detail || 'Ошибка при сдаче') }
+  } catch (e: any) {
+    // Единый маппинг кодов (409 «уже сдано», 403 архивный поток, no_active_cohort),
+    // как в join-флоу — вместо общего «Ошибка при сдаче».
+    toast.err(cohortErrors.cohortErrorMessage(e, t('am.submit_failed')))
+  }
   finally { submitting.value = false; uploading.value = false }
 }
 

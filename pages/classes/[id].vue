@@ -931,7 +931,7 @@ const getStatusClass = (a: Assignment) => {
 const getStatusLabel = (a: Assignment) => {
   const sub = mySubmissionsMap.value[a.id]
   if (sub?.status === 'graded') return t('assign.status.graded')
-  if (sub?.status === 'submitted') return t('assign.status.in_progress')
+  if (sub?.status === 'submitted') return t('assign.status.submitted')
   if (isLate(a)) return t('assign.status.overdue')
   return t('assign.status.not_started')
 }
