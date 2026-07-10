@@ -595,6 +595,9 @@ const doSubmit = async () => {
         uploadIdxSub.value = i + 1
         uploadPctSub.value = Math.round(((i + 1) / submittedFiles.value.length) * 100)
         const res = await uploadSvc.upload(submittedFiles.value[i])
+        // Сбой аплоада прерывает сдачу (throw → catch), а не уходит с неполными
+        // файлами. Ответ без file_url тоже считаем сбоем (паритет с приложением).
+        if (!res?.file_url) throw new Error('upload_failed')
         // Оригинальное имя файла сохраняем во фрагменте URL — иначе везде виден UUID
         fileUrls.push(withNameFragment(res.file_url, submittedFiles.value[i].name))
       }
@@ -610,9 +613,10 @@ const doSubmit = async () => {
     toast.ok(t('am.work_submitted'))
     emit('submitted', sub)
   } catch (e: any) {
-    // Единый маппинг кодов (409 «уже сдано», 403 архивный поток, no_active_cohort),
-    // как в join-флоу — вместо общего «Ошибка при сдаче».
-    toast.err(cohortErrors.cohortErrorMessage(e, t('am.submit_failed')))
+    // Сбой аплоада — своя понятная строка; иначе единый маппинг кодов
+    // (409 «уже сдано», 403 архивный поток, no_active_cohort), как в join-флоу.
+    if (e?.message === 'upload_failed') toast.err(t('am.upload_failed'))
+    else toast.err(cohortErrors.cohortErrorMessage(e, t('am.submit_failed')))
   }
   finally { submitting.value = false; uploading.value = false }
 }

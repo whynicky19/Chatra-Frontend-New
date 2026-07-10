@@ -113,14 +113,15 @@
                 {{ t('class.assignments') }}
                 <span v-if="assignments.length" class="tab-num">{{ assignments.length }}</span>
               </button>
+              <!-- Единый порядок с приложением: …Задания, ИИ, Аватар. -->
+              <button v-if="!isArchivedForUser" :class="['tab-btn tab-ai', { active: tab === 'ai' }]" @click="tab = 'ai'; loadAssignments()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                {{ t('class.ai_chat') }}
+              </button>
               <button :class="['tab-btn', { active: tab === 'avatar' }]" @click="tab = 'avatar'; loadAvatarLectures()">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/></svg>
                 {{ lang==='ru'?'Аватар':lang==='kk'?'Аватар':'Avatar' }}
                 <span v-if="avatarLectures.length" class="tab-num">{{ avatarLectures.length }}</span>
-              </button>
-              <button v-if="!isArchivedForUser" :class="['tab-btn tab-ai', { active: tab === 'ai' }]" @click="tab = 'ai'; loadAssignments()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                {{ t('class.ai_chat') }}
               </button>
             </div>
           </div>
@@ -131,8 +132,9 @@
             {{ t('cohort.readonly_notice') }}
           </div>
 
-          <!-- Рейтинг и дедлайн для студентов — только мобайл -->
-          <div v-if="!isTeacher && tab !== 'ai' && tab !== 'avatar'" class="mobile-stats">
+          <!-- Рейтинг и дедлайн для студентов — только мобайл, только во вкладке
+               «Задания» (единое размещение с приложением, где рейтинг встроен в неё). -->
+          <div v-if="!isTeacher && tab === 'assignments'" class="mobile-stats">
             <div class="ms-score">
               <div class="ms-score-top">
                 <span class="ms-label">{{ t('class.your_rating') }}</span>
@@ -439,8 +441,9 @@
 
         <!-- Right sidebar -->
         <div class="cd-sidebar" v-if="tab !== 'ai' && tab !== 'avatar'">
-          <!-- Score card — STUDENTS ONLY -->
-          <div class="sidebar-card score-card" v-if="!isTeacher">
+          <!-- Score card — студентам, только во вкладке «Задания» (единое
+               размещение с приложением: рейтинг живёт рядом с заданиями). -->
+          <div class="sidebar-card score-card" v-if="!isTeacher && tab === 'assignments'">
             <div class="score-label">{{ t('class.your_rating') }}</div>
             <div class="score-num">
               <span class="score-big">{{ avgScoreDisplay }}</span>

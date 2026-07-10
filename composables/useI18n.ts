@@ -354,6 +354,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'am.err_save_grade': { ru: 'Ошибка сохранения оценки', en: 'Failed to save grade', kk: 'Бағаны сақтау қатесі' },
   'am.err_retract': { ru: 'Ошибка отзыва сдачи', en: 'Failed to retract submission', kk: 'Тапсыруды қайтару қатесі' },
   'am.submit_failed': { ru: 'Ошибка при сдаче', en: 'Submission failed', kk: 'Тапсыру қатесі' },
+  'am.upload_failed': { ru: 'Не удалось загрузить файлы. Проверьте связь и попробуйте снова.', en: 'Failed to upload files. Check your connection and try again.', kk: 'Файлдарды жүктеу мүмкін болмады. Байланысты тексеріп, қайталаңыз.' },
   'am.work_submitted': { ru: 'Работа успешно сдана!', en: 'Work submitted successfully!', kk: 'Жұмыс сәтті тапсырылды!' },
   'am.retracted': { ru: 'Сдача отозвана — можно отправить заново', en: 'Submission retracted — you can submit again', kk: 'Тапсыру қайтарылды — қайта тапсыруға болады' },
 
