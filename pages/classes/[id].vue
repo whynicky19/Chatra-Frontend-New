@@ -991,18 +991,19 @@ const pluralFile = (n: number) => lang.value === 'ru' ? (n === 1 ? 'файл' : 
 const getFileIcon = (url: string) => { const e = url.split('.').pop()?.split('?')[0]?.toLowerCase() || ''; if (e === 'pdf') return 'PDF'; if (['doc','docx','txt','md'].includes(e)) return 'DOC'; if (['xls','xlsx'].includes(e)) return 'XLS'; if (['ppt','pptx'].includes(e)) return 'PPT'; if (['png','jpg','jpeg','gif','webp'].includes(e)) return 'IMG'; return 'FILE' }
 const getFileName = (url: string) => { try { return decodeURIComponent(new URL(url).pathname.split('/').pop() || url) } catch { return url.slice(-50) } }
 const attrEscape = (s: string) => s.replace(/"/g,'&quot;')
+const fileAnchor = (url: string, name: string) =>
+  `<a href="${url}" data-preview-url="${attrEscape(url)}" data-preview-name="${attrEscape(name)}" rel="noopener" class="file-attachment"><span class="file-type-badge">${getFileIcon(url)}</span><span>${name}</span></a>`
 const renderBody = (text: string): string => {
   if (!text) return ''
   const escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-  const attachmentRegex = /📎\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g
-  const withAttachments = escaped.replace(attachmentRegex, (_m, name, url) => {
-    const icon = getFileIcon(url)
-    return `<a href="${url}" data-preview-url="${attrEscape(url)}" data-preview-name="${attrEscape(name)}" rel="noopener" class="file-attachment"><span class="file-type-badge">${icon}</span><span>${name}</span></a>`
-  })
-  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g
-  return withAttachments.replace(urlRegex, (url) => {
-    if (FILE_EXT.test(url)) { const icon = getFileIcon(url); const name = getFileName(url); return `<a href="${url}" data-preview-url="${attrEscape(url)}" data-preview-name="${attrEscape(name)}" rel="noopener" class="file-attachment"><span class="file-type-badge">${icon}</span><span>${name}</span></a>` }
-    return `<a href="${url}" target="_blank" rel="noopener" class="link-inline">${url}</a>`
+  // Один проход: и 📎-вложения, и голые ссылки. String.replace не пересканирует
+  // вставленную разметку, поэтому сгенерированные <a> не оборачиваются повторно
+  // (иначе URL из href/data-preview-* распознавался как новая ссылка → битый HTML).
+  const combined = /📎\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g
+  return escaped.replace(combined, (_m, name, attUrl, bareUrl) => {
+    if (attUrl) return fileAnchor(attUrl, name)
+    if (FILE_EXT.test(bareUrl)) return fileAnchor(bareUrl, getFileName(bareUrl))
+    return `<a href="${bareUrl}" target="_blank" rel="noopener" class="link-inline">${bareUrl}</a>`
   }).replace(/\n/g,'<br>')
 }
 const onBodyClick = (e: MouseEvent) => {

@@ -149,7 +149,8 @@ onMounted(() => {
 })
 </script>
 <style scoped>
-.sb{width:220px;height:100%;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--border);flex-shrink:0;overflow:hidden;transition:width .25s cubic-bezier(.4,0,.2,1);position:relative}
+.sb{width:220px;height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.78));-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border-right:1px solid var(--border);flex-shrink:0;overflow:hidden;transition:width .25s cubic-bezier(.4,0,.2,1);position:relative}
+html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22,.78))}
 .sb.collapsed{width:56px}
 .sb-logo{display:flex;align-items:center;gap:8px;padding:14px 12px 8px;cursor:pointer;flex-shrink:0;overflow:hidden;min-height:52px}
 .logo-img-new{width:34px;height:34px;object-fit:contain;flex-shrink:0}
