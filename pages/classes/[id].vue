@@ -991,8 +991,14 @@ const pluralFile = (n: number) => lang.value === 'ru' ? (n === 1 ? 'файл' : 
 const getFileIcon = (url: string) => { const e = url.split('.').pop()?.split('?')[0]?.toLowerCase() || ''; if (e === 'pdf') return 'PDF'; if (['doc','docx','txt','md'].includes(e)) return 'DOC'; if (['xls','xlsx'].includes(e)) return 'XLS'; if (['ppt','pptx'].includes(e)) return 'PPT'; if (['png','jpg','jpeg','gif','webp'].includes(e)) return 'IMG'; return 'FILE' }
 const getFileName = (url: string) => { try { return decodeURIComponent(new URL(url).pathname.split('/').pop() || url) } catch { return url.slice(-50) } }
 const attrEscape = (s: string) => s.replace(/"/g,'&quot;')
-const fileAnchor = (url: string, name: string) =>
-  `<a href="${url}" data-preview-url="${attrEscape(url)}" data-preview-name="${attrEscape(name)}" rel="noopener" class="file-attachment"><span class="file-type-badge">${getFileIcon(url)}</span><span>${name}</span></a>`
+// Полное HTML-экранирование — для сырых данных (имя файла из URL).
+const htmlEscape = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+// safeName ДОЛЖЕН быть уже экранирован вызывающим; url экранируем для атрибутов
+// (иначе кавычка в URL вложения ломала бы href → XSS).
+const fileAnchor = (url: string, safeName: string) => {
+  const safeUrl = attrEscape(url)
+  return `<a href="${safeUrl}" data-preview-url="${safeUrl}" data-preview-name="${safeName}" rel="noopener" class="file-attachment"><span class="file-type-badge">${getFileIcon(url)}</span><span>${safeName}</span></a>`
+}
 const renderBody = (text: string): string => {
   if (!text) return ''
   const escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -1001,9 +1007,11 @@ const renderBody = (text: string): string => {
   // (иначе URL из href/data-preview-* распознавался как новая ссылка → битый HTML).
   const combined = /📎\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g
   return escaped.replace(combined, (_m, name, attUrl, bareUrl) => {
-    if (attUrl) return fileAnchor(attUrl, name)
-    if (FILE_EXT.test(bareUrl)) return fileAnchor(bareUrl, getFileName(bareUrl))
-    return `<a href="${bareUrl}" target="_blank" rel="noopener" class="link-inline">${bareUrl}</a>`
+    // name из attachment-формата уже прошёл &<>-экранирование (в `escaped`) —
+    // добавляем только кавычку. bareUrl-имя (getFileName) сырое → полный escape.
+    if (attUrl) return fileAnchor(attUrl, attrEscape(name))
+    if (FILE_EXT.test(bareUrl)) return fileAnchor(bareUrl, htmlEscape(getFileName(bareUrl)))
+    return `<a href="${attrEscape(bareUrl)}" target="_blank" rel="noopener" class="link-inline">${bareUrl}</a>`
   }).replace(/\n/g,'<br>')
 }
 const onBodyClick = (e: MouseEvent) => {

@@ -85,7 +85,11 @@ export const useChat = () => {
         store.unread[id] = (store.unread[id] || 0) + 1
         if (import.meta.client && localStorage.getItem('soundNotif') === '1') {
           try {
-            const ctx = new AudioContext()
+            // Один общий AudioContext на приложение: раньше создавался новый на
+            // каждое сообщение — после ~6 браузер упирался в лимит и звук пропадал.
+            const w = window as any
+            const ctx: AudioContext = (w.__notifAudioCtx ??= new AudioContext())
+            if (ctx.state === 'suspended') ctx.resume().catch(() => {})
             const o = ctx.createOscillator()
             const g = ctx.createGain()
             o.connect(g); g.connect(ctx.destination)

@@ -183,7 +183,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'register.fullname': { ru: 'ФИО', en: 'Full Name', kk: 'Толық аты-жөні' },
   'register.fullname_placeholder': { ru: 'Иванов Иван Иванович', en: 'John Michael Smith', kk: 'Иванов Иван Иванович' },
   'register.fullname_err': { ru: 'Введите фамилию и имя', en: 'Enter first and last name', kk: 'Тегі мен атын енгізіңіз' },
-  'register.email_invalid': { ru: '✕ Только gmail.com или icloud.com', en: '✕ Only gmail.com or icloud.com', kk: '✕ Тек gmail.com немесе icloud.com' },
+  'register.email_invalid': { ru: '✕ Некорректный email', en: '✕ Invalid email', kk: '✕ Қате email' },
   'register.email_ok': { ru: '✓ Email корректный', en: '✓ Email is valid', kk: '✓ Email дұрыс' },
   'register.email_required': { ru: 'Введите email', en: 'Enter your email', kk: 'Email енгізіңіз' },
   'register.pw_placeholder': { ru: 'Минимум 6 символов', en: 'At least 6 characters', kk: 'Кемінде 6 таңба' },

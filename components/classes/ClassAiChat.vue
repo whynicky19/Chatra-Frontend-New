@@ -670,7 +670,8 @@ const clearAll = () => {
   msgs.value = []
   try { sessionStorage.removeItem(storageKey.value) } catch {}
   // Чистим тред этого класса и на сервере (синхронно с приложением).
-  if (props.classId != null) { try { api.delete('/ai/history', { params: { class_id: props.classId } }) } catch {} }
+  // .catch: отклонённый промис иначе стал бы unhandledrejection → тост.
+  if (props.classId != null) api.delete('/ai/history', { params: { class_id: props.classId } }).catch(() => {})
 }
 
 // Серверная история треда класса → msgs (синхронно с приложением). Если на

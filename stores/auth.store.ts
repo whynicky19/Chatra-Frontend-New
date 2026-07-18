@@ -3,6 +3,14 @@ import { refreshRegistries } from '~/composables/useUserRegistries'
 
 interface User { id: number; email: string; is_active: boolean; role: string; ai_unlimited?: boolean }
 
+// Безопасный разбор JSON из localStorage: битое значение не должно ронять
+// setUser/setNickname (иначе вход крашится). Возвращает объект или {}.
+function safeParse(raw: string | null): Record<string, any> {
+  if (!raw) return {}
+  try { const v = JSON.parse(raw); return v && typeof v === 'object' ? v : {} }
+  catch { return {} }
+}
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: null as string | null,
@@ -40,17 +48,17 @@ export const useAuthStore = defineStore('auth', {
         const a = localStorage.getItem(`_avatar_${u.id}`)
         this.avatar = a || ''
         if (n) {
-          const reg = JSON.parse(localStorage.getItem('_nick_registry') || '{}')
+          const reg = safeParse(localStorage.getItem('_nick_registry'))
           reg[u.id] = n
           localStorage.setItem('_nick_registry', JSON.stringify(reg))
         }
         if (fn) {
-          const reg = JSON.parse(localStorage.getItem('_fullname_registry') || '{}')
+          const reg = safeParse(localStorage.getItem('_fullname_registry'))
           reg[u.id] = fn
           localStorage.setItem('_fullname_registry', JSON.stringify(reg))
         }
         if (a) {
-          const reg = JSON.parse(localStorage.getItem('_avatar_registry') || '{}')
+          const reg = safeParse(localStorage.getItem('_avatar_registry'))
           reg[u.id] = a
           localStorage.setItem('_avatar_registry', JSON.stringify(reg))
         }
@@ -84,7 +92,7 @@ export const useAuthStore = defineStore('auth', {
       this.fullname = fn
       if (import.meta.client && this.user) {
         localStorage.setItem(`_fullname_${this.user.id}`, fn)
-        const reg = JSON.parse(localStorage.getItem('_fullname_registry') || '{}')
+        const reg = safeParse(localStorage.getItem('_fullname_registry'))
         reg[this.user.id] = fn
         localStorage.setItem('_fullname_registry', JSON.stringify(reg))
       }
@@ -94,7 +102,7 @@ export const useAuthStore = defineStore('auth', {
       this.nickname = n
       if (import.meta.client && this.user) {
         localStorage.setItem(`_nick_${this.user.id}`, n)
-        const reg = JSON.parse(localStorage.getItem('_nick_registry') || '{}')
+        const reg = safeParse(localStorage.getItem('_nick_registry'))
         reg[this.user.id] = n
         localStorage.setItem('_nick_registry', JSON.stringify(reg))
         refreshRegistries()
@@ -105,7 +113,7 @@ export const useAuthStore = defineStore('auth', {
       this.avatar = a
       if (import.meta.client && this.user) {
         localStorage.setItem(`_avatar_${this.user.id}`, a)
-        const reg = JSON.parse(localStorage.getItem('_avatar_registry') || '{}')
+        const reg = safeParse(localStorage.getItem('_avatar_registry'))
         reg[this.user.id] = a
         localStorage.setItem('_avatar_registry', JSON.stringify(reg))
         refreshRegistries()

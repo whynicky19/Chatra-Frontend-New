@@ -98,7 +98,15 @@ const coverGrad = (id: number) => covers[id % covers.length]
 const goBack = () => router.push('/')
 const goClass = (id: number) => router.push(`/classes/${id}`)
 const doLeave = async (cls: ClassResponse) => {
-  try { await classesSvc.leave(cls.id) } catch {}
+  // UI меняем только после успеха: при ошибке (напр. 403 архивного потока)
+  // членство остаётся на сервере — иначе класс «исчезал», а после reload
+  // возвращался.
+  try {
+    await classesSvc.leave(cls.id)
+  } catch (e: any) {
+    toast.err(e?.response?.data?.detail || t('general.error'))
+    return
+  }
   allClasses.value = allClasses.value.filter(c => c.id !== cls.id)
   toast.ok(t('classes.left_ok'))
 }

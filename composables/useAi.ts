@@ -228,7 +228,8 @@ export const useAi = () => {
     msgs.value = []
     if (import.meta.client && _loadedKey) { try { localStorage.removeItem(_loadedKey) } catch {} }
     // Чистим и на сервере — иначе история «воскреснет» на другом устройстве.
-    try { api.delete('/ai/history') } catch {}
+    // .catch: без него отклонённый промис стал бы unhandledrejection → тост.
+    api.delete('/ai/history').catch(() => {})
   }
 
   return { msgs, loading, send, clear, aiCount, aiRemaining, aiUnlimited, aiLimitReached, AI_LIMIT }

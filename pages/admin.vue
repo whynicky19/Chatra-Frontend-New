@@ -659,7 +659,7 @@ onMounted(async () => {
   loadingU.value = true
   try { users.value = await adminSvc.users() } catch {} finally { loadingU.value = false }
   try { const c = await chatsSvc.list(); chatsCount.value = c.length } catch {}
-  try { classes.value = await loadClassesFromPosts(); classesCount.value = classes.value.length } catch {}
+  try { classes.value = await classesSvc.listAll(); classesCount.value = classes.value.length } catch {}
   loadAiSummary()
   loadAvatars()
   loadAvatarLecturesAdmin()

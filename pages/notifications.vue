@@ -72,13 +72,14 @@ const markRead = (key: string) => {
   if (it) it.read = true
   stateMap.value[key] = { read: true, dismissed: stateMap.value[key]?.dismissed || false }
   notifStore.setUnread(items.value.filter(i => !i.read).length)
-  notifSvc.setState(key, { read: true })
+  // fire-and-forget: локально уже отметили; сбой синка не должен всплывать тостом
+  notifSvc.setState(key, { read: true }).catch(() => {})
 }
 const markAllRead = () => {
   const keys = items.value.filter(i => !i.read).map(i => i.key)
   items.value.forEach(i => { i.read = true; stateMap.value[i.key] = { read: true, dismissed: stateMap.value[i.key]?.dismissed || false } })
   notifStore.setUnread(0)
-  if (keys.length) notifSvc.readAll(keys)
+  if (keys.length) notifSvc.readAll(keys).catch(() => {})
 }
 
 const unreadCount = computed(() => items.value.filter(i => !i.read).length)
