@@ -193,6 +193,58 @@ export const translations: Record<string, Record<Lang, string>> = {
   'register.pw_weak': { ru: 'Слабый', en: 'Weak', kk: 'Әлсіз' },
   'register.pw_medium': { ru: 'Средний', en: 'Medium', kk: 'Орташа' },
   'register.pw_strong': { ru: 'Надёжный', en: 'Strong', kk: 'Сенімді' },
+  'register.taken': { ru: 'Этот email уже зарегистрирован', en: 'This email is already registered', kk: 'Бұл email тіркелген' },
+  'register.error': { ru: 'Ошибка регистрации. Попробуйте снова', en: 'Registration error. Try again', kk: 'Тіркелу қатесі. Қайталаңыз' },
+
+  // Auth: ошибки входа
+  'login.forgot': { ru: 'Забыли пароль?', en: 'Forgot password?', kk: 'Құпия сөзді ұмыттыңыз ба?' },
+  'login.error_blocked': { ru: 'Аккаунт заблокирован. Обратитесь к администратору', en: 'Account blocked. Contact your administrator', kk: 'Аккаунт бұғатталған. Әкімшіге хабарласыңыз' },
+  'login.error_rate': { ru: 'Слишком много попыток. Подождите минуту', en: 'Too many attempts. Wait a minute', kk: 'Тым көп әрекет. Бір минут күтіңіз' },
+
+  // Auth: подтверждение email
+  'verify.title': { ru: 'Подтвердите email', en: 'Verify your email', kk: 'Email растаңыз' },
+  'verify.sub': { ru: 'Введите 6-значный код из письма', en: 'Enter the 6-digit code from the email', kk: 'Хаттағы 6 таңбалы кодты енгізіңіз' },
+  'verify.code_label': { ru: 'Код из письма', en: 'Code from email', kk: 'Хаттағы код' },
+  'verify.sent_to': { ru: 'Отправлено на', en: 'Sent to', kk: 'Жіберілді' },
+  'verify.btn': { ru: 'Подтвердить', en: 'Verify', kk: 'Растау' },
+  'verify.resend': { ru: 'Отправить код повторно', en: 'Resend code', kk: 'Кодты қайта жіберу' },
+  'verify.resend_in': { ru: 'Повтор через {n}с', en: 'Resend in {n}s', kk: 'Қайталау {n}с' },
+  'verify.sent': { ru: 'Код отправлен на почту', en: 'Code sent to your email', kk: 'Код поштаға жіберілді' },
+  'verify.ok': { ru: 'Email подтверждён', en: 'Email verified', kk: 'Email расталды' },
+  'verify.invalid_code': { ru: 'Неверный или просроченный код', en: 'Invalid or expired code', kk: 'Код қате немесе мерзімі өткен' },
+  'verify.error': { ru: 'Не удалось подтвердить. Попробуйте снова', en: 'Could not verify. Try again', kk: 'Растау мүмкін болмады. Қайталаңыз' },
+
+  // Auth: восстановление пароля
+  'forgot.title': { ru: 'Восстановление пароля', en: 'Reset password', kk: 'Құпия сөзді қалпына келтіру' },
+  'forgot.sub': { ru: 'Введите email — пришлём код для сброса', en: 'Enter your email — we will send a reset code', kk: 'Email енгізіңіз — қалпына келтіру кодын жібереміз' },
+  'forgot.send': { ru: 'Отправить код', en: 'Send code', kk: 'Код жіберу' },
+  'reset.title': { ru: 'Новый пароль', en: 'New password', kk: 'Жаңа құпия сөз' },
+  'reset.sub': { ru: 'Введите код из письма и новый пароль', en: 'Enter the code and a new password', kk: 'Код пен жаңа құпия сөзді енгізіңіз' },
+  'reset.newpw': { ru: 'Новый пароль', en: 'New password', kk: 'Жаңа құпия сөз' },
+  'reset.btn': { ru: 'Сбросить пароль', en: 'Reset password', kk: 'Құпия сөзді қалпына келтіру' },
+  'reset.error': { ru: 'Не удалось сбросить пароль', en: 'Could not reset password', kk: 'Құпия сөзді қалпына келтіру мүмкін болмады' },
+  'reset.success': { ru: 'Пароль изменён', en: 'Password changed', kk: 'Құпия сөз өзгертілді' },
+  'auth.pw_min8': { ru: 'Минимум 8 символов', en: 'At least 8 characters', kk: 'Кемінде 8 таңба' },
+  'auth.back_login': { ru: 'Вернуться ко входу', en: 'Back to sign in', kk: 'Кіруге оралу' },
+
+  // Settings: смена пароля
+  'settings.change_pw': { ru: 'Сменить пароль', en: 'Change password', kk: 'Құпия сөзді өзгерту' },
+  'settings.change_pw_sub': { ru: 'Обновите пароль от аккаунта', en: 'Update your account password', kk: 'Аккаунт құпия сөзін жаңарту' },
+  'settings.current_pw': { ru: 'Текущий пароль', en: 'Current password', kk: 'Ағымдағы құпия сөз' },
+  'settings.new_pw': { ru: 'Новый пароль', en: 'New password', kk: 'Жаңа құпия сөз' },
+  'settings.change_pw_btn': { ru: 'Сменить пароль', en: 'Change password', kk: 'Өзгерту' },
+  'settings.pw_changed': { ru: 'Пароль изменён', en: 'Password changed', kk: 'Құпия сөз өзгертілді' },
+  'settings.wrong_current': { ru: 'Неверный текущий пароль', en: 'Wrong current password', kk: 'Ағымдағы құпия сөз қате' },
+  'settings.change_pw_err': { ru: 'Не удалось сменить пароль', en: 'Could not change password', kk: 'Құпия сөзді өзгерту мүмкін болмады' },
+
+  // Settings: удаление аккаунта
+  'settings.delete_title': { ru: 'Удалить аккаунт', en: 'Delete account', kk: 'Аккаунтты жою' },
+  'settings.delete_warning': { ru: 'Аккаунт и все связанные данные будут удалены безвозвратно. Это действие нельзя отменить.', en: 'Your account and all related data will be permanently deleted. This cannot be undone.', kk: 'Аккаунт пен барлық деректер біржола жойылады. Бұл әрекетті қайтару мүмкін емес.' },
+  'settings.delete_confirm_pw': { ru: 'Подтвердите паролем', en: 'Confirm with password', kk: 'Құпия сөзбен растаңыз' },
+  'settings.delete_confirm_btn': { ru: 'Удалить навсегда', en: 'Delete forever', kk: 'Біржола жою' },
+  'settings.account_deleted': { ru: 'Аккаунт удалён', en: 'Account deleted', kk: 'Аккаунт жойылды' },
+  'settings.delete_err': { ru: 'Не удалось удалить аккаунт', en: 'Could not delete account', kk: 'Аккаунтты жою мүмкін болмады' },
+  'common.cancel': { ru: 'Отмена', en: 'Cancel', kk: 'Болдырмау' },
 
   // Deadlines
   'deadline.in_hours_1': { ru: 'СРОК ЧЕРЕЗ {n} ЧАС', en: 'DUE IN {n} HOUR', kk: 'МЕРЗІМ {n} САҒАТ' },

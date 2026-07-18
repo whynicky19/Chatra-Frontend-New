@@ -33,6 +33,9 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         {{ errorMsg }}
       </div>
+      <div class="forgot-row">
+        <NuxtLink to="/forgot-password" class="forgot-link">{{ t('login.forgot') }}</NuxtLink>
+      </div>
       <button type="submit" class="btn btn-teal w-full btn-lg auth-submit" :disabled="loading" style="margin-top:6px">
         <div v-if="loading" class="spinner" style="width:15px;height:15px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
         <span v-else>{{ t('login.submit') }}</span>
@@ -56,10 +59,18 @@ const switchOrg = () => { org.clear(); if (import.meta.client) window.location.h
 const sub = async () => {
   errorMsg.value = ''
   loading.value = true
-  const ok = await login(email.value, pw.value)
-  if (ok) await navigateTo('/')
-  else errorMsg.value = t('login.error')
+  const r = await login(email.value, pw.value)
   loading.value = false
+  if (r.ok) { await navigateTo('/'); return }
+  // Не подтверждён email — ведём на ввод кода (там сразу вышлем свежий).
+  if (r.reason === 'email_not_verified') {
+    // send=1 — на этом пути код ещё не высылался, verify-экран вышлет свежий.
+    await navigateTo(`/verify-email?email=${encodeURIComponent(email.value.trim())}&send=1`)
+    return
+  }
+  errorMsg.value = r.reason === 'blocked' ? t('login.error_blocked')
+    : r.reason === 'rate_limited' ? t('login.error_rate')
+    : t('login.error')
 }
 </script>
 <style scoped>
@@ -79,6 +90,9 @@ const sub = async () => {
 .auth-link{color:var(--teal);font-weight:600;transition:color .15s}
 .auth-link:hover{color:var(--teal-h)}
 .login-error{display:flex;align-items:center;gap:7px;padding:10px 14px;background:var(--red-l);border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px}
+.forgot-row{display:flex;justify-content:flex-end;margin:-4px 0 2px}
+.forgot-link{font-size:12.5px;font-weight:600;color:var(--teal);transition:color .15s}
+.forgot-link:hover{color:var(--teal-h)}
 .input-err{border-color:var(--red)!important;background:var(--red-l)!important}
 .input-err:focus{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(220,38,38,0.12)!important}
 /* Org badge */

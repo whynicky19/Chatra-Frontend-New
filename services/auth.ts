@@ -43,5 +43,43 @@ export const useAuthSvc = () => {
       const { data } = await api.patch('/auth/me', { full_name })
       return data
     },
+
+    // Серверный отзыв токенов (best-effort).
+    logoutServer: async () => {
+      try { await api.post('/auth/logout') } catch {}
+    },
+
+    // Меняет пароль, возвращает новую пару токенов (старые сессии сервер отзывает).
+    changePassword: async (current_password: string, new_password: string) => {
+      const { data } = await api.post('/auth/change-password', { current_password, new_password })
+      return data as { access_token: string; refresh_token: string }
+    },
+
+    // Удаляет собственный аккаунт (подтверждение паролем).
+    deleteAccount: async (password: string) => {
+      await api.delete('/auth/me', { data: { password } })
+    },
+
+    // Подтверждение email кодом → пара токенов (авто-вход).
+    verifyEmail: async (email: string, code: string, orgType = 'university') => {
+      const { data } = await api.post('/auth/verify-email', { email, org_type: orgType, code })
+      return data as { access_token: string; refresh_token: string }
+    },
+
+    resendVerification: async (email: string, orgType = 'university') => {
+      const { data } = await api.post('/auth/resend-verification', { email, org_type: orgType })
+      return data as { sent: boolean; dev_code?: string }
+    },
+
+    forgotPassword: async (email: string, orgType = 'university') => {
+      const { data } = await api.post('/auth/forgot-password', { email, org_type: orgType })
+      return data as { sent: boolean; dev_code?: string }
+    },
+
+    // Сброс пароля кодом → пара токенов (авто-вход).
+    resetPassword: async (email: string, code: string, new_password: string, orgType = 'university') => {
+      const { data } = await api.post('/auth/reset-password', { email, org_type: orgType, code, new_password })
+      return data as { access_token: string; refresh_token: string }
+    },
   }
 }

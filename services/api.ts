@@ -49,6 +49,19 @@ export const useApi = (): AxiosInstance => {
     async (e) => {
       const original = e.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
+      // Заблокированный (user_inactive) или неподтверждённый (email_not_verified)
+      // по сохранённому токену — принудительный разлогин на /login.
+      // ВАЖНО: исключаем сами auth-эндпоинты входа/верификации — там 403 должен
+      // вернуться в useAuth (login уведёт на экран кода / покажет причину), иначе
+      // doLogout перебивал бы этот сценарий жёстким редиректом.
+      const detail = e.response?.data?.detail
+      const isAuthEntry = /\/auth\/(login|register|verify-email|resend-verification|forgot-password|reset-password)/.test(original?.url || '')
+      if (e.response?.status === 403 && !isAuthEntry &&
+          (detail === 'user_inactive' || detail === 'email_not_verified')) {
+        doLogout()
+        return Promise.reject(e)
+      }
+
       if (e.response?.status !== 401 || original._retry) {
         return Promise.reject(e)
       }

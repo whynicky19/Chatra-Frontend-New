@@ -67,7 +67,8 @@ const nick = ref(''); const fullname = ref(''); const email = ref(''); const pw 
 const role = ref('student'); const loading = ref(false)
 const emailTouched = ref(false)
 
-const emailOk = computed(() => /^[^\s@]+@(gmail\.com|icloud\.com)$/.test(email.value.trim()))
+// Любой корректный email — подтверждение всё равно идёт кодом на почту.
+const emailOk = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim()))
 const onEmailInput = () => { emailTouched.value = true }
 const fullnameOk = computed(() => fullname.value.trim().split(' ').filter(Boolean).length >= 2)
 const canSubmit = computed(() => fullnameOk.value && emailOk.value && pw.value.length >= 8)
@@ -85,12 +86,15 @@ const scoreLabel = computed(() => score.value<=40?t('register.pw_weak'):score.va
 const sub = async () => {
   if (!canSubmit.value) return
   loading.value = true
-  const ok = await register(email.value, pw.value, role.value, fullname.value.trim())
-  if (ok) {
-    localStorage.setItem('_pending_fullname', fullname.value.trim())
-    await navigateTo('/login')
-  }
+  const r = await register(email.value, pw.value, role.value, fullname.value.trim())
   loading.value = false
+  if (r.ok) {
+    localStorage.setItem('_pending_fullname', fullname.value.trim())
+    // Бэкенд уже выслал код — ведём на его ввод, после подтверждения авто-вход.
+    await navigateTo(`/verify-email?email=${encodeURIComponent(email.value.trim())}`)
+  } else {
+    toast.err(r.taken ? t('register.taken') : t('register.error'))
+  }
 }
 </script>
 

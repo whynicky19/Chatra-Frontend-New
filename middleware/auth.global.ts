@@ -10,7 +10,7 @@ export default defineNuxtRouteMiddleware((to) => {
   // Initialise org from localStorage (idempotent)
   if (!org.isSelected) org.init()
 
-  const pub = ['/login', '/register', '/org']
+  const pub = ['/login', '/register', '/org', '/verify-email', '/forgot-password']
   const isPublic = pub.includes(to.path)
 
   // Already on /org — don't redirect again
