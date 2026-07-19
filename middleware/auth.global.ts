@@ -4,6 +4,10 @@ import { useOrgStore } from '~/stores/org.store'
 export default defineNuxtRouteMiddleware((to) => {
   if (import.meta.server) return
 
+  // Публичные правовые страницы доступны всем без входа и выбора организации
+  // (нужны для App Store: ссылка на политику конфиденциальности).
+  if (to.path === '/privacy') return
+
   const auth = useAuthStore()
   const org  = useOrgStore()
 

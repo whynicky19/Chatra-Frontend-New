@@ -245,6 +245,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'settings.account_deleted': { ru: 'Аккаунт удалён', en: 'Account deleted', kk: 'Аккаунт жойылды' },
   'settings.delete_err': { ru: 'Не удалось удалить аккаунт', en: 'Could not delete account', kk: 'Аккаунтты жою мүмкін болмады' },
   'common.cancel': { ru: 'Отмена', en: 'Cancel', kk: 'Болдырмау' },
+  'common.privacy': { ru: 'Политика конфиденциальности', en: 'Privacy Policy', kk: 'Құпиялылық саясаты' },
 
   // Deadlines
   'deadline.in_hours_1': { ru: 'СРОК ЧЕРЕЗ {n} ЧАС', en: 'DUE IN {n} HOUR', kk: 'МЕРЗІМ {n} САҒАТ' },
