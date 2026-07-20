@@ -84,7 +84,6 @@ export const translations: Record<string, Record<Lang, string>> = {
   // Classes
   'classes.title': { ru: 'Классы', en: 'Classes', kk: 'Сыныптар' },
   'classes.catalog': { ru: 'Классы', en: 'Classes', kk: 'Сыныптар' },
-  'classes.catalog_sub': { ru: 'Управляйте вашим обучением и исследуйте новые интеллектуальные путешествия.', en: 'Manage your learning and explore new intellectual journeys.', kk: 'Оқуыңызды басқарыңыз және жаңа зияткерлік жолдарды зерттеңіз.' },
   'classes.create': { ru: 'Создать класс', en: 'Create Class', kk: 'Сынып жасау' },
   'classes.join_code': { ru: 'Войти по коду', en: 'Join by Code', kk: 'Кодпен кіру' },
   'classes.no_classes': { ru: 'У вас нет классов', en: 'You have no classes', kk: 'Сізде сыныптар жоқ' },
@@ -148,7 +147,6 @@ export const translations: Record<string, Record<Lang, string>> = {
   'class.progress': { ru: 'ПРОГРЕСС КУРСА', en: 'COURSE PROGRESS', kk: 'КУРС ҮДЕРІСІ' },
   'class.performance': { ru: 'УСПЕВАЕМОСТЬ', en: 'PERFORMANCE', kk: 'ҮЛГЕРІМ' },
   'class.next_deadline': { ru: 'СЛЕДУЮЩИЙ СРОК', en: 'NEXT DEADLINE', kk: 'КЕЛЕСІ МЕРЗІМ' },
-  'class.add_calendar': { ru: 'ДОБАВИТЬ В КАЛЕНДАРЬ', en: 'ADD TO CALENDAR', kk: 'КҮНТІЗБЕГЕ ҚОСУ' },
   'class.ai_guide': { ru: 'ИИ Учебный гид', en: 'AI Learning Guide', kk: 'ЖИ Оқу нұсқаулығы' },
   'class.sort_deadline': { ru: 'СОРТИРОВКА: ПО СРОКУ', en: 'SORT: BY DEADLINE', kk: 'СҰРЫПТАУ: МЕРЗІМ БОЙЫНША' },
   'class.pending': { ru: 'В ожидании', en: 'Pending', kk: 'Күтуде' },

@@ -6,7 +6,6 @@
         <div class="pg-head">
           <div class="pg-head-left">
             <h1 class="pg-title">{{ t('classes.catalog') }}</h1>
-            <p class="pg-sub">{{ t('classes.catalog_sub') }}</p>
           </div>
           <div class="pg-head-r">
             <button v-if="auth.isTeacher || auth.isAdmin" class="btn btn-outline-teal" @click="router.push('/rollover')">

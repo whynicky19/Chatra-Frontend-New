@@ -30,20 +30,14 @@
 
         <!-- Hover actions -->
         <Transition name="ha">
-          <div v-if="hov" :class="['msg-actions',{own:isOwn}]">
-            <button v-for="e in emojis" :key="e" class="ea" @click.stop="addReaction(e)">{{e}}</button>
-            <div class="ea-sep"></div>
-            <button v-if="isOwn" class="ea-del" @click.stop="$emit('delete')" title="Удалить">
+          <div v-if="hov&&isOwn" :class="['msg-actions',{own:isOwn}]">
+            <button class="ea-del" @click.stop="$emit('delete')" title="Удалить">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
             </button>
           </div>
         </Transition>
       </div>
 
-      <!-- Reactions -->
-      <div v-if="Object.keys(reactionGroups).length" class="reactions">
-        <span v-for="(cnt,em) in reactionGroups" :key="em" class="reaction-chip">{{em}} {{cnt}}</span>
-      </div>
     </div>
 
     <!-- Own avatar -->
@@ -59,9 +53,8 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from '~/stores/auth.store'
-import { useReactionsSvc } from '~/services/reactions'
 import { useUserRegistries } from '~/composables/useUserRegistries'
 
 const props = defineProps<{
@@ -73,11 +66,8 @@ const props = defineProps<{
 defineEmits<{delete:[]; scroll:[]}>()
 
 const auth = useAuthStore()
-const rxSvc = useReactionsSvc()
 const hov = ref(false)
-const rxs = ref<any[]>([])
 const lightbox = ref(false)
-const emojis = ['👍','❤️','😂','🔥','😮','👏']
 
 const avColors = ['bg-b0','bg-b1','bg-b2','bg-b3','bg-b4','bg-b5']
 const colorFor = (id: number) => avColors[id % avColors.length]
@@ -114,19 +104,8 @@ const msgTime = computed(() => {
   catch { return '' }
 })
 
-const reactionGroups = computed(() => {
-  const g: Record<string,number> = {}
-  rxs.value.forEach(r => { g[r.emoji] = (g[r.emoji] || 0) + 1 })
-  return g
-})
 
-const addReaction = async (emoji: string) => {
-  try { await rxSvc.add(props.message.id, emoji); rxs.value = await rxSvc.get(props.message.id) } catch {}
-}
 
-onMounted(async () => {
-  try { rxs.value = await rxSvc.get(props.message.id) } catch {}
-})
 </script>
 <style scoped>
 .mrow{display:flex;align-items:flex-end;gap:8px;padding:2px 16px;animation:fadeIn .15s ease}
@@ -147,13 +126,8 @@ onMounted(async () => {
 .msg-time{font-size:11px;opacity:.55;padding:0 10px 6px;text-align:right}
 .msg-actions{position:absolute;top:-38px;left:0;display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 8px;box-shadow:var(--sh-md);z-index:10;white-space:nowrap}
 .msg-actions.own{left:auto;right:0}
-.ea{font-size:15px;padding:2px;cursor:pointer;border:none;background:none;transition:transform .1s;line-height:1}
-.ea:hover{transform:scale(1.3)}
-.ea-sep{width:1px;height:14px;background:var(--border);margin:0 2px}
 .ea-del{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;cursor:pointer;border:none;background:none;color:var(--text3);transition:all .12s}
 .ea-del:hover{background:var(--red-l);color:var(--red)}
-.reactions{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
-.reaction-chip{font-size:12px;padding:2px 7px;background:var(--surface);border:1px solid var(--border);border-radius:100px;cursor:default}
 .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out}
 .lightbox img{max-width:90vw;max-height:90vh;border-radius:var(--r-lg)}
 .ha-enter-active,.ha-leave-active{transition:opacity .15s}

@@ -484,7 +484,6 @@
                 <div class="deadline-remaining">{{ fmtRemaining(nextDeadline.deadline) }}</div>
               </div>
             </div>
-            <button class="add-calendar-btn">{{ t('class.add_calendar') }}</button>
           </div>
 
           <!-- AI learning guide -->
@@ -1412,8 +1411,6 @@ onMounted(async () => {
 .ddb-day{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:22px;font-weight:900;color:var(--text1);line-height:1}
 .deadline-title{font-size:13px;font-weight:700;color:var(--text1);margin-bottom:3px}
 .deadline-remaining{font-size:11px;color:var(--text4)}
-.add-calendar-btn{font-size:11px;font-weight:700;color:var(--teal);letter-spacing:.06em;background:none;border:none;cursor:pointer;padding:0;transition:opacity .15s}
-.add-calendar-btn:hover{opacity:.7}
 
 /* AI guide */
 .ai-guide-head{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--text3);margin-bottom:10px}
