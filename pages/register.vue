@@ -44,7 +44,7 @@
       </button>
     </form>
     <p class="auth-link-row">{{ t('register.has_account') }} <NuxtLink to="/login" style="color:var(--teal);font-weight:500">{{ t('register.login_link') }}</NuxtLink></p>
-    <p class="auth-link-row" style="margin-top:4px"><NuxtLink to="/privacy" style="color:var(--text4);font-size:13px">{{ t('common.privacy') }}</NuxtLink></p>
+    <p class="auth-link-row" style="margin-top:4px"><NuxtLink to="/terms" style="color:var(--text4);font-size:13px">{{ t('common.terms') }}</NuxtLink> · <NuxtLink to="/privacy" style="color:var(--text4);font-size:13px">{{ t('common.privacy') }}</NuxtLink></p>
   </div>
 </template>
 
