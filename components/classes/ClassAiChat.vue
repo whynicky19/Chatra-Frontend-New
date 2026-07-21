@@ -162,23 +162,15 @@
       </div>
     </div>
 
-    <!-- ── Quota bar (students only) ── -->
-    <div v-if="aiLimitReached" class="quota-bar exhausted">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      Лимит запросов исчерпан ({{ AI_LIMIT }}/{{ AI_LIMIT }}). Обратитесь к администратору.
-    </div>
-    <div v-else-if="isStudent" class="quota-bar" :class="{ warn: aiRemaining <= 2 }">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      Осталось запросов к ИИ: <strong>{{ aiRemaining }} / {{ AI_LIMIT }}</strong>
-    </div>
-
     <!-- ── Input ── -->
+    <AiLimitNotice v-if="aiLimitReached" :quota="aiQuota.quota.value"/>
+
     <div class="ai-input-bar">
       <textarea ref="inputEl" v-model="inputTxt" class="ai-textarea"
-        :placeholder="aiLimitReached ? 'Лимит запросов исчерпан...' : 'Спросите про материалы, попросите объяснить тему...'"
+        :placeholder="aiLimitReached ? 'Дневной лимит исчерпан...' : 'Спросите про материалы, попросите объяснить тему...'"
         rows="1" :disabled="aiLimitReached" @keydown.enter.exact.prevent="send" @input="autoResize">
       </textarea>
-      <button class="send-btn" :disabled="!inputTxt.trim() || loading || aiLimitReached" @click="send">
+      <button :class="['send-btn', { locked: aiLimitReached }]" :disabled="!inputTxt.trim() || loading || aiLimitReached" @click="send">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
       </button>
     </div>
@@ -192,7 +184,7 @@ import { useAssignmentsSvc } from '~/services/assignments'
 import { useUsersSvc } from '~/services/users'
 import { useToast } from '~/composables/useToast'
 import { useApi } from '~/services/api'
-import { useAi, incrementAiCount, AI_LIMIT } from '~/composables/useAi'
+import { useAi } from '~/composables/useAi'
 import { useRagSvc } from '~/services/rag'
 import type { Submission } from '~/services/assignments'
 
@@ -217,8 +209,7 @@ const toast = useToast()
 const api = useApi()
 const aiQuota = useAi()
 const aiLimitReached = computed(() => aiQuota.aiLimitReached.value)
-const aiRemaining = computed(() => aiQuota.aiRemaining.value)
-const isStudent = computed(() => auth.user?.role === 'student' && !auth.user?.ai_unlimited)
+const aiLimit = computed(() => aiQuota.aiLimit.value)
 
 const studentMap = ref<Record<number, string>>({})
 
@@ -625,7 +616,7 @@ const send = async () => {
   if (!text || loading.value) return
 
   if (aiLimitReached.value) {
-    toast.err(`Лимит ИИ исчерпан (${AI_LIMIT} запросов). Обратитесь к администратору.`)
+    toast.err(`Дневной лимит ИИ исчерпан (${aiLimit.value} сообщений в сутки). Лимит обновится завтра.`)
     return
   }
 
@@ -656,11 +647,11 @@ const send = async () => {
     msgs.value.push({ id: ++nextId, role: 'assistant', text: reply })
     scrollBottom()
     persist()
-    if (auth.user?.role === 'student' && !auth.user.ai_unlimited) {
-      incrementAiCount(auth.user.id)
-    }
+    aiQuota.applyQuota(data.quota)
   } catch (e: any) {
     toast.err('ИИ: ' + (e?.response?.data?.detail || e.message || 'ошибка соединения'))
+    // 429 — дневная квота исчерпана: обновляем счётчик, чтобы ввод заблокировался.
+    if (e?.response?.status === 429) aiQuota.refreshQuota(auth.user?.id)
   } finally {
     loading.value = false
   }
@@ -790,17 +781,14 @@ onMounted(() => {
 .typing-bbl span:nth-child(3) { animation-delay: .28s; }
 @keyframes bounce { 0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)} }
 
-/* Quota bar */
-.quota-bar { display: flex; align-items: center; gap: 7px; padding: 7px 18px; font-size: 12px; color: var(--teal); background: rgba(var(--teal-rgb),.07); border-top: 1px solid rgba(var(--teal-rgb),.12); flex-shrink: 0; }
-.quota-bar.warn { color: #b45309; background: rgba(245,158,11,.07); border-top-color: rgba(245,158,11,.15); }
-.quota-bar.exhausted { color: var(--red); background: var(--red-l); border-top-color: rgba(248,113,113,.2); }
-
 /* Input bar */
 .ai-input-bar { display: flex; align-items: flex-end; gap: 10px; padding: 12px 18px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
 .ai-textarea { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 11px 15px; color: var(--text1); font-size: 13.5px; resize: none; line-height: 1.5; max-height: 140px; transition: border-color .15s; font-family: inherit; }
 .ai-textarea:focus { border-color: rgba(var(--teal-rgb),.45); outline: none; }
 .send-btn { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,var(--teal),var(--teal-h)); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .18s; flex-shrink: 0; box-shadow: 0 4px 14px rgba(var(--teal-rgb),.4); }
 .send-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+.send-btn.locked { background: var(--surface2); color: var(--text4); box-shadow: none; opacity: 1; }
+html.dark .send-btn.locked { background: var(--surface3, var(--surface2)); }
 .send-btn:not(:disabled):hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(var(--teal-rgb),.6); }
 
 /* Spinners */

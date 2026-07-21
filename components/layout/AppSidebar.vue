@@ -94,7 +94,7 @@ import { useChatsStore } from '~/stores/chats.store'
 import { useNotificationsStore } from '~/stores/notifications.store'
 import { useAuth } from '~/composables/useAuth'
 import { useI18n } from '~/composables/useI18n'
-import { useAi, AI_LIMIT } from '~/composables/useAi'
+import { useAi } from '~/composables/useAi'
 import { useAvatarsSvc } from '~/services/avatars'
 const auth = useAuthStore(); const chatsStore = useChatsStore(); const notifStore = useNotificationsStore(); const { logout } = useAuth(); const route = useRoute()
 const { t, lang, setLang } = useI18n()

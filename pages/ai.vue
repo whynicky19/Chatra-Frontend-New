@@ -59,16 +59,6 @@
         </div>
       </div>
 
-      <!-- Quota bar for students -->
-      <div v-if="ai.aiLimitReached.value" class="quota-bar exhausted">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Лимит запросов исчерпан ({{ ai.AI_LIMIT }}/{{ ai.AI_LIMIT }}). Обратитесь к администратору.
-      </div>
-      <div v-else-if="!ai.aiUnlimited.value && auth.user?.role === 'student'" class="quota-bar" :class="{ warn: ai.aiRemaining.value <= 2 }">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        Осталось запросов к ИИ: <strong>{{ ai.aiRemaining.value }} / {{ ai.AI_LIMIT }}</strong>
-      </div>
-
       <!-- File preview bar -->
       <div v-if="pendingFile" class="file-prev">
         <div class="fp-info">
@@ -80,6 +70,8 @@
         </div>
         <button class="fp-rm" @click="clearFile">×</button>
       </div>
+
+      <AiLimitNotice v-if="ai.aiLimitReached.value" :quota="ai.quota.value" class="notice-wide"/>
 
       <!-- Input -->
       <div class="chat-inp">
@@ -93,12 +85,12 @@
           ref="inp"
           v-model="txt"
           class="chat-field"
-          :placeholder="ai.aiLimitReached.value ? 'Лимит запросов исчерпан...' : 'Написать сообщение или спросить кое что...'"
+          :placeholder="ai.aiLimitReached.value ? 'Дневной лимит исчерпан...' : 'Написать сообщение или спросить кое что...'"
           :disabled="loading || ai.aiLimitReached.value"
           @keydown.enter="send"
         />
         <button
-          :class="['send-btn', {active: (txt.trim() || pendingFile) && !ai.aiLimitReached.value}]"
+          :class="['send-btn', {active: (txt.trim() || pendingFile) && !ai.aiLimitReached.value, locked: ai.aiLimitReached.value}]"
           :disabled="(!txt.trim() && !pendingFile) || loading || ai.aiLimitReached.value"
           @click="send"
         >
@@ -275,9 +267,6 @@ watch(() => ai.msgs.value.length, () => scroll())
 .typing span:nth-child(3) { animation-delay: .4s }
 
 /* File preview bar */
-.quota-bar { display: flex; align-items: center; gap: 7px; padding: 8px 24px; font-size: 12px; color: var(--teal); background: rgba(var(--teal-rgb),.07); border-top: 1px solid rgba(var(--teal-rgb),.12); flex-shrink: 0; position: relative; z-index: 2 }
-.quota-bar.warn { color: #f59e0b; background: rgba(245,158,11,.07); border-top-color: rgba(245,158,11,.15) }
-.quota-bar.exhausted { color: var(--red); background: var(--red-l); border-top-color: rgba(248,113,113,.2) }
 .file-prev { display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; background: rgba(var(--teal-rgb),.08); border-top: 1px solid rgba(var(--teal-rgb),.12); font-size: 13px; font-weight: 500; color: var(--teal); position: relative; z-index: 2; flex-shrink: 0 }
 .fp-info { display: flex; align-items: center; gap: 10px }
 .fp-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(var(--teal-rgb),.2) }
@@ -298,6 +287,8 @@ watch(() => ai.msgs.value.length, () => scroll())
 .send-btn.active { background: linear-gradient(135deg, var(--teal), var(--teal-h)); border-color: transparent; color: #fff; box-shadow: 0 4px 16px rgba(var(--teal-rgb),.4) }
 .send-btn.active:hover { box-shadow: 0 6px 24px rgba(var(--teal-rgb),.6); transform: translateY(-1px) }
 .send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none }
+.send-btn.locked { background: var(--surface2); border-color: var(--border); color: var(--text4); box-shadow: none; opacity: 1 }
+.notice-wide { margin: 0 24px 10px; position: relative; z-index: 2 }
 
 /* Code blocks */
 :deep(.code-bl) { background: #0a0a16; color: #99e6f0; border-radius: var(--r-md); padding: 14px; margin: 8px 0; overflow-x: auto; font-size: 13px; font-family: monospace; line-height: 1.6; border: 1px solid var(--border) }

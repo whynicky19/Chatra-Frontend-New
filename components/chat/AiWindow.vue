@@ -16,16 +16,6 @@
       <button class="btn btn-ghost btn-sm" @click="ai.clear()">Очистить</button>
     </div>
 
-    <!-- Quota bar for students -->
-    <div v-if="ai.aiLimitReached.value" class="ai-quota-block exhausted">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      Лимит запросов исчерпан ({{ ai.AI_LIMIT }}/{{ ai.AI_LIMIT }}). Обратитесь к администратору.
-    </div>
-    <div v-else-if="!ai.aiUnlimited.value && auth.user?.role === 'student'" class="ai-quota-block" :class="{ warn: ai.aiRemaining.value <= 2 }">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      Осталось запросов к ИИ: <strong>{{ ai.aiRemaining.value }} / {{ ai.AI_LIMIT }}</strong>
-    </div>
-
     <div ref="area" class="ai-area">
       <div v-if="!msgs.length" class="ai-welcome anim-in">
         <div class="ai-welcome-icon">
@@ -69,6 +59,8 @@
       <button class="ai-fp-rm" @click="clearFile">×</button>
     </div>
 
+    <AiLimitNotice v-if="ai.aiLimitReached.value" :quota="ai.quota.value"/>
+
     <div class="ai-inp">
       <label class="ai-attach" title="Прикрепить изображение">
         <input ref="fileInp" type="file" accept="image/*,.pdf,.txt" style="display:none" @change="onFilePick"/>
@@ -80,13 +72,13 @@
         ref="ta"
         v-model="txt"
         class="ai-field"
-        :placeholder="ai.aiLimitReached.value ? 'Лимит запросов исчерпан...' : 'Написать сообщение...'"
+        :placeholder="ai.aiLimitReached.value ? 'Дневной лимит исчерпан...' : 'Написать сообщение...'"
         rows="1"
         :disabled="loading || ai.aiLimitReached.value"
         @keydown.enter.exact.prevent="send"
         @input="resize"
       ></textarea>
-      <button :class="['send-btn', { active: (txt.trim() || pendingFile) && !ai.aiLimitReached.value }]" :disabled="(!txt.trim() && !pendingFile) || loading || ai.aiLimitReached.value" @click="send">
+      <button :class="['send-btn', { active: (txt.trim() || pendingFile) && !ai.aiLimitReached.value, locked: ai.aiLimitReached.value }]" :disabled="(!txt.trim() && !pendingFile) || loading || ai.aiLimitReached.value" @click="send">
         <div v-if="loading" class="spinner" style="width:14px;height:14px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
         <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
@@ -198,11 +190,6 @@ watch(() => ai.msgs.value.length, () => scroll())
 .typing span:nth-child(2) { animation-delay: .2s }
 .typing span:nth-child(3) { animation-delay: .4s }
 
-/* Quota bar */
-.ai-quota-block { display: flex; align-items: center; gap: 7px; padding: 8px 18px; font-size: 12px; color: var(--teal); background: rgba(var(--teal-rgb),.07); border-bottom: 1px solid rgba(var(--teal-rgb),.12); flex-shrink: 0 }
-.ai-quota-block.warn { color: #f59e0b; background: rgba(245,158,11,.07); border-bottom-color: rgba(245,158,11,.15) }
-.ai-quota-block.exhausted { color: var(--red); background: var(--red-l); border-bottom-color: rgba(248,113,113,.2) }
-
 /* File preview */
 .ai-file-prev { display: flex; align-items: center; gap: 8px; padding: 8px 18px; background: rgba(var(--teal-rgb),.08); border-top: 1px solid rgba(var(--teal-rgb),.12); font-size: 13px; font-weight: 500; color: var(--teal); flex-shrink: 0 }
 .ai-fp-thumb { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(var(--teal-rgb),.2) }
@@ -223,6 +210,7 @@ watch(() => ai.msgs.value.length, () => scroll())
 .send-btn.active { background: linear-gradient(135deg, var(--teal-h), var(--teal)); color: #fff; box-shadow: 0 4px 12px rgba(var(--teal-rgb),.4) }
 .send-btn.active:hover { transform: scale(1.05) }
 .send-btn:disabled { opacity: .4; cursor: not-allowed }
+.send-btn.locked { background: var(--surface3); color: var(--text4); box-shadow: none; opacity: 1 }
 :deep(.code-bl) { background: #0d0d1a; color: #99e6f0; border: 1px solid var(--border2); border-radius: var(--r-lg); padding: 14px; margin: 8px 0; overflow-x: auto; font-size: 13px; font-family: monospace; line-height: 1.5 }
 :deep(.ic) { background: rgba(var(--teal-rgb),.15); color: #99e6f0; padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: .9em }
 @media (max-width: 768px) {

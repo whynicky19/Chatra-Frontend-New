@@ -4,7 +4,8 @@ import { useApi } from '~/services/api'
 import { useToast } from '~/composables/useToast'
 import { useAuthStore } from '~/stores/auth.store'
 
-export const AI_LIMIT = 5
+// Дефолт до первого ответа сервера; настоящий лимит приходит из /ai/limits.
+export const AI_LIMIT = 50
 
 interface Msg {
   id: number
@@ -71,24 +72,22 @@ const persistMsgs = () => {
   } catch {}
 }
 
-// Module-level reactive cache so count stays in sync across components
-const _aiCountCache = ref<Record<number, number>>({})
-
-const readAiCount = (userId: number): number => {
-  if (!import.meta.client) return 0
-  if (_aiCountCache.value[userId] === undefined) {
-    _aiCountCache.value[userId] = parseInt(localStorage.getItem(`_ai_count_${userId}`) || '0', 10)
-  }
-  return _aiCountCache.value[userId]
+// Дневная квота ИИ — серверная (GET /ai/limits), общая с приложением: считать
+// локально нельзя, иначе лимит обходится сменой браузера или чисткой storage.
+export interface AiQuota {
+  limit: number
+  used: number
+  remaining: number | null   // null — безлимит
+  unlimited: boolean
+  resets_at?: string
 }
 
-const writeAiCount = (userId: number, count: number) => {
-  _aiCountCache.value = { ..._aiCountCache.value, [userId]: count }
-  if (import.meta.client) localStorage.setItem(`_ai_count_${userId}`, String(count))
-}
+const _quota = ref<AiQuota | null>(null)
+let _quotaUserId: number | null | undefined = undefined
 
-export const incrementAiCount = (userId: number) => {
-  writeAiCount(userId, readAiCount(userId) + 1)
+/** Квота из ответа /ai/chat — обновляет счётчик без лишнего запроса. */
+export const applyQuota = (q: AiQuota | null | undefined) => {
+  if (q && typeof q.limit === 'number') _quota.value = q
 }
 
 export const useAi = () => {
@@ -124,15 +123,29 @@ export const useAi = () => {
     } catch { _syncedKey = null }
   }
 
+  const refreshQuota = async (uid: number | null | undefined) => {
+    if (!import.meta.client || uid == null) return
+    try {
+      applyQuota((await api.get('/ai/limits')).data)
+    } catch {}
+  }
+
   // Подхватываем историю текущего аккаунта; при смене пользователя
   // (в т.ч. после повторного входа) загружается его собственная.
-  watch(() => auth.user?.id, (id) => { loadMsgsFor(chatKeyFor(id), id != null); syncFromServer(id) }, { immediate: true })
+  watch(() => auth.user?.id, (id) => {
+    loadMsgsFor(chatKeyFor(id), id != null)
+    syncFromServer(id)
+    if (id !== _quotaUserId) { _quotaUserId = id; _quota.value = null; refreshQuota(id) }
+  }, { immediate: true })
 
-  const isStudent = computed(() => auth.user?.role === 'student')
-  const aiUnlimited = computed(() => !isStudent.value || !!auth.user?.ai_unlimited)
-  const aiCount = computed(() => auth.user ? readAiCount(auth.user.id) : 0)
-  const aiRemaining = computed(() => Math.max(0, AI_LIMIT - aiCount.value))
-  const aiLimitReached = computed(() => isStudent.value && !auth.user?.ai_unlimited && aiCount.value >= AI_LIMIT)
+  const quota = _quota
+  const aiLimit = computed(() => _quota.value?.limit ?? AI_LIMIT)
+  const aiUnlimited = computed(() => _quota.value?.unlimited ?? !!auth.user?.ai_unlimited)
+  const aiCount = computed(() => _quota.value?.used ?? 0)
+  const aiRemaining = computed(() =>
+    _quota.value?.remaining ?? Math.max(0, aiLimit.value - aiCount.value))
+  const aiLimitReached = computed(() =>
+    !aiUnlimited.value && _quota.value != null && aiRemaining.value <= 0)
 
   const send = async (text: string, file?: File | null) => {
     const hasText = text.trim().length > 0
@@ -140,7 +153,7 @@ export const useAi = () => {
     if ((!hasText && !hasFile) || loading.value) return
 
     if (aiLimitReached.value) {
-      toast.err(`Лимит ИИ исчерпан (${AI_LIMIT} запросов). Обратитесь к администратору.`)
+      toast.err(`Дневной лимит ИИ исчерпан (${aiLimit.value} сообщений в сутки). Лимит обновится завтра.`)
       return
     }
 
@@ -212,13 +225,14 @@ export const useAi = () => {
       ]
       persistMsgs()
 
-      if (isStudent.value && auth.user) {
-        writeAiCount(auth.user.id, readAiCount(auth.user.id) + 1)
-      }
+      applyQuota(data.quota)
     } catch (e: any) {
       toast.err('AI: ' + (e?.response?.data?.detail || e.message || 'ошибка'))
       msgs.value = msgs.value.filter(m => m.id !== um.id)
       persistMsgs()
+      // 429 — квота исчерпана: подтягиваем актуальное состояние, чтобы
+      // ввод заблокировался и счётчик показал 0.
+      if (e?.response?.status === 429) refreshQuota(auth.user?.id)
     } finally {
       loading.value = false
     }
@@ -232,5 +246,9 @@ export const useAi = () => {
     api.delete('/ai/history').catch(() => {})
   }
 
-  return { msgs, loading, send, clear, aiCount, aiRemaining, aiUnlimited, aiLimitReached, AI_LIMIT }
+  return {
+    msgs, loading, send, clear,
+    quota, aiLimit, aiCount, aiRemaining, aiUnlimited, aiLimitReached,
+    applyQuota, refreshQuota, AI_LIMIT,
+  }
 }

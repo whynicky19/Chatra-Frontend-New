@@ -91,10 +91,40 @@ const senderAvatar = computed(() => getAvatar(props.message.user_id))
 const ownInit = computed(() => (auth.user?.email || '?')[0]?.toUpperCase())
 const ownAvatar = computed(() => auth.avatar || getAvatar(auth.user?.id || 0))
 
-const isImage = computed(() => props.message.content?.startsWith('🖼️ ['))
-const isFile = computed(() => props.message.content?.startsWith('📎 ['))
-const fileUrl = computed(() => props.message.content?.match(/\(([^)]+)\)/)?.[1] || '')
-const fileName = computed(() => props.message.content?.match(/— (.+)$/)?.[1] || 'Файл')
+// Вложение: сайт шлёт markdown «🖼️ [Фото](url) — имя», приложение — голую
+// ссылку «/uploads/xxx.png». Раньше учитывался только первый формат, поэтому
+// фото из приложения показывалось строкой с путём вместо картинки.
+const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'bmp']
+const pathOf = (url: string) => url.split('#')[0].split('?')[0]
+
+const attachment = computed(() => {
+  const raw = (props.message.content || '').trim()
+  if (!raw) return null
+  const md = raw.match(/\[[^\]]*\]\(([^()\s]+)\)/)
+  if (md) {
+    return { url: md[1], name: raw.match(/—\s*(.+)$/)?.[1]?.trim() || pathOf(md[1]).split('/').pop() || 'Файл' }
+  }
+  if (!/\s/.test(raw) && /^(https?:\/\/\S+?)?\/?uploads\/\S+$/i.test(raw)) {
+    const name = decodeURIComponent(raw.split('#')[1] || pathOf(raw).split('/').pop() || 'Файл')
+    return { url: raw, name }
+  }
+  return null
+})
+
+const isImage = computed(() => {
+  const url = attachment.value?.url
+  if (!url) return false
+  const ext = pathOf(url).split('.').pop()?.toLowerCase() || ''
+  return IMAGE_EXTS.includes(ext)
+})
+const isFile = computed(() => !!attachment.value && !isImage.value)
+// Относительная ссылка ведёт на бэкенд, а не на origin сайта.
+const apiBase = (useRuntimeConfig().public.apiBase as string) || ''
+const fileUrl = computed(() => {
+  const url = attachment.value?.url || ''
+  return url.startsWith('/') ? `${apiBase}${url}` : url
+})
+const fileName = computed(() => attachment.value?.name || 'Файл')
 const fileExt = computed(() => fileName.value.split('.').pop()?.toLowerCase() || '')
 const fileEmoji = computed(() => ({pdf:'📄',doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',zip:'🗜️',mp4:'🎥',mp3:'🎵'})[fileExt.value] || '📎')
 
