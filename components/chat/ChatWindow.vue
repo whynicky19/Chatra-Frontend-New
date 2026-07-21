@@ -287,6 +287,10 @@ watch(() => chatsStore.activeMsgs.length, () => { if (!loadingOlder.value) scrol
 .search-inp{flex:1;border:none;background:none;font-size:13px;color:var(--text1)}
 .search-inp::placeholder{color:var(--text4)}
 .msg-area{flex:1;overflow-y:auto;background:var(--bg)}
+/* .empty центрируется своим flex(column)+justify-content:center, но это
+   работает только если у него есть высота — msg-area не flex-контейнер,
+   поэтому без явной height блок садится по верху. */
+.msg-area>.empty{height:100%}
 .msg-older-spinner{display:flex;justify-content:center;padding:8px 0}
 .msgs{display:flex;flex-direction:column;gap:1px}
 .inp-wrap{border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}

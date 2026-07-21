@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia'
 
-export interface Chat { id: number; name: string }
+export interface LastMessagePreview {
+  id: number
+  content: string
+  user_id: number
+  created_at: string | null
+  is_read: boolean
+}
+export interface Chat { id: number; name: string; unread_count?: number; last_message?: LastMessagePreview | null }
 export interface Msg {
   id: number
   content: string
@@ -32,8 +39,52 @@ export const useChatsStore = defineStore('chats', {
   },
 
   actions: {
-    setChats(c: Chat[]) { this.chats = c },
-    addChat(c: Chat) { if (!this.chats.find(x => x.id === c.id)) this.chats.unshift(c) },
+    setChats(c: Chat[]) {
+      this.chats = c
+      // unread_count с сервера — источник истины, кроме активного чата
+      // (там он уже 0 локально и на сервере после markRead).
+      c.forEach(ch => {
+        if (this.active?.id !== ch.id) this.unread[ch.id] = ch.unread_count || 0
+      })
+    },
+    addChat(c: Chat) {
+      if (!this.chats.find(x => x.id === c.id)) {
+        this.chats.unshift(c)
+        if (c.unread_count) this.unread[c.id] = c.unread_count
+      }
+    },
+    // Обновляет unread_count/last_message существующих чатов из свежего
+    // /chats/ (поллинг раз в 3с — подстраховка на случай пропущенного WS),
+    // не трогая активный чат — он уже прочитан и его история загружена целиком.
+    syncSummaries(fresh: Chat[]) {
+      const byId = new Map(fresh.map(ch => [ch.id, ch]))
+      this.chats.forEach((ch, i) => {
+        const f = byId.get(ch.id)
+        if (!f) return
+        if (this.active?.id !== ch.id) this.unread[ch.id] = f.unread_count || 0
+        if ((f.last_message?.id) !== (ch.last_message?.id) || f.last_message?.is_read !== ch.last_message?.is_read) {
+          this.chats[i] = { ...ch, last_message: f.last_message, unread_count: f.unread_count }
+        }
+      })
+    },
+
+    // Единая точка входа для входящих WS-событий о новом сообщении — держит
+    // карточку чата в списке актуальной в реальном времени, даже если
+    // полная история этого чата не загружена (чат не открыт).
+    applyIncoming(chatId: number, data: any, myId: number) {
+      if (data.type !== 'message') return
+      const idx = this.chats.findIndex(c => c.id === chatId)
+      const msg: LastMessagePreview = {
+        id: data.id, content: data.content, user_id: data.user_id,
+        created_at: data.created_at ?? null, is_read: !!data.is_read,
+      }
+      if (idx !== -1) this.chats[idx] = { ...this.chats[idx], last_message: msg }
+      if (this.messages[chatId]) {
+        this.addMsg(chatId, { ...msg, chat_id: chatId, file_url: null } as Msg, myId)
+      } else if (this.active?.id !== chatId && data.user_id !== myId) {
+        this.unread[chatId] = (this.unread[chatId] || 0) + 1
+      }
+    },
 
     setActive(c: Chat | null) {
       this.active = c
@@ -47,6 +98,11 @@ export const useChatsStore = defineStore('chats', {
 
     mergeMsgs(id: number, m: Msg[]) {
       if (!this.messages[id]) { this.messages[id] = m; return }
+      // Обновляем поля уже известных сообщений (важно для is_read — иначе
+      // галочки "прочитано" замирают на первом значении и не меняются) и
+      // добавляем новые.
+      const fresh = new Map(m.map(x => [x.id, x]))
+      this.messages[id] = this.messages[id].map(x => fresh.get(x.id) ?? x)
       const existingIds = new Set(this.messages[id].map(x => x.id))
       const toAdd = m.filter(x => !existingIds.has(x.id))
       if (toAdd.length) this.messages[id].push(...toAdd)
@@ -69,6 +125,13 @@ export const useChatsStore = defineStore('chats', {
         if (this.active?.id !== id && m.user_id !== myId) {
           this.unread[id] = (this.unread[id] || 0) + 1
         }
+        const idx = this.chats.findIndex(c => c.id === id)
+        if (idx !== -1) {
+          this.chats[idx] = {
+            ...this.chats[idx],
+            last_message: { id: m.id, content: m.content, user_id: m.user_id, created_at: m.created_at, is_read: !!m.is_read },
+          }
+        }
       }
     },
 
@@ -84,11 +147,13 @@ export const useChatsStore = defineStore('chats', {
     setChatUsers(id: number, u: ChatUser[]) { this.chatUsers[id] = u },
 
     // токен передаётся query-параметром для аутентификации на бэке
-    connectWs(chatId: number, wsBase: string, onMsg: () => void, token?: string) {
+    connectWs(chatId: number, wsBase: string, onMsg: (data: any) => void, token?: string) {
       if (this.ws[chatId]) return
       const tokenParam = token ? `?token=${encodeURIComponent(token)}` : ''
       const ws = new WebSocket(`${wsBase}/ws/${chatId}${tokenParam}`)
-      ws.onmessage = () => onMsg()
+      ws.onmessage = (ev) => {
+        try { onMsg(JSON.parse(ev.data)) } catch {}
+      }
       ws.onclose = () => { delete this.ws[chatId] }
       ws.onerror = () => { delete this.ws[chatId] }
       this.ws[chatId] = ws

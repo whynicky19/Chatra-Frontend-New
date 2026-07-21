@@ -106,8 +106,9 @@ import { useChatsSvc } from '~/services/chats'
 import { useUsersSvc } from '~/services/users'
 import { useChat } from '~/composables/useChat'
 import { useUserRegistries } from '~/composables/useUserRegistries'
+import { attachmentPreviewLabel } from '~/utils/attachment'
 definePageMeta({ layout: 'default' })
-const auth=useAuthStore();const chatsStore=useChatsStore();const chatsSvc=useChatsSvc();const usersSvc=useUsersSvc();const toast=useToast();const{connectWs,loadUsers,loadMsgs,startChatPoller}=useChat()
+const auth=useAuthStore();const chatsStore=useChatsStore();const chatsSvc=useChatsSvc();const usersSvc=useUsersSvc();const toast=useToast();const{connectWs,loadUsers,startChatPoller}=useChat()
 const { t } = useI18n()
 const { nickRegistry, avatarRegistry } = useUserRegistries()
 const searchQ=ref('');const sResults=ref<any[]>([]);const sLoading=ref(false);const showNew=ref(false);const newName=ref('');const creating=ref(false)
@@ -121,19 +122,27 @@ const displayInit=(u:any):string=>displayName(u)[0]?.toUpperCase()||'?'
 const chatTitle=(c:any):string=>{const users=chatsStore.chatUsers[c.id]||[];const other=users.find((u:any)=>u.id!==auth.user?.id);if(other){const n=nickRegistry.value[other.id];return n||other.email.split('@')[0]};return c.name?.startsWith('Чат с ')?c.name.replace('Чат с ',''):c.name||''}
 const chatInit=(c:any):string=>chatTitle(c)[0]?.toUpperCase()||'#'
 const getChatAvatar=(c:any):string=>{const users=chatsStore.chatUsers[c.id]||[];const other=users.find((u:any)=>u.id!==auth.user?.id);if(other)return getAvatar(other.id);return''}
-const lastPreview=(id:number):string=>{const m=chatsStore.messages[id];if(!m?.length)return t('chats.no_messages');const last=m[m.length-1];if(last.content?.startsWith('🖼️'))return'Фото';if(last.content?.startsWith('📎'))return'Файл';return last.content?.slice(0,45)||''}
-const chatTime=(id:number):string=>{const m=chatsStore.messages[id];if(!m?.length)return'';const last=m[m.length-1];if(!last?.created_at)return'';try{const d=new Date(last.created_at);const now=new Date();const diff=now.getTime()-d.getTime();if(diff<86400000)return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});return d.toLocaleDateString([],{month:'short',day:'numeric'})}catch{return''}}
+// Последнее сообщение: если полная история чата уже загружена (его
+// открывали) — берём оттуда, иначе превью с сервера (/chats/.last_message).
+// Так карточка в списке живая даже для чатов, которые ни разу не открывали.
+const lastMsgOf=(id:number):any=>{const m=chatsStore.messages[id];if(m?.length)return m[m.length-1];return chatsStore.chats.find(c=>c.id===id)?.last_message||null}
+const lastPreview=(id:number):string=>{const last=lastMsgOf(id);if(!last)return t('chats.no_messages');const label=attachmentPreviewLabel(last.content||'');if(label)return label;return (last.content||'').slice(0,45)}
+const chatTime=(id:number):string=>{const last=lastMsgOf(id);if(!last?.created_at)return'';try{const d=new Date(last.created_at);const now=new Date();const diff=now.getTime()-d.getTime();if(diff<86400000)return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});return d.toLocaleDateString([],{month:'short',day:'numeric'})}catch{return''}}
 const unread=(id:number)=>chatsStore.unread[id]||0
 const onSearch=()=>{clearTimeout(timer);sResults.value=[];const q=searchQ.value.trim().toLowerCase();if(!q)return;sLoading.value=true;timer=setTimeout(async()=>{try{const all=await usersSvc.all();sResults.value=all.filter((u:any)=>u.id!==auth.user?.id&&(u.email.toLowerCase().includes(q)||(u.full_name||'').toLowerCase().includes(q)))}catch{sResults.value=[]}finally{sLoading.value=false}},300)}
 const clearSearch=()=>{searchQ.value='';sResults.value=[]}
-const openDM=async(user:any)=>{const exist=chatsStore.chats.find(c=>{const us=chatsStore.chatUsers[c.id]||[];return us.length===2&&us.some((u:any)=>u.id===user.id)&&us.some((u:any)=>u.id===auth.user?.id)});if(exist){chatsStore.setActive(exist);chatsStore.markRead(exist.id);clearSearch();return};try{const c=await chatsSvc.create(`Чат с ${user.email}`);await chatsSvc.addUser(c.id,user.id);connectWs(c.id);await loadUsers(c.id);chatsStore.addChat(c);chatsStore.setActive(c);clearSearch();toast.ok(t('chats.created'))}catch{toast.err(t('chats.error'))}}
-const selectChat=(c:any)=>{chatsStore.setActive(c);chatsStore.markRead(c.id)}
+const openDM=async(user:any)=>{const exist=chatsStore.chats.find(c=>{const us=chatsStore.chatUsers[c.id]||[];return us.length===2&&us.some((u:any)=>u.id===user.id)&&us.some((u:any)=>u.id===auth.user?.id)});if(exist){chatsStore.setActive(exist);chatsStore.markRead(exist.id);chatsSvc.markRead(exist.id).catch(()=>{});clearSearch();return};try{const c=await chatsSvc.create(`Чат с ${user.email}`);await chatsSvc.addUser(c.id,user.id);connectWs(c.id);await loadUsers(c.id);chatsStore.addChat(c);chatsStore.setActive(c);clearSearch();toast.ok(t('chats.created'))}catch{toast.err(t('chats.error'))}}
+const selectChat=(c:any)=>{chatsStore.setActive(c);chatsStore.markRead(c.id);chatsSvc.markRead(c.id).catch(()=>{})}
 const createGroup=async()=>{if(!newName.value.trim())return;creating.value=true;try{const c=await chatsSvc.create(newName.value.trim());chatsStore.addChat(c);chatsStore.setActive(c);connectWs(c.id);showNew.value=false;newName.value='';toast.ok(t('chats.created'))}catch{toast.err(t('chats.error'))}finally{creating.value=false}}
 onMounted(async()=>{
   _resizeHandler=()=>{isMobile.value=window.innerWidth<=768}
   _resizeHandler()
   window.addEventListener('resize',_resizeHandler)
-  if(!chatsStore.chats.length){chatsStore.loadingChats=true;try{const c=await chatsSvc.list();chatsStore.setChats(c);await Promise.all(c.map(async(ch:any)=>{connectWs(ch.id);await loadUsers(ch.id)}));await Promise.all(c.map((ch:any)=>loadMsgs(ch.id)))}catch{toast.err(t('chats.error'))}finally{chatsStore.loadingChats=false}}else{chatsStore.chats.forEach((ch:any)=>{if(!chatsStore.chatUsers[ch.id]?.length)loadUsers(ch.id);if(!chatsStore.messages[ch.id]?.length)loadMsgs(ch.id)})};startChatPoller()
+  // Полную историю сообщений грузим только для открытого чата (loadMsgs в
+  // selectChat/openDM) — раньше тут тянулась история КАЖДОГО чата на
+  // старте. Список/превью/галочки живут на last_message из /chats/ + WS,
+  // который остаётся открытым на все чаты ради реального времени.
+  if(!chatsStore.chats.length){chatsStore.loadingChats=true;try{const c=await chatsSvc.list();chatsStore.setChats(c);await Promise.all(c.map(async(ch:any)=>{connectWs(ch.id);await loadUsers(ch.id)}))}catch{toast.err(t('chats.error'))}finally{chatsStore.loadingChats=false}}else{chatsStore.chats.forEach((ch:any)=>{if(!chatsStore.chatUsers[ch.id]?.length)loadUsers(ch.id)})};startChatPoller()
 })
 onUnmounted(()=>{if(import.meta.client)window.removeEventListener('resize',_resizeHandler)})
 </script>

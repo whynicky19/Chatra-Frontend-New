@@ -69,6 +69,7 @@ export const useChat = () => {
             connectWs(c.id)
           }
         })
+        store.syncSummaries(chats)
       } catch {}
     }
     poll()
@@ -78,11 +79,18 @@ export const useChat = () => {
     }
   }
 
+  // WS открыт на каждый чат пользователя (не только активный) — это и даёт
+  // реальное время: карточка в списке (превью, галочки, unread) обновляется
+  // мгновенно из самого payload, без похода за полной историей сообщений.
   const connectWs = (id: number) => {
-    store.connectWs(id, cfg.public.wsBase, async () => {
-      await refreshMsgs(id)
-      if (store.active?.id !== id) {
-        store.unread[id] = (store.unread[id] || 0) + 1
+    store.connectWs(id, cfg.public.wsBase, (data: any) => {
+      const myId = auth.user?.id ?? 0
+      store.applyIncoming(id, data, myId)
+
+      if (data.type !== 'message') return
+      if (store.active?.id === id) {
+        chatSvc.markRead(id).catch(() => {})
+      } else if (data.user_id !== myId) {
         if (import.meta.client && localStorage.getItem('soundNotif') === '1') {
           try {
             // Один общий AudioContext на приложение: раньше создавался новый на

@@ -19,5 +19,9 @@ export const useChatsSvc = () => {
       const { data } = await api.delete(`/chats/${chatId}/users/${userId}`)
       return data
     },
+    markRead: async (chatId: number) => {
+      const { data } = await api.put(`/chats/${chatId}/read`)
+      return data
+    },
   }
 }
