@@ -35,9 +35,14 @@ const lastMsg=computed(()=>{
   const msgs=chatsStore.messages[props.chat.id]
   if(!msgs?.length) return ''
   const m=msgs[msgs.length-1]
-  if(m?.content?.startsWith('🖼️')) return 'Фото'
-  if(m?.content?.startsWith('📎')) return 'Файл'
-  return m?.content?.slice(0,40)||''
+  const c=(m?.content||'').trim()
+  if(c.startsWith('🖼️')) return 'Фото'
+  if(c.startsWith('📎')) return 'Файл'
+  // Вложение из приложения — голая ссылка на /uploads без markdown-обвязки.
+  if(!/\s/.test(c)&&/^(https?:\/\/\S+?)?\/?uploads\/\S+$/i.test(c)){
+    return /\.(jpe?g|png|gif|webp|heic|bmp)(\?|#|$)/i.test(c.split('#')[0].split('?')[0]) ? 'Фото' : 'Файл'
+  }
+  return c.slice(0,40)
 })
 const unreadCount=computed(()=>chatsStore.unread[props.chat.id]||0)
 </script>
