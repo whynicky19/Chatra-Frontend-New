@@ -54,7 +54,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useApi } from '~/services/api'
 import { useI18n } from '~/composables/useI18n'
-import type { AiQuota } from '~/composables/useAi'
+import type { AiQuota } from '~/composables/useAiQuota'
 
 definePageMeta({ layout: 'default' })
 

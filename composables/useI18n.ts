@@ -420,6 +420,23 @@ export const translations: Record<string, Record<Lang, string>> = {
   'am.uploading_file': { ru: 'Загрузка файла...', en: 'Uploading file...', kk: 'Файл жүктелуде...' },
   'am.sending': { ru: 'Отправка...', en: 'Sending...', kk: 'Жіберілуде...' },
   'am.submit_work_btn': { ru: 'Сдать работу', en: 'Submit work', kk: 'Жұмысты тапсыру' },
+
+  // AI multi-chat
+  'ai.chats': { ru: 'Чаты', en: 'Chats', kk: 'Чаттар' },
+  'ai.new_chat': { ru: 'Новый чат', en: 'New chat', kk: 'Жаңа чат' },
+  'ai.rename': { ru: 'Переименовать', en: 'Rename', kk: 'Атын өзгерту' },
+  'ai.pin': { ru: 'Закрепить', en: 'Pin', kk: 'Бекіту' },
+  'ai.unpin': { ru: 'Открепить', en: 'Unpin', kk: 'Бекітуден алу' },
+  'ai.delete': { ru: 'Удалить', en: 'Delete', kk: 'Жою' },
+  'ai.delete_confirm': { ru: 'Удалить этот чат? Переписку нельзя будет восстановить.', en: 'Delete this chat? The conversation cannot be recovered.', kk: 'Бұл чатты жою керек пе? Хат алмасуды қалпына келтіру мүмкін болмайды.' },
+  'ai.search_placeholder': { ru: 'Поиск по чатам...', en: 'Search chats...', kk: 'Чаттардан іздеу...' },
+  'ai.no_chats': { ru: 'Пока нет чатов', en: 'No chats yet', kk: 'Әзірге чаттар жоқ' },
+  'ai.no_chats_sub': { ru: 'Начните новый разговор с ассистентом', en: 'Start a new conversation with the assistant', kk: 'Көмекшімен жаңа әңгіме бастаңыз' },
+  'ai.no_search_results': { ru: 'Ничего не найдено', en: 'Nothing found', kk: 'Ештеңе табылмады' },
+  'ai.untitled': { ru: 'Новый чат', en: 'New chat', kk: 'Жаңа чат' },
+  'ai.pinned': { ru: 'Закреплённые', en: 'Pinned', kk: 'Бекітілген' },
+  'ai.all_chats': { ru: 'Все чаты', en: 'All chats', kk: 'Барлық чаттар' },
+  'ai.select_chat': { ru: 'Выберите чат или начните новый', en: 'Select a chat or start a new one', kk: 'Чатты таңдаңыз немесе жаңасын бастаңыз' },
 }
 
 export const useI18n = () => {

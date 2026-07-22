@@ -184,7 +184,7 @@ import { useAssignmentsSvc } from '~/services/assignments'
 import { useUsersSvc } from '~/services/users'
 import { useToast } from '~/composables/useToast'
 import { useApi } from '~/services/api'
-import { useAi } from '~/composables/useAi'
+import { useAiQuota } from '~/composables/useAiQuota'
 import { useRagSvc } from '~/services/rag'
 import type { Submission } from '~/services/assignments'
 
@@ -207,7 +207,7 @@ const svc = useAssignmentsSvc()
 const usersSvc = useUsersSvc()
 const toast = useToast()
 const api = useApi()
-const aiQuota = useAi()
+const aiQuota = useAiQuota()
 const aiLimitReached = computed(() => aiQuota.aiLimitReached.value)
 const aiLimit = computed(() => aiQuota.aiLimit.value)
 

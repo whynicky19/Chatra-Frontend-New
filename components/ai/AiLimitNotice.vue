@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '~/composables/useI18n'
-import type { AiQuota } from '~/composables/useAi'
+import type { AiQuota } from '~/composables/useAiQuota'
 
 const props = defineProps<{ quota: AiQuota | null }>()
 const { lang } = useI18n()
