@@ -64,7 +64,6 @@
       <!-- Messages area -->
       <div ref="area" class="chat-area">
         <div v-if="!msgs.length" class="chat-empty-state">
-          <div class="ai-empty-logo"><span class="chatra-glyph xl"></span></div>
           <div class="empty-title">Chatra AI</div>
           <p class="empty-hint">{{ tt('Спросите что угодно об учёбе — объясню, помогу, проверю',
             'Оқу туралы кез келген нәрсе сұраңыз — түсіндіремін, көмектесемін, тексеремін',
@@ -81,7 +80,6 @@
         <div v-else class="chat-msgs">
           <div v-for="m in msgs" :key="m.id" :class="['chat-msg', m.role]">
             <div v-if="m.role==='assistant'" class="msg-avatar">
-              <div class="ai-av-icon"><span class="chatra-glyph sm"></span></div>
               <span class="msg-sender">Chatra AI</span>
             </div>
             <img v-if="m.imagePreview" :src="m.imagePreview" class="msg-img-preview" alt="uploaded"/>
@@ -90,7 +88,6 @@
 
           <div v-if="sending" class="chat-msg assistant">
             <div class="msg-avatar">
-              <div class="ai-av-icon"><span class="chatra-glyph sm"></span></div>
               <span class="msg-sender">Chatra AI</span>
             </div>
             <div class="msg-bubble assistant">
@@ -589,15 +586,12 @@ watch(() => store.activeId, () => scroll())
 .menu-btn.active { background: rgba(var(--teal-rgb),.14); color: var(--teal) }
 .menu-btn.floating { position: absolute; top: 20px; left: 20px; z-index: 3; width: 40px; height: 40px; border-radius: 50%; box-shadow: var(--sh-sm) }
 .chatra-glyph { display: block; background: var(--teal); -webkit-mask: url('/logo-icon.png') center / contain no-repeat; mask: url('/logo-icon.png') center / contain no-repeat }
-.chatra-glyph.sm { width: 16px; height: 16px }
 .chatra-glyph.lg { width: 28px; height: 28px }
-.chatra-glyph.xl { width: 44px; height: 44px }
 
 .chat-area { flex: 1; overflow-y: auto; padding: 84px 28px 28px; position: relative; z-index: 1 }
 
 .chat-empty-state, .panel-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; gap: 8px }
 .panel-placeholder { text-align: center; padding: 20px }
-.ai-empty-logo { width: 84px; height: 84px; border-radius: 26px; background: var(--surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(var(--teal-rgb),.18), var(--sh-xs); margin-bottom: 6px }
 .empty-title { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--text1) }
 .empty-hint { font-size: 13.5px; color: var(--text4); font-weight: 500; text-align: center; max-width: 380px; line-height: 1.45 }
 .tip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 560px; margin-top: 16px }
@@ -615,7 +609,6 @@ watch(() => store.activeId, () => scroll())
 .chat-msg.user { align-self: flex-end; align-items: flex-end }
 .chat-msg.assistant { align-self: flex-start }
 .msg-avatar { display: flex; align-items: center; gap: 8px }
-.ai-av-icon { width: 26px; height: 26px; border-radius: 8px; background: var(--surface); border: 1px solid rgba(var(--teal-rgb),.2); box-shadow: var(--sh-xs); display: flex; align-items: center; justify-content: center }
 .msg-sender { font-size: 12px; font-weight: 700; color: var(--teal) }
 .msg-img-preview { max-width: 240px; max-height: 200px; border-radius: 14px; object-fit: cover; border: 1px solid rgba(var(--teal-rgb),.2); box-shadow: 0 4px 16px rgba(0,0,0,.3) }
 .msg-bubble { padding: 14px 19px; border-radius: 22px; font-size: 14.5px; line-height: 1.62 }
@@ -677,8 +670,6 @@ watch(() => store.activeId, () => scroll())
   .tip-grid { gap: 8px; padding: 0 4px }
   .tip-card { padding: 12px; border-radius: 17px }
   .tip-icon { width: 34px; height: 34px; margin-bottom: 8px }
-  .ai-empty-logo { width: 64px; height: 64px; border-radius: 19px }
-  .chatra-glyph.xl { width: 34px; height: 34px }
   :deep(.code-bl) { font-size: 12px; overflow-x: auto }
 }
 @media (max-width: 480px) {
