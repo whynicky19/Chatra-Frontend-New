@@ -1,7 +1,20 @@
 <template>
-  <div class="ai-page anim-in" :class="{ 'show-chat': mobileShowingChat }">
-    <!-- ── Sidebar: chat list ─────────────────────────────────────────── -->
-    <aside class="ai-sidebar">
+  <div class="ai-page anim-in">
+    <!-- ── Sidebar: chat history — overlay drawer on mobile, collapsible rail on desktop ── -->
+    <div
+      v-if="isMobile && mobileDrawerOpen"
+      class="ai-backdrop"
+      @click="closeDrawer"
+    />
+    <aside
+      ref="sidebarEl"
+      class="ai-sidebar"
+      :class="{ collapsed: !isMobile && sidebarCollapsed, 'mobile-open': isMobile && mobileDrawerOpen }"
+      :style="dragTranslate != null ? { transform: `translateX(${dragTranslate}px)`, transition: 'none' } : undefined"
+      @touchstart="onDrawerTouchStart"
+      @touchmove="onDrawerTouchMove"
+      @touchend="onDrawerTouchEnd"
+    >
       <div class="sb-head">
         <div class="sb-title">{{ t('ai.chats') }}</div>
         <button class="new-chat-btn" :title="t('ai.new_chat')" @click="newChat">
@@ -42,114 +55,101 @@
       </div>
     </aside>
 
-    <!-- ── Chat panel ─────────────────────────────────────────────────── -->
+    <!-- ── Chat panel — always the main view ─────────────────────────────── -->
     <div class="ai-chat-panel">
-      <template v-if="store.activeId != null">
-        <!-- Header -->
-        <div class="chat-head">
-          <div class="chat-head-l">
-            <button class="back-btn" :title="t('ai.chats')" @click="mobileShowingChat = false">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <div class="ai-logo-wrap"><span class="chatra-glyph lg"></span></div>
-            <div class="chat-head-txt">
-              <div class="chat-title">{{ store.activeThread?.title || t('ai.untitled') }}</div>
-              <div class="chat-sub">{{ tt('Ваш учебный ассистент', 'Сіздің оқу көмекшіңіз', 'Your learning assistant') }}</div>
-            </div>
-          </div>
-          <div class="chat-head-r">
-            <div class="online-pill">● {{ t('nav.online') }}</div>
-          </div>
-        </div>
-
-        <!-- Messages area -->
-        <div ref="area" class="chat-area">
-          <div v-if="!msgs.length" class="chat-empty-state">
-            <div class="ai-empty-logo"><span class="chatra-glyph xl"></span></div>
-            <div class="empty-title">Chatra AI</div>
-            <p class="empty-hint">{{ tt('Спросите что угодно об учёбе — объясню, помогу, проверю',
-              'Оқу туралы кез келген нәрсе сұраңыз — түсіндіремін, көмектесемін, тексеремін',
-              "Ask anything about your studies — I'll explain, help, and review") }}</p>
-            <div class="tip-grid">
-              <button v-for="(tip, i) in tipCards" :key="i" class="tip-card" :style="{ animationDelay: (i * 60) + 'ms' }" @click="quick(tip.prompt)">
-                <span class="tip-icon" v-html="tip.icon"></span>
-                <span class="tip-title">{{ tip.title }}</span>
-                <span class="tip-desc">{{ tip.desc }}</span>
-              </button>
-            </div>
-          </div>
-
-          <div v-else class="chat-msgs">
-            <div v-for="m in msgs" :key="m.id" :class="['chat-msg', m.role]">
-              <div v-if="m.role==='assistant'" class="msg-avatar">
-                <div class="ai-av-icon"><span class="chatra-glyph sm"></span></div>
-                <span class="msg-sender">Chatra AI</span>
-              </div>
-              <img v-if="m.imagePreview" :src="m.imagePreview" class="msg-img-preview" alt="uploaded"/>
-              <div :class="['msg-bubble', m.role]" v-html="fmt(m.text)"></div>
-            </div>
-
-            <div v-if="sending" class="chat-msg assistant">
-              <div class="msg-avatar">
-                <div class="ai-av-icon"><span class="chatra-glyph sm"></span></div>
-                <span class="msg-sender">Chatra AI</span>
-              </div>
-              <div class="msg-bubble assistant">
-                <div class="typing"><span></span><span></span><span></span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- File preview bar -->
-        <div v-if="pendingFile" class="file-prev">
-          <div class="fp-info">
-            <img v-if="pendingPreview" :src="pendingPreview" class="fp-thumb" alt="preview"/>
-            <span v-if="pendingFile.type.startsWith('image/')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span>
-            <span v-else><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></span>
-            <span>{{ pendingFile.name }}</span>
-            <span v-if="pendingFile.type.startsWith('image/')" class="fp-badge">ИИ прочитает текст</span>
-          </div>
-          <button class="fp-rm" @click="clearFile">×</button>
-        </div>
-
-        <AiLimitNotice v-if="quota.aiLimitReached.value" :quota="quota.quota.value" class="notice-wide"/>
-
-        <!-- Input -->
-        <div class="chat-inp">
-          <label class="attach-lbl" title="Прикрепить изображение / файл">
-            <input ref="fileInput" type="file" accept="image/*,.pdf,.doc,.docx,.txt" style="display:none" @change="onFilePick"/>
-            <div class="attach-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-            </div>
-          </label>
-          <input
-            ref="inp"
-            v-model="txt"
-            class="chat-field"
-            :placeholder="quota.aiLimitReached.value ? 'Дневной лимит исчерпан...' : 'Написать сообщение или спросить кое что...'"
-            :disabled="sending || quota.aiLimitReached.value"
-            @keydown.enter="send"
-          />
-          <button
-            :class="['send-btn', {active: (txt.trim() || pendingFile) && !quota.aiLimitReached.value, locked: quota.aiLimitReached.value}]"
-            :disabled="(!txt.trim() && !pendingFile) || sending || quota.aiLimitReached.value"
-            @click="send"
-          >
-            <div v-if="sending" class="spinner" style="width:14px;height:14px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
-            <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      <!-- Header -->
+      <div class="chat-head">
+        <div class="chat-head-l">
+          <button class="menu-btn" :title="t('ai.chats')" @click="toggleSidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
+          <div class="ai-logo-wrap"><span class="chatra-glyph lg"></span></div>
+          <div class="chat-head-txt">
+            <div class="chat-title">{{ store.activeThread?.title || 'Chatra AI' }}</div>
+            <div class="chat-sub">{{ tt('Ваш учебный ассистент', 'Сіздің оқу көмекшіңіз', 'Your learning assistant') }}</div>
+          </div>
         </div>
-      </template>
+        <div class="chat-head-r">
+          <div class="online-pill">● {{ t('nav.online') }}</div>
+        </div>
+      </div>
 
-      <!-- Nothing selected -->
-      <div v-else class="panel-placeholder">
-        <div class="ai-empty-logo"><span class="chatra-glyph xl"></span></div>
-        <div class="empty-title">Chatra AI</div>
-        <p class="empty-hint">{{ t('ai.select_chat') }}</p>
-        <button class="sb-empty-cta" @click="newChat">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          {{ t('ai.new_chat') }}
+      <!-- Messages area -->
+      <div ref="area" class="chat-area">
+        <div v-if="!msgs.length" class="chat-empty-state">
+          <div class="ai-empty-logo"><span class="chatra-glyph xl"></span></div>
+          <div class="empty-title">Chatra AI</div>
+          <p class="empty-hint">{{ tt('Спросите что угодно об учёбе — объясню, помогу, проверю',
+            'Оқу туралы кез келген нәрсе сұраңыз — түсіндіремін, көмектесемін, тексеремін',
+            "Ask anything about your studies — I'll explain, help, and review") }}</p>
+          <div class="tip-grid">
+            <button v-for="(tip, i) in tipCards" :key="i" class="tip-card" :style="{ animationDelay: (i * 60) + 'ms' }" @click="quick(tip.prompt)">
+              <span class="tip-icon" v-html="tip.icon"></span>
+              <span class="tip-title">{{ tip.title }}</span>
+              <span class="tip-desc">{{ tip.desc }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="chat-msgs">
+          <div v-for="m in msgs" :key="m.id" :class="['chat-msg', m.role]">
+            <div v-if="m.role==='assistant'" class="msg-avatar">
+              <div class="ai-av-icon"><span class="chatra-glyph sm"></span></div>
+              <span class="msg-sender">Chatra AI</span>
+            </div>
+            <img v-if="m.imagePreview" :src="m.imagePreview" class="msg-img-preview" alt="uploaded"/>
+            <div :class="['msg-bubble', m.role]" v-html="fmt(m.text)"></div>
+          </div>
+
+          <div v-if="sending" class="chat-msg assistant">
+            <div class="msg-avatar">
+              <div class="ai-av-icon"><span class="chatra-glyph sm"></span></div>
+              <span class="msg-sender">Chatra AI</span>
+            </div>
+            <div class="msg-bubble assistant">
+              <div class="typing"><span></span><span></span><span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- File preview bar -->
+      <div v-if="pendingFile" class="file-prev">
+        <div class="fp-info">
+          <img v-if="pendingPreview" :src="pendingPreview" class="fp-thumb" alt="preview"/>
+          <span v-if="pendingFile.type.startsWith('image/')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span>
+          <span v-else><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></span>
+          <span>{{ pendingFile.name }}</span>
+          <span v-if="pendingFile.type.startsWith('image/')" class="fp-badge">ИИ прочитает текст</span>
+        </div>
+        <button class="fp-rm" @click="clearFile">×</button>
+      </div>
+
+      <AiLimitNotice v-if="quota.aiLimitReached.value" :quota="quota.quota.value" class="notice-wide"/>
+
+      <!-- Input -->
+      <div class="chat-inp">
+        <label class="attach-lbl" title="Прикрепить изображение / файл">
+          <input ref="fileInput" type="file" accept="image/*,.pdf,.doc,.docx,.txt" style="display:none" @change="onFilePick"/>
+          <div class="attach-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          </div>
+        </label>
+        <input
+          ref="inp"
+          v-model="txt"
+          class="chat-field"
+          :placeholder="quota.aiLimitReached.value ? 'Дневной лимит исчерпан...' : 'Написать сообщение или спросить кое что...'"
+          :disabled="sending || quota.aiLimitReached.value"
+          @keydown.enter="send"
+        />
+        <button
+          :class="['send-btn', {active: (txt.trim() || pendingFile) && !quota.aiLimitReached.value, locked: quota.aiLimitReached.value}]"
+          :disabled="(!txt.trim() && !pendingFile) || sending || quota.aiLimitReached.value"
+          @click="send"
+        >
+          <div v-if="sending" class="spinner" style="width:14px;height:14px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
+          <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
       </div>
     </div>
@@ -175,14 +175,17 @@ const sending = computed(() => store.sending)
 const area = ref<HTMLElement | null>(null)
 const inp = ref<HTMLInputElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
+const sidebarEl = ref<HTMLElement | null>(null)
 const txt = ref('')
 const pendingFile = ref<File | null>(null)
 const pendingPreview = ref<string | null>(null)
 const query = ref('')
 
-// Мобильный режим: список ↔ чат
 const isMobile = ref(false)
-const mobileShowingChat = ref(false)
+// Мобилка: история — slide-over drawer поверх чата. Десктоп: сворачиваемый рельс.
+const mobileDrawerOpen = ref(false)
+const sidebarCollapsed = ref(false)
+const SIDEBAR_COLLAPSE_KEY = '_ai_sidebar_collapsed'
 
 // Инлайн-переименование
 const renamingId = ref<number | null>(null)
@@ -216,11 +219,25 @@ const shortDate = (iso: string): string => {
   return d.toLocaleDateString(lang.value === 'en' ? 'en-US' : lang.value === 'kk' ? 'kk-KZ' : 'ru-RU', { day: 'numeric', month: 'short' })
 }
 
+// ── Sidebar open/close (drawer on mobile, collapse on desktop) ────────────
+const closeDrawer = () => { mobileDrawerOpen.value = false }
+
+const toggleSidebar = () => {
+  if (isMobile.value) {
+    mobileDrawerOpen.value = !mobileDrawerOpen.value
+  } else {
+    sidebarCollapsed.value = !sidebarCollapsed.value
+    if (import.meta.client) {
+      try { localStorage.setItem(SIDEBAR_COLLAPSE_KEY, sidebarCollapsed.value ? '1' : '0') } catch {}
+    }
+  }
+}
+
 // ── Actions ───────────────────────────────────────────────────────────────
 const openConv = (id: number) => {
   if (renamingId.value != null) return
   store.setActive(id)
-  if (isMobile.value) mobileShowingChat.value = true
+  if (isMobile.value) closeDrawer()
   scroll()
 }
 
@@ -229,7 +246,7 @@ const newChat = async () => {
   if (thread) {
     await store.setActive(thread.id)
     query.value = ''
-    if (isMobile.value) mobileShowingChat.value = true
+    if (isMobile.value) closeDrawer()
   }
 }
 
@@ -381,7 +398,7 @@ const clearFile = () => {
 }
 
 const send = async () => {
-  if ((!txt.value.trim() && !pendingFile.value) || sending.value || store.activeId == null) return
+  if ((!txt.value.trim() && !pendingFile.value) || sending.value) return
   const message = txt.value
   const file = pendingFile.value
   txt.value = ''
@@ -396,6 +413,55 @@ const quick = async (prompt: string) => {
   await send()
 }
 
+// ── Swipe gesture: edge-swipe opens the mobile drawer, drag-to-close ──────
+const SWIPE_EDGE = 24
+let touchStartX = 0
+let touchTracking: 'edge' | 'drawer' | null = null
+const dragTranslate = ref<number | null>(null)
+let sidebarWidth = 320
+
+const onWindowTouchStart = (e: TouchEvent) => {
+  if (!isMobile.value || mobileDrawerOpen.value) return
+  const x = e.touches[0].clientX
+  if (x > SWIPE_EDGE) return
+  touchStartX = x
+  touchTracking = 'edge'
+  sidebarWidth = sidebarEl.value?.offsetWidth || 320
+  dragTranslate.value = -sidebarWidth
+}
+const onWindowTouchMove = (e: TouchEvent) => {
+  if (touchTracking !== 'edge') return
+  const dx = e.touches[0].clientX - touchStartX
+  dragTranslate.value = Math.max(-sidebarWidth, Math.min(0, -sidebarWidth + dx))
+}
+const onWindowTouchEnd = () => {
+  if (touchTracking !== 'edge') return
+  const opened = (dragTranslate.value ?? -sidebarWidth) > -sidebarWidth * 0.6
+  dragTranslate.value = null
+  touchTracking = null
+  mobileDrawerOpen.value = opened
+}
+
+const onDrawerTouchStart = (e: TouchEvent) => {
+  if (!isMobile.value || !mobileDrawerOpen.value) return
+  touchStartX = e.touches[0].clientX
+  touchTracking = 'drawer'
+  sidebarWidth = sidebarEl.value?.offsetWidth || 320
+  dragTranslate.value = 0
+}
+const onDrawerTouchMove = (e: TouchEvent) => {
+  if (touchTracking !== 'drawer') return
+  const dx = e.touches[0].clientX - touchStartX
+  dragTranslate.value = Math.max(-sidebarWidth, Math.min(0, dx))
+}
+const onDrawerTouchEnd = () => {
+  if (touchTracking !== 'drawer') return
+  const closed = (dragTranslate.value ?? 0) < -sidebarWidth * 0.3
+  dragTranslate.value = null
+  touchTracking = null
+  if (closed) mobileDrawerOpen.value = false
+}
+
 // ── Lifecycle ─────────────────────────────────────────────────────────────
 let mq: MediaQueryList | null = null
 const onMq = (e: MediaQueryListEvent | MediaQueryList) => { isMobile.value = e.matches }
@@ -405,25 +471,40 @@ onMounted(async () => {
   isMobile.value = mq.matches
   mq.addEventListener('change', onMq)
 
+  if (import.meta.client) {
+    try { sidebarCollapsed.value = localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1' } catch {}
+    window.addEventListener('touchstart', onWindowTouchStart, { passive: true })
+    window.addEventListener('touchmove', onWindowTouchMove, { passive: true })
+    window.addEventListener('touchend', onWindowTouchEnd)
+  }
+
   await store.loadThreads()
-  // Десктоп: автооткрытие самого свежего чата. Мобилка: сперва список.
-  if (!isMobile.value && store.activeId == null && store.sortedConversations.length) {
+  // Автооткрытие самого свежего чата, если он есть — на любом экране.
+  if (store.activeId == null && store.sortedConversations.length) {
     await store.setActive(store.sortedConversations[0].id)
     scroll()
   }
 })
 
-onUnmounted(() => { if (mq) mq.removeEventListener('change', onMq) })
+onUnmounted(() => {
+  if (mq) mq.removeEventListener('change', onMq)
+  if (import.meta.client) {
+    window.removeEventListener('touchstart', onWindowTouchStart)
+    window.removeEventListener('touchmove', onWindowTouchMove)
+    window.removeEventListener('touchend', onWindowTouchEnd)
+  }
+})
 
 watch(() => store.messages.length, () => scroll())
 watch(() => store.activeId, () => scroll())
 </script>
 
 <style scoped>
-.ai-page { display: flex; height: 100%; overflow: hidden }
+.ai-page { display: flex; height: 100%; overflow: hidden; position: relative }
 
 /* ── Sidebar ─────────────────────────────────────────────────────────── */
-.ai-sidebar { width: 288px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--surface); border-right: 1px solid var(--border); overflow: hidden }
+.ai-sidebar { width: 288px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--surface); border-right: 1px solid var(--border); overflow: hidden; transition: width .25s cubic-bezier(.4,0,.2,1) }
+.ai-sidebar.collapsed { width: 0; border-right-color: transparent }
 .sb-head { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: var(--topbar); border-bottom: 1px solid var(--border); flex-shrink: 0 }
 .sb-title { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--text1) }
 .new-chat-btn { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: var(--r-md); background: linear-gradient(135deg, var(--teal), var(--teal-h)); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; transition: box-shadow .18s, transform .18s; box-shadow: 0 3px 12px rgba(var(--teal-rgb),.3) }
@@ -439,7 +520,7 @@ watch(() => store.activeId, () => scroll())
 .sb-list { flex: 1; overflow-y: auto; padding: 6px 10px 14px }
 .sb-section-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text4); padding: 12px 8px 6px }
 
-.conv-row { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: var(--r-md); cursor: pointer; transition: background .15s; position: relative }
+.conv-row { display: flex; align-items: center; gap: 8px; padding: 10px 10px; border-radius: var(--r-lg); cursor: pointer; transition: background .15s; position: relative }
 .conv-row:hover { background: var(--surface2) }
 .conv-row.active { background: rgba(var(--teal-rgb),.1) }
 .conv-row.active .row-title { color: var(--teal) }
@@ -470,8 +551,8 @@ watch(() => store.activeId, () => scroll())
 .chat-head { display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: var(--topbar); border-bottom: 1px solid var(--border); background: var(--surface); backdrop-filter: blur(12px); position: relative; z-index: 2; flex-shrink: 0 }
 .chat-head-l { display: flex; align-items: center; gap: 14px; min-width: 0 }
 .chat-head-txt { min-width: 0 }
-.back-btn { display: none; width: 34px; height: 34px; border-radius: 10px; background: var(--surface2); color: var(--text2); align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: background .15s }
-.back-btn:hover { background: rgba(var(--teal-rgb),.12); color: var(--teal) }
+.menu-btn { display: flex; width: 34px; height: 34px; border-radius: 10px; background: var(--surface2); color: var(--text2); align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: background .15s }
+.menu-btn:hover { background: rgba(var(--teal-rgb),.12); color: var(--teal) }
 .ai-logo-wrap { width: 44px; height: 44px; border-radius: 14px; background: rgba(var(--teal-rgb),.08); border: 1px solid rgba(var(--teal-rgb),.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0 }
 .chatra-glyph { display: block; background: var(--teal); -webkit-mask: url('/logo-icon.png') center / contain no-repeat; mask: url('/logo-icon.png') center / contain no-repeat }
 .chatra-glyph.sm { width: 16px; height: 16px }
@@ -486,30 +567,30 @@ watch(() => store.activeId, () => scroll())
 
 .chat-empty-state, .panel-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; gap: 8px }
 .panel-placeholder { text-align: center; padding: 20px }
-.ai-empty-logo { width: 84px; height: 84px; border-radius: 24px; background: var(--surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(var(--teal-rgb),.18), var(--sh-xs); margin-bottom: 6px }
+.ai-empty-logo { width: 84px; height: 84px; border-radius: 26px; background: var(--surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(var(--teal-rgb),.18), var(--sh-xs); margin-bottom: 6px }
 .empty-title { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--text1) }
 .empty-hint { font-size: 13.5px; color: var(--text4); font-weight: 500; text-align: center; max-width: 380px; line-height: 1.45 }
 .tip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 560px; margin-top: 16px }
-.tip-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 16px; background: var(--surface); border-radius: 20px; box-shadow: var(--sh-sm); text-align: left; transition: transform .16s ease, box-shadow .2s ease; animation: rise .4s cubic-bezier(.16,1,.3,1) both }
+.tip-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 16px; background: var(--surface); border-radius: 22px; box-shadow: var(--sh-sm); text-align: left; transition: transform .16s ease, box-shadow .2s ease; animation: rise .4s cubic-bezier(.16,1,.3,1) both }
 .tip-card:hover { transform: translateY(-2px); box-shadow: var(--sh-md) }
 .tip-card:active { transform: scale(.98) }
-.tip-icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(var(--teal-rgb),.10); color: var(--teal); display: flex; align-items: center; justify-content: center; margin-bottom: 12px }
+.tip-icon { width: 40px; height: 40px; border-radius: 13px; background: rgba(var(--teal-rgb),.10); color: var(--teal); display: flex; align-items: center; justify-content: center; margin-bottom: 12px }
 .tip-title { font-size: 14px; font-weight: 800; color: var(--text1); line-height: 1.2 }
 .tip-desc { font-size: 12px; color: var(--text4); line-height: 1.4; margin-top: 5px }
 @keyframes rise { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
 @media (prefers-reduced-motion: reduce) { .tip-card { animation: none } }
 
-.chat-msgs { display: flex; flex-direction: column; gap: 20px }
+.chat-msgs { display: flex; flex-direction: column; gap: 22px }
 .chat-msg { display: flex; flex-direction: column; gap: 8px; max-width: 72% }
 .chat-msg.user { align-self: flex-end; align-items: flex-end }
 .chat-msg.assistant { align-self: flex-start }
 .msg-avatar { display: flex; align-items: center; gap: 8px }
 .ai-av-icon { width: 26px; height: 26px; border-radius: 8px; background: var(--surface); border: 1px solid rgba(var(--teal-rgb),.2); box-shadow: var(--sh-xs); display: flex; align-items: center; justify-content: center }
 .msg-sender { font-size: 12px; font-weight: 700; color: var(--teal) }
-.msg-img-preview { max-width: 240px; max-height: 200px; border-radius: 12px; object-fit: cover; border: 1px solid rgba(var(--teal-rgb),.2); box-shadow: 0 4px 16px rgba(0,0,0,.3) }
-.msg-bubble { padding: 13px 18px; border-radius: 20px; font-size: 14px; line-height: 1.6 }
-.msg-bubble.user { background: linear-gradient(135deg, var(--teal), var(--teal-h)); color: #fff; border-bottom-right-radius: 6px; box-shadow: 0 4px 20px rgba(var(--teal-rgb),.3) }
-.msg-bubble.assistant { background: var(--surface); color: var(--text1); border-top-left-radius: 6px; box-shadow: var(--sh-xs) }
+.msg-img-preview { max-width: 240px; max-height: 200px; border-radius: 14px; object-fit: cover; border: 1px solid rgba(var(--teal-rgb),.2); box-shadow: 0 4px 16px rgba(0,0,0,.3) }
+.msg-bubble { padding: 14px 19px; border-radius: 22px; font-size: 14.5px; line-height: 1.62 }
+.msg-bubble.user { background: linear-gradient(135deg, var(--teal), var(--teal-h)); color: #fff; border-bottom-right-radius: 7px; box-shadow: 0 4px 20px rgba(var(--teal-rgb),.3) }
+.msg-bubble.assistant { background: var(--surface); color: var(--text1); border-top-left-radius: 7px; box-shadow: var(--sh-xs) }
 
 .typing { display: flex; gap: 5px; padding: 4px 0 }
 .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); animation: pulse 1.2s infinite }
@@ -523,15 +604,15 @@ watch(() => store.activeId, () => scroll())
 .fp-rm { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 20px; padding: 0; line-height: 1; transition: color .15s }
 .fp-rm:hover { color: var(--red) }
 
-.chat-inp { display: flex; align-items: center; gap: 10px; padding: 14px 20px; background: var(--surface); backdrop-filter: blur(12px); border-top: 1px solid var(--border); position: relative; z-index: 2; flex-shrink: 0 }
+.chat-inp { display: flex; align-items: center; gap: 10px; padding: 16px 20px; background: var(--surface); backdrop-filter: blur(12px); border-top: 1px solid var(--border); position: relative; z-index: 2; flex-shrink: 0 }
 .attach-lbl { cursor: pointer; flex-shrink: 0 }
-.attach-icon { width: 36px; height: 36px; border-radius: var(--r-md); background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text3); transition: all .15s }
+.attach-icon { width: 38px; height: 38px; border-radius: var(--r-lg); background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text3); transition: all .15s }
 .attach-icon:hover { background: rgba(var(--teal-rgb),.12); border-color: rgba(var(--teal-rgb),.2); color: var(--teal) }
-.chat-field { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 11px 18px; font-size: 14px; color: var(--text1); transition: all .2s; font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif }
+.chat-field { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 26px; padding: 12px 20px; font-size: 14px; color: var(--text1); transition: all .2s; font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif }
 .chat-field:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.1) }
 .chat-field::placeholder { color: var(--text4) }
 .chat-field:disabled { opacity: .5 }
-.send-btn { width: 40px; height: 40px; border-radius: var(--r-md); background: var(--surface2); border: 1px solid var(--border); color: var(--text4); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: all .2s }
+.send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); color: var(--text4); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: all .2s }
 .send-btn.active { background: linear-gradient(135deg, var(--teal), var(--teal-h)); border-color: transparent; color: #fff; box-shadow: 0 4px 16px rgba(var(--teal-rgb),.4) }
 .send-btn.active:hover { box-shadow: 0 6px 24px rgba(var(--teal-rgb),.6); transform: translateY(-1px) }
 .send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none }
@@ -541,14 +622,16 @@ watch(() => store.activeId, () => scroll())
 :deep(.code-bl) { background: #0a0a16; color: #99e6f0; border-radius: var(--r-md); padding: 14px; margin: 8px 0; overflow-x: auto; font-size: 13px; font-family: monospace; line-height: 1.6; border: 1px solid var(--border) }
 :deep(.ic) { background: rgba(var(--teal-rgb),.15); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: .9em; color: var(--teal) }
 
-/* ── Mobile: list ↔ chat swap ────────────────────────────────────────── */
+/* ── Mobile: sidebar becomes a slide-over drawer with backdrop ─────────── */
 @media (max-width: 768px) {
   .ai-page { overflow-x: hidden }
-  .ai-sidebar { width: 100%; border-right: none }
-  .ai-chat-panel { display: none }
-  .ai-page.show-chat .ai-sidebar { display: none }
-  .ai-page.show-chat .ai-chat-panel { display: flex }
-  .back-btn { display: flex }
+
+  .ai-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.38); z-index: 20; animation: fadeIn .2s ease }
+  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+  .ai-sidebar { position: fixed; inset: 0 auto 0 0; width: 82vw; max-width: 340px; z-index: 21; border-right: none;
+    box-shadow: 0 0 40px rgba(0,0,0,.25); transform: translateX(-100%); transition: transform .28s cubic-bezier(.4,0,.2,1) }
+  .ai-sidebar.mobile-open { transform: translateX(0) }
 
   .sb-head { padding: env(safe-area-inset-top, 0px) 14px 0; height: calc(54px + env(safe-area-inset-top, 0px)) }
   .chat-head { padding: env(safe-area-inset-top, 0px) 14px 0; height: calc(54px + env(safe-area-inset-top, 0px)) }
@@ -560,15 +643,15 @@ watch(() => store.activeId, () => scroll())
   .row-btn { width: 32px; height: 32px }
   .chat-area { padding: 14px 12px }
   .chat-msg { max-width: 88% }
-  .msg-bubble { padding: 11px 15px; font-size: 15px; border-radius: 18px }
+  .msg-bubble { padding: 11px 15px; font-size: 15px; border-radius: 19px }
   .chat-inp { padding: 10px 12px; gap: 6px }
   .chat-field { font-size: 16px; padding: 10px 14px }
   .send-btn { width: 44px; height: 44px }
   .attach-icon { width: 44px; height: 44px }
   .tip-grid { gap: 8px; padding: 0 4px }
-  .tip-card { padding: 12px; border-radius: 16px }
+  .tip-card { padding: 12px; border-radius: 17px }
   .tip-icon { width: 34px; height: 34px; margin-bottom: 8px }
-  .ai-empty-logo { width: 64px; height: 64px; border-radius: 18px }
+  .ai-empty-logo { width: 64px; height: 64px; border-radius: 19px }
   .chatra-glyph.xl { width: 34px; height: 34px }
   :deep(.code-bl) { font-size: 12px; overflow-x: auto }
 }

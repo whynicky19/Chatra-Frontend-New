@@ -179,12 +179,20 @@ export const useAiChatsStore = defineStore('aiChats', {
     },
 
     async send(text: string, file?: File | null) {
-      if (this.activeId == null) return
       const hasText = text.trim().length > 0
       const hasFile = !!file
       if ((!hasText && !hasFile) || this.sending) return
 
-      const threadId = this.activeId
+      // Новый чат ещё не заведён на бэке — тред создаётся лениво при первой
+      // отправке, чтобы композер был доступен сразу, без обязательного
+      // выбора/создания чата заранее.
+      if (this.activeId == null) {
+        const thread = await this.createThread()
+        if (!thread) return
+        await this.setActive(thread.id)
+      }
+
+      const threadId = this.activeId!
       let imageBase64: string | undefined
       let displayText = text.trim()
 
