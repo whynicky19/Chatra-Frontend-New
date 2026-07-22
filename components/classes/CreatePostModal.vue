@@ -134,6 +134,9 @@ const submit = async () => {
       uploadCurrent.value = i + 1
       uploadPct.value = Math.round(((i + 1) / selFiles.value.length) * 100)
       const { file_url } = await uploadSvc.upload(selFiles.value[i])
+      // Ответ без file_url — сбой аплоада: прерываем публикацию, иначе в тело
+      // поста уйдёт битая ссылка "undefined#имя" (паритет с AssignmentModal).
+      if (!file_url) throw new Error('upload_failed')
       files.push(`${file_url}#${encodeURIComponent(selFiles.value[i].name)}`)
     }
     const finalBody = JSON.stringify({

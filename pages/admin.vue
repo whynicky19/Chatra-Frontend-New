@@ -249,7 +249,7 @@
           </div>
           <div v-else class="avatar-req-list">
             <div v-for="a in avatarsList" :key="a.id" class="avatar-req-card">
-              <img v-if="a.photo_url" :src="a.photo_url" class="avatar-req-photo" />
+              <img v-if="a.photo_url" :src="a.photo_url" class="avatar-req-photo" @error="($event.target as HTMLImageElement).style.display='none'" />
               <div class="avatar-req-body">
                 <div class="avatar-req-name">{{ a.display_name || 'Без имени' }}</div>
                 <div class="avatar-req-meta">Учитель ID {{ a.teacher_id }} · {{ fmtDate(a.created_at) }}</div>

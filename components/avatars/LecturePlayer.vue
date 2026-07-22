@@ -15,7 +15,7 @@
            и аватар продолжает читать лекцию на фоне -->
       <div v-show="!showSummary" class="stage">
         <div class="slide-area">
-          <img v-if="currentSlide?.slide_image_url" :src="currentSlide.slide_image_url" class="slide-img" />
+          <img v-if="currentSlide?.slide_image_url" :src="currentSlide.slide_image_url" class="slide-img" @error="($event.target as HTMLImageElement).style.display='none'" />
           <div v-else class="slide-placeholder">
             <div class="slide-placeholder-text">Слайд готовится...</div>
           </div>
@@ -29,7 +29,7 @@
               muted
               playsinline
             />
-            <img v-else-if="avatarPhotoUrl" :src="avatarPhotoUrl" class="avatar-media avatar-photo" />
+            <img v-else-if="avatarPhotoUrl" :src="avatarPhotoUrl" class="avatar-media avatar-photo" @error="($event.target as HTMLImageElement).style.display='none'" />
             <div v-else class="avatar-fallback">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </div>

@@ -356,7 +356,7 @@
               <!-- Профиль одобренного аватара: даёт вкладке «лицо» вместо голой кнопки -->
               <div v-if="isTeacher && myAvatar && myAvatar.status === 'approved'" class="avatar-profile-card">
                 <div class="apc-photo">
-                  <img v-if="myAvatar.photo_url" :src="myAvatar.photo_url" alt=""/>
+                  <img v-if="myAvatar.photo_url" :src="myAvatar.photo_url" alt="" @error="($event.target as HTMLImageElement).style.display='none'"/>
                   <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/></svg>
                 </div>
                 <div class="apc-info">

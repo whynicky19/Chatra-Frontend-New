@@ -24,7 +24,7 @@
           <button class="btn btn-teal btn-sm" @click="download">Скачать файл</button>
         </div>
 
-        <img v-else-if="kind==='image'" :src="previewFile.url" class="fp-image" :alt="previewFile.name"/>
+        <img v-else-if="kind==='image'" :src="previewFile.url" class="fp-image" :alt="previewFile.name" @error="onImgError"/>
 
         <iframe v-else-if="kind==='pdf'" :src="previewFile.url" class="fp-iframe"></iframe>
 
@@ -70,6 +70,10 @@ const kind = computed(() => {
 const download = () => {
   if (previewFile.value) downloadFile(previewFile.value.url, previewFile.value.name)
 }
+
+// Битая/просроченная (403) картинка не должна показывать иконку «сломанного
+// изображения» — переключаемся на общий экран ошибки с кнопкой «Скачать».
+const onImgError = () => { errorMsg.value = 'Не удалось загрузить предпросмотр файла' }
 
 const load = async () => {
   errorMsg.value = ''

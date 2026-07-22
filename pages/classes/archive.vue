@@ -38,7 +38,7 @@
         <div v-else class="classes-grid">
           <div v-for="cls in archivedClasses" :key="cls.id" class="class-card arch-card" @click="goClass(cls.id)">
             <div class="card-cover" :style="cls.cover_image ? {} : {background: coverGrad(cls.id)}">
-              <img v-if="cls.cover_image" :src="cls.cover_image" class="card-cover-img" loading="lazy" decoding="async"/>
+              <img v-if="cls.cover_image" :src="cls.cover_image" class="card-cover-img" loading="lazy" decoding="async" @error="($event.target as HTMLImageElement).style.display='none'"/>
               <div class="card-cover-dim"></div>
               <div class="card-archive-badge">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/></svg>

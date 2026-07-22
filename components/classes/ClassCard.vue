@@ -1,7 +1,7 @@
 <template>
   <div class="cc" @click="$emit('open')">
     <div class="cc-cover" :style="coverBg">
-      <img v-if="coverImage" :src="coverImage" class="cc-cover-img"/>
+      <img v-if="coverImage" :src="coverImage" class="cc-cover-img" @error="($event.target as HTMLImageElement).style.display='none'"/>
       <div class="cc-cover-overlay"></div>
       <div class="cc-title-over">{{cls.name}}</div>
       <div v-if="hwCount>0" class="cc-due-badge">{{hwCount}} due</div>

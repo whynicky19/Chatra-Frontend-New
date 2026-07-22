@@ -66,7 +66,10 @@ html.dark {
   --teal-rgb:0,177,201;
   --teal-l:rgba(var(--teal-rgb),.14);
   --teal-m:rgba(var(--teal-rgb),.24);
-  --bg:#000000;
+  /* Не чистый #000 (слишком контрастно/OLED-плоско) — тёплый тёмно-серый
+     в духе macOS/iOS, на фоне которого --surface (#1C1C1E) карточек всё ещё
+     заметно "приподнят" (сохраняем ступень bg -> surface -> surface2). */
+  --bg:#0B0B0D;
   --bg2:#1C1C1E;
   --surface:#1C1C1E;
   --surface2:#2C2C2E;

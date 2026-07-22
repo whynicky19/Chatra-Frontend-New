@@ -36,7 +36,7 @@
         <div class="vp-files-label">Фотографии</div>
         <div class="images-grid">
           <a v-for="img in images" :key="img.url" :href="img.url" target="_blank" class="img-thumb">
-            <img :src="img.url" :alt="img.name"/>
+            <img :src="img.url" :alt="img.name" @error="($event.target as HTMLImageElement).style.display='none'"/>
           </a>
         </div>
       </div>
@@ -122,6 +122,7 @@ const submitWork = async () => {
     const uploads: string[] = []
     for (const f of subFiles.value) {
       const { file_url } = await uploadSvc.upload(f)
+      if (!file_url) throw new Error('upload_failed')
       uploads.push(`📎 [${f.name}](${file_url})`)
     }
     if (uploads.length) comment += '\n' + uploads.join('\n')
