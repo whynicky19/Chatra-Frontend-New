@@ -57,22 +57,9 @@
 
     <!-- ── Chat panel — always the main view ─────────────────────────────── -->
     <div class="ai-chat-panel">
-      <!-- Header -->
-      <div class="chat-head">
-        <div class="chat-head-l">
-          <button class="menu-btn" :title="t('ai.chats')" @click="toggleSidebar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-          <div class="ai-logo-wrap"><span class="chatra-glyph lg"></span></div>
-          <div class="chat-head-txt">
-            <div class="chat-title">{{ store.activeThread?.title || 'Chatra AI' }}</div>
-            <div class="chat-sub">{{ tt('Ваш учебный ассистент', 'Сіздің оқу көмекшіңіз', 'Your learning assistant') }}</div>
-          </div>
-        </div>
-        <div class="chat-head-r">
-          <div class="online-pill">● {{ t('nav.online') }}</div>
-        </div>
-      </div>
+      <button class="menu-btn floating" :class="{ active: sidebarVisible }" :title="sidebarToggleTitle" @click="toggleSidebar">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="4"/><line x1="9.5" y1="4" x2="9.5" y2="20"/></svg>
+      </button>
 
       <!-- Messages area -->
       <div ref="area" class="chat-area">
@@ -158,6 +145,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted, h, defineComponent } from 'vue'
+import katex from 'katex'
 import { useAiChatsStore } from '~/stores/aiChats.store'
 import { useAiQuota } from '~/composables/useAiQuota'
 import { useI18n } from '~/composables/useI18n'
@@ -191,6 +179,11 @@ const SIDEBAR_COLLAPSE_KEY = '_ai_sidebar_collapsed'
 const renamingId = ref<number | null>(null)
 const renameText = ref('')
 
+// Меню действий строки истории (переименовать/закрепить/удалить) — открывается
+// по многоточию, а не тремя отдельными иконками, чтобы строка не была захламлена.
+const menuOpenId = ref<number | null>(null)
+const closeRowMenu = () => { menuOpenId.value = null }
+
 const tt = (ru: string, kk: string, en: string) =>
   lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
 
@@ -222,6 +215,11 @@ const shortDate = (iso: string): string => {
 // ── Sidebar open/close (drawer on mobile, collapse on desktop) ────────────
 const closeDrawer = () => { mobileDrawerOpen.value = false }
 
+const sidebarVisible = computed(() => isMobile.value ? mobileDrawerOpen.value : !sidebarCollapsed.value)
+const sidebarToggleTitle = computed(() => sidebarVisible.value
+  ? tt('Скрыть историю чатов', 'Чаттар тарихын жасыру', 'Hide chat history')
+  : tt('Показать историю чатов', 'Чаттар тарихын көрсету', 'Show chat history'))
+
 const toggleSidebar = () => {
   if (isMobile.value) {
     mobileDrawerOpen.value = !mobileDrawerOpen.value
@@ -241,13 +239,13 @@ const openConv = (id: number) => {
   scroll()
 }
 
-const newChat = async () => {
-  const thread = await store.createThread()
-  if (thread) {
-    await store.setActive(thread.id)
-    query.value = ''
-    if (isMobile.value) closeDrawer()
-  }
+// Просто сбрасывает в пустое состояние — тред на бэке создаётся лениво при
+// первой отправке (store.send), иначе в истории копились бы пустые чаты,
+// если пользователь открыл «новый чат» и ничего не написал.
+const newChat = () => {
+  store.resetToNew()
+  query.value = ''
+  if (isMobile.value) closeDrawer()
 }
 
 const startRename = (c: AiThread) => {
@@ -283,19 +281,27 @@ const ConvRow = defineComponent({
       const active = c.id === store.activeId
       const renaming = renamingId.value === c.id
 
-      const actions = h('div', { class: 'row-actions' }, [
+      const menuOpen = menuOpenId.value === c.id
+      const actions = h('div', { class: 'row-menu-wrap' }, [
         h('button', {
-          class: 'row-btn', title: c.pinned ? t('ai.unpin') : t('ai.pin'),
-          onClick: (e: Event) => { e.stopPropagation(); togglePin(c) },
-        }, [pinIcon(c.pinned)]),
-        h('button', {
-          class: 'row-btn', title: t('ai.rename'),
-          onClick: (e: Event) => { e.stopPropagation(); startRename(c) },
-        }, [penIcon()]),
-        h('button', {
-          class: 'row-btn danger', title: t('ai.delete'),
-          onClick: (e: Event) => { e.stopPropagation(); confirmDelete(c) },
-        }, [trashIcon()]),
+          class: ['row-btn', { active: menuOpen }], title: t('ai.more'),
+          onClick: (e: Event) => { e.stopPropagation(); menuOpenId.value = menuOpen ? null : c.id },
+        }, [dotsIcon()]),
+        menuOpen ? h('div', { class: 'row-menu', onClick: (e: Event) => e.stopPropagation() }, [
+          h('button', {
+            class: 'row-menu-item',
+            onClick: () => { menuOpenId.value = null; startRename(c) },
+          }, [penIcon(17), h('span', t('ai.rename'))]),
+          h('div', { class: 'row-menu-divider' }),
+          h('button', {
+            class: 'row-menu-item',
+            onClick: () => { menuOpenId.value = null; togglePin(c) },
+          }, [pinIcon(c.pinned, 17), h('span', c.pinned ? t('ai.unpin') : t('ai.pin'))]),
+          h('button', {
+            class: 'row-menu-item danger',
+            onClick: () => { menuOpenId.value = null; confirmDelete(c) },
+          }, [trashIcon(17), h('span', t('ai.delete'))]),
+        ]) : null,
       ])
 
       const titleEl = renaming
@@ -329,21 +335,25 @@ const ConvRow = defineComponent({
   },
 })
 
-const pinIcon = (filled: boolean) => h('svg', {
-  width: 13, height: 13, viewBox: '0 0 24 24',
+const pinIcon = (filled: boolean, size = 13) => h('svg', {
+  width: size, height: size, viewBox: '0 0 24 24',
   fill: filled ? 'currentColor' : 'none', stroke: 'currentColor', 'stroke-width': 2,
   'stroke-linecap': 'round', 'stroke-linejoin': 'round',
 }, [h('path', { d: 'M12 17v5M9 10.76a2 2 0 01-1.11 1.79l-1.78.9A2 2 0 005 15.24V16a1 1 0 001 1h12a1 1 0 001-1v-.76a2 2 0 00-1.11-1.79l-1.78-.9A2 2 0 0115 10.76V7a1 1 0 011-1 2 2 0 000-4H8a2 2 0 000 4 1 1 0 011 1z' })])
 
-const penIcon = () => h('svg', {
-  width: 13, height: 13, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+const penIcon = (size = 13) => h('svg', {
+  width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
   'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
 }, [h('path', { d: 'M12 20h9' }), h('path', { d: 'M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z' })])
 
-const trashIcon = () => h('svg', {
-  width: 13, height: 13, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+const trashIcon = (size = 13) => h('svg', {
+  width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
   'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
 }, [h('polyline', { points: '3 6 5 6 21 6' }), h('path', { d: 'M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2' })])
+
+const dotsIcon = () => h('svg', {
+  width: 15, height: 15, viewBox: '0 0 24 24', fill: 'currentColor',
+}, [h('circle', { cx: 12, cy: 5, r: 2 }), h('circle', { cx: 12, cy: 12, r: 2 }), h('circle', { cx: 12, cy: 19, r: 2 })])
 
 // ── Empty-state tip cards ─────────────────────────────────────────────────
 const icoBook = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>'
@@ -366,11 +376,28 @@ const tipCards = computed(() => [
     prompt: tt('Проверь мой код и укажи на ошибки', 'Кодымды тексеріп, қателерді көрсет', 'Review my code and point out mistakes') },
 ])
 
-// Сначала экранируем HTML, потом markdown-замены — иначе XSS через v-html
+// Похоже на денежную сумму ($5, $12.50) — не формула, рендерить как есть.
+const looksLikeCurrency = (tex: string) => /^\s*\d[\d,.\s]*\s*$/.test(tex)
+
+const renderMath = (tex: string, displayMode: boolean) => {
+  try {
+    return katex.renderToString(tex.trim(), { displayMode, throwOnError: false, strict: false })
+  } catch {
+    return displayMode ? `$$${tex}$$` : `$${tex}$`
+  }
+}
+
+// Сначала экранируем HTML, потом markdown/LaTeX-замены — иначе XSS через v-html.
+// Формулы (KaTeX) обрабатываются раньше переноса строк в <br>, чтобы
+// многострочные окружения ($$...$$) разбирались из исходного текста.
 const fmt = (s: string) => s
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/```(\w+)?\n?([^`]*?)```/gs, '<pre class="code-bl"><code>$2</code></pre>')
   .replace(/`([^`]+)`/g, '<code class="ic">$1</code>')
+  .replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => renderMath(tex, true))
+  .replace(/\\\[([\s\S]+?)\\\]/g, (_, tex) => renderMath(tex, true))
+  .replace(/\\\(([\s\S]+?)\\\)/g, (_, tex) => renderMath(tex, false))
+  .replace(/\$([^$\n]+?)\$/g, (m, tex) => (looksLikeCurrency(tex) ? m : renderMath(tex, false)))
   .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
   .replace(/\n/g, '<br>')
 
@@ -476,6 +503,7 @@ onMounted(async () => {
     window.addEventListener('touchstart', onWindowTouchStart, { passive: true })
     window.addEventListener('touchmove', onWindowTouchMove, { passive: true })
     window.addEventListener('touchend', onWindowTouchEnd)
+    window.addEventListener('click', closeRowMenu)
   }
 
   await store.loadThreads()
@@ -492,6 +520,7 @@ onUnmounted(() => {
     window.removeEventListener('touchstart', onWindowTouchStart)
     window.removeEventListener('touchmove', onWindowTouchMove)
     window.removeEventListener('touchend', onWindowTouchEnd)
+    window.removeEventListener('click', closeRowMenu)
   }
 })
 
@@ -527,15 +556,22 @@ watch(() => store.activeId, () => scroll())
 .row-main { flex: 1; min-width: 0 }
 .row-top { display: flex; align-items: center; gap: 5px; min-width: 0 }
 .row-pin-ind { color: var(--teal); display: inline-flex; flex-shrink: 0 }
-.row-title { font-size: 13.5px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.row-title { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
 .row-date { font-size: 11px; color: var(--text4); margin-top: 2px }
 .rename-inp { width: 100%; border: 1px solid var(--teal); border-radius: 8px; background: var(--surface); font-size: 13.5px; color: var(--text1); padding: 3px 7px; outline: none; box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.1) }
 
-.row-actions { display: flex; align-items: center; gap: 3px; flex-shrink: 0; opacity: 0; transition: opacity .15s }
-.conv-row:hover .row-actions, .conv-row.active .row-actions { opacity: 1 }
-.row-btn { width: 28px; height: 28px; border-radius: 8px; background: var(--surface2); color: var(--text3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s }
-.row-btn:hover { background: rgba(var(--teal-rgb),.14); color: var(--teal) }
-.row-btn.danger:hover { background: var(--red-l); color: var(--red) }
+.row-menu-wrap { position: relative; flex-shrink: 0; opacity: 0; transition: opacity .15s }
+.conv-row:hover .row-menu-wrap, .conv-row.active .row-menu-wrap { opacity: 1 }
+.row-btn { width: 28px; height: 28px; border-radius: 8px; background: var(--surface2); color: var(--text3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; border: none }
+.row-btn:hover, .row-btn.active { background: rgba(var(--teal-rgb),.14); color: var(--teal) }
+
+.row-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; min-width: 200px; padding: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 12px 32px rgba(0,0,0,.16), var(--sh-md); display: flex; flex-direction: column; animation: menuIn .16s cubic-bezier(.16,1,.3,1) both }
+@keyframes menuIn { from { opacity: 0; transform: translateY(-6px) scale(.96) } to { opacity: 1; transform: translateY(0) scale(1) } }
+.row-menu-divider { height: 1px; margin: 6px 4px; background: var(--border) }
+.row-menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 11px; background: none; border: none; font-size: 14px; font-weight: 600; color: var(--text2); text-align: left; cursor: pointer; transition: background .12s }
+.row-menu-item:hover { background: var(--surface2) }
+.row-menu-item.danger { color: var(--red) }
+.row-menu-item.danger:hover { background: var(--red-l) }
 
 .sb-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 48px 20px; gap: 6px }
 .sb-empty-ico { width: 56px; height: 56px; border-radius: 18px; background: var(--surface2); display: flex; align-items: center; justify-content: center; margin-bottom: 6px }
@@ -548,22 +584,16 @@ watch(() => store.activeId, () => scroll())
 /* ── Chat panel ──────────────────────────────────────────────────────── */
 .ai-chat-panel { flex: 1; display: flex; flex-direction: column; background: var(--bg); position: relative; overflow: hidden; min-width: 0 }
 
-.chat-head { display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: var(--topbar); border-bottom: 1px solid var(--border); background: var(--surface); backdrop-filter: blur(12px); position: relative; z-index: 2; flex-shrink: 0 }
-.chat-head-l { display: flex; align-items: center; gap: 14px; min-width: 0 }
-.chat-head-txt { min-width: 0 }
-.menu-btn { display: flex; width: 34px; height: 34px; border-radius: 10px; background: var(--surface2); color: var(--text2); align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: background .15s }
+.menu-btn { display: flex; width: 34px; height: 34px; border-radius: 10px; background: var(--surface2); color: var(--text2); align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: background .15s, color .15s }
 .menu-btn:hover { background: rgba(var(--teal-rgb),.12); color: var(--teal) }
-.ai-logo-wrap { width: 44px; height: 44px; border-radius: 14px; background: rgba(var(--teal-rgb),.08); border: 1px solid rgba(var(--teal-rgb),.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0 }
+.menu-btn.active { background: rgba(var(--teal-rgb),.14); color: var(--teal) }
+.menu-btn.floating { position: absolute; top: 20px; left: 20px; z-index: 3; width: 40px; height: 40px; border-radius: 50%; box-shadow: var(--sh-sm) }
 .chatra-glyph { display: block; background: var(--teal); -webkit-mask: url('/logo-icon.png') center / contain no-repeat; mask: url('/logo-icon.png') center / contain no-repeat }
 .chatra-glyph.sm { width: 16px; height: 16px }
 .chatra-glyph.lg { width: 28px; height: 28px }
 .chatra-glyph.xl { width: 44px; height: 44px }
-.chat-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 20px; font-weight: 800; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
-.chat-sub { font-size: 12px; color: var(--text4); margin-top: 1px }
-.chat-head-r { display: flex; align-items: center; gap: 10px; flex-shrink: 0 }
-.online-pill { font-size: 12px; font-weight: 600; color: var(--green); background: var(--green-l); padding: 5px 14px; border-radius: 100px; border: 1px solid rgba(74,222,128,.2) }
 
-.chat-area { flex: 1; overflow-y: auto; padding: 28px; position: relative; z-index: 1 }
+.chat-area { flex: 1; overflow-y: auto; padding: 84px 28px 28px; position: relative; z-index: 1 }
 
 .chat-empty-state, .panel-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; gap: 8px }
 .panel-placeholder { text-align: center; padding: 20px }
@@ -634,14 +664,10 @@ watch(() => store.activeId, () => scroll())
   .ai-sidebar.mobile-open { transform: translateX(0) }
 
   .sb-head { padding: env(safe-area-inset-top, 0px) 14px 0; height: calc(54px + env(safe-area-inset-top, 0px)) }
-  .chat-head { padding: env(safe-area-inset-top, 0px) 14px 0; height: calc(54px + env(safe-area-inset-top, 0px)) }
-  .chat-title { font-size: 17px }
-  .chat-sub { display: none }
-  .ai-logo-wrap { display: none }
-  .online-pill { display: none }
-  .row-actions { opacity: 1 }
+  .menu-btn.floating { top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px }
+  .row-menu-wrap { opacity: 1 }
   .row-btn { width: 32px; height: 32px }
-  .chat-area { padding: 14px 12px }
+  .chat-area { padding: calc(env(safe-area-inset-top, 0px) + 68px) 12px 14px }
   .chat-msg { max-width: 88% }
   .msg-bubble { padding: 11px 15px; font-size: 15px; border-radius: 19px }
   .chat-inp { padding: 10px 12px; gap: 6px }
@@ -656,8 +682,6 @@ watch(() => store.activeId, () => scroll())
   :deep(.code-bl) { font-size: 12px; overflow-x: auto }
 }
 @media (max-width: 480px) {
-  .chat-head { padding: 0 10px }
-  .chat-area { padding: 10px 10px }
   .tip-grid { grid-template-columns: 1fr }
 }
 </style>

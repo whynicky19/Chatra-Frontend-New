@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   compatibilityDate: '2025-05-01',
   modules: ['@pinia/nuxt'],
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css', 'katex/dist/katex.min.css'],
   components: [{ path: '~/components', pathPrefix: false }],
   runtimeConfig: {
     public: {

@@ -425,6 +425,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'ai.chats': { ru: 'Чаты', en: 'Chats', kk: 'Чаттар' },
   'ai.new_chat': { ru: 'Новый чат', en: 'New chat', kk: 'Жаңа чат' },
   'ai.rename': { ru: 'Переименовать', en: 'Rename', kk: 'Атын өзгерту' },
+  'ai.more': { ru: 'Действия', en: 'Actions', kk: 'Әрекеттер' },
   'ai.pin': { ru: 'Закрепить', en: 'Pin', kk: 'Бекіту' },
   'ai.unpin': { ru: 'Открепить', en: 'Unpin', kk: 'Бекітуден алу' },
   'ai.delete': { ru: 'Удалить', en: 'Delete', kk: 'Жою' },
