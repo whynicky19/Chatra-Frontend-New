@@ -1200,15 +1200,15 @@ onMounted(async () => {
 .cd-sidebar{width:300px;flex-shrink:0;border-left:1px solid var(--border);padding:20px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;background:var(--surface)}
 
 /* Page header */
-.page-header{padding:20px 24px 16px;flex-shrink:0;position:relative;overflow:hidden;border-radius:0}
+.page-header{padding:20px 24px 16px;flex-shrink:0;position:relative;overflow:hidden;border-radius:0;min-height:220px;display:flex;flex-direction:column;justify-content:flex-end}
 .page-header-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.25) 0%,rgba(0,0,0,.55) 100%);z-index:0}
-.page-header .page-header-top,.page-header .page-header-body,.page-header .class-code-row{position:relative;z-index:1}
+.page-header .page-header-body,.page-header .class-code-row{position:relative;z-index:1}
 .back-link-dark{color:rgba(255,255,255,.8)!important}.back-link-dark:hover{color:#fff!important}
 .sep-dark{color:rgba(255,255,255,.5)!important}
 .subject-dark{color:rgba(255,255,255,.7)!important}
 .title-dark{color:#fff!important;text-shadow:0 2px 8px rgba(0,0,0,.4)}
 .sub-dark{color:rgba(255,255,255,.7)!important}
-.page-header-top{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.page-header .page-header-top{position:absolute;top:20px;left:24px;z-index:1;display:flex;align-items:center;gap:6px;margin-bottom:0}
 .page-title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .header-archive-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:4px 10px;border-radius:100px;letter-spacing:.03em}
 .archive-notice{display:flex;align-items:center;gap:8px;margin:0 24px 4px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);color:var(--text3);font-size:13px;font-weight:500}
@@ -1459,7 +1459,8 @@ onMounted(async () => {
   .header-actions{position:static;top:auto;right:auto;margin-top:12px;gap:8px}
   .header-actions .btn{flex:1;justify-content:center;min-height:44px;font-size:12px}
   .tab-content{padding:10px 12px 80px;overflow-x:hidden}
-  .page-header{padding:14px 12px 12px}
+  .page-header{padding:14px 12px 12px;min-height:170px}
+  .page-header .page-header-top{top:14px;left:12px}
   .page-title{font-size:20px}
   .page-sub{font-size:12px}
   .class-code-chip{font-size:12px}
