@@ -7,7 +7,6 @@ let _ready = false
 
 export const translations: Record<string, Record<Lang, string>> = {
   // Sidebar
-  'nav.chats': { ru: 'Чаты', en: 'Chats', kk: 'Чаттар' },
   'nav.classes': { ru: 'Классы', en: 'Classes', kk: 'Сыныптар' },
   'nav.participants': { ru: 'Участники', en: 'Participants', kk: 'Қатысушылар' },
   'nav.ai': { ru: 'ИИ Ассистент', en: 'AI Assistant', kk: 'ЖИ Көмекші' },
@@ -55,31 +54,8 @@ export const translations: Record<string, Record<Lang, string>> = {
   'settings.member': { ru: 'Участник', en: 'Member', kk: 'Мүше' },
   'settings.chatra_academy': { ru: 'Академия Чатра', en: 'Chatra Academy', kk: 'Чатра Академиясы' },
 
-  // Chats
-  'chats.title': { ru: 'Чаты', en: 'Chats', kk: 'Чаттар' },
-  'chats.search': { ru: 'Поиск по email...', en: 'Search by email...', kk: 'Email бойынша іздеу...' },
-  'chats.no_chats': { ru: 'Нет чатов', en: 'No chats', kk: 'Чаттар жоқ' },
-  'chats.no_chats_sub': { ru: 'Найдите пользователя по email', en: 'Find a user by email', kk: 'Email бойынша пайдаланушы табыңыз' },
-  'chats.select': { ru: 'Выберите чат', en: 'Select a chat', kk: 'Чат таңдаңыз' },
-  'chats.select_sub': { ru: 'Или найдите пользователя по email выше', en: 'Or find a user by email above', kk: 'Немесе жоғарыдан email бойынша пайдаланушы табыңыз' },
-  'chats.users_found': { ru: 'Пользователи', en: 'Users', kk: 'Пайдаланушылар' },
-  'chats.no_users': { ru: 'Пользователи не найдены', en: 'No users found', kk: 'Пайдаланушылар табылмады' },
-  'chats.no_messages': { ru: 'Нет сообщений', en: 'No messages', kk: 'Хабарлар жоқ' },
-  'chats.new_group': { ru: 'Новый групповой чат', en: 'New Group Chat', kk: 'Жаңа топтық чат' },
-  'chats.group_name': { ru: 'Название чата...', en: 'Chat name...', kk: 'Чат атауы...' },
-  'chats.cancel': { ru: 'Отмена', en: 'Cancel', kk: 'Болдырмау' },
-  'chats.create': { ru: 'Создать', en: 'Create', kk: 'Жасау' },
-  'chats.new_request': { ru: '+ Новый запрос', en: '+ New Request', kk: '+ Жаңа сұраныс' },
-  'chats.recent': { ru: 'Последние обсуждения', en: 'Recent', kk: 'Соңғы талқылаулар' },
-  'chats.archive': { ru: 'Архив', en: 'Archive', kk: 'Мұрағат' },
-  'chats.requests': { ru: 'Запросы', en: 'Requests', kk: 'Сұраныстар' },
-  'chats.personal': { ru: 'ЛИЧНЫЕ СООБЩЕНИЯ', en: 'PERSONAL MESSAGES', kk: 'ЖЕКЕ ХАБАРЛАР' },
-  'chats.search_placeholder': { ru: 'Поиск обсуждений...', en: 'Search discussions...', kk: 'Талқылауларды іздеу...' },
-  'chats.input_placeholder': { ru: 'Введите ваш запрос здесь...', en: 'Type your message here...', kk: 'Хабарыңызды осында жазыңыз...' },
-  'chats.created': { ru: 'Чат создан', en: 'Chat created', kk: 'Чат жасалды' },
-  'chats.error': { ru: 'Ошибка', en: 'Error', kk: 'Қате' },
-  'chats.support': { ru: 'Поддержка', en: 'Support', kk: 'Қолдау' },
-  'chats.help_center': { ru: 'Центр помощи', en: 'Help Center', kk: 'Көмек орталығы' },
+  // Support
+  'support.help_center': { ru: 'Центр помощи', en: 'Help Center', kk: 'Көмек орталығы' },
 
   // Classes
   'classes.title': { ru: 'Классы', en: 'Classes', kk: 'Сыныптар' },

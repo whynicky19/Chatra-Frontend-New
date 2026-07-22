@@ -71,14 +71,12 @@
 import { ref } from 'vue'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
-import { useChatsStore } from '~/stores/chats.store'
 import { useAuth } from '~/composables/useAuth'
 
 definePageMeta({ layout: 'default' })
 
 const toast = useToast()
 const { t, lang } = useI18n()
-const chatsStore = useChatsStore()
 const { changePassword, deleteAccount } = useAuth()
 
 // ── Смена пароля ──
@@ -106,7 +104,6 @@ const doDeleteAccount = async () => {
   deleting.value = false
   if (!err) {
     toast.ok(t('settings.account_deleted'))
-    chatsStore.disconnectAll()
     if (import.meta.client) window.location.href = '/org'
   } else {
     delErr.value = err === 'wrong_current_password' ? t('settings.wrong_current') : t('settings.delete_err')

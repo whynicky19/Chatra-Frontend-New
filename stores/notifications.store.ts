@@ -8,8 +8,5 @@ export const useNotificationsStore = defineStore('notifications', {
   actions: {
     setUnread(n: number) { this.unreadCount = n },
     setAdminPending(n: number) { this.adminPending = n },
-    decrement(key: string) {
-      if (this.unreadCount > 0) this.unreadCount--
-    },
   },
 })

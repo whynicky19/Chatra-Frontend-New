@@ -17,11 +17,6 @@
           <div class="stat-lbl">Пользователей</div>
         </div>
         <div class="stat-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-          <div class="stat-val">{{chatsCount}}</div>
-          <div class="stat-lbl">Чатов</div>
-        </div>
-        <div class="stat-card">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           <div class="stat-val">{{classesCount}}</div>
           <div class="stat-lbl">Классов</div>
@@ -438,18 +433,17 @@ import { useNotificationsStore } from '~/stores/notifications.store'
 import { useToast } from '~/composables/useToast'
 import { useAdminSvc } from '~/services/admin'
 import { useClassesSvc } from '~/services/classes'
-import { useChatsSvc } from '~/services/chats'
 import { useI18n } from '~/composables/useI18n'
 import { useAvatarsSvc, type TeacherAvatar, type AvatarLecture } from '~/services/avatars'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const toast = useToast(); const adminSvc = useAdminSvc()
 const notifStore = useNotificationsStore()
 const { t, lang } = useI18n()
-const chatsSvc = useChatsSvc(); const classesSvc = useClassesSvc()
+const classesSvc = useClassesSvc()
 const avatarsSvc = useAvatarsSvc()
 const tab = ref('users'); const users = ref<any[]>([]); const loadingU = ref(false); const sq = ref(''); const showCreate = ref(false); const crU = ref(false)
 const togglingAi = ref<Record<number, boolean>>({})
-const nu = ref({ e: '', p: '', r: 'student' }); const chatsCount = ref(0); const classesCount = ref(0)
+const nu = ref({ e: '', p: '', r: 'student' }); const classesCount = ref(0)
 const today = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.')
 const avColors = ['bg-b0', 'bg-b1', 'bg-b2', 'bg-b3', 'bg-b4', 'bg-b5']
 const colorFor = (id: number) => avColors[id % avColors.length]
@@ -658,7 +652,6 @@ onMounted(async () => {
   if (!auth.isAdmin) return
   loadingU.value = true
   try { users.value = await adminSvc.users() } catch {} finally { loadingU.value = false }
-  try { const c = await chatsSvc.list(); chatsCount.value = c.length } catch {}
   try { classes.value = await classesSvc.listAll(); classesCount.value = classes.value.length } catch {}
   loadAiSummary()
   loadAvatars()
@@ -670,7 +663,7 @@ onMounted(async () => {
 .pg-head{padding:24px 32px 0;display:flex;align-items:center}
 .pg-title{font-size:20px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
 .pg-body{padding:20px 32px 32px}
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh-xs)}
 .stat-val{font-size:22px;font-weight:700}
 .stat-lbl{font-size:12px;color:var(--text3)}
@@ -778,7 +771,7 @@ onMounted(async () => {
 @media (max-width:768px) {
   .pg-head { padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 0; }
   .pg-body { padding: 14px 16px 28px; }
-  .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
   .stat-card { padding: 12px 8px; flex-direction: column; align-items: flex-start; gap: 6px; }
   .stat-val { font-size: 18px; }
   .stat-lbl { font-size: 11px; }

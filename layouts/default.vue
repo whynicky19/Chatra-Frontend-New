@@ -7,46 +7,15 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useAuthStore } from '~/stores/auth.store'
-import { useChat } from '~/composables/useChat'
-import { useChatsStore } from '~/stores/chats.store'
-import { useChatsSvc } from '~/services/chats'
 
 const { fetchMe } = useAuth()
 const auth = useAuthStore()
-const chatsStore = useChatsStore()
-const chatsSvc = useChatsSvc()
-const { connectWs, loadMsgs, startChatPoller } = useChat()
 
 onMounted(async () => {
   if (auth.token && !auth.user) await fetchMe()
-
-  if (auth.token) {
-    try {
-      const chats = await chatsSvc.list()
-      chatsStore.setChats(chats)
-      chats.forEach((c: any) => connectWs(c.id))
-      // Lazy: load only first 5 chats for preview, rest load on demand
-      const preview = chats.slice(0, 5)
-      await Promise.all(preview.map((c: any) => loadMsgs(c.id)))
-    } catch {}
-
-    startChatPoller()
-  }
-})
-
-onUnmounted(() => {
-  if (import.meta.client) {
-    // Clean up poll interval
-    if ((window as any).__chatPollInterval) {
-      clearInterval((window as any).__chatPollInterval)
-      delete (window as any).__chatPollInterval
-    }
-    // Disconnect all WebSockets to prevent leaks
-    chatsStore.disconnectAll()
-  }
 })
 </script>
 <style scoped>

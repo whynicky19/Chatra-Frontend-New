@@ -26,15 +26,6 @@
         <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('nav.classes') }}</span>
       </NuxtLink>
 
-      <NuxtLink to="/chats" class="sb-item" :class="{active:route.path==='/chats'||route.path.startsWith('/chats')}">
-        <div class="item-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-          <span v-if="totalUnread>0" class="notif-dot">{{totalUnread>9?'9+':totalUnread}}</span>
-        </div>
-        <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('nav.chats') }}</span>
-        <span v-if="!isCollapsed && !isMobile && totalUnread>0" class="notif-pill">{{totalUnread>99?'99+':totalUnread}}</span>
-      </NuxtLink>
-
       <NuxtLink v-if="auth.isAdmin" to="/admin" class="sb-item" :class="{active:route.path==='/admin'}">
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
@@ -71,11 +62,11 @@
         <button v-for="l in [{code:'ru',label:'RU'},{code:'en',label:'EN'},{code:'kk',label:'KZ'}]" :key="l.code"
           :class="['lang-btn-mob', { active: lang === l.code }]" @click.stop="setLang(l.code as any)">{{ l.label }}</button>
       </div>
-      <a href="https://t.me/nickyuii" target="_blank" class="sb-item help-item" :title="t('chats.help_center')">
+      <a href="https://t.me/nickyuii" target="_blank" class="sb-item help-item" :title="t('support.help_center')">
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
-        <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('chats.help_center') }}</span>
+        <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('support.help_center') }}</span>
       </a>
       <div class="sb-item logout-item" @click="doLogout" :title="t('nav.logout')">
         <div class="item-icon">
@@ -90,19 +81,15 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from '#app'
 import { useAuthStore } from '~/stores/auth.store'
-import { useChatsStore } from '~/stores/chats.store'
 import { useNotificationsStore } from '~/stores/notifications.store'
 import { useAuth } from '~/composables/useAuth'
 import { useI18n } from '~/composables/useI18n'
-import { useAi } from '~/composables/useAi'
 import { useAvatarsSvc } from '~/services/avatars'
-const auth = useAuthStore(); const chatsStore = useChatsStore(); const notifStore = useNotificationsStore(); const { logout } = useAuth(); const route = useRoute()
+const auth = useAuthStore(); const notifStore = useNotificationsStore(); const { logout } = useAuth(); const route = useRoute()
 const { t, lang, setLang } = useI18n()
-const ai = useAi()
 const avatarsSvc = useAvatarsSvc()
-const totalUnread = computed(() => chatsStore.totalUnread)
 const adminPending = computed(() => notifStore.adminPending)
-const doLogout = () => { chatsStore.disconnectAll(); logout() }
+const doLogout = () => { logout() }
 
 const isCollapsed = ref(false)
 const isMobile = ref(false)

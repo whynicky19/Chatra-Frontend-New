@@ -41,9 +41,9 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto;opacity:.4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
               </div>
             </div>
-            <div v-if="auth.isAdmin" class="field-group">
+            <div class="field-group">
               <label class="field-label">{{ t('settings.institution') }}</label>
-              <input value="Chatra Academy" class="input field-input" readonly style="opacity:.7;cursor:default"/>
+              <input :value="institutionLabel" class="input field-input" readonly style="opacity:.7;cursor:default"/>
             </div>
           </div>
         </div>
@@ -89,31 +89,10 @@
         <div class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 17l.7 1.8L20.5 19.5l-1.8.7L18 22l-.7-1.8L15.5 19.5l1.8-.7z"/></svg></div>
         <div style="flex:1">
           <div class="nav-title">{{ lang==='ru'?'AI лимит':lang==='kk'?'AI лимиті':'AI limit' }}</div>
-          <div class="nav-sub">{{ lang==='ru'?'Дневной лимит сообщений':lang==='kk'?'Күндік хабарлама лимиті':'Daily message limit' }}</div>
+          <div class="nav-sub">{{ lang==='ru'?'Дневной лимит запросов к ИИ':lang==='kk'?'ЖИ сұрауларының күндік лимиті':'Daily AI request limit' }}</div>
         </div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </NuxtLink>
-
-      <!-- Organization -->
-      <div class="scard org-switch-card">
-        <div class="org-switch-icon" :class="org.isSchool ? 'school' : 'university'">
-          <svg v-if="org.isSchool" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-          <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-        </div>
-        <div class="org-switch-info">
-          <div class="org-switch-title">
-            {{ lang==='ru'?'Тип организации':lang==='kk'?'Ұйым түрі':'Organization type' }}
-          </div>
-          <div :class="['org-switch-sub', org.isSchool ? 'school' : 'university']">
-            {{ org.isSchool
-              ? (lang==='ru'?'Школа':lang==='kk'?'Мектеп':'School')
-              : (lang==='ru'?'Университет':lang==='kk'?'Университет':'University') }}
-          </div>
-        </div>
-        <button class="btn btn-ghost btn-sm" @click="changeOrg">
-          {{ lang==='ru'?'Изменить':lang==='kk'?'Өзгерту':'Change' }}
-        </button>
-      </div>
 
       <!-- Аккаунт и безопасность -->
       <NuxtLink to="/security" class="scard nav-card">
@@ -149,16 +128,11 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useAuthSvc } from '~/services/auth'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
-import { useOrgStore } from '~/stores/org.store'
-import { useChatsStore } from '~/stores/chats.store'
 import { useAuth } from '~/composables/useAuth'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const authSvc = useAuthSvc(); const toast = useToast(); const { t, lang, setLang } = useI18n()
-const org = useOrgStore()
-const chatsStore = useChatsStore()
 const { logout } = useAuth()
-const doLogout = () => { chatsStore.disconnectAll(); logout() }
-const changeOrg = () => { org.clear(); if (import.meta.client) window.location.href = '/org' }
+const doLogout = () => { logout() }
 
 const fullnameInput = ref(''); const nickOk = ref<boolean|null>(null); const nickChecking = ref(false)
 const isDark = ref(false); const followSystem = ref(false)
@@ -169,6 +143,12 @@ const roleLabel = computed(() => {
   if (role === 'admin') return t('settings.admin')
   if (role === 'teacher') return lang.value === 'ru' ? 'Преподаватель' : 'Teacher'
   return t('settings.student')
+})
+const institutionLabel = computed(() => {
+  const isSchool = auth.user?.org_type === 'school'
+  return isSchool
+    ? (lang.value === 'ru' ? 'Школа' : lang.value === 'kk' ? 'Мектеп' : 'School')
+    : (lang.value === 'ru' ? 'Университет' : lang.value === 'kk' ? 'Университет' : 'University')
 })
 
 const saveProfile = async () => {
@@ -276,16 +256,6 @@ html.dark .field-input{background:var(--surface2)!important}
   .theme-choice { padding: 14px 8px; font-size: 12px; min-height: 80px; }
   .theme-toggle { min-height: 44px; min-width: 56px; justify-content: flex-end; }
 }
-/* Org switch card */
-.org-switch-card{display:flex;align-items:center;gap:16px;padding:18px 24px}
-.org-switch-icon{width:40px;height:40px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.org-switch-icon.university{background:rgba(var(--teal-rgb),.1);color:var(--teal)}
-.org-switch-icon.school{background:rgba(245,158,11,.1);color:#b45309}
-.org-switch-info{flex:1}
-.org-switch-title{font-size:15px;font-weight:600;color:var(--text1)}
-.org-switch-sub{font-size:13px;font-weight:600;margin-top:2px}
-.org-switch-sub.university{color:var(--teal)}
-.org-switch-sub.school{color:#b45309}
 @media (max-width:480px){
   .pg-head { padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 0; }
   .pg-body { padding: 12px 14px 90px; }

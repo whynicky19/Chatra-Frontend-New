@@ -576,7 +576,7 @@ const retract = async () => {
   try {
     await svc.retractSubmission(mySubmission.value.id)
     mySubmission.value = null
-    form.value = { text: '', file: null }
+    form.value = { text: '', file: null, variantNumber: null }
     uploadedUrl.value = ''
     toast.ok(t('am.retracted'))
     emit('submitted', null)

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { refreshRegistries } from '~/composables/useUserRegistries'
 
-interface User { id: number; email: string; is_active: boolean; role: string; ai_unlimited?: boolean }
+interface User { id: number; email: string; is_active: boolean; role: string; ai_unlimited?: boolean; org_type?: 'university' | 'school' }
 
 // Безопасный разбор JSON из localStorage: битое значение не должно ронять
 // setUser/setNickname (иначе вход крашится). Возвращает объект или {}.

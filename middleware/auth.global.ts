@@ -5,8 +5,9 @@ export default defineNuxtRouteMiddleware((to) => {
   if (import.meta.server) return
 
   // Публичные правовые страницы доступны всем без входа и выбора организации
-  // (нужны для App Store: ссылка на политику конфиденциальности).
-  if (to.path === '/privacy') return
+  // (нужны для App Store: ссылки на политику конфиденциальности и условия
+  // использования — обе даются на экране регистрации до входа).
+  if (to.path === '/privacy' || to.path === '/terms') return
 
   const auth = useAuthStore()
   const org  = useOrgStore()

@@ -8,10 +8,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       // Тот же бэкенд, что у мобильного приложения — данные общие. Дефолт —
-      // локальный бэкенд для разработки; в проде задаётся через переменные
-      // окружения NUXT_PUBLIC_API_BASE / NUXT_PUBLIC_WS_BASE (реальный HTTPS/WSS-домен).
+      // локальный бэкенд для разработки; в проде задаётся через переменную
+      // окружения NUXT_PUBLIC_API_BASE (реальный HTTPS-домен).
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000',
-      wsBase:  process.env.NUXT_PUBLIC_WS_BASE  || 'ws://localhost:8000',
     },
   },
   app: {
