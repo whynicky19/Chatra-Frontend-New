@@ -57,6 +57,9 @@
 
     <!-- ── Chat panel — always the main view ─────────────────────────────── -->
     <div class="ai-chat-panel">
+      <!-- На iOS Safari/PWA (viewport-fit=cover) контент едет под статус-бар —
+           лёгкий градиент вместо сплошной плашки держит время/индикаторы читаемыми. -->
+      <div class="ios-scrim" aria-hidden="true"></div>
       <button class="menu-btn floating" :class="{ active: sidebarVisible }" :title="sidebarToggleTitle" @click="toggleSidebar">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="4"/><line x1="9.5" y1="4" x2="9.5" y2="20"/></svg>
       </button>
@@ -585,6 +588,7 @@ watch(() => store.activeId, () => scroll())
 .menu-btn:hover { background: rgba(var(--teal-rgb),.12); color: var(--teal) }
 .menu-btn.active { background: rgba(var(--teal-rgb),.14); color: var(--teal) }
 .menu-btn.floating { position: absolute; top: 20px; left: 20px; z-index: 3; width: 40px; height: 40px; border-radius: 50%; box-shadow: var(--sh-sm) }
+.ios-scrim { display: none }
 .chatra-glyph { display: block; background: var(--teal); -webkit-mask: url('/logo-icon.png') center / contain no-repeat; mask: url('/logo-icon.png') center / contain no-repeat }
 .chatra-glyph.lg { width: 28px; height: 28px }
 
@@ -658,6 +662,9 @@ watch(() => store.activeId, () => scroll())
 
   .sb-head { padding: env(safe-area-inset-top, 0px) 14px 0; height: calc(54px + env(safe-area-inset-top, 0px)) }
   .menu-btn.floating { top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px }
+  .ios-scrim { display: block; position: absolute; top: 0; left: 0; right: 0; z-index: 2; pointer-events: none;
+    height: calc(env(safe-area-inset-top, 0px) + 16px);
+    background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%); opacity: .8 }
   .row-menu-wrap { opacity: 1 }
   .row-btn { width: 32px; height: 32px }
   .chat-area { padding: calc(env(safe-area-inset-top, 0px) + 68px) 12px 14px }
