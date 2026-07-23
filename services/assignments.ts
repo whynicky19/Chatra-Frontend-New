@@ -49,8 +49,12 @@ export interface Submission {
   text_content?: string
   variant_number?: number
   submitted_at: string
-  status: 'submitted' | 'grading' | 'graded' | 'late'
+  status: 'submitted' | 'grading' | 'graded' | 'late' | 'needs_review'
   grade?: Grade
+  // Только для учителя (бэкенд обнуляет эти поля в студенческих ответах).
+  // Заполнены только для фото-сдач, прошедших vision-проверку.
+  ai_confidence?: number | null
+  ai_review_reasons?: string | null // JSON-список строк
 }
 
 export interface Grade {
@@ -61,6 +65,13 @@ export interface Grade {
   criteria_scores?: string // JSON string
   graded_at: string
   graded_by: 'ai' | 'teacher'
+}
+
+export interface AiGradeResult {
+  status: 'graded' | 'needs_review'
+  grade: Grade | null
+  ai_confidence: number | null
+  ai_review_reasons: string | null // JSON-список строк
 }
 
 export const useAssignmentsSvc = () => {
@@ -163,7 +174,7 @@ export const useAssignmentsSvc = () => {
       await api.delete(`/submissions/${subId}`)
     },
 
-    aiGrade: async (subId: number): Promise<Grade> => {
+    aiGrade: async (subId: number): Promise<AiGradeResult> => {
       const { data } = await api.post(`/submissions/${subId}/ai-grade`)
       return data
     },

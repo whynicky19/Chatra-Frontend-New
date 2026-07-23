@@ -69,6 +69,7 @@
             <div :class="['sub-status-chip', mySubmission.status]">
               <svg v-if="['submitted','graded'].includes(mySubmission.status)" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               <svg v-else-if="mySubmission.status === 'grading'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <svg v-else-if="mySubmission.status === 'needs_review'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
               <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               {{ statusLabel(mySubmission.status) }}
             </div>
@@ -117,6 +118,10 @@
           <div v-else-if="mySubmission.status === 'grading'" class="grading-pending">
             <div class="grading-dots"><span></span><span></span><span></span></div>
             {{ t('am.ai_checking_yours') }}
+          </div>
+
+          <div v-else-if="mySubmission.status === 'needs_review'" class="grading-pending">
+            {{ t('assign.status.needs_review') }}
           </div>
 
           <!-- Retract button (only if not graded, not archived) -->
@@ -235,6 +240,16 @@
             </a>
           </div>
 
+          <!-- Needs review: подтверждаем распознавание — только учитель видит confidence/причины -->
+          <div v-if="activeSub.status === 'needs_review'" class="needs-review-banner">
+            <div class="nrb-title">{{ t('am.needs_review_title') }}</div>
+            <div class="nrb-body">{{ t('am.needs_review_body') }}</div>
+            <div v-if="activeSub.ai_confidence != null" class="nrb-confidence">{{ t('am.confidence_label') }}: {{ activeSub.ai_confidence }}%</div>
+            <ul v-if="parsedActiveReviewReasons" class="nrb-reasons">
+              <li v-for="(r, i) in parsedActiveReviewReasons" :key="i">{{ r }}</li>
+            </ul>
+          </div>
+
           <!-- Existing grade -->
           <div v-if="activeSub.grade" class="grade-card">
             <div class="grade-card-top">
@@ -244,6 +259,7 @@
                 {{ activeSub.grade.graded_by === 'ai' ? t('am.ai_check') : t('am.teacher') }}
               </div>
             </div>
+            <div v-if="activeSub.ai_confidence != null" class="confidence-pill">{{ t('am.confidence_label') }}: {{ activeSub.ai_confidence }}%</div>
             <div v-if="activeSub.grade.feedback" class="grade-feedback">
               <div class="section-label">{{ t('am.feedback') }}</div>
               <div class="feedback-text">{{ activeSub.grade.feedback }}</div>
@@ -271,7 +287,7 @@
           </div>
 
           <!-- Manual grade form -->
-          <div v-if="showManualGrade" class="manual-grade-form">
+          <div v-if="showManualGrade" ref="manualGradeFormEl" class="manual-grade-form">
             <div class="mgf-title">{{ t('am.manual_grade') }}</div>
             <div class="mgf-score-row">
               <label class="mgf-label">{{ t('am.score') }} (0 – {{ assignment.max_score }})</label>
@@ -302,17 +318,17 @@
             <div class="subs-stats">
               <div class="stat-chip"><span class="stat-n">{{ submissions.length }}</span><span class="stat-l">{{ t('am.total') }}</span></div>
               <div class="stat-chip ok"><span class="stat-n">{{ submissions.filter(s=>s.status==='graded').length }}</span><span class="stat-l">{{ t('am.checked') }}</span></div>
-              <div class="stat-chip wait"><span class="stat-n">{{ submissions.filter(s=>s.status==='submitted' || s.status==='late').length }}</span><span class="stat-l">{{ t('am.pending') }}</span></div>
+              <div class="stat-chip wait"><span class="stat-n">{{ submissions.filter(s=>s.status==='submitted' || s.status==='late' || s.status==='needs_review').length }}</span><span class="stat-l">{{ t('am.pending') }}</span></div>
             </div>
             <button
-              v-if="submissions.filter(s=>s.status==='submitted'||s.status==='late').length > 0"
+              v-if="submissions.filter(s=>s.status==='submitted'||s.status==='late'||s.status==='needs_review').length > 0"
               class="btn-bulk-grade"
               :disabled="bulkGrading"
               @click="runBulkAiGrade"
             >
               <svg v-if="!bulkGrading" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <div v-else class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
-              {{ bulkGrading ? `${t('am.grading_progress')} ${bulkDone}/${bulkTotal}...` : `${t('am.grade_all_pending')} (${submissions.filter(s=>s.status==='submitted'||s.status==='late').length})` }}
+              {{ bulkGrading ? `${t('am.grading_progress')} ${bulkDone}/${bulkTotal}...` : `${t('am.grade_all_pending')} (${submissions.filter(s=>s.status==='submitted'||s.status==='late'||s.status==='needs_review').length})` }}
             </button>
             <div class="subs-search">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -351,7 +367,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useUploadSvc } from '~/services/uploads'
 import { useUsersSvc } from '~/services/users'
@@ -414,6 +430,7 @@ const filteredSubmissions = computed(() => {
 const parsedCriteria = computed(() => { try { return JSON.parse(props.assignment.criteria) } catch { return [] } })
 const parsedCriteriaScores = computed(() => { if (!mySubmission.value?.grade?.criteria_scores) return null; try { return JSON.parse(mySubmission.value.grade.criteria_scores) } catch { return null } })
 const parsedActiveScores = computed(() => { if (!activeSub.value?.grade?.criteria_scores) return null; try { return JSON.parse(activeSub.value.grade.criteria_scores) } catch { return null } })
+const parsedActiveReviewReasons = computed(() => { if (!activeSub.value?.ai_review_reasons) return null; try { const arr = JSON.parse(activeSub.value.ai_review_reasons); return Array.isArray(arr) && arr.length ? arr : null } catch { return null } })
 
 const parseFileUrls = (raw?: string | null): string[] => {
   if (!raw) return []
@@ -444,6 +461,7 @@ const statusLabel = (s: string) => ({
   grading: t('assign.status.grading'),
   graded: t('assign.status.graded'),
   late: t('assign.status.overdue'),
+  needs_review: t('assign.status.needs_review'),
 }[s] || s)
 const fmtDate = (d: string) => parseUtc(d).toLocaleString(dateLocale.value, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 const getFileName = (url: string) => fileNameFromUrl(url)
@@ -502,11 +520,21 @@ const runAiGrade = async () => {
   if (!activeSub.value || grading.value) return
   grading.value = true
   try {
-    const grade = await svc.aiGrade(activeSub.value.id)
-    activeSub.value = { ...activeSub.value, grade, status: 'graded' }
+    const result = await svc.aiGrade(activeSub.value.id)
+    const patch = {
+      status: result.status,
+      grade: result.grade || undefined,
+      ai_confidence: result.ai_confidence,
+      ai_review_reasons: result.ai_review_reasons,
+    }
+    activeSub.value = { ...activeSub.value, ...patch }
     const idx = submissions.value.findIndex(s => s.id === activeSub.value!.id)
-    if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], grade, status: 'graded' }
-    toast.ok(`${t('am.ai_checked')}: ${grade.score} / ${props.assignment.max_score}`)
+    if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], ...patch }
+    if (result.status === 'needs_review') {
+      toast.ok(t('am.needs_review_toast'))
+    } else if (result.grade) {
+      toast.ok(`${t('am.ai_checked')}: ${result.grade.score} / ${props.assignment.max_score}`)
+    }
   } catch (e: any) { toast.err(e?.response?.data?.detail || t('am.err_ai_grade')) }
   finally { grading.value = false }
 }
@@ -516,10 +544,22 @@ const showManualGrade = ref(false)
 const manualScore = ref(0)
 const manualFeedback = ref('')
 const savingGrade = ref(false)
+const manualGradeFormEl = ref<HTMLElement>()
+
+// Форма разворачивается снизу и не всегда влезает в текущую высоту окна —
+// без автоскролла учитель не сразу замечает, что нужно прокрутить вниз.
+watch(showManualGrade, (shown) => {
+  if (!shown) return
+  nextTick(() => {
+    manualGradeFormEl.value?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  })
+})
 
 // Pre-fill manual score when switching to a submission that already has a grade
 watch(activeSub, (sub) => {
-  showManualGrade.value = false
+  // needs_review: ИИ не смог надёжно распознать работу — сразу открываем
+  // форму ручной оценки, чтобы учитель не искал кнопку.
+  showManualGrade.value = sub?.status === 'needs_review'
   if (sub?.grade) {
     manualScore.value = sub.grade.score
     manualFeedback.value = sub.grade.feedback || ''
@@ -551,7 +591,7 @@ const saveManualGrade = async () => {
 
 const runBulkAiGrade = async () => {
   if (bulkGrading.value) return
-  const pending = submissions.value.filter(s => s.status === 'submitted' || s.status === 'late')
+  const pending = submissions.value.filter(s => s.status === 'submitted' || s.status === 'late' || s.status === 'needs_review')
   if (!pending.length) return
   bulkGrading.value = true
   bulkDone.value = 0
@@ -559,9 +599,15 @@ const runBulkAiGrade = async () => {
   let ok = 0
   for (const sub of pending) {
     try {
-      const grade = await svc.aiGrade(sub.id)
+      const result = await svc.aiGrade(sub.id)
       const idx = submissions.value.findIndex(s => s.id === sub.id)
-      if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], grade, status: 'graded' }
+      const patch = {
+        status: result.status,
+        grade: result.grade || undefined,
+        ai_confidence: result.ai_confidence,
+        ai_review_reasons: result.ai_review_reasons,
+      }
+      if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], ...patch }
       ok++
     } catch {}
     bulkDone.value++
@@ -701,6 +747,7 @@ onMounted(async () => {
 .sub-status-chip.submitted, .sub-status-chip.graded { background: rgba(74,222,128,.1); color: var(--green); }
 .sub-status-chip.grading { background: rgba(var(--teal-rgb),.1); color: var(--teal); }
 .sub-status-chip.late { background: var(--red-l); color: var(--red); }
+.sub-status-chip.needs_review { background: rgba(230,162,60,.12); color: #e6a23c; }
 .sub-date { font-size: 12px; color: var(--text4); }
 .preview-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); margin-bottom: 7px; }
 .preview-text { font-size: 13px; color: var(--text2); line-height: 1.7; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; white-space: pre-wrap; max-height: 160px; overflow-y: auto; }
@@ -721,6 +768,14 @@ onMounted(async () => {
 .grading-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: pulse 1.2s infinite; }
 .grading-dots span:nth-child(2) { animation-delay: .2s; }
 .grading-dots span:nth-child(3) { animation-delay: .4s; }
+
+/* Needs-review banner (teacher only) — low-confidence handwriting recognition */
+.needs-review-banner { background: rgba(230, 162, 60, 0.1); border: 1px solid rgba(230, 162, 60, 0.35); border-radius: var(--r-xl); padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.nrb-title { font-size: 14px; font-weight: 700; color: var(--text1); }
+.nrb-body { font-size: 13px; color: var(--text3); }
+.nrb-confidence { font-size: 13px; font-weight: 600; color: var(--text2); }
+.nrb-reasons { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text3); display: flex; flex-direction: column; gap: 4px; }
+.confidence-pill { align-self: flex-start; font-size: 12px; font-weight: 600; color: var(--text3); background: var(--surface3, rgba(0,0,0,0.04)); border-radius: var(--r-md, 8px); padding: 3px 10px; }
 .grade-by-tag { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text4); background: var(--surface3); padding: 4px 10px; border-radius: 100px; }
 .grade-feedback { display: flex; flex-direction: column; gap: 6px; }
 .feedback-text { font-size: 13px; color: var(--text2); line-height: 1.7; }
@@ -769,6 +824,7 @@ onMounted(async () => {
 .status-mini { font-size: 11px; padding: 2px 8px; border-radius: 100px; background: var(--surface3); color: var(--text4); }
 .status-mini.graded { background: rgba(74,222,128,.1); color: var(--green); }
 .status-mini.grading { background: rgba(var(--teal-rgb),.1); color: var(--teal); }
+.status-mini.needs_review { background: rgba(230,162,60,.12); color: #e6a23c; }
 
 /* Sub detail */
 .sub-detail { display: flex; flex-direction: column; gap: 16px; }

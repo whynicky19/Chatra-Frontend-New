@@ -347,6 +347,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'assign.status.overdue': { ru: 'ПРОСРОЧЕНО', en: 'OVERDUE', kk: 'МЕРЗІМІ ӨТКЕН' },
   'assign.status.not_started': { ru: 'НЕ НАЧАТО', en: 'NOT STARTED', kk: 'БАСТАЛМАҒАН' },
   'assign.status.grading': { ru: 'ПРОВЕРЯЕТСЯ', en: 'GRADING', kk: 'ТЕКСЕРІЛУДЕ' },
+  'assign.status.needs_review': { ru: 'НА ПРОВЕРКЕ У УЧИТЕЛЯ', en: 'AWAITING TEACHER REVIEW', kk: 'МҰҒАЛІМ ТЕКСЕРУІНДЕ' },
 
   // Панель проверки работ преподавателем (AssignmentModal) — единый словарь, 3 языка.
   'am.tab_works': { ru: 'Работы', en: 'Submissions', kk: 'Жұмыстар' },
@@ -381,6 +382,11 @@ export const translations: Record<string, Record<Lang, string>> = {
   'am.ai': { ru: 'ИИ', en: 'AI', kk: 'ЖИ' },
   'am.err_load_subs': { ru: 'Ошибка загрузки работ', en: 'Failed to load submissions', kk: 'Жұмыстарды жүктеу қатесі' },
   'am.ai_checked': { ru: 'ИИ проверил', en: 'AI graded', kk: 'ЖИ тексерді' },
+  'am.needs_review_toast': { ru: 'Не удалось надёжно распознать работу — отправлено на ручную проверку', en: 'Could not reliably recognize the work — sent for manual review', kk: 'Жұмысты сенімді тану мүмкін болмады — қолмен тексеруге жіберілді' },
+  'am.needs_review_title': { ru: '⚠️ Не удалось надёжно распознать рукописную работу', en: '⚠️ Unable to reliably recognize this handwritten work', kk: '⚠️ Қолжазба жұмысын сенімді тану мүмкін болмады' },
+  'am.needs_review_body': { ru: 'Требуется ручная проверка учителем.', en: 'This assignment requires manual review by the teacher.', kk: 'Мұғалімнің қолмен тексеруі қажет.' },
+  'am.confidence_label': { ru: 'Уверенность распознавания', en: 'Recognition confidence', kk: 'Тану сенімділігі' },
+  'am.review_reasons_label': { ru: 'Причины', en: 'Reasons', kk: 'Себептер' },
   'am.err_ai_grade': { ru: 'Ошибка ИИ-проверки', en: 'AI grading error', kk: 'ЖИ тексеру қатесі' },
   'am.grade_saved': { ru: 'Оценка сохранена', en: 'Grade saved', kk: 'Баға сақталды' },
   'am.err_save_grade': { ru: 'Ошибка сохранения оценки', en: 'Failed to save grade', kk: 'Бағаны сақтау қатесі' },

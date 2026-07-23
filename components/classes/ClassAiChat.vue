@@ -573,7 +573,17 @@ const buildSystem = (): string => {
 const gradeOne = async (sub: Submission) => {
   gradingId.value = sub.id
   try {
-    const grade = await svc.aiGrade(sub.id)
+    const result = await svc.aiGrade(sub.id)
+    if (result.status === 'needs_review' || !result.grade) {
+      const txt = `**Работа студента ${getStudentName(sub.student_id)}** — не удалось надёжно распознать рукописный текст, отправлено на ручную проверку учителем.`
+      msgs.value.push({ id: ++nextId, role: 'assistant', text: txt })
+      pendingSubs.value = pendingSubs.value.filter(s => s.id !== sub.id)
+      scrollBottom()
+      persist()
+      toast.ok('Отправлено на ручную проверку')
+      return
+    }
+    const grade = result.grade
     const txt = [
       `**Работа студента ${getStudentName(sub.student_id)} проверена ИИ**`,
       ``,
