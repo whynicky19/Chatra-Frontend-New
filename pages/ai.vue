@@ -47,10 +47,10 @@
 
         <template v-else>
           <div v-if="pinned.length" class="sb-section-lbl">{{ t('ai.pinned') }}</div>
-          <ConvRow v-for="c in pinned" :key="c.id" :conv="c"/>
+          <ConvRow v-for="c in pinned" :key="c.id" :conv="c" :active="c.id === store.activeId" @open="openConv"/>
 
           <div v-if="unpinned.length" class="sb-section-lbl">{{ t('ai.all_chats') }}</div>
-          <ConvRow v-for="c in unpinned" :key="c.id" :conv="c"/>
+          <ConvRow v-for="c in unpinned" :key="c.id" :conv="c" :active="c.id === store.activeId" @open="openConv"/>
         </template>
       </div>
     </aside>
@@ -144,12 +144,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted, h, defineComponent } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import katex from 'katex'
 import { useAiChatsStore } from '~/stores/aiChats.store'
 import { useAiQuota } from '~/composables/useAiQuota'
 import { useI18n } from '~/composables/useI18n'
-import type { AiThread } from '~/services/ai'
 
 definePageMeta({ layout: 'default' })
 
@@ -175,15 +174,6 @@ const mobileDrawerOpen = ref(false)
 const sidebarCollapsed = ref(false)
 const SIDEBAR_COLLAPSE_KEY = '_ai_sidebar_collapsed'
 
-// Инлайн-переименование
-const renamingId = ref<number | null>(null)
-const renameText = ref('')
-
-// Меню действий строки истории (переименовать/закрепить/удалить) — открывается
-// по многоточию, а не тремя отдельными иконками, чтобы строка не была захламлена.
-const menuOpenId = ref<number | null>(null)
-const closeRowMenu = () => { menuOpenId.value = null }
-
 const tt = (ru: string, kk: string, en: string) =>
   lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
 
@@ -196,21 +186,6 @@ const filtered = computed(() => {
 })
 const pinned = computed(() => filtered.value.filter(c => c.pinned))
 const unpinned = computed(() => filtered.value.filter(c => !c.pinned))
-
-const shortDate = (iso: string): string => {
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return ''
-  const now = Date.now()
-  const diff = now - d.getTime()
-  const min = Math.floor(diff / 60000)
-  if (min < 1) return tt('сейчас', 'қазір', 'now')
-  if (min < 60) return `${min}${tt('м', 'м', 'm')}`
-  const hrs = Math.floor(min / 60)
-  if (hrs < 24) return `${hrs}${tt('ч', 'с', 'h')}`
-  const days = Math.floor(hrs / 24)
-  if (days < 7) return `${days}${tt('д', 'к', 'd')}`
-  return d.toLocaleDateString(lang.value === 'en' ? 'en-US' : lang.value === 'kk' ? 'kk-KZ' : 'ru-RU', { day: 'numeric', month: 'short' })
-}
 
 // ── Sidebar open/close (drawer on mobile, collapse on desktop) ────────────
 const closeDrawer = () => { mobileDrawerOpen.value = false }
@@ -233,7 +208,6 @@ const toggleSidebar = () => {
 
 // ── Actions ───────────────────────────────────────────────────────────────
 const openConv = (id: number) => {
-  if (renamingId.value != null) return
   store.setActive(id)
   if (isMobile.value) closeDrawer()
   scroll()
@@ -247,113 +221,6 @@ const newChat = () => {
   query.value = ''
   if (isMobile.value) closeDrawer()
 }
-
-const startRename = (c: AiThread) => {
-  renamingId.value = c.id
-  renameText.value = c.title
-  nextTick(() => {
-    const el = document.querySelector<HTMLInputElement>('.rename-inp')
-    el?.focus()
-    el?.select()
-  })
-}
-const commitRename = (c: AiThread) => {
-  if (renamingId.value !== c.id) return
-  const val = renameText.value
-  renamingId.value = null
-  store.rename(c.id, val)
-}
-const cancelRename = () => { renamingId.value = null }
-
-const togglePin = (c: AiThread) => store.togglePin(c.id)
-
-const confirmDelete = (c: AiThread) => {
-  if (!import.meta.client) return
-  if (window.confirm(t('ai.delete_confirm'))) store.remove(c.id)
-}
-
-// ── Inline conversation row component ─────────────────────────────────────
-const ConvRow = defineComponent({
-  props: { conv: { type: Object as () => AiThread, required: true } },
-  setup(p) {
-    return () => {
-      const c = p.conv
-      const active = c.id === store.activeId
-      const renaming = renamingId.value === c.id
-
-      const menuOpen = menuOpenId.value === c.id
-      const actions = h('div', { class: 'row-menu-wrap' }, [
-        h('button', {
-          class: ['row-btn', { active: menuOpen }], title: t('ai.more'),
-          onClick: (e: Event) => { e.stopPropagation(); menuOpenId.value = menuOpen ? null : c.id },
-        }, [dotsIcon()]),
-        menuOpen ? h('div', { class: 'row-menu', onClick: (e: Event) => e.stopPropagation() }, [
-          h('button', {
-            class: 'row-menu-item',
-            onClick: () => { menuOpenId.value = null; startRename(c) },
-          }, [penIcon(17), h('span', t('ai.rename'))]),
-          h('div', { class: 'row-menu-divider' }),
-          h('button', {
-            class: 'row-menu-item',
-            onClick: () => { menuOpenId.value = null; togglePin(c) },
-          }, [pinIcon(c.pinned, 17), h('span', c.pinned ? t('ai.unpin') : t('ai.pin'))]),
-          h('button', {
-            class: 'row-menu-item danger',
-            onClick: () => { menuOpenId.value = null; confirmDelete(c) },
-          }, [trashIcon(17), h('span', t('ai.delete'))]),
-        ]) : null,
-      ])
-
-      const titleEl = renaming
-        ? h('input', {
-            class: 'rename-inp',
-            value: renameText.value,
-            onInput: (e: Event) => { renameText.value = (e.target as HTMLInputElement).value },
-            onKeydown: (e: KeyboardEvent) => {
-              if (e.key === 'Enter') { e.preventDefault(); commitRename(c) }
-              else if (e.key === 'Escape') { e.preventDefault(); cancelRename() }
-            },
-            onBlur: () => commitRename(c),
-            onClick: (e: Event) => e.stopPropagation(),
-          })
-        : h('div', { class: 'row-title' }, c.title || t('ai.untitled'))
-
-      return h('div', {
-        class: ['conv-row', { active }],
-        onClick: () => openConv(c.id),
-      }, [
-        h('div', { class: 'row-main' }, [
-          h('div', { class: 'row-top' }, [
-            c.pinned ? h('span', { class: 'row-pin-ind' }, [pinIcon(true)]) : null,
-            titleEl,
-          ]),
-          h('div', { class: 'row-date' }, shortDate(c.updated_at)),
-        ]),
-        renaming ? null : actions,
-      ])
-    }
-  },
-})
-
-const pinIcon = (filled: boolean, size = 13) => h('svg', {
-  width: size, height: size, viewBox: '0 0 24 24',
-  fill: filled ? 'currentColor' : 'none', stroke: 'currentColor', 'stroke-width': 2,
-  'stroke-linecap': 'round', 'stroke-linejoin': 'round',
-}, [h('path', { d: 'M12 17v5M9 10.76a2 2 0 01-1.11 1.79l-1.78.9A2 2 0 005 15.24V16a1 1 0 001 1h12a1 1 0 001-1v-.76a2 2 0 00-1.11-1.79l-1.78-.9A2 2 0 0115 10.76V7a1 1 0 011-1 2 2 0 000-4H8a2 2 0 000 4 1 1 0 011 1z' })])
-
-const penIcon = (size = 13) => h('svg', {
-  width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
-  'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
-}, [h('path', { d: 'M12 20h9' }), h('path', { d: 'M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z' })])
-
-const trashIcon = (size = 13) => h('svg', {
-  width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
-  'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
-}, [h('polyline', { points: '3 6 5 6 21 6' }), h('path', { d: 'M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2' })])
-
-const dotsIcon = () => h('svg', {
-  width: 15, height: 15, viewBox: '0 0 24 24', fill: 'currentColor',
-}, [h('circle', { cx: 12, cy: 5, r: 2 }), h('circle', { cx: 12, cy: 12, r: 2 }), h('circle', { cx: 12, cy: 19, r: 2 })])
 
 // ── Empty-state tip cards ─────────────────────────────────────────────────
 const icoBook = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>'
@@ -503,7 +370,6 @@ onMounted(async () => {
     window.addEventListener('touchstart', onWindowTouchStart, { passive: true })
     window.addEventListener('touchmove', onWindowTouchMove, { passive: true })
     window.addEventListener('touchend', onWindowTouchEnd)
-    window.addEventListener('click', closeRowMenu)
   }
 
   await store.loadThreads()
@@ -520,7 +386,6 @@ onUnmounted(() => {
     window.removeEventListener('touchstart', onWindowTouchStart)
     window.removeEventListener('touchmove', onWindowTouchMove)
     window.removeEventListener('touchend', onWindowTouchEnd)
-    window.removeEventListener('click', closeRowMenu)
   }
 })
 
@@ -548,30 +413,6 @@ watch(() => store.activeId, () => scroll())
 
 .sb-list { flex: 1; overflow-y: auto; padding: 6px 10px 14px }
 .sb-section-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text4); padding: 12px 8px 6px }
-
-.conv-row { display: flex; align-items: center; gap: 8px; padding: 10px 10px; border-radius: var(--r-lg); cursor: pointer; transition: background .15s; position: relative }
-.conv-row:hover { background: var(--surface2) }
-.conv-row.active { background: rgba(var(--teal-rgb),.1) }
-.conv-row.active .row-title { color: var(--teal) }
-.row-main { flex: 1; min-width: 0 }
-.row-top { display: flex; align-items: center; gap: 5px; min-width: 0 }
-.row-pin-ind { color: var(--teal); display: inline-flex; flex-shrink: 0 }
-.row-title { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
-.row-date { font-size: 11px; color: var(--text4); margin-top: 2px }
-.rename-inp { width: 100%; border: 1px solid var(--teal); border-radius: 8px; background: var(--surface); font-size: 13.5px; color: var(--text1); padding: 3px 7px; outline: none; box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.1) }
-
-.row-menu-wrap { position: relative; flex-shrink: 0; opacity: 0; transition: opacity .15s }
-.conv-row:hover .row-menu-wrap, .conv-row.active .row-menu-wrap { opacity: 1 }
-.row-btn { width: 28px; height: 28px; border-radius: 8px; background: var(--surface2); color: var(--text3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; border: none }
-.row-btn:hover, .row-btn.active { background: rgba(var(--teal-rgb),.14); color: var(--teal) }
-
-.row-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; min-width: 200px; padding: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 12px 32px rgba(0,0,0,.16), var(--sh-md); display: flex; flex-direction: column; animation: menuIn .16s cubic-bezier(.16,1,.3,1) both }
-@keyframes menuIn { from { opacity: 0; transform: translateY(-6px) scale(.96) } to { opacity: 1; transform: translateY(0) scale(1) } }
-.row-menu-divider { height: 1px; margin: 6px 4px; background: var(--border) }
-.row-menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 11px; background: none; border: none; font-size: 14px; font-weight: 600; color: var(--text2); text-align: left; cursor: pointer; transition: background .12s }
-.row-menu-item:hover { background: var(--surface2) }
-.row-menu-item.danger { color: var(--red) }
-.row-menu-item.danger:hover { background: var(--red-l) }
 
 .sb-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 48px 20px; gap: 6px }
 .sb-empty-ico { width: 56px; height: 56px; border-radius: 18px; background: var(--surface2); display: flex; align-items: center; justify-content: center; margin-bottom: 6px }
@@ -665,8 +506,6 @@ watch(() => store.activeId, () => scroll())
   .ios-scrim { display: block; position: absolute; top: 0; left: 0; right: 0; z-index: 2; pointer-events: none;
     height: calc(env(safe-area-inset-top, 0px) + 16px);
     background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%); opacity: .8 }
-  .row-menu-wrap { opacity: 1 }
-  .row-btn { width: 32px; height: 32px }
   .chat-area { padding: calc(env(safe-area-inset-top, 0px) + 68px) 12px 14px }
   .chat-msg { max-width: 88% }
   .msg-bubble { padding: 11px 15px; font-size: 15px; border-radius: 19px }
