@@ -167,6 +167,6 @@ const handleRowClick = () => {
 
 @media (max-width: 768px) {
   .row-menu-wrap { opacity: 1 }
-  .row-btn { width: 32px; height: 32px }
+  .row-btn { width: 40px; height: 40px }
 }
 </style>

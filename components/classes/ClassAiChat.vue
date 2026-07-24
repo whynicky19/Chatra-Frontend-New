@@ -1,68 +1,22 @@
 <template>
   <div class="class-ai">
 
-    <!-- ── Header ── -->
-    <div class="ai-header">
-      <div class="ai-header-l">
-        <div class="ai-avatar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        </div>
-        <div>
-          <div class="ai-name">ИИ-ассистент</div>
-          <div class="ai-status-row">
-            <span class="status-dot" :class="{ thinking: loading }"></span>
-            <span class="status-txt">{{ loading ? 'Думает...' : 'Онлайн' }}</span>
-            <span v-if="loadingFileCount > 0" class="status-badge loading-badge">
-              <div class="spin-xs"></div>
-              Читаю файлы ({{ loadingFileCount }})...
-            </span>
-            <span v-else-if="readyCount > 0" class="status-badge ready-badge">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              {{ readyCount }} файлов прочитано
-            </span>
-          </div>
-        </div>
-      </div>
-      <div class="ai-header-r">
-        <button class="hdr-btn" :class="{ 'hdr-btn-active': showSidebar }" @click="showSidebar = !showSidebar" title="Файлы и работы">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
-          <span v-if="classFiles.length || pendingSubs.length" class="hdr-badge">{{ classFiles.length + pendingSubs.length }}</span>
-        </button>
-        <button class="hdr-btn" @click="clearAll" title="Очистить чат">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-        </button>
-      </div>
+    <!-- ── Floating actions — no header bar, no divider under the cover ── -->
+    <div class="ai-floating-actions">
+      <button v-if="isTeacher && pendingSubs.length" class="hdr-btn" :class="{ 'hdr-btn-active': showSidebar }" @click="showSidebar = !showSidebar" title="Работы на проверку">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span class="hdr-badge">{{ pendingSubs.length }}</span>
+      </button>
+      <button class="hdr-btn" @click="clearAll" title="Очистить чат">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+      </button>
     </div>
 
     <div class="ai-body">
 
-      <!-- ── Sidebar ── -->
-      <div v-if="showSidebar" class="ai-sidebar">
-        <!-- Files -->
+      <!-- ── Sidebar (teacher tool: grading pending submissions) ── -->
+      <div v-if="showSidebar && isTeacher && pendingSubs.length" class="ai-sidebar">
         <div class="sb-section">
-          <div class="sb-section-title">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
-            Файлы класса ({{ classFiles.length }})
-          </div>
-          <div v-if="!classFiles.length" class="sb-empty">Нет прикреплённых файлов</div>
-          <div v-else class="sb-file-list">
-            <div v-for="f in classFiles" :key="f.url" class="sb-file" :class="{ 'sb-file-ok': !!fileTexts[f.url], 'sb-file-loading': loadingSet.has(f.url) }">
-              <span class="sb-emoji ftb ftb-sm">{{ emoji(f.url) }}</span>
-              <div class="sb-file-info">
-                <div class="sb-file-name">{{ f.name }}</div>
-                <div class="sb-file-section">{{ f.section }}</div>
-              </div>
-              <div class="sb-file-icon">
-                <svg v-if="fileTexts[f.url]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <div v-else-if="loadingSet.has(f.url)" class="spin-xs"></div>
-                <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pending submissions for teacher -->
-        <div v-if="isTeacher && pendingSubs.length" class="sb-section">
           <div class="sb-section-title">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
             Работы на проверку ({{ pendingSubs.length }})
@@ -87,42 +41,10 @@
             </div>
           </div>
         </div>
-
-        <!-- RAG Document Upload (teacher only) -->
-        <div v-if="isTeacher" class="sb-section">
-          <div class="sb-section-title">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Загрузить в базу знаний ИИ
-          </div>
-          <div class="rag-upload-area" @drop.prevent="onRagDrop" @dragover.prevent>
-            <label class="rag-upload-label">
-              <input ref="ragFileInput" type="file" style="display:none" accept=".pdf,.docx,.txt,.md,.png,.jpg,.jpeg" multiple @change="onRagFilePick" />
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span>Нажмите или перетащите файл</span>
-              <span class="rag-hint">PDF, DOCX, TXT, MD, изображения</span>
-            </label>
-          </div>
-          <div v-if="ragUploading" class="rag-progress">
-            <div class="spin-xs"></div>
-            <span>Обрабатываю файл...</span>
-          </div>
-          <div v-if="ragDocs.length" class="rag-docs-list">
-            <div v-for="d in ragDocs" :key="d.id" class="rag-doc">
-              <span class="rag-doc-emoji ftb ftb-sm">{{ emoji(d.filename) }}</span>
-              <div class="rag-doc-info">
-                <div class="rag-doc-name">{{ d.filename }}</div>
-                <div v-if="d.chunks_count" class="rag-doc-chunks">{{ d.chunks_count }} фрагментов</div>
-              </div>
-              <button class="rag-doc-del" @click="deleteRagDoc(d.id)" title="Удалить">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- ── Messages ── -->
-      <div ref="msgsEl" class="ai-msgs">
+      <div ref="msgsEl" class="ai-msgs" @scroll="onAiMsgsScroll">
         <div v-if="!msgs.length" class="welcome">
           <div class="welcome-orb">
             <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -146,16 +68,9 @@
 
         <template v-else>
           <div v-for="m in msgs" :key="m.id" :class="['msg-row', m.role]">
-            <div v-if="m.role === 'assistant'" class="msg-av ai-av">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            </div>
             <div class="msg-bubble" v-html="fmt(m.text)"></div>
-            <div v-if="m.role === 'user'" class="msg-av user-av">{{ userInit }}</div>
           </div>
           <div v-if="loading" class="msg-row assistant">
-            <div class="msg-av ai-av">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            </div>
             <div class="msg-bubble typing-bbl"><span></span><span></span><span></span></div>
           </div>
         </template>
@@ -185,7 +100,6 @@ import { useUsersSvc } from '~/services/users'
 import { useToast } from '~/composables/useToast'
 import { useApi } from '~/services/api'
 import { useAiQuota } from '~/composables/useAiQuota'
-import { useRagSvc } from '~/services/rag'
 import type { Submission } from '~/services/assignments'
 
 // ── Props ────────────────────────────────────────────────────────────────────
@@ -197,6 +111,14 @@ const props = defineProps<{
   assignmentId?: number
   assignments?: any[]   // Assignment objects with description containing file URLs
 }>()
+
+// Сообщения листаются внутри своего собственного контейнера (не через
+// tab-content), поэтому обложка класса наверху слушает это событие отдельно,
+// чтобы точно так же плавно скрываться при скролле чата.
+const emit = defineEmits<{ (e: 'scroll-state', collapsed: boolean): void }>()
+const onAiMsgsScroll = (e: Event) => {
+  emit('scroll-state', (e.target as HTMLElement).scrollTop > 24)
+}
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const MAX_CHARS = 14000  // max chars per file in context
@@ -229,47 +151,6 @@ const pendingSubs = ref<Submission[]>([])
 const gradingId = ref<number | null>(null)
 let nextId = 0
 
-// ── RAG Upload ────────────────────────────────────────────────────────────────
-const ragSvc = useRagSvc()
-const ragFileInput = ref<HTMLInputElement>()
-const ragUploading = ref(false)
-const ragDocs = ref<Array<{ id: number; filename: string; chunks_count?: number }>>([])
-
-const uploadRagFiles = async (files: File[]) => {
-  ragUploading.value = true
-  for (const file of files) {
-    try {
-      const result = await ragSvc.ingest(file)
-      ragDocs.value.unshift({ id: result.doc_id, filename: result.filename, chunks_count: result.chunks })
-      toast.ok(`Загружено: ${result.filename} (${result.chunks} фрагментов)`)
-    } catch (e: any) {
-      toast.err(e?.response?.data?.detail || `Ошибка загрузки ${file.name}`)
-    }
-  }
-  ragUploading.value = false
-}
-
-const onRagFilePick = (e: Event) => {
-  const files = Array.from((e.target as HTMLInputElement).files || [])
-  if (files.length) uploadRagFiles(files)
-  ;(e.target as HTMLInputElement).value = ''
-}
-
-const onRagDrop = (e: DragEvent) => {
-  const files = Array.from(e.dataTransfer?.files || [])
-  if (files.length) uploadRagFiles(files)
-}
-
-const deleteRagDoc = async (docId: number) => {
-  try {
-    await ragSvc.delete(docId)
-    ragDocs.value = ragDocs.value.filter(d => d.id !== docId)
-    toast.ok('Документ удалён из базы знаний')
-  } catch {
-    toast.err('Ошибка удаления')
-  }
-}
-
 // ── Session persistence ────────────────────────────────────────────────────────
 const storageKey = computed(() => `ai_chat_class_${props.classId ?? 'x'}`)
 
@@ -289,8 +170,6 @@ const restore = () => {
 }
 
 // ── Computed ──────────────────────────────────────────────────────────────────
-const userInit = computed(() => (auth.nickname || auth.user?.email || 'U').charAt(0).toUpperCase())
-const loadingFileCount = computed(() => loadingSet.value.size)
 const readyCount = computed(() => Object.keys(fileTexts.value).length)
 
 // Extract all file URLs from class posts AND assignments
@@ -673,6 +552,7 @@ const clearAll = () => {
   // Чистим тред этого класса и на сервере (синхронно с приложением).
   // .catch: отклонённый промис иначе стал бы unhandledrejection → тост.
   if (props.classId != null) api.delete('/ai/history', { params: { class_id: props.classId } }).catch(() => {})
+  emit('scroll-state', false)
 }
 
 // Серверная история треда класса → msgs (синхронно с приложением). Если на
@@ -711,44 +591,23 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.class-ai { display: flex; flex-direction: column; height: 100%; background: var(--bg); overflow: hidden; }
+.class-ai { display: flex; flex-direction: column; height: 100%; background: var(--bg); overflow: hidden; position: relative; }
 
-/* Header */
-.ai-header { display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.ai-header-l { display: flex; align-items: center; gap: 12px; }
-.ai-avatar { width: 38px; height: 38px; background: linear-gradient(135deg,var(--teal),var(--teal-h)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.2); }
-.ai-name { font-size: 14px; font-weight: 700; color: var(--text1); }
-.ai-status-row { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text4); margin-top: 3px; flex-wrap: wrap; }
-.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,.5); flex-shrink: 0; }
-.status-dot.thinking { background: #fbbf24; animation: blink .7s ease-in-out infinite; }
-.status-txt { font-size: 12px; color: var(--text4); }
-.status-badge { display: flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 600; }
-.loading-badge { background: rgba(251,191,36,.1); color: #fbbf24; border: 1px solid rgba(251,191,36,.2); }
-.ready-badge { background: rgba(74,222,128,.1); color: #4ade80; border: 1px solid rgba(74,222,128,.2); }
-@keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
-
-.ai-header-r { display: flex; gap: 6px; }
-.hdr-btn { position: relative; width: 34px; height: 34px; border-radius: var(--r-md); background: var(--surface2); border: 1px solid var(--border); color: var(--text3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; }
+/* Minimal top bar — clear-chat action only, no title/branding */
+/* Floating actions — overlay the messages area, no header bar/divider under the cover */
+.ai-floating-actions { position: absolute; top: 12px; right: 14px; z-index: 5; display: flex; gap: 8px; }
+.hdr-btn { position: relative; width: 34px; height: 34px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; box-shadow: var(--sh-xs); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .hdr-btn:hover, .hdr-btn-active { background: rgba(var(--teal-rgb),.1); border-color: rgba(var(--teal-rgb),.25); color: var(--teal); }
 .hdr-badge { position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; background: var(--teal); border-radius: 8px; font-size: 10px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; border: 2px solid var(--surface); padding: 0 3px; }
 
 /* Body */
 .ai-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
 
-/* Sidebar */
+/* Sidebar (teacher tools) */
 .ai-sidebar { width: 265px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 18px; }
 .sb-section { display: flex; flex-direction: column; gap: 8px; }
 .sb-section-title { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); }
 .sb-empty { font-size: 12px; color: var(--text4); padding: 4px 0; }
-.sb-file-list { display: flex; flex-direction: column; gap: 5px; }
-.sb-file { display: flex; align-items: center; gap: 8px; padding: 7px 9px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); transition: all .15s; }
-.sb-file-ok { border-color: rgba(74,222,128,.25); background: rgba(74,222,128,.04); }
-.sb-file-loading { opacity: .65; }
-.sb-emoji { font-size: 15px; flex-shrink: 0; }
-.sb-file-info { flex: 1; min-width: 0; }
-.sb-file-name { font-size: 12px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sb-file-section { font-size: 11px; color: var(--text4); }
-.sb-file-icon { flex-shrink: 0; width: 16px; display: flex; justify-content: center; }
 .sb-sub-list { display: flex; flex-direction: column; gap: 6px; }
 .sb-sub { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); }
 .sb-sub-name { font-size: 12px; font-weight: 600; color: var(--text1); }
@@ -759,7 +618,7 @@ onMounted(() => {
 .grade-btn:not(:disabled):hover { background: var(--teal-h); }
 
 /* Messages */
-.ai-msgs { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+.ai-msgs { flex: 1; overflow-y: auto; padding: 56px 20px 18px; display: flex; flex-direction: column; gap: 14px; }
 
 /* Welcome */
 .welcome { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; margin: auto; max-width: 440px; padding: 20px; }
@@ -772,11 +631,8 @@ onMounted(() => {
 .quick-icon { font-size: 17px; flex-shrink: 0; }
 
 /* Bubbles */
-.msg-row { display: flex; align-items: flex-end; gap: 10px; }
-.msg-row.user { flex-direction: row-reverse; }
-.msg-av { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
-.ai-av { background: linear-gradient(135deg,var(--teal),var(--teal-h)); color: #fff; }
-.user-av { background: var(--surface3); color: var(--text2); border: 1px solid var(--border2); }
+.msg-row { display: flex; align-items: flex-end; }
+.msg-row.user { justify-content: flex-end; }
 .msg-bubble { max-width: 82%; padding: 11px 15px; border-radius: 18px; font-size: 13.5px; line-height: 1.65; word-break: break-word; }
 .msg-row.assistant .msg-bubble { background: var(--surface); border: 1px solid var(--border); color: var(--text1); border-bottom-left-radius: 4px; }
 .msg-row.user .msg-bubble { background: linear-gradient(135deg,var(--teal),var(--teal-h)); color: #fff; border-bottom-right-radius: 4px; }
@@ -793,7 +649,7 @@ onMounted(() => {
 
 /* Input bar */
 .ai-input-bar { display: flex; align-items: flex-end; gap: 10px; padding: 12px 18px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
-.ai-textarea { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 11px 15px; color: var(--text1); font-size: 13.5px; resize: none; line-height: 1.5; max-height: 140px; transition: border-color .15s; font-family: inherit; }
+.ai-textarea { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 11px 15px; color: var(--text1); font-size: 13.5px; resize: none; line-height: 1.5; max-height: 140px; transition: border-color .15s; font-family: inherit; }
 .ai-textarea:focus { border-color: rgba(var(--teal-rgb),.45); outline: none; }
 .send-btn { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,var(--teal),var(--teal-h)); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .18s; flex-shrink: 0; box-shadow: 0 4px 14px rgba(var(--teal-rgb),.4); }
 .send-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
@@ -805,20 +661,4 @@ html.dark .send-btn.locked { background: var(--surface3, var(--surface2)); }
 .spin-xs { width: 12px; height: 12px; border: 2px solid var(--border2); border-top-color: var(--teal); border-radius: 50%; animation: spin .6s linear infinite; flex-shrink: 0; }
 .spin-xs.white { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
 @keyframes spin { to{transform:rotate(360deg)} }
-
-/* RAG Upload */
-.rag-upload-area { border: 1.5px dashed rgba(var(--teal-rgb),.3); border-radius: var(--r-md); transition: border-color .15s; }
-.rag-upload-area:hover { border-color: rgba(var(--teal-rgb),.6); }
-.rag-upload-label { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 14px 10px; cursor: pointer; color: var(--text4); text-align: center; font-size: 12px; }
-.rag-upload-label svg { color: var(--teal); opacity: .7; }
-.rag-hint { font-size: 10px; color: var(--text4); opacity: .7; }
-.rag-progress { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--teal); padding: 6px 0; }
-.rag-docs-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-.rag-doc { display: flex; align-items: center; gap: 8px; background: var(--surface2); border-radius: var(--r-sm); padding: 6px 8px; }
-.rag-doc-emoji { font-size: 14px; flex-shrink: 0; }
-.rag-doc-info { flex: 1; min-width: 0; }
-.rag-doc-name { font-size: 11px; font-weight: 600; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rag-doc-chunks { font-size: 10px; color: var(--teal); }
-.rag-doc-del { background: none; border: none; cursor: pointer; color: var(--text4); padding: 2px; border-radius: 4px; display: flex; align-items: center; transition: color .15s; }
-.rag-doc-del:hover { color: var(--red); }
 </style>

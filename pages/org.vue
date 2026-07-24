@@ -273,6 +273,9 @@ html.dark .glow { opacity: .1; }
   .glow, .logo-mark, .logo-glow, .org-title.accent, .org-option, .radio, .continue-btn { transition: none; }
 }
 
+@media (max-width: 768px) {
+  .lang-btn { padding: 10px 16px; min-height: 40px; display: inline-flex; align-items: center; }
+}
 @media (max-width: 480px) {
   .org-content { padding: 24px 18px; }
   .org-title { font-size: 26px; }

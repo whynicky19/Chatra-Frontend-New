@@ -43,8 +43,8 @@
         <span v-else>{{ t('register.submit') }}</span>
       </button>
     </form>
-    <p class="auth-link-row">{{ t('register.has_account') }} <NuxtLink to="/login" style="color:var(--teal);font-weight:500">{{ t('register.login_link') }}</NuxtLink></p>
-    <p class="auth-link-row" style="margin-top:4px"><NuxtLink to="/terms" style="color:var(--text4);font-size:13px">{{ t('common.terms') }}</NuxtLink> · <NuxtLink to="/privacy" style="color:var(--text4);font-size:13px">{{ t('common.privacy') }}</NuxtLink></p>
+    <p class="auth-link-row">{{ t('register.has_account') }} <NuxtLink to="/login" class="reg-foot-link" style="color:var(--teal);font-weight:500">{{ t('register.login_link') }}</NuxtLink></p>
+    <p class="auth-link-row" style="margin-top:4px"><NuxtLink to="/terms" class="reg-foot-link" style="color:var(--text4);font-size:13px">{{ t('common.terms') }}</NuxtLink> · <NuxtLink to="/privacy" class="reg-foot-link" style="color:var(--text4);font-size:13px">{{ t('common.privacy') }}</NuxtLink></p>
   </div>
 </template>
 
@@ -134,6 +134,10 @@ const sub = async () => {
   .auth-submit { height: 50px; }
   .frow { margin-bottom: 12px; }
   .org-badge-row { margin-bottom: 14px; }
+  .org-switch-btn{position:relative;display:inline-flex;align-items:center}
+  .org-switch-btn::after{content:'';position:absolute;top:-13px;bottom:-13px;left:-6px;right:-6px}
+  .reg-foot-link{position:relative;display:inline-flex;align-items:center}
+  .reg-foot-link::after{content:'';position:absolute;top:-12px;bottom:-12px;left:-4px;right:-4px}
 }
 @media (max-width:480px) {
   .auth-card { padding: 20px 16px; border-radius: 18px; }

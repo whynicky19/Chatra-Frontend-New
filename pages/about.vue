@@ -47,5 +47,10 @@ const { t, lang } = useI18n()
 .link-card:hover{background:var(--hover,rgba(0,0,0,.03))}
 .brand{text-align:center;font-size:12.5px;color:var(--text4);margin-top:8px}
 
-@media(max-width:768px){.pg-head{padding:20px 18px 0}.pg-body{padding:16px 18px 32px}}
+@media(max-width:768px){
+  .pg-head{padding:20px 18px 0}
+  .pg-body{padding:16px 18px 32px}
+  .back-link{position:relative;display:inline-flex}
+  .back-link::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-6px;right:-6px}
+}
 </style>

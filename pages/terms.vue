@@ -182,4 +182,10 @@ useHead({ title: computed(() => c.value.title) })
   .pp-card { background: var(--surface, #1c1c1e); border-color: var(--border, #2c2c2e); }
   .pp-card-body { color: var(--text2, #c7c7cc); }
 }
+
+@media (max-width: 768px) {
+  .pp-page { padding: 0 16px 48px; }
+  .pp-title { font-size: 24px; }
+  .pp-lang { padding: 10px 12px; min-height: 40px; }
+}
 </style>

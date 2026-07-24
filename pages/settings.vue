@@ -84,6 +84,16 @@
         </div>
       </div>
 
+      <!-- Новый учебный год (rollover) — только преподаватель/админ -->
+      <NuxtLink v-if="auth.isTeacher || auth.isAdmin" to="/rollover" class="scard nav-card">
+        <div class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg></div>
+        <div style="flex:1">
+          <div class="nav-title">{{ t('rollover.nav') }}</div>
+          <div class="nav-sub">{{ lang==='ru'?'Перевод классов на новый учебный год':lang==='kk'?'Сыныптарды жаңа оқу жылына ауыстыру':'Move classes to a new academic year' }}</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </NuxtLink>
+
       <!-- AI limit -->
       <NuxtLink to="/ai-limit" class="scard nav-card">
         <div class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 17l.7 1.8L20.5 19.5l-1.8.7L18 22l-.7-1.8L15.5 19.5l1.8-.7z"/></svg></div>
@@ -255,6 +265,7 @@ html.dark .field-input{background:var(--surface2)!important}
   .theme-btns { gap: 8px; }
   .theme-choice { padding: 14px 8px; font-size: 12px; min-height: 80px; }
   .theme-toggle { min-height: 44px; min-width: 56px; justify-content: flex-end; }
+  .lang-seg-btn { padding: 10px 14px; min-height: 40px; }
 }
 @media (max-width:480px){
   .pg-head { padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 0; }

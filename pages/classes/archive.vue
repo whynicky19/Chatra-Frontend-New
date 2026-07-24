@@ -168,5 +168,9 @@ onMounted(() => load())
   .pg-title{font-size:24px}
   .classes-grid{grid-template-columns:1fr;gap:14px}
   .ctrl-btn{width:40px;height:40px}
+  .card-action-btn{position:relative}
+  .card-action-btn::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-4px;right:-4px}
+  .back-row{position:relative;min-height:44px;display:inline-flex}
+  .back-row::after{content:'';position:absolute;top:-9px;bottom:-9px;left:-4px;right:-4px}
 }
 </style>

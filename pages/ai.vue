@@ -476,7 +476,7 @@ watch(() => store.activeId, () => scroll())
 .attach-lbl { cursor: pointer; flex-shrink: 0 }
 .attach-icon { width: 38px; height: 38px; border-radius: var(--r-lg); background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text3); transition: all .15s }
 .attach-icon:hover { background: rgba(var(--teal-rgb),.12); border-color: rgba(var(--teal-rgb),.2); color: var(--teal) }
-.chat-field { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 26px; padding: 12px 20px; font-size: 14px; color: var(--text1); transition: all .2s; font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif }
+.chat-field { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 26px; padding: 12px 20px; font-size: 14px; color: var(--text1); transition: all .2s; font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif }
 .chat-field:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.1) }
 .chat-field::placeholder { color: var(--text4) }
 .chat-field:disabled { opacity: .5 }
@@ -517,6 +517,7 @@ watch(() => store.activeId, () => scroll())
   .tip-card { padding: 12px; border-radius: 17px }
   .tip-icon { width: 34px; height: 34px; margin-bottom: 8px }
   :deep(.code-bl) { font-size: 12px; overflow-x: auto }
+  .new-chat-btn { min-height: 44px; padding: 10px 14px }
 }
 @media (max-width: 480px) {
   .tip-grid { grid-template-columns: 1fr }

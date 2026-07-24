@@ -156,5 +156,9 @@ html.dark .field-input{background:var(--surface2)!important}
   .pg-body{padding:16px 18px 32px}
   .fields-grid{grid-template-columns:1fr}
   .deactivate-card{flex-wrap:wrap;gap:12px}
+  .back-link{position:relative;display:inline-flex}
+  .back-link::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-6px;right:-6px}
+  .deactivate-btn{position:relative;padding:10px 4px}
+  .deactivate-btn::after{content:'';position:absolute;top:-13px;bottom:-13px;left:-4px;right:-4px}
 }
 </style>

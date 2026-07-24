@@ -127,5 +127,10 @@ html.dark .ai-track{background:var(--bg2)}
 .ai-note{font-size:12.5px;line-height:1.5;color:var(--text4)}
 .ai-empty{display:flex;justify-content:center;padding:10px 0}
 
-@media(max-width:768px){.pg-head{padding:20px 18px 0}.pg-body{padding:16px 18px 32px}}
+@media(max-width:768px){
+  .pg-head{padding:20px 18px 0}
+  .pg-body{padding:16px 18px 32px}
+  .back-link{position:relative;display:inline-flex}
+  .back-link::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-6px;right:-6px}
+}
 </style>

@@ -8,10 +8,6 @@
             <h1 class="pg-title">{{ t('classes.catalog') }}</h1>
           </div>
           <div class="pg-head-r">
-            <button v-if="auth.isTeacher || auth.isAdmin" class="btn btn-outline-teal" @click="router.push('/rollover')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-              {{ t('rollover.nav') }}
-            </button>
             <button v-if="auth.isTeacher" class="btn btn-outline-teal" @click="showCreate=true">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
               {{ t('classes.create') }}
@@ -366,6 +362,20 @@ const onCoverFile = async (e: Event) => {
   reader.readAsDataURL(file)
 }
 
+// Загруженная обложка приходит с сервера по новому URL (файл только что
+// сохранён) — без предзагрузки браузер показывает пустое/старое место на
+// пару секунд, пока не скачает картинку. Ждём decode() перед тем как
+// подставить новый URL в стейт, чтобы обложка появлялась сразу же.
+const preloadImage = (url?: string | null) => new Promise<void>((resolve) => {
+  if (!url) { resolve(); return }
+  const img = new Image()
+  const done = () => resolve()
+  img.onload = done
+  img.onerror = done
+  img.src = url
+  setTimeout(done, 3000) // защита от зависшей загрузки
+})
+
 const saveEditClass = async () => {
   if (!editingClass.value) return
   editSaving.value = true
@@ -376,6 +386,7 @@ const saveEditClass = async () => {
       teacher: editForm.value.teacher,
       cover_image: editForm.value.cover_image,
     })
+    await preloadImage(updated.cover_image)
     const idx = allClasses.value.findIndex(c => c.id === editingClass.value.id)
     if (idx !== -1) allClasses.value[idx] = { ...allClasses.value[idx], ...updated }
     toast.ok(lang.value==='ru' ? 'Класс обновлён' : lang.value==='kk' ? 'Сынып жаңартылды' : 'Class updated')
@@ -440,6 +451,7 @@ const copyClassCode = (cls: any) => {
 }
 const onCreated = async (cls: any) => {
   showCreate.value = false
+  await preloadImage(cls?.cover_image)
   await load()
   if (cls?.id) {
     try { await classesSvc.join(cls.id) } catch {}
@@ -604,13 +616,13 @@ watch(() => auth.user?.id, async (newId) => {
   .content-area{padding:calc(18px + env(safe-area-inset-top, 0px)) 16px 90px}
   .pg-head{flex-direction:column;align-items:stretch;gap:14px;margin-bottom:18px}
   .pg-head-left{width:100%}
-  .pg-head-r{width:100%;gap:8px}
+  .pg-head-r{width:100%;gap:8px;flex-wrap:wrap}
   .pg-title{text-align:left}
   .pg-sub{text-align:left;margin:0;font-size:14px}
   /* Язык переехал в настройки — на мобиле шапку не перегружаем */
   .head-lang-switch{display:none}
-  .pg-head-r .btn-teal{flex:1;min-height:48px;border-radius:14px;font-size:15px;font-weight:700}
-  .btn-outline-teal{min-height:48px;border-radius:14px;flex:1;justify-content:center}
+  .pg-head-r .btn-teal{flex:1 1 120px;min-height:48px;border-radius:14px;font-size:15px;font-weight:700;min-width:0}
+  .btn-outline-teal{min-height:48px;border-radius:14px;flex:1 1 120px;min-width:0;justify-content:center}
   .btn-head-icon .btn-head-label{display:none}
   .btn-head-icon{width:48px;height:48px;padding:0;justify-content:center;border-radius:14px;flex-shrink:0}
   .classes-grid{grid-template-columns:1fr;gap:14px}
@@ -618,9 +630,11 @@ watch(() => auth.user?.id, async (newId) => {
   .card-body{padding:16px}
   .add-card{min-height:120px}
   .add-card-inner{padding:24px 16px}
-  .ctrl-btn{width:36px;height:36px}
+  .ctrl-btn{width:40px;height:40px}
   .code-box{width:44px;height:52px;font-size:20px}
   .code-boxes{gap:6px}
+  .card-action-btn{position:relative}
+  .card-action-btn::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-4px;right:-4px}
 }
 @media (max-width:480px){
   .content-area{padding:calc(14px + env(safe-area-inset-top, 0px)) 16px 90px}

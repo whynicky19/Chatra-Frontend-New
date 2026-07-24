@@ -112,7 +112,7 @@ onUnmounted(() => {
     gap: 14px; max-width: 100%;
   }
   .auth-brand { width: 104px; height: 104px; }
-  .lang-btn { padding: 6px 13px; font-size: 11px; }
+  .lang-btn { padding: 10px 14px; font-size: 11px; min-height: 40px; display: inline-flex; align-items: center; }
 }
 @media (max-width:480px) {
   .auth-content { padding: calc(10px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom)); gap: 12px; }

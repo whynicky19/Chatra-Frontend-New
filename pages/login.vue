@@ -114,6 +114,8 @@ const sub = async () => {
   .auth-submit { height: 50px; }
   .pw-eye { min-width: 44px; min-height: 44px; right: 0; }
   .org-badge-row { margin-bottom: 14px; }
+  .forgot-link,.auth-link,.org-switch-btn{position:relative;display:inline-flex;align-items:center}
+  .forgot-link::after,.auth-link::after,.org-switch-btn::after{content:'';position:absolute;top:-13px;bottom:-13px;left:-6px;right:-6px}
 }
 @media (max-width:480px) {
   .auth-card { padding: 20px 16px; border-radius: 18px; }
