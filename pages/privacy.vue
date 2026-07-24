@@ -1,6 +1,11 @@
 <template>
   <div class="pp-page">
     <div class="pp-container">
+      <button class="pp-back" @click="goBack">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        {{ lang==='ru' ? 'Назад' : lang==='kk' ? 'Артқа' : 'Back' }}
+      </button>
+
       <!-- Top bar -->
       <header class="pp-top">
         <NuxtLink to="/" class="pp-brand">Chatra</NuxtLink>
@@ -34,12 +39,21 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from '#app'
 import { useI18n } from '~/composables/useI18n'
 
 // Публичная страница — без авторизации и без layout приложения.
 definePageMeta({ layout: false })
 
 const { lang, setLang } = useI18n()
+const router = useRouter()
+// Открыть могли откуда угодно (регистрация, логин, настройки, внешняя
+// ссылка) — возвращаемся в историю браузера, а если её нет (открыли
+// страницу напрямую), уводим на главный экран, а не оставляем в тупике.
+const goBack = () => {
+  if (import.meta.client && window.history.length > 1) router.back()
+  else router.push('/')
+}
 
 const langs = [
   { code: 'ru' as const, label: 'RU' },
@@ -115,6 +129,22 @@ useHead({ title: computed(() => c.value.title) })
 }
 .pp-container { max-width: 720px; margin: 0 auto; }
 
+.pp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 6px 4px;
+  background: none;
+  border: none;
+  color: var(--text4, #8e8e93);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .15s;
+}
+.pp-back:hover { color: var(--teal, #0d9488); }
+
 .pp-top {
   display: flex;
   align-items: center;
@@ -176,5 +206,7 @@ useHead({ title: computed(() => c.value.title) })
   .pp-page { padding: 0 16px 48px; }
   .pp-title { font-size: 24px; }
   .pp-lang { padding: 10px 12px; min-height: 40px; }
+  .pp-back { position: relative; }
+  .pp-back::after { content: ''; position: absolute; top: -12px; bottom: -12px; left: -8px; right: -8px; }
 }
 </style>
