@@ -12,6 +12,11 @@ export interface ClassResponse {
   member_count?: number
   invite_code?: string | null
   cover_image?: string
+  // Миниатюра обложки (≤480px) — использовать в списках/сетках/карточках
+  // вместо cover_image, чтобы не гонять полноразмерную картинку при
+  // скролле каталога классов. Полный cover_image — только на странице
+  // класса и в местах, где обложка показывается крупно.
+  cover_thumbnail?: string
   teacher?: string
   period?: string
   rotation_mode: RotationMode

@@ -1560,6 +1560,12 @@ onMounted(async () => {
   .item-actions{gap:4px}
   .item-del{opacity:1;width:44px;height:44px}
   .item-menu-btn{width:44px;height:44px}
+  /* Карточка сама кликабельна — на мобильном текст "Предпросмотр задания"
+     лишний, как раньше была лишней кнопка "Открыть". */
+  .item-preview-link{display:none}
+  /* Заголовок ближайшего дедлайна обрезался эллипсисом в узкой колонке —
+     переносим на 2 строки вместо жёсткого обрезания. */
+  .ms-deadline-title{white-space:normal;overflow:hidden;text-overflow:ellipsis;max-width:none;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .post-sheet{padding:12px 16px calc(28px + env(safe-area-inset-bottom, 0px));border-radius:28px 28px 0 0;max-height:92dvh}
   .post-sheet::before{content:'';display:block;width:36px;height:5px;border-radius:3px;background:var(--surface3);margin:0 auto 16px}
   .post-overlay{padding:0;align-items:flex-end}

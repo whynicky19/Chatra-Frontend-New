@@ -315,7 +315,7 @@
         <div v-if="loadingCl" style="display:flex;justify-content:center;padding:24px"><div class="spinner"></div></div>
         <div v-else class="cl-grid">
           <div v-for="cl in classes" :key="cl.id" class="cl-card" @click="openClass(cl)">
-            <div class="cl-cover" :style="cl.cover_image ? `background-image:url(${cl.cover_image})` : `background:${coverGrad(cl.id)}`">
+            <div class="cl-cover" :style="(cl.cover_thumbnail || cl.cover_image) ? `background-image:url(${cl.cover_thumbnail || cl.cover_image})` : `background:${coverGrad(cl.id)}`">
             </div>
             <div class="cl-body">
               <div class="cl-name">{{ cl.name }}</div>

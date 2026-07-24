@@ -46,7 +46,7 @@
 
           <template v-else>
             <div v-for="cls in activeClasses" :key="cls.id" class="class-card" @click="goClass(cls.id)">
-              <div class="card-cover" :style="cls.cover_image ? {backgroundImage:`url(${cls.cover_image})`,backgroundSize:'cover',backgroundPosition:'center'} : {background: coverGrad(cls.id)}">
+              <div class="card-cover" :style="cardCoverStyle(cls)">
                 <div v-if="(auth.isTeacher || auth.isAdmin) && cls.invite_code" class="card-code-chip" @click.stop="copyClassCode(cls)">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                   {{ cls.invite_code }}
@@ -177,7 +177,7 @@
             {{ lang==='ru' ? 'Проверяем код…' : lang==='kk' ? 'Кодты тексереміз…' : 'Checking code…' }}
           </div>
           <div v-else-if="foundClass" class="join-found">
-            <div class="found-cover" :style="foundClass.cover_image ? {backgroundImage:`url(${foundClass.cover_image})`} : {background: coverGrad(foundClass.id)}">
+            <div class="found-cover" :style="cardCoverStyle(foundClass)">
               <div class="found-overlay"></div>
               <div class="found-name">{{ foundClass.name }}</div>
             </div>
@@ -300,6 +300,13 @@ const covers = [
 ]
 const coverGrad = (id: number) => covers[id % covers.length]
 
+// Списки/сетки/карточки — всегда миниатюра (≤480px), не полноразмерная
+// обложка. Полный cover_image остаётся только на странице самого класса.
+const cardCoverStyle = (cls: any) => {
+  const img = cls.cover_thumbnail || cls.cover_image
+  return img ? { backgroundImage: `url(${img})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: coverGrad(cls.id) }
+}
+
 // Членство — серверная истина: GET /classes/ уже возвращает нужный набор для
 // роли (студенту — его классы, включая архив; преподавателю/админу — все).
 // Раньше список ещё фильтровался по localStorage joinedIds, из-за чего на новом
@@ -386,7 +393,7 @@ const saveEditClass = async () => {
       teacher: editForm.value.teacher,
       cover_image: editForm.value.cover_image,
     })
-    await preloadImage(updated.cover_image)
+    await preloadImage(updated.cover_thumbnail || updated.cover_image)
     const idx = allClasses.value.findIndex(c => c.id === editingClass.value.id)
     if (idx !== -1) allClasses.value[idx] = { ...allClasses.value[idx], ...updated }
     toast.ok(lang.value==='ru' ? 'Класс обновлён' : lang.value==='kk' ? 'Сынып жаңартылды' : 'Class updated')
@@ -451,7 +458,7 @@ const copyClassCode = (cls: any) => {
 }
 const onCreated = async (cls: any) => {
   showCreate.value = false
-  await preloadImage(cls?.cover_image)
+  await preloadImage(cls?.cover_thumbnail || cls?.cover_image)
   await load()
   if (cls?.id) {
     try { await classesSvc.join(cls.id) } catch {}
