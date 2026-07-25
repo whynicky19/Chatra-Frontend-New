@@ -83,21 +83,16 @@
                 {{ t('class.assignments') }}
                 <span v-if="assignments.length" class="tab-num">{{ assignments.length }}</span>
               </button>
-              <!-- Единый порядок с приложением: …Задания, ИИ, Аватар. -->
+              <!-- Единый порядок с приложением: …Задания, ИИ. -->
               <button v-if="!isArchivedForUser" :class="['tab-btn tab-ai', { active: tab === 'ai' }]" @click="tab = 'ai'; loadAssignments()">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                 {{ t('class.ai_chat') }}
-              </button>
-              <button :class="['tab-btn', { active: tab === 'avatar' }]" @click="tab = 'avatar'; loadAvatarLectures()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/></svg>
-                {{ lang==='ru'?'Аватар':lang==='kk'?'Аватар':'Avatar' }}
-                <span v-if="avatarLectures.length" class="tab-num">{{ avatarLectures.length }}</span>
               </button>
             </div>
           </div>
 
           <!-- Teacher create actions — below the nav row, shown only on the tabs
-               they apply to (never on AI chat / Avatar). -->
+               they apply to (never on AI chat). -->
           <div class="tab-action-bar" v-if="canManage && ['lectures','materials','assignments'].includes(tab)">
             <button class="btn btn-white btn-sm" @click="showCreateAssignment = true">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -268,125 +263,6 @@
               </template>
             </template>
 
-            <!-- AVATAR -->
-            <template v-if="tab === 'avatar'">
-              <div class="content-header">
-                <h2 class="content-heading">{{ lang==='ru'?'Лекции аватара':lang==='kk'?'Аватар лекциялары':'Avatar lectures' }}</h2>
-                <div v-if="isTeacher" class="avatar-tab-actions">
-                  <button v-if="!myAvatar" class="btn btn-white btn-sm" @click="showCreateAvatar = true">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                    {{ lang==='ru'?'Создать аватара':'Create avatar' }}
-                  </button>
-                  <button
-                    v-else-if="myAvatar.status === 'approved'"
-                    class="btn btn-teal btn-sm"
-                    @click="showCreateLecture = true"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                    {{ lang==='ru'?'Создать лекцию':'Create lecture' }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Статус аватара учителя -->
-              <div v-if="isTeacher && myAvatar && myAvatar.status !== 'approved'" class="avatar-status-card" :class="myAvatar.status">
-                <div class="asc-icon">
-                  <svg v-if="myAvatar.status === 'pending'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                </div>
-                <div>
-                  <div class="asc-title">
-                    {{ myAvatar.status === 'pending'
-                      ? (lang==='ru'?'Заявка на аватара ожидает одобрения':'Avatar request pending approval')
-                      : (lang==='ru'?'Заявка на аватара отклонена':'Avatar request rejected') }}
-                  </div>
-                  <div v-if="myAvatar.status === 'rejected' && myAvatar.rejection_reason" class="asc-reason">{{ myAvatar.rejection_reason }}</div>
-                </div>
-              </div>
-
-              <!-- Профиль одобренного аватара: даёт вкладке «лицо» вместо голой кнопки -->
-              <div v-if="isTeacher && myAvatar && myAvatar.status === 'approved'" class="avatar-profile-card">
-                <div class="apc-photo">
-                  <img v-if="myAvatar.photo_url" :src="myAvatar.photo_url" alt="" @error="($event.target as HTMLImageElement).style.display='none'"/>
-                  <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/></svg>
-                </div>
-                <div class="apc-info">
-                  <div class="apc-name">{{ myAvatar.display_name || (lang==='ru'?'Ваш аватар':'Your avatar') }}</div>
-                  <div class="apc-status"><span class="apc-dot"></span>{{ lang==='ru'?'Активен — читает лекции на английском':'Active — lectures in English' }}</div>
-                </div>
-              </div>
-
-              <div v-if="isTeacher && myAvatar && myAvatar.status === 'approved' && myAvatar.voice_clone_warning" class="avatar-status-card pending">
-                <div class="asc-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                </div>
-                <div>
-                  <div class="asc-title">{{ lang==='ru'?'Аватар говорит стандартным голосом':'Avatar uses a standard voice' }}</div>
-                  <div class="asc-reason">{{ myAvatar.voice_clone_warning }}</div>
-                </div>
-              </div>
-
-              <div v-if="loadingAvatarLectures" class="tab-load"><div class="spin-ring"></div></div>
-              <div v-else-if="!avatarLectures.length" class="empty-state-card av-empty">
-                <div class="av-empty-icon">
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/><path d="M17 11l1.5 1.5L21 10"/></svg>
-                </div>
-                <div class="es-h">{{ lang==='ru'?'Пока нет лекций аватара':'No avatar lectures yet' }}</div>
-                <div class="es-p">{{ isTeacher
-                  ? (lang==='ru'?'Создайте своего AI-аватара и он начнёт читать лекции по вашим презентациям':'Create your AI avatar and it will start reading lectures from your presentations')
-                  : (lang==='ru'?'Учитель пока не создал лекции аватара для этого класса':'The teacher has not created avatar lectures for this class yet') }}</div>
-              </div>
-              <div v-else class="av-lectures-grid">
-                <div
-                  v-for="lec in avatarLectures"
-                  :key="lec.id"
-                  class="av-lecture-card"
-                  :class="{ 'av-card-disabled': lec.status !== 'ready' }"
-                  @click="openLecturePlayer(lec)"
-                >
-                  <!-- Thumbnail / play area -->
-                  <div class="av-card-thumb">
-                    <div class="av-thumb-bg">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/></svg>
-                    </div>
-                    <div v-if="lec.status === 'ready'" class="av-play-btn">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    </div>
-                    <div v-else class="av-status-icon">
-                      <svg v-if="lec.status==='processing'||lec.status==='generating'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      <svg v-else-if="lec.status==='pending_approval'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                      <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                    </div>
-                  </div>
-                  <!-- Info -->
-                  <div class="av-card-info">
-                    <div class="av-card-title">{{ lec.title }}</div>
-                    <div class="av-card-meta">
-                      <span class="av-meta-chip">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        {{ lec.duration_minutes }} {{ lang==='ru'?'мин':'min' }}
-                      </span>
-                      <span class="av-meta-chip">{{ styleLabel(lec.style) }}</span>
-                    </div>
-                    <div v-if="lec.status !== 'ready'" :class="['av-card-status', lectureStatusClass(lec.status)]">
-                      {{ lectureStatusLabel(lec.status) }}
-                      <span v-if="lec.status === 'rejected' && lec.rejection_reason"> · {{ lec.rejection_reason }}</span>
-                    </div>
-                  </div>
-                  <!-- Actions -->
-                  <div class="av-card-actions">
-                    <button v-if="canDeleteLecture(lec)" class="item-del" @click.stop="deleteAvatarLecture(lec)">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-                    </button>
-                    <div v-if="lec.status === 'ready'" class="av-watch-btn">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                      {{ lang==='ru'?'Смотреть':'Watch' }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </template>
-
             <template v-if="tab === 'ai'">
               <LazyClassAiChat :class-name="classTitle" :class-posts="classPosts" :is-teacher="isTeacher" :class-id="classId" :assignments="assignments" @scroll-state="v => coverCollapsed = v" />
             </template>
@@ -395,7 +271,7 @@
         </div>
 
         <!-- Right sidebar -->
-        <div class="cd-sidebar" v-if="tab !== 'ai' && tab !== 'avatar'">
+        <div class="cd-sidebar" v-if="tab !== 'ai'">
           <!-- Score card — студентам, только во вкладке «Задания» (единое
                размещение с приложением: рейтинг живёт рядом с заданиями). -->
           <div class="sidebar-card score-card" v-if="!isTeacher && tab === 'assignments'">
@@ -556,16 +432,6 @@
       </div>
     </div>
 
-    <!-- Avatar modals -->
-    <LazyCreateAvatarModal v-if="showCreateAvatar" @close="showCreateAvatar = false" @created="onAvatarCreated" />
-    <LazyCreateLectureModal v-if="showCreateLecture" :class-id="classId" @close="showCreateLecture = false" @created="onLectureCreated" />
-    <LazyLecturePlayer
-      v-if="activeLecture"
-      :lecture="activeLecture"
-      :avatar-photo-url="activeLectureAvatarPhoto"
-      @close="activeLecture = null"
-    />
-
     <!-- Edit Post Modal -->
     <div v-if="editingPost" class="overlay" @click.self="editingPost=null">
       <div class="modal anim-scale" style="max-width:520px;width:100%">
@@ -701,7 +567,6 @@ import { usePostsSvc } from '~/services/posts'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useRatingSvc } from '~/services/rating'
 import { useClassesSvc, type CohortResponse, type RotationMode } from '~/services/classes'
-import { useAvatarsSvc, type AvatarLecture, type AvatarLectureFull, type TeacherAvatar } from '~/services/avatars'
 import { useAuthStore } from '~/stores/auth.store'
 import { useI18n } from '~/composables/useI18n'
 import { useFilePreview } from '~/composables/useFilePreview'
@@ -715,7 +580,6 @@ const postsSvc = usePostsSvc()
 const assignmentsSvc = useAssignmentsSvc()
 const ratingSvc = useRatingSvc()
 const classesSvc = useClassesSvc()
-const avatarsSvc = useAvatarsSvc()
 const toast = useToast()
 const auth = useAuthStore()
 const { t, lang } = useI18n()
@@ -726,7 +590,7 @@ const isTeacher = computed(() => auth.user?.role === 'teacher' || auth.user?.rol
 const uInit = computed(() => (auth.nickname || auth.user?.email || '?')[0]?.toUpperCase())
 
 const loading = ref(true)
-const tab = ref<'lectures' | 'materials' | 'assignments' | 'avatar' | 'ai'>('lectures')
+const tab = ref<'lectures' | 'materials' | 'assignments' | 'ai'>('lectures')
 
 // Cover collapses smoothly on scroll — only inside the AI chat tab (see the
 // LazyClassAiChat @scroll-state listener below). Reset whenever the tab changes.
@@ -739,93 +603,6 @@ const activeAssignment = ref<Assignment | null>(null)
 const allPosts = ref<any[]>([])
 const assignments = ref<Assignment[]>([])
 const mySubmissions = ref<Submission[]>([])
-
-// Avatar tab state
-const myAvatar = ref<TeacherAvatar | null>(null)
-const avatarLectures = ref<AvatarLecture[]>([])
-const loadingAvatarLectures = ref(false)
-const showCreateAvatar = ref(false)
-const showCreateLecture = ref(false)
-const activeLecture = ref<AvatarLectureFull | null>(null)
-const activeLectureAvatarPhoto = ref<string | null>(null)
-
-// FE-3: метки берём из единого словаря (ru/en/kk), без инлайн-тернаров.
-const KNOWN_LECTURE_STYLES = new Set(['school', 'university', 'professional'])
-const styleLabel = (style: string) =>
-  KNOWN_LECTURE_STYLES.has(style) ? t(`lecture.style.${style}`) : style
-
-const KNOWN_LECTURE_STATUSES = new Set([
-  'pending_approval', 'approved', 'generating', 'ready', 'rejected', 'failed',
-])
-const lectureStatusLabel = (status: string) =>
-  KNOWN_LECTURE_STATUSES.has(status) ? t(`lecture.status.${status}`) : status
-
-const lectureStatusClass = (status: string) => {
-  if (status === 'ready') return 'status-done'
-  if (status === 'rejected' || status === 'failed') return 'status-late'
-  if (status === 'generating' || status === 'approved') return 'status-progress'
-  return 'status-pending'
-}
-
-const loadMyAvatar = async () => {
-  if (!isTeacher.value) return
-  try {
-    myAvatar.value = await avatarsSvc.getMine()
-  } catch {
-    myAvatar.value = null
-  }
-}
-
-const loadAvatarLectures = async () => {
-  loadingAvatarLectures.value = true
-  try {
-    await loadMyAvatar()
-    avatarLectures.value = await avatarsSvc.classLectures(classId.value)
-  } catch (e: any) {
-    toast.err(e?.response?.data?.detail || t('lecture.load_failed'))
-  } finally {
-    loadingAvatarLectures.value = false
-  }
-}
-
-const onAvatarCreated = (a: TeacherAvatar) => {
-  myAvatar.value = a
-  showCreateAvatar.value = false
-}
-
-const onLectureCreated = (l: AvatarLecture) => {
-  avatarLectures.value = [l, ...avatarLectures.value]
-  showCreateLecture.value = false
-}
-
-// Удалять может владелец лекции или админ (это же правило на бэке)
-const canDeleteLecture = (lec: AvatarLecture) =>
-  auth.user?.role === 'admin' || (isTeacher.value && lec.created_by === auth.user?.id)
-
-const deleteAvatarLecture = async (lec: AvatarLecture) => {
-  if (!confirm(lang.value==='ru'
-    ? `Удалить лекцию «${lec.title}»? Действие необратимо.`
-    : `Delete lecture "${lec.title}"? Action is irreversible.`)) return
-  try {
-    await avatarsSvc.deleteLecture(lec.id)
-    avatarLectures.value = avatarLectures.value.filter(l => l.id !== lec.id)
-    toast.ok(t('lecture.delete_ok'))
-  } catch (e: any) {
-    toast.err(e?.response?.data?.detail || t('lecture.delete_failed'))
-  }
-}
-
-const openLecturePlayer = async (lec: AvatarLecture) => {
-  if (lec.status !== 'ready') return
-  try {
-    const full = await avatarsSvc.getLectureFull(lec.id)
-    activeLecture.value = full
-    activeLectureAvatarPhoto.value = myAvatar.value?.photo_url || null
-  } catch (e: any) {
-    toast.err(e?.response?.data?.detail || t('lecture.open_failed'))
-  }
-}
-
 
 const editingPost = ref<any>(null)
 const editPostForm = ref({ title: '', content: '' })
@@ -1218,10 +995,9 @@ const onSubmitted = (sub: Submission) => {
 onMounted(async () => {
   // Open a specific tab if passed via query param (e.g. from calendar deadlines)
   const qTab = route.query.tab as string
-  if (qTab === 'assignments' || qTab === 'materials' || qTab === 'ai' || qTab === 'avatar') {
+  if (qTab === 'assignments' || qTab === 'materials' || qTab === 'ai') {
     tab.value = qTab
     if (qTab === 'assignments') loadAssignments()
-    if (qTab === 'avatar') loadAvatarLectures()
   }
 
   loading.value = true
@@ -1235,7 +1011,6 @@ onMounted(async () => {
     if (isOwnerOrAdmin.value && isYearly.value) loadCohorts()
   } catch { toast.err(t('general.error')) } finally { loading.value = false }
   if (!isTeacher.value) loadRating()
-  if (isTeacher.value) loadMyAvatar()
 })
 </script>
 
@@ -1353,10 +1128,6 @@ onMounted(async () => {
 .tab-content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px}
 .tab-content.ai-mode{padding:0;overflow:hidden}
 
-/* Content header — still used by the Avatar tab (heading + create-avatar action) */
-.content-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.content-heading{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:19px;font-weight:800;color:var(--text1);letter-spacing:-.01em}
-
 /* Items list — compact, modern cards */
 .items-list{display:flex;flex-direction:column;gap:9px}
 .item-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s ease,border-color .2s ease}
@@ -1386,20 +1157,6 @@ onMounted(async () => {
 .status-done{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2)}
 .status-pending{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
 
-/* Avatar tab */
-.avatar-tab-actions{display:flex;gap:8px}
-.avatar-profile-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--r-lg);background:linear-gradient(120deg,var(--teal-l),transparent 70%);border:1px solid var(--border);margin-bottom:8px}
-.apc-photo{width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--teal-l);color:var(--teal);display:flex;align-items:center;justify-content:center;border:2px solid var(--teal)}
-.apc-photo img{width:100%;height:100%;object-fit:cover}
-.apc-name{font-size:14px;font-weight:800;color:var(--text1)}
-.apc-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3);margin-top:3px}
-.apc-dot{width:7px;height:7px;border-radius:50%;background:var(--green,#16a34a);flex-shrink:0}
-.avatar-status-card{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:var(--r-lg);margin-bottom:4px}
-.avatar-status-card.pending{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:#f59e0b}
-.avatar-status-card.rejected{background:var(--red-l);border:1px solid rgba(220,38,38,.2);color:var(--red)}
-.asc-icon{flex-shrink:0;margin-top:1px}
-.asc-title{font-size:13px;font-weight:700}
-.asc-reason{font-size:12px;margin-top:3px;opacity:.85}
 .item-row.item-disabled{cursor:default;opacity:.75}
 .item-row.item-disabled:hover{background:transparent}
 
@@ -1581,45 +1338,9 @@ onMounted(async () => {
   .page-title{font-size:18px}
 }
 
-/* ── Avatar lectures redesign ── */
-.av-lectures-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
-.av-lecture-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;cursor:pointer;transition:all .2s;display:flex;flex-direction:column}
-.av-lecture-card:hover:not(.av-card-disabled){border-color:rgba(var(--teal-rgb),.3);box-shadow:var(--sh-sm);transform:translateY(-2px)}
-.av-card-disabled{cursor:default;opacity:.7}
-.av-card-disabled:hover{transform:none!important;box-shadow:none!important}
-.av-card-thumb{height:120px;background:linear-gradient(135deg,#005f6e,var(--teal));position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.av-thumb-bg{opacity:.35;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-.av-thumb-bg svg{width:60px;height:60px;stroke:rgba(255,255,255,0.4)}
-.av-play-btn{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.92);color:var(--teal);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.25);transition:transform .15s;z-index:1}
-.av-lecture-card:hover .av-play-btn{transform:scale(1.08)}
-.av-status-icon{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;z-index:1}
-.av-card-info{padding:16px;flex:1;display:flex;flex-direction:column;gap:8px}
-.av-card-title{font-size:15px;font-weight:700;color:var(--text1);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.av-card-meta{display:flex;flex-wrap:wrap;gap:6px}
-.av-meta-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--text4);background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:3px 9px}
-.av-card-status{font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;display:inline-flex;align-self:flex-start}
-.av-card-status.status-progress{background:rgba(var(--teal-rgb),.1);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.2);animation:avpulse 1.8s ease-in-out infinite}
-@keyframes avpulse{0%,100%{opacity:1}50%{opacity:.55}}
-@media (prefers-reduced-motion: reduce){.av-card-status.status-progress{animation:none}}
-.av-card-status.status-pending{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
-.av-card-status.status-late{background:var(--red-l);color:var(--red);border:1px solid rgba(220,38,38,.2)}
-.av-card-actions{padding:0 16px 14px;display:flex;justify-content:space-between;align-items:center}
-/* .item-del по умолчанию opacity:0 (ховер-паттерн списков .item-row) —
-   в карточке лекции аватара кнопка видна всегда */
-.av-lecture-card .item-del{opacity:1}
-.av-watch-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--teal);color:#fff;border-radius:var(--r-md);font-size:13px;font-weight:700;transition:opacity .15s;cursor:pointer}
-.av-watch-btn:hover{opacity:.85}
-.av-empty{border:2px dashed var(--border2)}
-.av-empty-icon{width:72px;height:72px;border-radius:20px;background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.2);display:flex;align-items:center;justify-content:center;color:var(--teal);margin-bottom:4px}
-
 /* Empty state icon */
 .es-icon-wrap{width:64px;height:64px;border-radius:18px;background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.18);display:flex;align-items:center;justify-content:center;color:var(--teal);margin-bottom:4px;opacity:.8}
 
 /* File type badge in rendered content */
 :deep(.file-type-badge){display:inline-flex;align-items:center;justify-content:center;background:var(--teal);color:#fff;font-size:9px;font-weight:800;letter-spacing:.06em;padding:2px 6px;border-radius:4px;flex-shrink:0;line-height:1.4}
-
-@media (max-width:768px){
-  .av-lectures-grid{grid-template-columns:1fr}
-  .av-card-thumb{height:100px}
-}
 </style>

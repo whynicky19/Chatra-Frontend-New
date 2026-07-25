@@ -32,11 +32,6 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           Запросы к ИИ
         </button>
-        <button :class="['tab-btn','tab-ai-btn',{active:tab==='avatars'}]" @click="switchToAvatars">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/></svg>
-          AI-аватары
-          <span v-if="pendingAvatarCount" class="tab-pending-badge">{{ pendingAvatarCount }}</span>
-        </button>
       </div>
 
       <!-- Users tab -->
@@ -227,90 +222,6 @@
         </div>
       </div>
 
-      <!-- AI Avatars moderation tab -->
-      <div v-else-if="tab==='avatars'">
-        <div class="avatar-mod-subtabs">
-          <button :class="['amod-sub',{active:avatarModSection==='avatars'}]" @click="avatarModSection='avatars'">
-            Заявки на аватаров
-            <span v-if="pendingAvatarsList.length" class="amod-count">{{ pendingAvatarsList.length }}</span>
-          </button>
-          <button :class="['amod-sub',{active:avatarModSection==='lectures'}]" @click="avatarModSection='lectures'">
-            Заявки на лекции
-            <span v-if="pendingLecturesList.length" class="amod-count">{{ pendingLecturesList.length }}</span>
-          </button>
-        </div>
-
-        <!-- Avatars requests -->
-        <div v-if="avatarModSection==='avatars'">
-          <div v-if="avatarsLoading" style="display:flex;justify-content:center;padding:32px"><div class="spinner"></div></div>
-          <div v-else-if="!avatarsList.length" class="empty-mod-state">
-            <div class="empty-admin-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/></svg></div>
-            Заявок на создание аватаров пока нет
-          </div>
-          <div v-else class="avatar-req-list">
-            <div v-for="a in avatarsList" :key="a.id" class="avatar-req-card">
-              <img v-if="a.photo_url" :src="a.photo_url" class="avatar-req-photo" @error="($event.target as HTMLImageElement).style.display='none'" />
-              <div class="avatar-req-body">
-                <div class="avatar-req-name">{{ a.display_name || 'Без имени' }}</div>
-                <div class="avatar-req-meta">Учитель ID {{ a.teacher_id }} · {{ fmtDate(a.created_at) }}</div>
-                <div v-if="a.voice_sample_url" class="avatar-req-audio">
-                  <audio :src="a.voice_sample_url" controls style="height:32px;width:260px" />
-                </div>
-                <div v-if="a.status === 'rejected' && a.rejection_reason" class="avatar-req-reason">Причина отклонения: {{ a.rejection_reason }}</div>
-                <div v-if="a.status === 'approved' && a.voice_clone_warning" class="avatar-req-warning">⚠ {{ a.voice_clone_warning }}</div>
-              </div>
-              <div class="avatar-req-actions">
-                <span :class="['badge', a.status==='approved'?'badge-blue':(a.status==='rejected'?'badge-red':'badge-gray')]">{{ statusLabelRu(a.status) }}</span>
-                <template v-if="a.status==='pending'">
-                  <button class="btn btn-blue btn-sm" :disabled="avatarActionLoading===a.id" @click="approveAvatar(a)">Одобрить</button>
-                  <button class="btn btn-ghost btn-sm" :disabled="avatarActionLoading===a.id" @click="rejectAvatarPrompt(a)">Отклонить</button>
-                </template>
-                <button class="btn btn-danger btn-sm" :disabled="avatarActionLoading===a.id" @click="deleteAvatar(a)">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-                  Удалить
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Lecture requests -->
-        <div v-else>
-          <div v-if="lecturesLoading" style="display:flex;justify-content:center;padding:32px"><div class="spinner"></div></div>
-          <div v-else-if="!lecturesList.length" class="empty-mod-state">
-            <div class="empty-admin-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
-            Заявок на лекции пока нет
-          </div>
-          <div v-else class="avatar-req-list">
-            <div v-for="l in lecturesList" :key="l.id" class="avatar-req-card">
-              <div class="avatar-req-body">
-                <div class="avatar-req-name">{{ l.title }}</div>
-                <div class="avatar-req-meta">
-                  {{ l.class_name || ('Класс #' + l.class_id) }} · {{ l.duration_minutes }} мин · {{ styleLabelRu(l.style) }} · {{ fmtDate(l.created_at) }}
-                </div>
-                <div class="avatar-req-cost">
-                  Примерная стоимость: <strong>${{ l.estimated_cost_usd.toFixed(2) }}</strong>
-                  ({{ l.estimated_chars.toLocaleString() }} символов озвучки)
-                </div>
-                <a v-if="l.source_file_url" :href="l.source_file_url" target="_blank" rel="noopener" class="lec-src-file">
-                  <span class="lec-src-badge">{{ (l.source_filename || '').toLowerCase().endsWith('.pdf') ? 'PDF' : 'PPTX' }}</span>
-                  <span class="lec-src-name">{{ l.source_filename || 'Презентация' }}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                </a>
-                <div v-if="l.status === 'rejected' && l.rejection_reason" class="avatar-req-reason">Причина отклонения: {{ l.rejection_reason }}</div>
-                <div v-if="l.status === 'failed' && l.error_message" class="avatar-req-reason">Ошибка: {{ l.error_message }}</div>
-              </div>
-              <div class="avatar-req-actions">
-                <span :class="['badge', lectureBadgeClass(l.status)]">{{ lectureStatusLabelRu(l.status) }}</span>
-                <template v-if="l.status==='pending_approval'">
-                  <button class="btn btn-blue btn-sm" :disabled="avatarActionLoading===l.id" @click="approveLecture(l)">Одобрить</button>
-                  <button class="btn btn-ghost btn-sm" :disabled="avatarActionLoading===l.id" @click="rejectLecturePrompt(l)">Отклонить</button>
-                </template>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       <div v-else-if="tab==='classes'">
         <div v-if="loadingCl" style="display:flex;justify-content:center;padding:24px"><div class="spinner"></div></div>
         <div v-else class="cl-grid">
@@ -434,13 +345,10 @@ import { useToast } from '~/composables/useToast'
 import { useAdminSvc } from '~/services/admin'
 import { useClassesSvc } from '~/services/classes'
 import { useI18n } from '~/composables/useI18n'
-import { useAvatarsSvc, type TeacherAvatar, type AvatarLecture } from '~/services/avatars'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const toast = useToast(); const adminSvc = useAdminSvc()
-const notifStore = useNotificationsStore()
 const { t, lang } = useI18n()
 const classesSvc = useClassesSvc()
-const avatarsSvc = useAvatarsSvc()
 const tab = ref('users'); const users = ref<any[]>([]); const loadingU = ref(false); const sq = ref(''); const showCreate = ref(false); const crU = ref(false)
 const togglingAi = ref<Record<number, boolean>>({})
 const nu = ref({ e: '', p: '', r: 'student' }); const classesCount = ref(0)
@@ -466,121 +374,6 @@ const loadAiUsage = async (page = 1) => { aiLoading.value = true; aiPage.value =
 const loadAiSummary = async () => { try { aiSummary.value = await adminSvc.aiUsageSummary() } catch {} }
 const setClassFilter = (classId: number | null) => { aiFilterClass.value = aiFilterClass.value === classId ? null : classId; loadAiUsage(1) }
 const switchToAiUsage = () => { tab.value = 'ai-usage'; if (!aiLogs.value.length && !aiLoading.value) loadAiUsage(1) }
-
-// ── AI Avatars moderation ───────────────────────────────────────────────────
-const avatarModSection = ref<'avatars' | 'lectures'>('avatars')
-const avatarsList = ref<TeacherAvatar[]>([])
-const lecturesList = ref<AvatarLecture[]>([])
-const avatarsLoading = ref(false)
-const lecturesLoading = ref(false)
-const avatarActionLoading = ref<number | null>(null)
-
-const pendingAvatarsList = computed(() => avatarsList.value.filter(a => a.status === 'pending'))
-const pendingLecturesList = computed(() => lecturesList.value.filter(l => l.status === 'pending_approval'))
-const pendingAvatarCount = computed(() => pendingAvatarsList.value.length + pendingLecturesList.value.length)
-
-const statusLabelRu = (s: string) => ({ pending: 'Ожидает', approved: 'Одобрено', rejected: 'Отклонено' } as Record<string, string>)[s] || s
-const lectureStatusLabelRu = (s: string) => ({
-  pending_approval: 'Ожидает', approved: 'Одобрено', generating: 'Генерируется', ready: 'Готово', rejected: 'Отклонено', failed: 'Ошибка',
-} as Record<string, string>)[s] || s
-const lectureBadgeClass = (s: string) => {
-  if (s === 'ready' || s === 'approved') return 'badge-blue'
-  if (s === 'rejected' || s === 'failed') return 'badge-red'
-  return 'badge-gray'
-}
-const styleLabelRu = (s: string) => ({ school: 'Школьный', university: 'Университетский', professional: 'Профессиональный' } as Record<string, string>)[s] || s
-
-const loadAvatars = async () => {
-  avatarsLoading.value = true
-  try { avatarsList.value = await avatarsSvc.adminListAvatars() }
-  catch { toast.err('Не удалось загрузить заявки на аватаров') }
-  finally { avatarsLoading.value = false }
-}
-
-const loadAvatarLecturesAdmin = async () => {
-  lecturesLoading.value = true
-  try { lecturesList.value = await avatarsSvc.adminListLectures() }
-  catch { toast.err('Не удалось загрузить заявки на лекции') }
-  finally { lecturesLoading.value = false }
-}
-
-const switchToAvatars = () => {
-  tab.value = 'avatars'
-  loadAvatars()
-  loadAvatarLecturesAdmin()
-}
-
-const approveAvatar = async (a: TeacherAvatar) => {
-  avatarActionLoading.value = a.id
-  try {
-    const updated = await avatarsSvc.adminReviewAvatar(a.id, true)
-    const idx = avatarsList.value.findIndex(x => x.id === a.id)
-    if (idx !== -1) avatarsList.value[idx] = updated
-    toast.ok('Аватар одобрен')
-  } catch (e: any) {
-    toast.err(e?.response?.data?.detail || 'Не удалось одобрить аватара')
-  } finally {
-    avatarActionLoading.value = null
-  }
-}
-
-const rejectAvatarPrompt = async (a: TeacherAvatar) => {
-  const reason = window.prompt('Причина отклонения (необязательно):') || undefined
-  avatarActionLoading.value = a.id
-  try {
-    const updated = await avatarsSvc.adminReviewAvatar(a.id, false, reason)
-    const idx = avatarsList.value.findIndex(x => x.id === a.id)
-    if (idx !== -1) avatarsList.value[idx] = updated
-    toast.ok('Заявка отклонена')
-  } catch (e: any) {
-    toast.err(e?.response?.data?.detail || 'Не удалось отклонить заявку')
-  } finally {
-    avatarActionLoading.value = null
-  }
-}
-
-const deleteAvatar = async (a: TeacherAvatar) => {
-  if (!window.confirm(`Удалить аватар «${a.display_name || 'Без имени'}»? Это действие необратимо.`)) return
-  avatarActionLoading.value = a.id
-  try {
-    await avatarsSvc.adminDeleteAvatar(a.id)
-    avatarsList.value = avatarsList.value.filter(x => x.id !== a.id)
-    toast.ok('Аватар удалён')
-  } catch (e: any) {
-    toast.err(e?.response?.data?.detail || 'Не удалось удалить аватар')
-  } finally {
-    avatarActionLoading.value = null
-  }
-}
-
-const approveLecture = async (l: AvatarLecture) => {
-  avatarActionLoading.value = l.id
-  try {
-    const updated = await avatarsSvc.adminReviewLecture(l.id, true)
-    const idx = lecturesList.value.findIndex(x => x.id === l.id)
-    if (idx !== -1) lecturesList.value[idx] = updated
-    toast.ok('Лекция одобрена, началась генерация')
-  } catch (e: any) {
-    toast.err(e?.response?.data?.detail || 'Не удалось одобрить лекцию')
-  } finally {
-    avatarActionLoading.value = null
-  }
-}
-
-const rejectLecturePrompt = async (l: AvatarLecture) => {
-  const reason = window.prompt('Причина отклонения (необязательно):') || undefined
-  avatarActionLoading.value = l.id
-  try {
-    const updated = await avatarsSvc.adminReviewLecture(l.id, false, reason)
-    const idx = lecturesList.value.findIndex(x => x.id === l.id)
-    if (idx !== -1) lecturesList.value[idx] = updated
-    toast.ok('Заявка отклонена')
-  } catch (e: any) {
-    toast.err(e?.response?.data?.detail || 'Не удалось отклонить заявку')
-  } finally {
-    avatarActionLoading.value = null
-  }
-}
 
 // ── Classes ───────────────────────────────────────────────────────────────────
 const clCovers = ['linear-gradient(135deg,#006475,#009aaf)','linear-gradient(135deg,#0c4a6e,#0369a1)','linear-gradient(135deg,#134e4a,#0d9488)','linear-gradient(135deg,#312e81,#4338ca)','linear-gradient(135deg,#1e3a5f,#2563eb)']
