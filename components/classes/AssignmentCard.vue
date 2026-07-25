@@ -63,6 +63,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Assignment, Submission } from '~/services/assignments'
+import { parseUtc } from '~/composables/useDeadline'
 
 const props = defineProps<{
   assignment: Assignment
@@ -73,7 +74,6 @@ const props = defineProps<{
 
 defineEmits(['open'])
 
-const parseUtc = (d: string) => new Date(d.endsWith('Z') || d.includes('+') ? d : d + 'Z')
 const parsedDeadline = computed(() => props.assignment.deadline ? parseUtc(props.assignment.deadline) : null)
 const isOverdue = computed(() => parsedDeadline.value ? parsedDeadline.value < new Date() : false)
 const isDueSoon = computed(() => {

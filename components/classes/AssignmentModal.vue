@@ -372,6 +372,7 @@ import { useAssignmentsSvc } from '~/services/assignments'
 import { useUploadSvc } from '~/services/uploads'
 import { useUsersSvc } from '~/services/users'
 import { useToast } from '~/composables/useToast'
+import { parseUtc } from '~/composables/useDeadline'
 import { useI18n } from '~/composables/useI18n'
 import { useCohortErrors } from '~/composables/useCohortErrors'
 import { useAuthStore } from '~/stores/auth.store'
@@ -442,7 +443,6 @@ const parsedActiveUrls = computed(() => parseFileUrls(activeSub.value?.file_urls
 const assignmentFiles = computed(() => extractFilesFromText(props.assignment.description))
 const descriptionText = computed(() => stripFilesFromText(props.assignment.description))
 
-const parseUtc = (d: string) => new Date(d.endsWith('Z') || d.includes('+') ? d : d + 'Z')
 const parsedDeadline = computed(() => props.assignment.deadline ? parseUtc(props.assignment.deadline) : null)
 const isOverdue = computed(() => parsedDeadline.value ? parsedDeadline.value < new Date() : false)
 const deadlineStr = computed(() => parsedDeadline.value?.toLocaleString(dateLocale.value, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) ?? '')

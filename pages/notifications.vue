@@ -42,6 +42,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useClassesSvc } from '~/services/classes'
 import { useNotificationsSvc } from '~/services/notifications'
+import { parseUtc } from '~/composables/useDeadline'
 import { useNotificationsStore } from '~/stores/notifications.store'
 definePageMeta({ layout: 'default' })
 
@@ -91,7 +92,7 @@ const sorted = computed(() => [...items.value].sort((a, b) => {
 
 const fmtDate = (iso: string) => {
   try {
-    const d = new Date(iso)
+    const d = parseUtc(iso)
     return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) +
       ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
   } catch { return iso }
@@ -125,7 +126,7 @@ onMounted(async () => {
 
     // New assignments (last 7 days)
     for (const a of allAssignments) {
-      const age = now - new Date(a.created_at).getTime()
+      const age = now - parseUtc(a.created_at).getTime()
       if (age > sevenDays) continue
       const key = `assignment:${a.id}`
       if (isDismissed(key)) continue
@@ -144,14 +145,14 @@ onMounted(async () => {
     const fortyEightH = 48 * 3600 * 1000
     for (const a of allAssignments) {
       if (!a.deadline || submittedIds.has(a.id)) continue
-      const dl = new Date(a.deadline).getTime()
+      const dl = parseUtc(a.deadline).getTime()
       if (dl < now || dl - now > fortyEightH) continue
       const key = `deadline:${a.id}`
       if (isDismissed(key)) continue
       collected.push({
         key, type: 'deadline',
         title: 'Дедлайн близко',
-        desc: `${a.title} — до ${new Date(a.deadline).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`,
+        desc: `${a.title} — до ${parseUtc(a.deadline).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`,
         date: a.deadline,
         color: 'var(--red)',
         read: isRead(key),

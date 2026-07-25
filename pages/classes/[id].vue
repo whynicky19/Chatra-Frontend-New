@@ -522,6 +522,7 @@ import { useRoute } from '#app'
 import { useToast } from '~/composables/useToast'
 import { usePostsSvc } from '~/services/posts'
 import { useAssignmentsSvc } from '~/services/assignments'
+import { parseUtc } from '~/composables/useDeadline'
 import { useRatingSvc } from '~/services/rating'
 import { useClassesSvc, type CohortResponse, type RotationMode } from '~/services/classes'
 import { useAuthStore } from '~/stores/auth.store'
@@ -651,21 +652,21 @@ const performancePercent = computed(() => Math.round(ratingData.value.avg_percen
 const nextDeadline = computed(() => {
   const now = new Date()
   return assignments.value
-    .filter(a => a.deadline && new Date(a.deadline) > now)
-    .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())[0] || null
+    .filter(a => a.deadline && parseUtc(a.deadline) > now)
+    .sort((a, b) => parseUtc(a.deadline!).getTime() - parseUtc(b.deadline!).getTime())[0] || null
 })
 const aiGuideText = computed(() => {
-  const late = assignments.value.filter(a => a.deadline && new Date(a.deadline) < new Date() && !mySubmissionsMap.value[a.id])
+  const late = assignments.value.filter(a => a.deadline && parseUtc(a.deadline) < new Date() && !mySubmissionsMap.value[a.id])
   if (late.length && lang.value === 'ru') return `На основании просроченного статуса Лабы ${late[0]?.title}, вам может потребоваться повторение темы. Сгенерировать краткий обзор основных правил?`
   if (late.length) return `Based on the overdue status of ${late[0]?.title}, you may need to review the topic. Generate a brief overview?`
   return lang.value === 'ru' ? 'ИИ-ассистент поможет с учебными материалами и заданиями.' : 'AI assistant will help with study materials and assignments.'
 })
 
-const fmtMonth = (d: string) => { try { return new Date(d).toLocaleString(lang.value === 'ru' ? 'ru-RU' : 'en-US', {month:'short'}).toUpperCase() } catch { return '' } }
-const fmtDay = (d: string) => { try { return new Date(d).getDate().toString() } catch { return '' } }
+const fmtMonth = (d: string) => { try { return parseUtc(d).toLocaleString(lang.value === 'ru' ? 'ru-RU' : 'en-US', {month:'short'}).toUpperCase() } catch { return '' } }
+const fmtDay = (d: string) => { try { return parseUtc(d).getDate().toString() } catch { return '' } }
 const fmtRemaining = (d: string) => {
   try {
-    const diff = new Date(d).getTime() - Date.now()
+    const diff = parseUtc(d).getTime() - Date.now()
     if (diff < 0) return lang.value === 'ru' ? 'Просрочено' : 'Overdue'
     const days = Math.floor(diff / 86400000)
     const hrs = Math.floor((diff % 86400000) / 3600000)
@@ -679,7 +680,7 @@ const mySubmissionsMap = computed(() => {
   mySubmissions.value.forEach(s => { m[s.assignment_id] = s })
   return m
 })
-const isLate = (a: Assignment) => a.deadline && new Date(a.deadline) < new Date() && !mySubmissionsMap.value[a.id]
+const isLate = (a: Assignment) => a.deadline && parseUtc(a.deadline) < new Date() && !mySubmissionsMap.value[a.id]
 const isInProgress = (a: Assignment) => mySubmissionsMap.value[a.id]?.status === 'submitted'
 const getStatusIconClass = (a: Assignment) => {
   if (isLate(a)) return 'icon-late'
@@ -702,10 +703,10 @@ const getStatusLabel = (a: Assignment) => {
 }
 const pendingCount = computed(() => assignments.value.filter(a => !mySubmissionsMap.value[a.id] && a.is_active).length)
 const doneCount = computed(() => mySubmissions.value.filter(s => s.status === 'submitted' || s.status === 'graded').length)
-const lateCount = computed(() => mySubmissions.value.filter(s => s.status === 'late').length + assignments.value.filter(a => !mySubmissionsMap.value[a.id] && a.deadline && new Date(a.deadline) < new Date()).length)
+const lateCount = computed(() => mySubmissions.value.filter(s => s.status === 'late').length + assignments.value.filter(a => !mySubmissionsMap.value[a.id] && a.deadline && parseUtc(a.deadline) < new Date()).length)
 
 const cleanTitle = (t: string) => t.replace(/^\[LECTURE\]\[\d+\]\s*/, '').trim()
-const fmtDate = (d: string) => { if (!d) return ''; try { return new Date(d).toLocaleDateString(lang.value === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return d } }
+const fmtDate = (d: string) => { if (!d) return ''; try { return parseUtc(d).toLocaleDateString(lang.value === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return d } }
 // Файл из тела-JSON приложения приходит как "<url>#<имя>" (или битые легаси-строки).
 // Приводим к единому виду вложения сайта: 📎 [имя](url).
 const fileEntryToLink = (entry: any): string => {
@@ -862,7 +863,13 @@ const saveEditPost = async () => {
 
 const openEditAssignment = (a: any) => {
   editingAssignment.value = a
-  const dl = a.deadline ? new Date(a.deadline).toISOString().slice(0, 16) : ''
+  // datetime-local ожидает ЛОКАЛЬНОЕ время — нельзя брать toISOString() (UTC).
+  // Строим строку из компонентов локального Date, полученного из parseUtc.
+  const dl = a.deadline ? (() => {
+    const dt = parseUtc(a.deadline)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`
+  })() : ''
   let criteria: Array<{name:string;weight:number;description:string}> = []
   try { criteria = JSON.parse(a.criteria || '[]') } catch {}
   if (!criteria.length) criteria = [{ name: '', weight: 10, description: '' }]

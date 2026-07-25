@@ -85,7 +85,7 @@
               <div class="detail-info">
                 <div class="detail-class">{{ item.class_name }}</div>
                 <div class="detail-title">{{ item.title }}</div>
-                <div class="detail-time" :style="{ color: item.submitted ? 'var(--teal)' : new Date(item.deadline).getTime() - Date.now() < 86400000 ? 'var(--red)' : 'var(--text3)' }">
+                <div class="detail-time" :style="{ color: item.submitted ? 'var(--teal)' : parseUtc(item.deadline).getTime() - Date.now() < 86400000 ? 'var(--red)' : 'var(--text3)' }">
                   {{ item.submitted ? '✓ Сдано' : ('до ' + item.time) }}
                 </div>
               </div>
@@ -104,6 +104,7 @@ import { useRouter } from '#app'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useClassesSvc } from '~/services/classes'
 import { useI18n } from '~/composables/useI18n'
+import { parseUtc } from '~/composables/useDeadline'
 definePageMeta({ layout: 'default' })
 
 const router = useRouter()
@@ -148,8 +149,8 @@ const dotsArr = computed(() => {
   const m: Record<string, string[]> = {}
   for (const d of dlItems.value) {
     if (!d.deadline) continue
-    const ds = d.deadline.slice(0, 10)
-    if (new Date(ds) < today) continue
+    const ds = toDateStr(parseUtc(d.deadline))
+    if (ds < todayStr) continue
     if (!m[ds]) m[ds] = []
     m[ds].push(d.submitted ? 'var(--green)' : 'var(--teal)')
   }
@@ -187,7 +188,7 @@ const strip = computed(() =>
   Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today); d.setDate(today.getDate() + i)
     const ds = toDateStr(d)
-    const count = dlItems.value.filter(x => x.deadline?.slice(0, 10) === ds).length
+    const count = dlItems.value.filter(x => x.deadline && toDateStr(parseUtc(x.deadline)) === ds).length
     return {
       dateStr: ds,
       dow: d.toLocaleDateString('ru-RU', { weekday: 'short' }),
@@ -201,22 +202,26 @@ const strip = computed(() =>
 const selectDay = (ds: string) => { selectedDateStr.value = ds }
 
 const upcomingCount = computed(() =>
-  dlItems.value.filter(d => d.deadline && new Date(d.deadline.slice(0, 10)) >= today).length
+  dlItems.value.filter(d => d.deadline && toDateStr(parseUtc(d.deadline)) >= todayStr).length
 )
 
 const dayItems = computed(() =>
   dlItems.value
-    .filter(d => d.deadline?.slice(0, 10) === selectedDateStr.value)
-    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+    .filter(d => d.deadline && toDateStr(parseUtc(d.deadline)) === selectedDateStr.value)
+    .sort((a, b) => parseUtc(a.deadline).getTime() - parseUtc(b.deadline).getTime())
     .map(d => ({
       ...d,
-      time: new Date(d.deadline).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      time: parseUtc(d.deadline).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
     }))
 )
 
 const selectedDateLabel = computed(() => {
   if (!selectedDateStr.value) return ''
-  return new Date(selectedDateStr.value).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })
+  // selectedDateStr — локальный календарный день (YYYY-MM-DD); парсим по
+  // компонентам, а не через new Date(string), иначе строка трактуется как
+  // UTC-полночь и дата/день недели могут сместиться на сутки в других TZ.
+  const [y, m, day] = selectedDateStr.value.split('-').map(Number)
+  return new Date(y, m - 1, day).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })
 })
 
 const goToAssignment = (item: DlItem) => {

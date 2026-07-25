@@ -56,6 +56,7 @@
 import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useAiChatsStore } from '~/stores/aiChats.store'
 import { useI18n } from '~/composables/useI18n'
+import { parseUtc } from '~/composables/useDeadline'
 import type { AiThread } from '~/services/ai'
 
 const props = defineProps<{ conv: AiThread; active: boolean }>()
@@ -67,11 +68,17 @@ const { t, lang } = useI18n()
 const tt = (ru: string, kk: string, en: string) =>
   lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
 
+// Тикаем раз в минуту, чтобы "5м/2ч назад" оставалось актуальным, а не
+// замирало на значении, вычисленном при первом рендере строки.
+const nowTick = ref(Date.now())
+let tickTimer: ReturnType<typeof setInterval> | null = null
+onMounted(() => { tickTimer = setInterval(() => { nowTick.value = Date.now() }, 60000) })
+onUnmounted(() => { if (tickTimer) clearInterval(tickTimer) })
+
 const dateLabel = computed(() => {
-  const d = new Date(props.conv.updated_at)
+  const d = parseUtc(props.conv.updated_at)
   if (isNaN(d.getTime())) return ''
-  const now = Date.now()
-  const diff = now - d.getTime()
+  const diff = nowTick.value - d.getTime()
   const min = Math.floor(diff / 60000)
   if (min < 1) return tt('сейчас', 'қазір', 'now')
   if (min < 60) return `${min}${tt('м', 'м', 'm')}`

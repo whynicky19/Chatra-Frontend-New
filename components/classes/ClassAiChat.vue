@@ -98,6 +98,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useUsersSvc } from '~/services/users'
 import { useToast } from '~/composables/useToast'
+import { parseUtc } from '~/composables/useDeadline'
 import { useApi } from '~/services/api'
 import { useAiQuota } from '~/composables/useAiQuota'
 import type { Submission } from '~/services/assignments'
@@ -425,7 +426,7 @@ const buildSystem = (): string => {
         }
       } catch {}
       if (a.max_score) sys += `\nМакс. балл: ${a.max_score}`
-      if (a.deadline) sys += `\nДедлайн: ${new Date(a.deadline).toLocaleDateString('ru-RU')}`
+      if (a.deadline) sys += `\nДедлайн: ${parseUtc(a.deadline).toLocaleDateString('ru-RU')}`
     }
     sys += `\n\n${'='.repeat(60)}`
   }
