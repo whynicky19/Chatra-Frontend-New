@@ -320,25 +320,6 @@ export const translations: Record<string, Record<Lang, string>> = {
   'rollover.status_conflict': { ru: 'Конфликт, повторите', en: 'Conflict, retry', kk: 'Қайшылық, қайталаңыз' },
   'rollover.all_published': { ru: 'Все дедлайны опубликованы', en: 'All deadlines published', kk: 'Барлық мерзімдер жарияланды' },
 
-  // FE-3: метки стилей лекции аватара (тип организации)
-  'lecture.style.school': { ru: 'Школьный', en: 'School', kk: 'Мектеп' },
-  'lecture.style.university': { ru: 'Университетский', en: 'University', kk: 'Университеттік' },
-  'lecture.style.professional': { ru: 'Профессиональный', en: 'Professional', kk: 'Кәсіби' },
-
-  // FE-3: статусы лекции аватара
-  'lecture.status.pending_approval': { ru: 'Ожидает одобрения', en: 'Pending approval', kk: 'Мақұлдауды күтуде' },
-  'lecture.status.approved': { ru: 'Одобрено', en: 'Approved', kk: 'Мақұлданды' },
-  'lecture.status.generating': { ru: 'Генерируется...', en: 'Generating...', kk: 'Жасалуда...' },
-  'lecture.status.ready': { ru: 'Готово', en: 'Ready', kk: 'Дайын' },
-  'lecture.status.rejected': { ru: 'Отклонено', en: 'Rejected', kk: 'Қабылданбады' },
-  'lecture.status.failed': { ru: 'Ошибка', en: 'Failed', kk: 'Қате' },
-
-  // FE-3: тосты/подтверждения по лекциям аватара
-  'lecture.load_failed': { ru: 'Не удалось загрузить лекции аватара', en: 'Failed to load avatar lectures', kk: 'Аватар дәрістерін жүктеу мүмкін болмады' },
-  'lecture.delete_ok': { ru: 'Лекция удалена', en: 'Lecture deleted', kk: 'Дәріс жойылды' },
-  'lecture.delete_failed': { ru: 'Не удалось удалить лекцию', en: 'Failed to delete lecture', kk: 'Дәрісті жою мүмкін болмады' },
-  'lecture.open_failed': { ru: 'Не удалось открыть лекцию', en: 'Failed to open lecture', kk: 'Дәрісті ашу мүмкін болмады' },
-
   // FE-3: статусы задания у студента
   'assign.status.graded': { ru: 'ОЦЕНЕНО', en: 'GRADED', kk: 'БАҒАЛАНДЫ' },
   // Единая терминология с приложением: submitted → СДАНО/SUBMITTED

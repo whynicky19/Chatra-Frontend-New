@@ -29,10 +29,8 @@
       <NuxtLink v-if="auth.isAdmin" to="/admin" class="sb-item" :class="{active:route.path==='/admin'}">
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-          <span v-if="adminPending>0" class="notif-dot notif-dot-orange">{{adminPending>9?'9+':adminPending}}</span>
         </div>
         <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('nav.participants') }}</span>
-        <span v-if="!isCollapsed && !isMobile && adminPending>0" class="notif-pill notif-pill-orange">{{adminPending>99?'99+':adminPending}}</span>
       </NuxtLink>
 
       <NuxtLink to="/ai" class="sb-item" :class="{active:route.path==='/ai'}">
@@ -78,17 +76,13 @@
   </aside>
 </template>
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from '#app'
 import { useAuthStore } from '~/stores/auth.store'
-import { useNotificationsStore } from '~/stores/notifications.store'
 import { useAuth } from '~/composables/useAuth'
 import { useI18n } from '~/composables/useI18n'
-import { useAvatarsSvc } from '~/services/avatars'
-const auth = useAuthStore(); const notifStore = useNotificationsStore(); const { logout } = useAuth(); const route = useRoute()
+const auth = useAuthStore(); const { logout } = useAuth(); const route = useRoute()
 const { t, lang, setLang } = useI18n()
-const avatarsSvc = useAvatarsSvc()
-const adminPending = computed(() => notifStore.adminPending)
 const doLogout = () => { logout() }
 
 const isCollapsed = ref(false)
@@ -112,19 +106,6 @@ const toggleSidebar = () => {
     }
   }
 }
-const fetchAdminPending = async () => {
-  if (!auth.isAdmin) return
-  try {
-    const [avatars, lectures] = await Promise.all([avatarsSvc.adminListAvatars(), avatarsSvc.adminListLectures()])
-    notifStore.setAdminPending(
-      avatars.filter((a: any) => a.status === 'pending').length +
-      lectures.filter((l: any) => l.status === 'pending_approval').length
-    )
-  } catch {}
-}
-
-watch(() => auth.isAdmin, (isAdmin) => { if (isAdmin) fetchAdminPending() }, { immediate: true })
-
 onMounted(() => {
   if (import.meta.client) {
     isCollapsed.value = localStorage.getItem('_sidebar_collapsed') === '1'
@@ -156,10 +137,6 @@ html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22
 .collapsed .sb-logo{justify-content:center;padding:14px 6px 8px}
 .item-icon{position:relative;flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:inherit}
 .item-label{flex:1;overflow:hidden;text-overflow:ellipsis}
-.notif-dot{position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;background:var(--teal);color:#fff;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface)}
-.notif-dot-orange{background:#f59e0b}
-.notif-pill{background:var(--teal);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:100px;flex-shrink:0}
-.notif-pill-orange{background:#f59e0b}
 .sb-bottom{padding:8px 6px 14px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:2px}
 .help-item{color:var(--text4)}
 .logout-item{color:var(--text4)}
@@ -232,8 +209,6 @@ html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22
   .sb-item.active::before{display:none}
   .sb-item.active::after{display:none}
   .sb-item:active .item-icon{transform:scale(.92);transition:transform .1s}
-  .notif-dot{border-color:var(--surface);top:-4px;right:6px}
-  .notif-pill{display:none}
   .collapsed .sb-item{justify-content:center}
   .lang-switch-mobile{display:none}
 }
