@@ -338,7 +338,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth.store'
 import { useNotificationsStore } from '~/stores/notifications.store'
 import { useToast } from '~/composables/useToast'
@@ -439,7 +439,6 @@ const doBlock = async (id: number) => { try { await adminSvc.block(id); const u 
 const doUnblock = async (id: number) => { try { await adminSvc.unblock(id); const u = users.value.find(u => u.id === id); if (u) u.is_active = true; toast.ok('Разблокирован') } catch { toast.err('Ошибка') } }
 const doDel = async (id: number) => { try { await adminSvc.del(id); users.value = users.value.filter(u => u.id !== id); toast.ok('Удалён') } catch { toast.err('Ошибка') } }
 const createU = async () => { crU.value = true; try { const u = await adminSvc.create({ email: nu.value.e, password: nu.value.p, role: nu.value.r }); users.value.unshift(u); showCreate.value = false; nu.value = { e: '', p: '', r: 'student' }; toast.ok('Создан') } catch (e: any) { toast.err(e?.response?.data?.detail || 'Ошибка') } finally { crU.value = false } }
-watch(pendingAvatarCount, (n) => { notifStore.setAdminPending(n) })
 
 onMounted(async () => {
   if (!auth.isAdmin) return
@@ -447,8 +446,6 @@ onMounted(async () => {
   try { users.value = await adminSvc.users() } catch {} finally { loadingU.value = false }
   try { classes.value = await classesSvc.listAll(); classesCount.value = classes.value.length } catch {}
   loadAiSummary()
-  loadAvatars()
-  loadAvatarLecturesAdmin()
 })
 </script>
 <style scoped>
