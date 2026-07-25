@@ -3,13 +3,12 @@
     <div class="modal anim-scale">
       <div class="modal-head">
         <div class="modal-head-l">
-          <div class="modal-ico" :class="type === 'lecture' ? 'ico-lec' : 'ico-mat'">
-            <svg v-if="type === 'lecture'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <div class="modal-ico ico-lec">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
           </div>
           <div>
-            <div class="modal-title">{{ type === 'lecture' ? 'Добавить лекцию' : 'Добавить материал' }}</div>
-            <div class="modal-sub">{{ type === 'lecture' ? 'Учебный материал для класса' : 'Файлы и ресурсы для студентов' }}</div>
+            <div class="modal-title">Добавить лекцию</div>
+            <div class="modal-sub">Учебный материал для класса</div>
           </div>
         </div>
         <button class="btn btn-icon btn-ghost" @click="$emit('close')">
@@ -17,26 +16,14 @@
         </button>
       </div>
 
-      <!-- Type switch -->
-      <div class="type-switch">
-        <button :class="['type-btn', { active: type === 'lecture' }]" @click="type = 'lecture'">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-          Лекция
-        </button>
-        <button :class="['type-btn', { active: type === 'hw' }]" @click="type = 'hw'">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Материал
-        </button>
-      </div>
-
       <div class="modal-body">
         <div class="field">
-          <label class="field-label">{{ type === 'lecture' ? 'Тема лекции' : 'Название материала' }} *</label>
-          <input v-model="title" class="inp" :placeholder="type === 'lecture' ? 'Например: Введение в тему...' : 'Название книги, ресурса...'" autofocus />
+          <label class="field-label">Тема лекции *</label>
+          <input v-model="title" class="inp" placeholder="Например: Введение в тему..." autofocus />
         </div>
         <div class="field">
-          <label class="field-label">{{ type === 'lecture' ? 'Содержание лекции' : 'Описание' }}</label>
-          <textarea v-model="body" class="inp inp-ta" rows="4" :placeholder="type === 'lecture' ? 'Текст лекции, ссылки на видео...' : 'Краткое описание материала...'"></textarea>
+          <label class="field-label">Содержание лекции</label>
+          <textarea v-model="body" class="inp inp-ta" rows="4" placeholder="Текст лекции, ссылки на видео..."></textarea>
         </div>
 
         <!-- File upload -->
@@ -75,7 +62,7 @@
         <button class="btn btn-purple" :disabled="!title.trim() || loading" @click="submit">
           <div v-if="loading" class="spinner"></div>
           <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          {{ type === 'lecture' ? 'Опубликовать лекцию' : 'Добавить материал' }}
+          Опубликовать лекцию
         </button>
       </div>
     </div>
@@ -95,7 +82,6 @@ const postsSvc = usePostsSvc()
 const uploadSvc = useUploadSvc()
 const toast = useToast()
 
-const type = ref<'lecture' | 'hw'>('lecture')
 const title = ref('')
 const body = ref('')
 const loading = ref(false)
@@ -145,10 +131,10 @@ const submit = async () => {
     })
 
     const p = await postsSvc.create(
-      `[${type.value.toUpperCase()}][${props.classId}] ${title.value}`,
+      `[LECTURE][${props.classId}] ${title.value}`,
       finalBody
     )
-    toast.ok(type.value === 'lecture' ? 'Лекция опубликована' : 'Материал добавлен')
+    toast.ok('Лекция опубликована')
     emit('created', p)
   } catch (e: any) {
     toast.err(e?.response?.data?.detail || 'Ошибка')
@@ -166,14 +152,8 @@ const submit = async () => {
 .modal-head-l { display: flex; align-items: center; gap: 12px; }
 .modal-ico { width: 38px; height: 38px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; }
 .ico-lec { background: rgba(239,68,68,.12); color: #f87171; border: 1px solid rgba(239,68,68,.2); }
-.ico-mat { background: rgba(251,191,36,.1); color: #fbbf24; border: 1px solid rgba(251,191,36,.2); }
 .modal-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 16px; font-weight: 800; color: var(--text1); }
 .modal-sub { font-size: 12px; color: var(--text4); margin-top: 2px; }
-
-.type-switch { display: flex; gap: 6px; padding: 12px 24px; background: var(--surface2); border-bottom: 1px solid var(--border); }
-.type-btn { display: flex; align-items: center; gap: 7px; padding: 8px 18px; border-radius: var(--r-lg); font-size: 13px; font-weight: 600; color: var(--text3); background: transparent; border: 1px solid transparent; cursor: pointer; transition: all .15s; }
-.type-btn:hover { color: var(--text1); background: var(--surface3); }
-.type-btn.active { background: var(--surface3); color: var(--text1); border-color: var(--border2); }
 
 .modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px; }
 .modal-foot { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }

@@ -188,10 +188,10 @@ const classFiles = computed((): ClassFile[] => {
     }
   }
 
-  // From class posts (lectures + materials)
+  // From class posts (lectures)
   for (const post of (props.classPosts || [])) {
-    const isLecture = post.title?.startsWith('[LECTURE]')
-    addFromText(post.body || '', isLecture ? 'Лекция' : 'Материал')
+    if (!post.title?.startsWith('[LECTURE]')) continue
+    addFromText(post.body || '', 'Лекция')
   }
 
   // From assignment descriptions (teacher-attached task files)

@@ -73,11 +73,6 @@
                 {{ t('class.lectures') }}
                 <span v-if="lectures.length" class="tab-num">{{ lectures.length }}</span>
               </button>
-              <button :class="['tab-btn', { active: tab === 'materials' }]" @click="tab = 'materials'">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                {{ t('class.materials') }}
-                <span v-if="materials.length" class="tab-num">{{ materials.length }}</span>
-              </button>
               <button :class="['tab-btn', { active: tab === 'assignments' }]" @click="tab = 'assignments'; loadAssignments()">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 {{ t('class.assignments') }}
@@ -93,7 +88,7 @@
 
           <!-- Teacher create actions — below the nav row, shown only on the tabs
                they apply to (never on AI chat). -->
-          <div class="tab-action-bar" v-if="canManage && ['lectures','materials','assignments'].includes(tab)">
+          <div class="tab-action-bar" v-if="canManage && ['lectures','assignments'].includes(tab)">
             <button class="btn btn-white btn-sm" @click="showCreateAssignment = true">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
               {{ t('class.assignment_btn') }}
@@ -175,43 +170,6 @@
                   </div>
                   <div class="item-actions">
                     <button v-if="canManage" class="item-menu-btn" @click.stop="toggleItemMenu($event, 'lecture-'+p.id)" :title="lang==='ru'?'Ещё':'More'">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </template>
-
-            <!-- MATERIALS -->
-            <template v-if="tab === 'materials'">
-              <div v-if="!materials.length" class="empty-state-card">
-                <div class="es-icon-wrap"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-                <div class="es-h">{{ t('class.no_materials') }}</div>
-                <div class="es-p">{{ isTeacher ? t('class.no_materials_teacher') : t('class.no_lectures_student') }}</div>
-              </div>
-              <div v-else class="items-list">
-                <div v-for="p in materials" :key="p.id" class="item-row" @click="viewPost(p, 'material')">
-                  <div class="item-icon-col">
-                    <div class="item-icon mat-icon">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                    </div>
-                  </div>
-                  <div class="item-body">
-                    <div class="item-title">{{ cleanTitle(p.title) }}</div>
-                    <div class="item-desc">{{ getPreview(p) }}</div>
-                    <div class="item-meta">
-                      <span class="meta-date">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        {{ fmtDate(p.created_at) }}
-                      </span>
-                      <span v-if="countFiles(p)" class="meta-files">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
-                        {{ countFiles(p) }} {{ pluralFile(countFiles(p)) }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="item-actions">
-                    <button v-if="canManage" class="item-menu-btn" @click.stop="toggleItemMenu($event, 'material-'+p.id)" :title="lang==='ru'?'Ещё':'More'">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
                     </button>
                   </div>
@@ -328,7 +286,7 @@
       </div>
     </template>
 
-    <!-- "⋮" menu for lecture/material/assignment cards — one shared popover
+    <!-- "⋮" menu for lecture/assignment cards — one shared popover
          instead of separate edit/delete icons on every card. position:fixed
          directly here — a <Teleport to="body"> on this page triggered a
          Vue Suspense/flush infinite-update crash on client-side navigation
@@ -436,7 +394,7 @@
     <div v-if="editingPost" class="overlay" @click.self="editingPost=null">
       <div class="modal anim-scale" style="max-width:520px;width:100%">
         <div class="modal-head">
-          <span class="modal-title">{{ lang==='ru' ? (editingPost.type==='lecture'?'Редактировать лекцию':'Редактировать материал') : (editingPost.type==='lecture'?'Edit Lecture':'Edit Material') }}</span>
+          <span class="modal-title">{{ lang==='ru' ? 'Редактировать лекцию' : 'Edit Lecture' }}</span>
           <button class="btn btn-icon btn-ghost" @click="editingPost=null">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -542,10 +500,9 @@
     <div v-if="viewingPost" class="post-overlay" @click.self="viewingPost = null">
       <div class="post-sheet anim-scale">
         <div class="sheet-head">
-          <div class="sheet-badge" :class="viewingPost.type">
-            <svg v-if="viewingPost.type === 'lecture'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-            <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
-            {{ viewingPost.type === 'lecture' ? t('class.lecture_badge') : t('class.material_badge') }}
+          <div class="sheet-badge lecture">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+            {{ t('class.lecture_badge') }}
           </div>
           <button class="btn btn-icon btn-ghost" @click="viewingPost = null">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -590,7 +547,7 @@ const isTeacher = computed(() => auth.user?.role === 'teacher' || auth.user?.rol
 const uInit = computed(() => (auth.nickname || auth.user?.email || '?')[0]?.toUpperCase())
 
 const loading = ref(true)
-const tab = ref<'lectures' | 'materials' | 'assignments' | 'ai'>('lectures')
+const tab = ref<'lectures' | 'assignments' | 'ai'>('lectures')
 
 // Cover collapses smoothly on scroll — only inside the AI chat tab (see the
 // LazyClassAiChat @scroll-state listener below). Reset whenever the tab changes.
@@ -681,7 +638,6 @@ const heroStyle = computed(() => {
 })
 const classPosts = computed(() => allPosts.value.filter(p => p.title?.includes(`[${classId.value}]`)))
 const lectures = computed(() => classPosts.value.filter(p => p.title?.startsWith('[LECTURE]')))
-const materials = computed(() => classPosts.value.filter(p => p.title?.startsWith('[HW]')))
 
 const avgScore = computed(() => ratingData.value.avg_score || null)
 const avgScoreDisplay = computed(() => Math.round(ratingData.value.avg_score || 0))
@@ -748,7 +704,7 @@ const pendingCount = computed(() => assignments.value.filter(a => !mySubmissions
 const doneCount = computed(() => mySubmissions.value.filter(s => s.status === 'submitted' || s.status === 'graded').length)
 const lateCount = computed(() => mySubmissions.value.filter(s => s.status === 'late').length + assignments.value.filter(a => !mySubmissionsMap.value[a.id] && a.deadline && new Date(a.deadline) < new Date()).length)
 
-const cleanTitle = (t: string) => t.replace(/^\[(LECTURE|HW)\]\[\d+\]\s*/, '').trim()
+const cleanTitle = (t: string) => t.replace(/^\[LECTURE\]\[\d+\]\s*/, '').trim()
 const fmtDate = (d: string) => { if (!d) return ''; try { return new Date(d).toLocaleDateString(lang.value === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return d } }
 // Файл из тела-JSON приложения приходит как "<url>#<имя>" (или битые легаси-строки).
 // Приводим к единому виду вложения сайта: 📎 [имя](url).
@@ -788,7 +744,10 @@ const getFullBody = (p: any): string => {
 const ATTACHMENT_LINK = /📎\s*\[([^\]]+)\]\(([^)]+)\)/g
 const getPreview = (p: any): string => { const body = getFullBody(p); const clean = body.replace(ATTACHMENT_LINK, '').replace(/(https?:\/\/[^\s]+)/g, '').replace(/\s+/g, ' ').trim(); return clean.length > 100 ? clean.slice(0, 100) + '…' : clean || (lang.value==='ru'?'Нет описания':'No description') }
 const FILE_EXT = /\.(pdf|doc|docx|txt|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|webp|md)(\?[^\s]*)?/i
-const countFiles = (p: any): number => { const body = p.body || ''; const m = body.match(new RegExp(`https?://[^\\s\\n"'<>]+${FILE_EXT.source}`, 'gi')); return m?.length || 0 }
+// Пробел в URL допустим (оригинальное имя файла в пути) — границу задают
+// кавычки/спецсимволы JSON, а не whitespace, иначе файлы с пробелом в имени
+// (напр. "Lection 1.pptx") не считались бы вложениями.
+const countFiles = (p: any): number => { const body = p.body || ''; const m = body.match(new RegExp(`https?://[^\\n"'<>]+${FILE_EXT.source}`, 'gi')); return m?.length || 0 }
 const pluralFile = (n: number) => lang.value === 'ru' ? (n === 1 ? 'файл' : n < 5 ? 'файла' : 'файлов') : 'file' + (n !== 1 ? 's' : '')
 const getFileIcon = (url: string) => { const e = url.split('.').pop()?.split('?')[0]?.toLowerCase() || ''; if (e === 'pdf') return 'PDF'; if (['doc','docx','txt','md'].includes(e)) return 'DOC'; if (['xls','xlsx'].includes(e)) return 'XLS'; if (['ppt','pptx'].includes(e)) return 'PPT'; if (['png','jpg','jpeg','gif','webp'].includes(e)) return 'IMG'; return 'FILE' }
 const getFileName = (url: string) => { try { return decodeURIComponent(new URL(url).pathname.split('/').pop() || url) } catch { return url.slice(-50) } }
@@ -807,7 +766,10 @@ const renderBody = (text: string): string => {
   // Один проход: и 📎-вложения, и голые ссылки. String.replace не пересканирует
   // вставленную разметку, поэтому сгенерированные <a> не оборачиваются повторно
   // (иначе URL из href/data-preview-* распознавался как новая ссылка → битый HTML).
-  const combined = /📎\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g
+  // URL внутри скобок 📎-вложения может содержать пробелы (оригинальное имя
+  // файла в пути, напр. "Lection 1.pptx") — границу задают сами скобки
+  // markdown-ссылки, поэтому пробел из группы не исключаем, только ')'.
+  const combined = /📎\s*\[([^\]]+)\]\((https?:\/\/[^)]+)\)|(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g
   return escaped.replace(combined, (_m, name, attUrl, bareUrl) => {
     // name из attachment-формата уже прошёл &<>-экранирование (в `escaped`) —
     // добавляем только кавычку. bareUrl-имя (getFileName) сырое → полный escape.
@@ -845,7 +807,7 @@ const regenerateCode = async () => {
 const viewPost = (p: any, type: string) => { viewingPost.value = { ...p, type } }
 const onPostCreated = (p: any) => { allPosts.value.unshift(p) }
 
-// ── Item card "⋮" menu (edit/delete) — shared by lectures/materials/assignments ──
+// ── Item card "⋮" menu (edit/delete) — shared by lectures/assignments ──
 const openItemMenu = ref<string | null>(null)
 const itemMenuPos = ref({ top: 0, right: 0 })
 const closeItemMenu = () => { openItemMenu.value = null }
@@ -875,7 +837,7 @@ const openEditPost = (p: any, type: string) => {
   let content = ''
   try { const b = JSON.parse(p.body); content = b.content || b.description || '' } catch { content = p.body || '' }
   const rawTitle = p.title || ''
-  const cleanedTitle = rawTitle.replace(/^\[(LECTURE|HW)\]\[\d+\]\s*/, '').trim()
+  const cleanedTitle = rawTitle.replace(/^\[LECTURE\]\[\d+\]\s*/, '').trim()
   editPostForm.value = { title: cleanedTitle, content }
 }
 
@@ -887,7 +849,7 @@ const saveEditPost = async () => {
     let body: any = {}
     try { body = JSON.parse(p.body) } catch {}
     body.content = editPostForm.value.content
-    const prefix = p.type === 'lecture' ? `[LECTURE][${classId.value}] ` : `[HW][${classId.value}] `
+    const prefix = `[LECTURE][${classId.value}] `
     const newTitle = prefix + editPostForm.value.title
     await postsSvc.update(p.id, newTitle, JSON.stringify(body))
     const idx = allPosts.value.findIndex(x => x.id === p.id)
@@ -968,7 +930,6 @@ const activeMenuItem = computed(() => {
   const type = openItemMenu.value.slice(0, sep)
   const id = Number(openItemMenu.value.slice(sep + 1))
   if (type === 'lecture') return { type, item: lectures.value.find(p => p.id === id) }
-  if (type === 'material') return { type, item: materials.value.find(p => p.id === id) }
   if (type === 'assignment') return { type, item: assignments.value.find(a => a.id === id) }
   return null
 })
@@ -995,7 +956,7 @@ const onSubmitted = (sub: Submission) => {
 onMounted(async () => {
   // Open a specific tab if passed via query param (e.g. from calendar deadlines)
   const qTab = route.query.tab as string
-  if (qTab === 'assignments' || qTab === 'materials' || qTab === 'ai') {
+  if (qTab === 'assignments' || qTab === 'ai') {
     tab.value = qTab
     if (qTab === 'assignments') loadAssignments()
   }
@@ -1137,7 +1098,6 @@ onMounted(async () => {
 .item-icon{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;transition:transform .2s ease}
 .item-row:hover .item-icon{transform:scale(1.06)}
 .lec-icon{background:linear-gradient(150deg,rgba(var(--teal-rgb),.16),rgba(var(--teal-rgb),.05));color:var(--teal);border:1px solid rgba(var(--teal-rgb),.18)}
-.mat-icon{background:linear-gradient(150deg,rgba(251,191,36,.14),rgba(251,191,36,.04));color:var(--yellow);border:1px solid rgba(251,191,36,.16)}
 .asgn-icon{background:linear-gradient(150deg,rgba(var(--teal-rgb),.14),rgba(var(--teal-rgb),.04));color:var(--teal);border:1px solid rgba(var(--teal-rgb),.15)}
 .icon-late{background:linear-gradient(150deg,rgba(220,38,38,.14),rgba(220,38,38,.04))!important;color:var(--red)!important;border-color:rgba(220,38,38,.18)!important}
 .icon-progress{background:linear-gradient(150deg,rgba(var(--teal-rgb),.16),rgba(var(--teal-rgb),.05))!important;color:var(--teal)!important;border-color:rgba(var(--teal-rgb),.2)!important}
@@ -1166,7 +1126,7 @@ onMounted(async () => {
 .item-row:hover .item-del{opacity:1}
 .item-del:hover{background:var(--red-l);border-color:rgba(220,38,38,.2);color:var(--red)}
 
-/* "⋮" menu button — replaces separate edit/delete icons on lecture/material/
+/* "⋮" menu button — replaces separate edit/delete icons on lecture/
    assignment cards; opens a small teleported menu (see .item-menu below). */
 .item-menu-btn{width:32px;height:32px;border-radius:10px;background:transparent;border:1px solid transparent;color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
 .item-menu-btn:hover,.item-menu-btn.active{background:var(--surface2);color:var(--text1)}
@@ -1271,7 +1231,6 @@ onMounted(async () => {
 .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .sheet-badge{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:5px 14px;border-radius:100px}
 .sheet-badge.lecture{background:var(--teal-l);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.2)}
-.sheet-badge.material{background:rgba(251,191,36,.08);color:var(--yellow);border:1px solid rgba(251,191,36,.18)}
 .sheet-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:24px;font-weight:900;color:var(--text1);letter-spacing:-.025em;margin-bottom:6px}
 .sheet-date{font-size:12px;color:var(--text4);margin-bottom:22px}
 .sheet-body{font-size:14px;color:var(--text2);line-height:1.8;white-space:pre-wrap}

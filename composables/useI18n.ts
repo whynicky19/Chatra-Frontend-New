@@ -92,14 +92,11 @@ export const translations: Record<string, Record<Lang, string>> = {
 
   // Class detail
   'class.lectures': { ru: 'Лекции', en: 'Lectures', kk: 'Дәрістер' },
-  'class.materials': { ru: 'Материалы', en: 'Materials', kk: 'Материалдар' },
   'class.assignments': { ru: 'Задания', en: 'Assignments', kk: 'Тапсырмалар' },
   'class.ai_chat': { ru: 'ИИ-чат', en: 'AI Chat', kk: 'ЖИ-чат' },
   'class.no_lectures': { ru: 'Лекций пока нет', en: 'No lectures yet', kk: 'Дәріс әлі жоқ' },
   'class.no_lectures_teacher': { ru: 'Нажмите «Добавить» чтобы опубликовать первую лекцию', en: 'Click "Add" to publish the first lecture', kk: 'Бірінші дәрісті жариялау үшін «Қосу» батырмасын басыңыз' },
-  'class.no_lectures_student': { ru: 'Преподаватель добавит материалы', en: 'Teacher will add materials', kk: 'Мұғалім материалдар қосады' },
-  'class.no_materials': { ru: 'Материалов пока нет', en: 'No materials yet', kk: 'Материалдар әлі жоқ' },
-  'class.no_materials_teacher': { ru: 'Нажмите «Добавить» чтобы добавить ресурс', en: 'Click "Add" to add a resource', kk: 'Ресурс қосу үшін «Қосу» батырмасын басыңыз' },
+  'class.no_lectures_student': { ru: 'Преподаватель добавит лекции', en: 'Teacher will add lectures', kk: 'Мұғалім дәрістер қосады' },
   'class.no_assignments': { ru: 'Заданий пока нет', en: 'No assignments yet', kk: 'Тапсырмалар әлі жоқ' },
   'class.no_assignments_teacher': { ru: 'Нажмите «Задание» чтобы создать первое', en: 'Click "Assignment" to create the first one', kk: 'Бірінші тапсырманы жасау үшін «Тапсырма» батырмасын басыңыз' },
   'class.no_assignments_student': { ru: 'Учитель добавит задания', en: 'Teacher will add assignments', kk: 'Мұғалім тапсырмалар қосады' },
@@ -132,7 +129,6 @@ export const translations: Record<string, Record<Lang, string>> = {
   'class.delete_assignment': { ru: 'Задание удалено', en: 'Assignment deleted', kk: 'Тапсырма жойылды' },
   'class.delete_post': { ru: 'Удалено', en: 'Deleted', kk: 'Жойылды' },
   'class.lecture_badge': { ru: 'Лекция', en: 'Lecture', kk: 'Дәріс' },
-  'class.material_badge': { ru: 'Материал', en: 'Material', kk: 'Материал' },
   'class.files': { ru: 'файл', en: 'file', kk: 'файл' },
   'class.files2': { ru: 'файла', en: 'files', kk: 'файл' },
   'class.files5': { ru: 'файлов', en: 'files', kk: 'файл' },
