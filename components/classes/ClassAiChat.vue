@@ -82,7 +82,7 @@
 
     <div class="ai-input-bar">
       <textarea ref="inputEl" v-model="inputTxt" class="ai-textarea"
-        :placeholder="aiLimitReached ? 'Дневной лимит исчерпан...' : 'Спросите про материалы, попросите объяснить тему...'"
+        :placeholder="aiLimitReached ? 'Лимит исчерпан' : 'Спросите Chatra AI'"
         rows="1" :disabled="aiLimitReached" @keydown.enter.exact.prevent="send" @input="autoResize">
       </textarea>
       <button :class="['send-btn', { locked: aiLimitReached }]" :disabled="!inputTxt.trim() || loading || aiLimitReached" @click="send">
@@ -649,13 +649,20 @@ onMounted(() => {
 
 /* Input bar */
 .ai-input-bar { display: flex; align-items: flex-end; gap: 10px; padding: 12px 18px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
-.ai-textarea { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 11px 15px; color: var(--text1); font-size: 13.5px; resize: none; line-height: 1.5; max-height: 140px; transition: border-color .15s; font-family: inherit; }
+.ai-textarea { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 11px 15px; color: var(--text1); font-size: 13.5px; resize: none; line-height: 1.5; max-height: 140px; overflow-y: auto; transition: border-color .15s; font-family: inherit; }
 .ai-textarea:focus { border-color: rgba(var(--teal-rgb),.45); outline: none; }
 .send-btn { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,var(--teal),var(--teal-h)); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .18s; flex-shrink: 0; box-shadow: 0 4px 14px rgba(var(--teal-rgb),.4); }
 .send-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
 .send-btn.locked { background: var(--surface2); color: var(--text4); box-shadow: none; opacity: 1; }
 html.dark .send-btn.locked { background: var(--surface3, var(--surface2)); }
 .send-btn:not(:disabled):hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(var(--teal-rgb),.6); }
+
+@media (max-width: 768px) {
+  /* На iOS текст поля ввода меньше 16px заставляет Safari зумить страницу
+     при фокусе — из-за этого поле выглядит "не влезающим" и скролл ломается. */
+  .ai-textarea { font-size: 16px; padding: 10px 13px; }
+  .ai-input-bar { padding: 10px 12px; }
+}
 
 /* Spinners */
 .spin-xs { width: 12px; height: 12px; border: 2px solid var(--border2); border-top-color: var(--teal); border-radius: 50%; animation: spin .6s linear infinite; flex-shrink: 0; }

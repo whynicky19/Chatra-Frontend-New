@@ -126,7 +126,7 @@
           ref="inp"
           v-model="txt"
           class="chat-field"
-          :placeholder="quota.aiLimitReached.value ? 'Дневной лимит исчерпан...' : 'Написать сообщение или спросить кое что...'"
+          :placeholder="quota.aiLimitReached.value ? 'Лимит исчерпан' : 'Спросите Chatra AI'"
           :disabled="sending || quota.aiLimitReached.value"
           @keydown.enter="send"
         />
