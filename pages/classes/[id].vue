@@ -1234,9 +1234,11 @@ onMounted(async () => {
 .sheet-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:24px;font-weight:900;color:var(--text1);letter-spacing:-.025em;margin-bottom:6px}
 .sheet-date{font-size:12px;color:var(--text4);margin-bottom:22px}
 .sheet-body{font-size:14px;color:var(--text2);line-height:1.8;white-space:pre-wrap}
-:deep(.file-attachment){display:inline-flex;align-items:center;gap:9px;padding:11px 16px;margin:6px 4px;background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.2);border-radius:var(--r-lg);color:var(--teal);font-size:13px;font-weight:600;text-decoration:none;transition:all .18s}
+:deep(.file-attachment){display:inline-flex;align-items:center;gap:9px;padding:11px 16px;margin:6px 4px;max-width:100%;background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.2);border-radius:var(--r-lg);color:var(--teal);font-size:13px;font-weight:600;text-decoration:none;transition:all .18s}
 :deep(.file-attachment:hover){background:var(--teal-m);transform:translateY(-1px)}
-:deep(.file-attachment span){overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px}
+/* Полное имя файла всегда видно — переносится на новую строку вместо
+   обрезки многоточием (раньше max-width:280px+ellipsis резал длинные имена). */
+:deep(.file-attachment span){white-space:normal;word-break:break-word;overflow-wrap:anywhere}
 :deep(.link-inline){color:var(--teal);text-decoration:underline;text-underline-offset:3px;word-break:break-all}
 .anim-scale{animation:scaleIn .2s ease both}
 @keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}

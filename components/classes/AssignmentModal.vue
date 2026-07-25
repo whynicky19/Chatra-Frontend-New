@@ -703,7 +703,9 @@ onMounted(async () => {
 .section { display: flex; flex-direction: column; gap: 10px; }
 .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); }
 .files-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.file-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(var(--teal-rgb),.07); border: 1px solid rgba(var(--teal-rgb),.18); border-radius: var(--r-md); color: var(--teal); font-size: 13px; font-weight: 600; text-decoration: none; transition: all .15s; cursor: pointer; }
+/* max-width + перенос слов — длинное имя файла без пробелов иначе вылезает
+   за пределы модалки вместо переноса на новую строку. */
+.file-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; max-width: 100%; background: rgba(var(--teal-rgb),.07); border: 1px solid rgba(var(--teal-rgb),.18); border-radius: var(--r-md); color: var(--teal); font-size: 13px; font-weight: 600; text-decoration: none; transition: all .15s; cursor: pointer; word-break: break-word; overflow-wrap: anywhere; }
 .file-chip:hover { background: rgba(var(--teal-rgb),.14); }
 .file-chip.small { font-size: 12px; padding: 5px 10px; }
 .criteria-list { display: flex; flex-direction: column; gap: 8px; }
@@ -726,7 +728,7 @@ onMounted(async () => {
 .file-drop:hover, .file-drop.has-file { border-color: rgba(var(--teal-rgb),.4); background: rgba(var(--teal-rgb),.03); }
 .attached-files-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
 .attached-file-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); font-size: 12px; }
-.attached-file-row .af-name { flex: 1; font-weight: 500; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.attached-file-row .af-name { flex: 1; min-width: 0; font-weight: 500; color: var(--text1); word-break: break-word; overflow-wrap: anywhere; }
 .attached-file-row .af-size { color: var(--text4); white-space: nowrap; }
 .attached-file-row .af-rm { width: 20px; height: 20px; border-radius: 50%; background: var(--surface3); color: var(--text4); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all .15s; }
 .attached-file-row .af-rm:hover { background: var(--red-l); color: var(--red); }

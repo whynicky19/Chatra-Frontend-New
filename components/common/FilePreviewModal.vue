@@ -14,7 +14,17 @@
         </div>
       </div>
 
-      <div class="fp-body">
+      <!-- Контейнер docx смонтирован ВСЕГДА (не внутри v-if/v-else-if цепочки
+           ниже) и просто скрывается через v-show, пока идёт загрузка/рендер.
+           docx-preview.renderAsync() пишет в этот DOM-узел ИМПЕРАТИВНО ещё
+           ДО того, как loading становится false — если бы контейнер был
+           частью v-else-if="kind==='docx'" (который исключает друг друга с
+           v-if="loading"), ref был бы null всё время рендера, renderAsync
+           тихо ничего не находил бы, и после загрузки показывался бы просто
+           пустой div без единой ошибки в консоли. -->
+      <div v-show="kind==='docx' && !loading && !errorMsg" ref="docxContainer" class="fp-docx"></div>
+
+      <div class="fp-body" v-if="kind!=='docx' || loading || errorMsg">
         <div v-if="loading" class="fp-state">
           <div class="spinner" style="width:24px;height:24px;border-width:3px"></div>
         </div>
@@ -28,7 +38,7 @@
 
         <iframe v-else-if="kind==='pdf'" :src="previewFile.url" class="fp-iframe"></iframe>
 
-        <div v-else-if="kind==='docx'" ref="docxContainer" class="fp-docx"></div>
+        <iframe v-else-if="kind==='office'" :src="convertedPdfUrl" class="fp-iframe"></iframe>
 
         <div v-else-if="kind==='sheet'" class="fp-sheet" v-html="sheetHtml"></div>
 
@@ -46,14 +56,17 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { useFilePreview, downloadFile } from '~/composables/useFilePreview'
+import { useUploadSvc } from '~/services/uploads'
 
 const { previewFile, closePreview } = useFilePreview()
+const uploadSvc = useUploadSvc()
 
 const loading = ref(false)
 const errorMsg = ref('')
 const docxContainer = ref<HTMLElement | null>(null)
 const sheetHtml = ref('')
 const textContent = ref('')
+const convertedPdfUrl = ref('')
 
 const extOf = (name: string) => name.split('.').pop()?.toLowerCase().split('?')[0] || ''
 
@@ -62,6 +75,9 @@ const kind = computed(() => {
   if (['png','jpg','jpeg','gif','webp','bmp','svg'].includes(ext)) return 'image'
   if (ext === 'pdf') return 'pdf'
   if (ext === 'docx') return 'docx'
+  // .doc/.rtf — старые бинарные форматы без разумной клиентской библиотеки,
+  // .ppt/.pptx — презентации: все конвертируются в PDF на бэкенде (LibreOffice).
+  if (['ppt','pptx','doc','rtf'].includes(ext)) return 'office'
   if (['xlsx','xls','csv'].includes(ext)) return 'sheet'
   if (['txt','md'].includes(ext)) return 'text'
   return 'unsupported'
@@ -79,14 +95,32 @@ const load = async () => {
   errorMsg.value = ''
   sheetHtml.value = ''
   textContent.value = ''
+  convertedPdfUrl.value = ''
   if (!previewFile.value) return
   const f = previewFile.value
   const k = kind.value
   if (k === 'image' || k === 'pdf' || k === 'unsupported') return
 
+  if (k === 'office') {
+    loading.value = true
+    try {
+      const { pdf_url } = await uploadSvc.previewPdf(f.url)
+      convertedPdfUrl.value = pdf_url
+    } catch {
+      errorMsg.value = 'Не удалось подготовить предпросмотр документа'
+    } finally {
+      loading.value = false
+    }
+    return
+  }
+
   loading.value = true
   try {
-    const res = await fetch(f.url)
+    // no-store: без него повторный предпросмотр ТОГО ЖЕ файла в рамках одной
+    // загрузки страницы (тот же подписанный URL, сервер отдаёт ETag от R2)
+    // иногда ловит условный 304 Not Modified с пустым телом — fetch() не
+    // подставляет закэшированный body сам, поэтому парсинг падал на "пустом" файле.
+    const res = await fetch(f.url, { cache: 'no-store' })
     if (!res.ok) throw new Error('fetch failed')
 
     if (k === 'docx') {
@@ -129,7 +163,10 @@ watch(() => previewFile.value?.url, (url) => { if (url) load() })
 .fp-error-text{font-size:13px;color:var(--text4);text-align:center;max-width:320px}
 .fp-image{max-width:100%;max-height:100%;margin:auto;object-fit:contain}
 .fp-iframe{width:100%;min-height:78vh;border:none}
-.fp-docx{width:100%;padding:24px;background:#fff;overflow:auto}
+/* flex:1 — теперь это прямой flex-child .fp-modal (вынесен из .fp-body,
+   см. комментарий в шаблоне), без display:flex — иначе сломало бы внутреннюю
+   постраничную вёрстку, которую генерирует docx-preview. */
+.fp-docx{flex:1;width:100%;padding:24px;background:#fff;overflow:auto}
 .fp-sheet{width:100%;padding:16px;overflow:auto}
 .fp-sheet :deep(table){border-collapse:collapse;font-size:13px}
 .fp-sheet :deep(td),.fp-sheet :deep(th){border:1px solid var(--border);padding:4px 8px;white-space:nowrap}
