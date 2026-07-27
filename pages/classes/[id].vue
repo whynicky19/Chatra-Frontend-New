@@ -149,11 +149,6 @@
               </div>
               <div v-else class="items-list">
                 <div v-for="p in lectures" :key="p.id" class="item-row" @click="viewPost(p, 'lecture')">
-                  <div class="item-icon-col">
-                    <div class="item-icon lec-icon">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-                    </div>
-                  </div>
                   <div class="item-body">
                     <div class="item-title">{{ cleanTitle(p.title) }}</div>
                     <div class="item-desc">{{ getPreview(p) }}</div>
@@ -161,10 +156,6 @@
                       <span class="meta-date">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         {{ fmtDate(p.created_at) }}
-                      </span>
-                      <span v-if="countFiles(p)" class="meta-files">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
-                        {{ countFiles(p) }} {{ pluralFile(countFiles(p)) }}
                       </span>
                     </div>
                   </div>
@@ -188,17 +179,10 @@
                 </div>
                 <div v-else class="items-list">
                   <div v-for="a in assignments" :key="a.id" class="item-row assignment-item" @click="openAssignment(a)">
-                    <div class="item-icon-col">
-                      <div :class="['item-icon', 'asgn-icon', getStatusIconClass(a)]">
-                        <svg v-if="isLate(a)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/><circle cx="12" cy="12" r="10"/></svg>
-                        <svg v-else-if="isInProgress(a)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
-                        <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                      </div>
-                    </div>
                     <div class="item-body">
                       <div class="item-row-top">
                         <div class="item-title">{{ a.title }}</div>
-                        <div :class="['status-badge', getStatusClass(a)]">{{ getStatusLabel(a) }}</div>
+                        <div v-if="isGraded(a)" :class="['status-badge', getStatusClass(a)]">{{ getStatusLabel(a) }}</div>
                       </div>
                       <div class="item-desc">{{ stripFilesFromText(a.description) }}</div>
                       <div class="item-meta">
@@ -682,6 +666,7 @@ const mySubmissionsMap = computed(() => {
 })
 const isLate = (a: Assignment) => a.deadline && parseUtc(a.deadline) < new Date() && !mySubmissionsMap.value[a.id]
 const isInProgress = (a: Assignment) => mySubmissionsMap.value[a.id]?.status === 'submitted'
+const isGraded = (a: Assignment) => mySubmissionsMap.value[a.id]?.status === 'graded'
 const getStatusIconClass = (a: Assignment) => {
   if (isLate(a)) return 'icon-late'
   if (isInProgress(a)) return 'icon-progress'
