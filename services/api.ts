@@ -66,6 +66,15 @@ export const useApi = (): AxiosInstance => {
         return Promise.reject(e)
       }
 
+      // Неверный логин/пароль (или другая auth-ручка) отвечает 401 сама по
+      // себе — это не "токен протух", а ответ на конкретную попытку входа.
+      // Раньше это ловилось общей веткой ниже: без refreshToken шёл doLogout()
+      // (жёсткий redirect на /login), из-за чего форма входа не успевала
+      // показать ошибку — просто перезагружалась молча.
+      if (isAuthEntry) {
+        return Promise.reject(e)
+      }
+
       if (original.url?.includes('/auth/refresh')) {
         doLogout()
         return Promise.reject(e)

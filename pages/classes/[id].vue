@@ -939,7 +939,17 @@ const onMenuDelete = () => {
   if (m.type === 'assignment') deleteAssignment(m.item)
   else deletePost(m.item.id)
 }
-const onSubmitted = (sub: Submission) => {
+const onSubmitted = (sub: Submission | null) => {
+  if (!sub) {
+    // Отзыв сдачи: AssignmentModal эмитит null (см. retract()), сдачи для
+    // этого задания больше нет — убираем её из списка по открытому заданию.
+    if (activeAssignment.value) {
+      const idx = mySubmissions.value.findIndex(s => s.assignment_id === activeAssignment.value!.id)
+      if (idx !== -1) mySubmissions.value.splice(idx, 1)
+    }
+    loadRating()
+    return
+  }
   const idx = mySubmissions.value.findIndex(s => s.assignment_id === sub.assignment_id)
   if (idx !== -1) mySubmissions.value[idx] = sub; else mySubmissions.value.push(sub)
   loadRating()
