@@ -663,9 +663,13 @@ const saveManualGrade = async () => {
       feedback: manualFeedback.value || undefined,
       graded_by: 'teacher'
     })
-    activeSub.value = { ...activeSub.value, grade, status: 'graded' }
+    // Финальную оценку теперь ставит человек — старая уверенность ИИ (если
+    // сдача уже проходила через needs_review/recheck) больше не относится к
+    // делу и вводит в заблуждение рядом с новым баллом (см. бэкенд-фикс в
+    // save_grade — он тоже её чистит, здесь просто не ждём лишний рефетч).
+    activeSub.value = { ...activeSub.value, grade, status: 'graded', ai_confidence: null, ai_review_reasons: null }
     const idx = submissions.value.findIndex(s => s.id === activeSub.value!.id)
-    if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], grade, status: 'graded' }
+    if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], grade, status: 'graded', ai_confidence: null, ai_review_reasons: null }
     toast.ok(`${t('am.grade_saved')}: ${grade.score} / ${props.assignment.max_score}`)
     showManualGrade.value = false
     manualScore.value = 0
@@ -687,9 +691,13 @@ const confirmSuggested = async () => {
       criteria_scores: parsedActiveScores.value || undefined,
       graded_by: 'teacher'
     })
-    activeSub.value = { ...activeSub.value, grade, status: 'graded' }
+    // Финальную оценку теперь ставит человек — старая уверенность ИИ (если
+    // сдача уже проходила через needs_review/recheck) больше не относится к
+    // делу и вводит в заблуждение рядом с новым баллом (см. бэкенд-фикс в
+    // save_grade — он тоже её чистит, здесь просто не ждём лишний рефетч).
+    activeSub.value = { ...activeSub.value, grade, status: 'graded', ai_confidence: null, ai_review_reasons: null }
     const idx = submissions.value.findIndex(s => s.id === activeSub.value!.id)
-    if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], grade, status: 'graded' }
+    if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], grade, status: 'graded', ai_confidence: null, ai_review_reasons: null }
     toast.ok(`${t('am.grade_saved')}: ${grade.score} / ${props.assignment.max_score}`)
   } catch (e: any) { toast.err(e?.response?.data?.detail || t('am.err_save_grade')) }
   finally { confirmingSuggested.value = false }
