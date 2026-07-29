@@ -2,7 +2,7 @@
   <div class="pg">
     <div class="pg-head">
       <h1 class="pg-title">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
         Уведомления
       </h1>
       <button v-if="unreadCount > 0" class="btn btn-ghost btn-sm" @click="markAllRead">Прочитать все</button>
@@ -170,7 +170,7 @@ onMounted(async () => {
         title: 'Работа проверена',
         desc: a ? `${a.title} — оценка выставлена` : `Работа #${s.id} проверена`,
         date: s.grade?.graded_at || s.submitted_at,
-        color: 'var(--teal)',
+        color: 'var(--green)',
         read: isRead(key),
       })
     }

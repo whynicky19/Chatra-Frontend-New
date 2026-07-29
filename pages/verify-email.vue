@@ -94,7 +94,7 @@ onUnmounted(() => clearInterval(timer))
 .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;box-shadow:var(--sh-md);padding:28px 26px;width:100%;max-width:400px;margin:0 auto}
 .auth-title{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-bottom:6px;color:var(--text1);text-align:center}
 .auth-sub{font-size:15px;color:var(--text4);margin-bottom:8px;text-align:center;line-height:1.4}
-.sent-to{font-size:13px;color:var(--teal);text-align:center;margin-bottom:22px;word-break:break-all}
+.sent-to{font-size:13px;color:var(--text2);text-align:center;margin-bottom:22px;word-break:break-all}
 .auth-form{display:flex;flex-direction:column}
 .frow{margin-bottom:14px}
 .flabel{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.04em;display:block;margin-bottom:6px}

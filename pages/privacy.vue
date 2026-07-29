@@ -176,8 +176,8 @@ useHead({ title: computed(() => c.value.title) })
   margin: 24px 0 16px;
   border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
-  background: color-mix(in srgb, var(--teal, #0d9488) 12%, transparent);
-  color: var(--teal, #0d9488);
+  background: var(--surface2);
+  color: var(--text3);
 }
 .pp-title { font-size: 30px; font-weight: 800; letter-spacing: -0.6px; margin: 0; }
 .pp-updated { font-size: 13px; color: var(--text4, #8e8e93); font-weight: 600; margin: 8px 0 0; }

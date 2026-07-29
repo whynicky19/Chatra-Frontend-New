@@ -226,7 +226,7 @@
         <div v-if="loadingCl" style="display:flex;justify-content:center;padding:24px"><div class="spinner"></div></div>
         <div v-else class="cl-grid">
           <div v-for="cl in classes" :key="cl.id" class="cl-card" @click="openClass(cl)">
-            <div class="cl-cover" :style="(cl.cover_thumbnail || cl.cover_image) ? `background-image:url(${cl.cover_thumbnail || cl.cover_image})` : `background:${coverGrad(cl.id)}`">
+            <div class="cl-cover" :style="(cl.cover_thumbnail || cl.cover_image) ? `background-image:url(${fixFileUrl(cl.cover_thumbnail || cl.cover_image)})` : `background:${coverGrad(cl.id)}`">
             </div>
             <div class="cl-body">
               <div class="cl-name">{{ cl.name }}</div>
@@ -245,7 +245,7 @@
     <div v-if="showMembers" class="overlay" @click.self="showMembers=false">
       <div class="modal anim-scale cl-detail-modal">
         <!-- Cover header -->
-        <div class="cl-modal-cover" :style="selectedClass?.cover_image ? `background-image:url(${selectedClass.cover_image})` : `background:${coverGrad(selectedClass?.id||0)}`">
+        <div class="cl-modal-cover" :style="selectedClass?.cover_image ? `background-image:url(${fixFileUrl(selectedClass.cover_image)})` : `background:${coverGrad(selectedClass?.id||0)}`">
           <button class="btn btn-icon cl-modal-close" @click="showMembers=false">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -345,6 +345,7 @@ import { useToast } from '~/composables/useToast'
 import { useAdminSvc } from '~/services/admin'
 import { useClassesSvc } from '~/services/classes'
 import { useI18n } from '~/composables/useI18n'
+import { fixFileUrl } from '~/composables/useFileUrl'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const toast = useToast(); const adminSvc = useAdminSvc()
 const { t, lang } = useI18n()
@@ -490,7 +491,7 @@ onMounted(async () => {
 .ai-sum-meta{font-size:11px;color:var(--text4);margin-top:2px}
 .ai-controls{margin-bottom:12px}
 .ai-filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.ai-total-badge{font-size:13px;font-weight:600;color:var(--teal);background:rgba(var(--teal-rgb),.1);border:1px solid rgba(var(--teal-rgb),.2);border-radius:var(--r-md);padding:5px 12px}
+.ai-total-badge{font-size:13px;font-weight:600;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);padding:5px 12px}
 .ai-class-chip{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(var(--teal-rgb),.1);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.2)}
 .ai-class-general{background:rgba(99,102,241,.08);color:#6366f1;border-color:rgba(99,102,241,.2)}
 .ai-type-chip{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
@@ -516,7 +517,7 @@ onMounted(async () => {
 .cl-modal-body{padding:0 20px 20px}
 .cl-section{margin-top:20px}
 .cl-section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.cl-count-badge{background:var(--teal);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:100px}
+.cl-count-badge{background:var(--text3);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:100px}
 .cl-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px 0;color:var(--text4);font-size:13px}
 
 /* Members */

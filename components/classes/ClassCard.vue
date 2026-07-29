@@ -23,6 +23,7 @@
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'
+import { fixFileUrl } from '~/composables/useFileUrl'
 const props = defineProps<{cls:{id:number;name:string;description?:string;cover_image?:string;cover_thumbnail?:string;teacher?:string;created_by:number};hwCount?:number}>()
 defineEmits<{open:[]}>()
 
@@ -35,7 +36,10 @@ const gradients = [
 ]
 
 // Карточка — миниатюра, не полноразмерная обложка (см. cover_thumbnail в ClassResponse)
-const coverImage = computed(() => props.cls.cover_thumbnail || props.cls.cover_image || null)
+const coverImage = computed(() => {
+  const raw = props.cls.cover_thumbnail || props.cls.cover_image
+  return raw ? fixFileUrl(raw) : null
+})
 const classDesc = computed(() => props.cls.description || '')
 const coverBg = computed(() => coverImage.value ? {} : { background: gradients[props.cls.id % gradients.length] })
 const teacherName = computed(() => {

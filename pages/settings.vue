@@ -53,7 +53,7 @@
       <!-- Preferences row (no appearance) -->
       <div class="scard">
         <div class="scard-head-sm">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
           <h3 class="scard-h3">{{ t('settings.preferences') }}</h3>
         </div>
         <div class="pref-list">
@@ -216,7 +216,7 @@ html.dark .field-input{background:var(--surface2)!important}
 .two-col-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .nav-card{display:flex;align-items:center;gap:14px;padding:16px 24px;color:var(--text1);text-decoration:none;transition:background .15s}
 .nav-card:hover{background:var(--hover,rgba(0,0,0,.03))}
-.nav-icon{width:34px;height:34px;border-radius:10px;background:var(--teal-l);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-icon{width:34px;height:34px;border-radius:10px;background:var(--surface2);color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .nav-title{font-size:15px;font-weight:600;color:var(--text1)}
 .nav-sub{font-size:12.5px;color:var(--text4);margin-top:1px}
 .pref-list{display:flex;flex-direction:column}
@@ -236,7 +236,7 @@ html.dark .field-input{background:var(--surface2)!important}
 .theme-choice.sel{border-color:var(--teal);background:var(--teal-l);color:var(--teal)}
 .theme-icon{width:44px;height:44px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center}
 .light-icon{background:#f0f4f5;color:#0d2d33;border:1px solid var(--border)}
-.dark-icon{background:#111b1e;color:#e8f4f6;border:1px solid rgba(var(--teal-rgb),.2)}
+.dark-icon{background:#111b1e;color:#e8f4f6;border:1px solid var(--border)}
 .follow-sys{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border)}
 .follow-info{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3)}
 /* Смена пароля */

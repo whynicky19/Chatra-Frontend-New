@@ -117,13 +117,13 @@ const cleanDesc = (s?: string) => (s || '').replace(/(https?:\/\/[^\s]+)/g, '').
 .asgn-card:hover { background: var(--surface2); border-color: var(--border2); transform: translateY(-1px); box-shadow: var(--sh-sm); }
 
 .asgn-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
-.accent-blue { background: var(--teal); }
+.accent-blue { background: var(--text4); }
 .accent-green { background: var(--green); }
 .accent-red { background: var(--red); }
 .accent-purple { background: #4dd6e8; }
 
 .asgn-ico-wrap { width: 44px; height: 44px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ico-blue { background: rgba(var(--teal-rgb),.12); color: var(--teal); border: 1px solid rgba(var(--teal-rgb),.18); }
+.ico-blue { background: var(--surface3); color: var(--text3); border: 1px solid var(--border); }
 .ico-green { background: rgba(74,222,128,.1); color: var(--green); border: 1px solid rgba(74,222,128,.15); }
 .ico-red { background: var(--red-l); color: var(--red); border: 1px solid rgba(248,113,113,.15); }
 
@@ -136,7 +136,7 @@ const cleanDesc = (s?: string) => (s || '').replace(/(https?:\/\/[^\s]+)/g, '').
 .meta-due { color: var(--text3); }
 .meta-due.overdue { color: var(--red); }
 .meta-due.soon { color: var(--yellow); }
-.meta-score { color: var(--teal); font-weight: 600; }
+.meta-score { color: var(--text2); font-weight: 600; }
 
 .asgn-status-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .asgn-arrow { color: var(--text4); }
@@ -144,7 +144,7 @@ const cleanDesc = (s?: string) => (s || '').replace(/(https?:\/\/[^\s]+)/g, '').
 .status-pill { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .status-pill.submitted { background: rgba(74,222,128,.1); color: var(--green); border: 1px solid rgba(74,222,128,.2); }
 .status-pill.graded { background: rgba(74,222,128,.1); color: var(--green); border: 1px solid rgba(74,222,128,.2); }
-.status-pill.grading { background: rgba(var(--teal-rgb),.1); color: var(--teal); border: 1px solid rgba(var(--teal-rgb),.2); }
+.status-pill.grading { background: rgba(251,191,36,.12); color: var(--yellow); border: 1px solid rgba(251,191,36,.25); }
 .status-pill.late { background: var(--red-l); color: var(--red); border: 1px solid rgba(248,113,113,.2); }
 .status-pill.pending { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
 </style>

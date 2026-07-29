@@ -124,7 +124,7 @@
         </div>
         <div class="edit-form">
 
-          <div class="edit-cover-preview" :style="editForm.cover_image ? {backgroundImage:`url(${editForm.cover_image})`,backgroundSize:'cover',backgroundPosition:'center'} : {background: coverGrad(editingClass.id)}">
+          <div class="edit-cover-preview" :style="editForm.cover_image ? {backgroundImage:`url(${fixFileUrl(editForm.cover_image)})`,backgroundSize:'cover',backgroundPosition:'center'} : {background: coverGrad(editingClass.id)}">
             <label class="edit-cover-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               {{ lang==='ru' ? 'Загрузить обложку' : lang==='kk' ? 'Мұқаба жүктеу' : 'Upload Cover' }}
@@ -252,6 +252,7 @@ import { useClassesSvc } from '~/services/classes'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
 import { useCohortErrors } from '~/composables/useCohortErrors'
+import { fixFileUrl } from '~/composables/useFileUrl'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const postsSvc = usePostsSvc(); const classesSvc = useClassesSvc(); const toast = useToast(); const router = useRouter()
 const { t, lang, setLang } = useI18n()
@@ -305,7 +306,7 @@ const coverGrad = (id: number) => covers[id % covers.length]
 // обложка. Полный cover_image остаётся только на странице самого класса.
 const cardCoverStyle = (cls: any) => {
   const img = cls.cover_thumbnail || cls.cover_image
-  return img ? { backgroundImage: `url(${img})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: coverGrad(cls.id) }
+  return img ? { backgroundImage: `url(${fixFileUrl(img)})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: coverGrad(cls.id) }
 }
 
 // Членство — серверная истина: GET /classes/ уже возвращает нужный набор для
@@ -380,7 +381,7 @@ const preloadImage = (url?: string | null) => new Promise<void>((resolve) => {
   const done = () => resolve()
   img.onload = done
   img.onerror = done
-  img.src = url
+  img.src = fixFileUrl(url)
   setTimeout(done, 3000) // защита от зависшей загрузки
 })
 

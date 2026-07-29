@@ -512,6 +512,7 @@ import { useClassesSvc, type CohortResponse, type RotationMode } from '~/service
 import { useAuthStore } from '~/stores/auth.store'
 import { useI18n } from '~/composables/useI18n'
 import { useFilePreview } from '~/composables/useFilePreview'
+import { fixFileUrl } from '~/composables/useFileUrl'
 import { extractFilesFromText, stripFilesFromText } from '~/composables/useAttachments'
 import type { Assignment, Submission } from '~/services/assignments'
 
@@ -618,7 +619,7 @@ const classTitle = computed(() => currentClass.value?.name || `Класс #${cla
 
 const heroStyle = computed(() => {
   const img = classMeta.value.cover_image
-  if (img) return { backgroundImage: `url(${img})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+  if (img) return { backgroundImage: `url(${fixFileUrl(img)})`, backgroundSize: 'cover', backgroundPosition: 'center' }
   return {}
 })
 const classPosts = computed(() => allPosts.value.filter(p => p.title?.includes(`[${classId.value}]`)))

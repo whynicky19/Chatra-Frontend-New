@@ -38,7 +38,7 @@
         <div v-else class="classes-grid">
           <div v-for="cls in archivedClasses" :key="cls.id" class="class-card arch-card" @click="goClass(cls.id)">
             <div class="card-cover" :style="(cls.cover_thumbnail || cls.cover_image) ? {} : {background: coverGrad(cls.id)}">
-              <img v-if="cls.cover_thumbnail || cls.cover_image" :src="cls.cover_thumbnail || cls.cover_image" class="card-cover-img" loading="lazy" decoding="async" @error="($event.target as HTMLImageElement).style.display='none'"/>
+              <img v-if="cls.cover_thumbnail || cls.cover_image" :src="coverUrl(cls)" class="card-cover-img" loading="lazy" decoding="async" @error="($event.target as HTMLImageElement).style.display='none'"/>
               <div class="card-cover-dim"></div>
               <div class="card-archive-badge">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/></svg>
@@ -69,6 +69,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useClassesSvc, type ClassResponse } from '~/services/classes'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
+import { fixFileUrl } from '~/composables/useFileUrl'
 
 definePageMeta({ layout: 'default' })
 
@@ -87,13 +88,15 @@ const loading = ref(true)
 const archivedClasses = computed(() => allClasses.value.filter(c => c.is_archived_for_user))
 
 const covers = [
+  'linear-gradient(135deg,#3a3a3c,#232326)',
+  'linear-gradient(135deg,#92400e,#d97706)',
+  'linear-gradient(135deg,#9f1239,#e11d48)',
+  'linear-gradient(135deg,#065f46,#059669)',
+  'linear-gradient(135deg,#3730a3,#4f46e5)',
   'linear-gradient(135deg,#006475,#009aaf)',
-  'linear-gradient(135deg,#0c4a6e,#0369a1)',
-  'linear-gradient(135deg,#134e4a,#0d9488)',
-  'linear-gradient(135deg,#312e81,#4338ca)',
-  'linear-gradient(135deg,#1e3a5f,#2563eb)',
 ]
 const coverGrad = (id: number) => covers[id % covers.length]
+const coverUrl = (cls: any) => fixFileUrl(cls.cover_thumbnail || cls.cover_image)
 
 const goBack = () => router.push('/')
 const goClass = (id: number) => router.push(`/classes/${id}`)
@@ -138,7 +141,7 @@ onMounted(() => load())
 .class-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
 .arch-card{opacity:.82;filter:grayscale(.28)}
 .arch-card:hover{opacity:1;filter:grayscale(0)}
-.card-cover{position:relative;height:150px;overflow:hidden;background:linear-gradient(135deg,#006475,var(--teal-h))}
+.card-cover{position:relative;height:150px;overflow:hidden;background:linear-gradient(135deg,#3a3a3c,#232326)}
 .card-cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .card-cover-dim{position:absolute;inset:0;background:rgba(0,0,0,.3)}
 .card-archive-badge{position:absolute;top:10px;left:10px;z-index:2;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(0,0,0,.5);color:rgba(255,255,255,.95);padding:4px 10px;border-radius:100px;letter-spacing:.03em;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18)}

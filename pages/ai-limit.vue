@@ -12,7 +12,7 @@
     <div class="pg-body">
       <div class="scard">
         <div class="scard-head-sm">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 17l.7 1.8L20.5 19.5l-1.8.7L18 22l-.7-1.8L15.5 19.5l1.8-.7z"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 17l.7 1.8L20.5 19.5l-1.8.7L18 22l-.7-1.8L15.5 19.5l1.8-.7z"/></svg>
           <h3 class="scard-h3">{{ lang==='ru'?'AI лимит':lang==='kk'?'AI лимиті':'AI limit' }}</h3>
           <span v-if="quota?.unlimited" class="ai-badge">{{ lang==='ru'?'Безлимит':lang==='kk'?'Шексіз':'Unlimited' }}</span>
         </div>

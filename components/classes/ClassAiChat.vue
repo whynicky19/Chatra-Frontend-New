@@ -723,7 +723,7 @@ onMounted(() => {
 .ai-floating-actions { position: absolute; top: 12px; right: 14px; z-index: 5; display: flex; gap: 8px; }
 .hdr-btn { position: relative; width: 34px; height: 34px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; box-shadow: var(--sh-xs); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .hdr-btn:hover, .hdr-btn-active { background: rgba(var(--teal-rgb),.1); border-color: rgba(var(--teal-rgb),.25); color: var(--teal); }
-.hdr-badge { position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; background: var(--teal); border-radius: 8px; font-size: 10px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; border: 2px solid var(--surface); padding: 0 3px; }
+.hdr-badge { position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; background: var(--yellow); border-radius: 8px; font-size: 10px; font-weight: 700; color: #1c1c1e; display: flex; align-items: center; justify-content: center; border: 2px solid var(--surface); padding: 0 3px; }
 
 /* Body */
 .ai-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
