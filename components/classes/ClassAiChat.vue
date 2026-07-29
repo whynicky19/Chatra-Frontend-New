@@ -46,9 +46,6 @@
       <!-- ── Messages ── -->
       <div ref="msgsEl" class="ai-msgs" @scroll="onAiMsgsScroll">
         <div v-if="!msgs.length" class="welcome">
-          <div class="welcome-orb">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
           <div class="welcome-title">Готов помочь!</div>
           <div class="welcome-desc">
             <template v-if="readyCount > 0">Прочитал {{ readyCount }} файлов — спрашивайте по материалам</template>
@@ -747,7 +744,6 @@ onMounted(() => {
 
 /* Welcome */
 .welcome { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; margin: auto; max-width: 440px; padding: 20px; }
-.welcome-orb { width: 72px; height: 72px; background: rgba(var(--teal-rgb),.1); border: 2px solid rgba(var(--teal-rgb),.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--teal); }
 .welcome-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 21px; font-weight: 900; color: var(--text1); }
 .welcome-desc { font-size: 13px; color: var(--text4); line-height: 1.5; }
 .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-top: 8px; }
