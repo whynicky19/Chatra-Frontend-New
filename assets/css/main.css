@@ -8,8 +8,8 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 img{display:block;max-width:100%}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(var(--teal-rgb),.25);border-radius:10px}
-::-webkit-scrollbar-thumb:hover{background:rgba(var(--teal-rgb),.5)}
+::-webkit-scrollbar-thumb{background:rgba(120,120,128,.28);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:rgba(120,120,128,.5)}
 
 :root{
   --teal:#00B1C9;
@@ -32,8 +32,8 @@ img{display:block;max-width:100%}
   --surface:#ffffff;
   --surface2:#E5E5EA;
   --surface3:#D1D1D6;
-  --glass:rgba(var(--teal-rgb),.04);
-  --glass2:rgba(var(--teal-rgb),.08);
+  --glass:rgba(60,60,67,.035);
+  --glass2:rgba(60,60,67,.06);
   --text1:#1C1C1E;
   --text2:#3A3A3C;
   --text3:#6C6C70;
@@ -74,8 +74,8 @@ html.dark {
   --surface:#1C1C1E;
   --surface2:#2C2C2E;
   --surface3:#38383A;
-  --glass:rgba(var(--teal-rgb),.05);
-  --glass2:rgba(var(--teal-rgb),.1);
+  --glass:rgba(255,255,255,.05);
+  --glass2:rgba(255,255,255,.08);
   --text1:#FFFFFF;
   --text2:#EBEBF0;
   --text3:#AEAEB2;
@@ -97,8 +97,8 @@ html.dark {
   --card-bg:#1C1C1E;
 }
 
-html.dark ::-webkit-scrollbar-thumb{background:rgba(var(--teal-rgb),.2)}
-html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(var(--teal-rgb),.4)}
+html.dark ::-webkit-scrollbar-thumb{background:rgba(142,142,147,.3)}
+html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(142,142,147,.5)}
 
 @media (max-width:768px) {
   html.dark .modal {
@@ -169,7 +169,7 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(var(--teal-rgb),.4)}
 .av-md{width:44px;height:44px;font-size:17px}
 
 /* ====== MODAL ====== */
-.overlay{position:fixed;inset:0;background:rgba(10,26,30,.42);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-2xl);padding:26px;width:100%;max-width:480px;box-shadow:var(--sh-lg);max-height:calc(100vh - 40px);overflow-y:auto}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .modal-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:17px;font-weight:800;color:var(--text1)}
@@ -191,7 +191,7 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(var(--teal-rgb),.4)}
 .toggle input:checked~.tog-t::after{transform:translateX(18px)}
 
 /* ====== FILE TYPE BADGE ====== */
-.ftb{display:inline-flex;align-items:center;justify-content:center;background:var(--teal);color:#fff;font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:4px;flex-shrink:0;line-height:1.4;min-width:28px}
+.ftb{display:inline-flex;align-items:center;justify-content:center;background:var(--text3);color:#fff;font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:4px;flex-shrink:0;line-height:1.4;min-width:28px}
 .ftb-sm{font-size:8px;padding:2px 5px;min-width:24px}
 
 /* ====== CHAT EMPTY ICON ====== */
@@ -243,7 +243,7 @@ h3,h4{letter-spacing:-.012em}
   }
 
   /* Full-screen modal on mobile — bottom sheet (iOS) */
-  .overlay { padding: 0; align-items: flex-end; background: rgba(0,20,26,0.6); }
+  .overlay { padding: 0; align-items: flex-end; background: rgba(0,0,0,0.55); }
   .modal {
     border-radius: 28px 28px 0 0;
     max-width: 100%;
@@ -497,8 +497,8 @@ h3,h4{letter-spacing:-.012em}
 /* ====== SMOOTH SCROLLBAR ====== */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(var(--teal-rgb),0.2); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(var(--teal-rgb),0.45); }
+::-webkit-scrollbar-thumb { background: rgba(120,120,128,0.3); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(120,120,128,0.5); }
 
 /* ====== DARK MODE SMOOTH TRANSITION ====== */
 html {

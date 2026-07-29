@@ -292,11 +292,12 @@ const loadJoined = () => { try { joinedIds.value = JSON.parse(localStorage.getIt
 const saveJoined = () => localStorage.setItem(joinedKey.value, JSON.stringify(joinedIds.value))
 
 const covers = [
-  'linear-gradient(135deg,#006475,#009aaf)',
-  'linear-gradient(135deg,#0c4a6e,#0369a1)',
-  'linear-gradient(135deg,#134e4a,#0d9488)',
-  'linear-gradient(135deg,#312e81,#4338ca)',
-  'linear-gradient(135deg,#1e3a5f,#2563eb)'
+  'linear-gradient(135deg,#3a3a3c,#232326)',
+  'linear-gradient(135deg,#92400e,#d97706)',
+  'linear-gradient(135deg,#9f1239,#e11d48)',
+  'linear-gradient(135deg,#065f46,#059669)',
+  'linear-gradient(135deg,#3730a3,#4f46e5)',
+  'linear-gradient(135deg,#006475,#009aaf)'
 ]
 const coverGrad = (id: number) => covers[id % covers.length]
 
@@ -543,9 +544,9 @@ watch(() => auth.user?.id, async (newId) => {
 
 /* Class card */
 .class-card{background:var(--surface);border-radius:var(--r-xl);overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--sh-xs);border:1px solid var(--border)}
-.class-card:hover{transform:translateY(-4px);box-shadow:var(--sh-md);border-color:rgba(var(--teal-rgb),.2)}
+.class-card:hover{transform:translateY(-4px);box-shadow:var(--sh-md);border-color:var(--border2)}
 
-.card-cover{position:relative;height:200px;overflow:hidden;background:linear-gradient(135deg,#006475,var(--teal-h));display:flex;align-items:flex-end;padding:0}
+.card-cover{position:relative;height:200px;overflow:hidden;background:linear-gradient(135deg,#3a3a3c,#232326);display:flex;align-items:flex-end;padding:0}
 .card-code-chip{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(80,80,80,.75);color:rgba(255,255,255,.92);padding:4px 10px;border-radius:6px;letter-spacing:.08em;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:all .15s;line-height:1}
 .card-code-chip:hover{background:rgba(60,60,60,.9)}
 .card-code-chip svg{flex-shrink:0;display:block}
@@ -555,10 +556,10 @@ watch(() => auth.user?.id, async (newId) => {
 .card-body{padding:18px 18px 16px}
 .card-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
 .card-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:17px;font-weight:800;color:var(--text1);line-height:1.25;flex:1}
-.card-subject-icon{width:30px;height:30px;border-radius:var(--r-sm);background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.2);display:flex;align-items:center;justify-content:center;color:var(--teal);flex-shrink:0}
+.card-subject-icon{width:30px;height:30px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0}
 .card-desc{font-size:13px;color:var(--text4);line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card-teacher{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text3);font-weight:500;margin-bottom:8px}
-.card-teacher svg{flex-shrink:0;color:var(--teal)}
+.card-teacher svg{flex-shrink:0;color:var(--text4)}
 .card-meta{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text4);margin-bottom:14px}
 .card-footer{border-top:1px solid var(--border);padding-top:14px}
 .card-action-row{display:flex;align-items:center;justify-content:space-between}
@@ -571,16 +572,16 @@ watch(() => auth.user?.id, async (newId) => {
 
 /* Add card */
 .add-card{background:var(--surface);border:2px dashed var(--border);cursor:pointer;transition:all .2s;min-height:360px;display:flex}
-.add-card:hover{border-color:rgba(var(--teal-rgb),.4);background:var(--teal-l)}
+.add-card:hover{border-color:var(--teal);background:var(--glass)}
 .add-card-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:12px;flex:1}
-.add-plus{width:48px;height:48px;border-radius:50%;border:2px dashed rgba(var(--teal-rgb),.4);color:var(--text4);display:flex;align-items:center;justify-content:center;background:var(--surface2)}
+.add-plus{width:48px;height:48px;border-radius:50%;border:2px dashed var(--border2);color:var(--text4);display:flex;align-items:center;justify-content:center;background:var(--surface2)}
 .add-card:hover .add-plus{border-color:var(--teal);color:var(--teal)}
 .add-title{font-size:15px;font-weight:700;color:var(--text2);line-height:1.3}
 .add-sub{font-size:13px;color:var(--text4);max-width:160px;line-height:1.5}
 
 /* Empty state */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;gap:12px;text-align:center}
-.es-icon-wrap{width:72px;height:72px;border-radius:20px;background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.2);display:flex;align-items:center;justify-content:center;color:var(--teal);margin-bottom:8px}
+.es-icon-wrap{width:72px;height:72px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);margin-bottom:8px}
 .es-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:20px;font-weight:700;color:var(--text2)}
 .es-sub{font-size:14px;color:var(--text4);max-width:300px;line-height:1.6}
 .es-btn{margin-top:8px}

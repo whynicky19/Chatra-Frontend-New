@@ -254,19 +254,84 @@ const renderMath = (tex: string, displayMode: boolean) => {
   }
 }
 
-// Сначала экранируем HTML, потом markdown/LaTeX-замены — иначе XSS через v-html.
-// Формулы (KaTeX) обрабатываются раньше переноса строк в <br>, чтобы
-// многострочные окружения ($$...$$) разбирались из исходного текста.
-const fmt = (s: string) => s
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  .replace(/```(\w+)?\n?([^`]*?)```/gs, '<pre class="code-bl"><code>$2</code></pre>')
+const inlineFmt = (s: string) => s
   .replace(/`([^`]+)`/g, '<code class="ic">$1</code>')
-  .replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => renderMath(tex, true))
-  .replace(/\\\[([\s\S]+?)\\\]/g, (_, tex) => renderMath(tex, true))
-  .replace(/\\\(([\s\S]+?)\\\)/g, (_, tex) => renderMath(tex, false))
-  .replace(/\$([^$\n]+?)\$/g, (m, tex) => (looksLikeCurrency(tex) ? m : renderMath(tex, false)))
   .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-  .replace(/\n/g, '<br>')
+
+// Таблицу опознаём по строке-разделителю (только "-", "|", ":", пробелы) —
+// а не по обязательным крайним "|", т.к. модель их часто опускает.
+// Требуем "|" и в самой строке-разделителе, иначе горизонтальная черта "---"
+// (частый в ответах разделитель разделов) ошибочно считалась бы таблицей.
+const isTableRow = (l: string) => l.includes('|')
+const isTableSep = (l: string) => /^[-|:\s]+$/.test(l) && l.includes('-') && l.includes('|')
+const isUl = (l: string) => /^\s*[-*]\s+\S/.test(l)
+const isOl = (l: string) => /^\s*\d+\.\s+\S/.test(l)
+const splitRow = (l: string) => {
+  let s = l.trim()
+  if (s.startsWith('|')) s = s.slice(1)
+  if (s.endsWith('|')) s = s.slice(0, -1)
+  return s.split('|').map(c => c.trim())
+}
+const stripMarker = (l: string) => l.replace(/^\s*(?:[-*]|\d+\.)\s+/, '')
+
+// Сначала экранируем HTML, потом код-блоки/формулы (через плейсхолдеры для
+// код-блоков, чтобы их внутренние переносы строк не путались со списками/
+// таблицами при построчном разборе), затем построчно — таблицы, списки,
+// обычный текст.
+const fmt = (t: string): string => {
+  let s = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+  const codeBlocks: string[] = []
+  s = s.replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, _lang, code) => {
+    codeBlocks.push(`<pre class="code-bl"><code>${code}</code></pre>`)
+    return ` CODE${codeBlocks.length - 1} `
+  })
+
+  s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => renderMath(tex, true))
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_, tex) => renderMath(tex, true))
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_, tex) => renderMath(tex, false))
+    .replace(/\$([^$\n]+?)\$/g, (m, tex) => (looksLikeCurrency(tex) ? m : renderMath(tex, false)))
+
+  const lines = s.split('\n')
+  const parts: { block: boolean; html: string }[] = []
+  let i = 0
+  while (i < lines.length) {
+    const line = lines[i]
+    if (/^ CODE\d+ $/.test(line.trim())) {
+      parts.push({ block: true, html: line.trim() })
+      i++
+      continue
+    }
+    if (isTableRow(line) && isTableSep(lines[i + 1] || '')) {
+      const header = splitRow(line).map(inlineFmt)
+      i += 2
+      const rows: string[][] = []
+      while (i < lines.length && isTableRow(lines[i])) { rows.push(splitRow(lines[i]).map(inlineFmt)); i++ }
+      let html = '<table class="md-table"><thead><tr>' + header.map(c => `<th>${c}</th>`).join('') + '</tr></thead>'
+      if (rows.length) html += '<tbody>' + rows.map(r => '<tr>' + r.map(c => `<td>${c}</td>`).join('') + '</tr>').join('') + '</tbody>'
+      html += '</table>'
+      parts.push({ block: true, html })
+      continue
+    }
+    if (isUl(line) || isOl(line)) {
+      const ordered = isOl(line)
+      const items: string[] = []
+      while (i < lines.length && (ordered ? isOl(lines[i]) : isUl(lines[i]))) { items.push(inlineFmt(stripMarker(lines[i]))); i++ }
+      const tag = ordered ? 'ol' : 'ul'
+      parts.push({ block: true, html: `<${tag}>${items.map(it => `<li>${it}</li>`).join('')}</${tag}>` })
+      continue
+    }
+    parts.push({ block: false, html: inlineFmt(line) })
+    i++
+  }
+
+  let html = ''
+  parts.forEach((p, idx) => {
+    if (!p.block && idx > 0 && !parts[idx - 1].block) html += '<br>'
+    html += p.html
+  })
+  return html.replace(/ CODE(\d+) /g, (_, idx) => codeBlocks[Number(idx)])
+}
 
 const scroll = () => nextTick(() => {
   if (area.value) area.value.scrollTop = area.value.scrollHeight
@@ -443,7 +508,7 @@ watch(() => store.activeId, () => scroll())
 .tip-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 16px; background: var(--surface); border-radius: 22px; box-shadow: var(--sh-sm); text-align: left; transition: transform .16s ease, box-shadow .2s ease; animation: rise .4s cubic-bezier(.16,1,.3,1) both }
 .tip-card:hover { transform: translateY(-2px); box-shadow: var(--sh-md) }
 .tip-card:active { transform: scale(.98) }
-.tip-icon { width: 40px; height: 40px; border-radius: 13px; background: rgba(var(--teal-rgb),.10); color: var(--teal); display: flex; align-items: center; justify-content: center; margin-bottom: 12px }
+.tip-icon { width: 40px; height: 40px; border-radius: 13px; background: var(--surface2); color: var(--text3); display: flex; align-items: center; justify-content: center; margin-bottom: 12px }
 .tip-title { font-size: 14px; font-weight: 800; color: var(--text1); line-height: 1.2 }
 .tip-desc { font-size: 12px; color: var(--text4); line-height: 1.4; margin-top: 5px }
 @keyframes rise { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
@@ -454,21 +519,21 @@ watch(() => store.activeId, () => scroll())
 .chat-msg.user { align-self: flex-end; align-items: flex-end }
 .chat-msg.assistant { align-self: flex-start }
 .msg-avatar { display: flex; align-items: center; gap: 8px }
-.msg-sender { font-size: 12px; font-weight: 700; color: var(--teal) }
-.msg-img-preview { max-width: 240px; max-height: 200px; border-radius: 14px; object-fit: cover; border: 1px solid rgba(var(--teal-rgb),.2); box-shadow: 0 4px 16px rgba(0,0,0,.3) }
+.msg-sender { font-size: 12px; font-weight: 700; color: var(--text3) }
+.msg-img-preview { max-width: 240px; max-height: 200px; border-radius: 14px; object-fit: cover; border: 1px solid var(--border2); box-shadow: 0 4px 16px rgba(0,0,0,.3) }
 .msg-bubble { padding: 14px 19px; border-radius: 22px; font-size: 14.5px; line-height: 1.62 }
 .msg-bubble.user { background: linear-gradient(135deg, var(--teal), var(--teal-h)); color: #fff; border-bottom-right-radius: 7px; box-shadow: 0 4px 20px rgba(var(--teal-rgb),.3) }
 .msg-bubble.assistant { background: var(--surface); color: var(--text1); border-top-left-radius: 7px; box-shadow: var(--sh-xs) }
 
 .typing { display: flex; gap: 5px; padding: 4px 0 }
-.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); animation: pulse 1.2s infinite }
+.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--text4); animation: pulse 1.2s infinite }
 .typing span:nth-child(2) { animation-delay: .2s }
 .typing span:nth-child(3) { animation-delay: .4s }
 
-.file-prev { display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; background: rgba(var(--teal-rgb),.08); border-top: 1px solid rgba(var(--teal-rgb),.12); font-size: 13px; font-weight: 500; color: var(--teal); position: relative; z-index: 2; flex-shrink: 0 }
+.file-prev { display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; background: var(--surface2); border-top: 1px solid var(--border); font-size: 13px; font-weight: 500; color: var(--text2); position: relative; z-index: 2; flex-shrink: 0 }
 .fp-info { display: flex; align-items: center; gap: 10px }
-.fp-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(var(--teal-rgb),.2) }
-.fp-badge { font-size: 11px; font-weight: 600; background: rgba(var(--teal-rgb),.12); color: var(--teal); border: 1px solid rgba(var(--teal-rgb),.2); border-radius: 100px; padding: 2px 8px }
+.fp-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border2) }
+.fp-badge { font-size: 11px; font-weight: 600; background: var(--surface3); color: var(--text2); border: 1px solid var(--border2); border-radius: 100px; padding: 2px 8px }
 .fp-rm { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 20px; padding: 0; line-height: 1; transition: color .15s }
 .fp-rm:hover { color: var(--red) }
 
@@ -488,7 +553,12 @@ watch(() => store.activeId, () => scroll())
 .notice-wide { margin: 0 24px 10px; position: relative; z-index: 2 }
 
 :deep(.code-bl) { background: #0a0a16; color: #99e6f0; border-radius: var(--r-md); padding: 14px; margin: 8px 0; overflow-x: auto; font-size: 13px; font-family: monospace; line-height: 1.6; border: 1px solid var(--border) }
-:deep(.ic) { background: rgba(var(--teal-rgb),.15); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: .9em; color: var(--teal) }
+:deep(.ic) { background: var(--surface3); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: .9em; color: var(--text2) }
+:deep(ul), :deep(ol) { margin: 6px 0; padding-left: 20px }
+:deep(li) { margin: 2px 0 }
+:deep(.md-table) { border-collapse: collapse; margin: 8px 0; font-size: 13px; display: block; overflow-x: auto; max-width: 100% }
+:deep(.md-table th), :deep(.md-table td) { border: 1px solid var(--border); padding: 6px 10px; text-align: left }
+:deep(.md-table th) { background: rgba(0,0,0,.04); font-weight: 700 }
 
 /* ── Mobile: sidebar becomes a slide-over drawer with backdrop ─────────── */
 @media (max-width: 768px) {

@@ -94,6 +94,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import katex from 'katex'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useUsersSvc } from '~/services/users'
@@ -173,6 +174,22 @@ const restore = () => {
 // ── Computed ──────────────────────────────────────────────────────────────────
 const readyCount = computed(() => Object.keys(fileTexts.value).length)
 
+// Лекции класса в порядке "1, 2, 3..." — posts.position с бэкенда (см.
+// migrations/017), с fallback на id для лекций без position (старые записи).
+// Номер нужен, чтобы AI мог связать "объясни 2 лекцию" с конкретным постом.
+const cleanLectureTitle = (t: string) => (t || '').replace(/^\[LECTURE\]\[\d+\]\s*/, '').trim()
+const numberedLectures = computed(() => {
+  return (props.classPosts || [])
+    .filter(p => p.title?.startsWith('[LECTURE]'))
+    .slice()
+    .sort((a, b) => {
+      const pa = a.position ?? Infinity, pb = b.position ?? Infinity
+      if (pa !== pb) return pa - pb
+      return (a.id ?? 0) - (b.id ?? 0)
+    })
+    .map((post, i) => ({ post, number: i + 1, title: cleanLectureTitle(post.title) }))
+})
+
 // Extract all file URLs from class posts AND assignments
 const classFiles = computed((): ClassFile[] => {
   const result: ClassFile[] = []
@@ -189,10 +206,10 @@ const classFiles = computed((): ClassFile[] => {
     }
   }
 
-  // From class posts (lectures)
-  for (const post of (props.classPosts || [])) {
-    if (!post.title?.startsWith('[LECTURE]')) continue
-    addFromText(post.body || '', 'Лекция')
+  // From class posts (lectures) — помечаем номером лекции, чтобы модель
+  // могла сопоставить "2 лекция" с файлами именно этого поста.
+  for (const { post, number, title } of numberedLectures.value) {
+    addFromText(post.body || '', `Лекция ${number}${title ? `: ${title}` : ''}`)
   }
 
   // From assignment descriptions (teacher-attached task files)
@@ -201,6 +218,24 @@ const classFiles = computed((): ClassFile[] => {
   }
 
   return result
+})
+
+// Текст самих лекций (поле content/description в JSON-теле поста) — раньше
+// сюда попадали только URL прикреплённых файлов, а собственный текст лекции
+// (если преподаватель написал его без вложений) модель вообще не видела.
+const lectureTextBlocks = computed(() => {
+  const blocks: string[] = []
+  for (const { post, number, title } of numberedLectures.value) {
+    let content = ''
+    try {
+      const b = JSON.parse(post.body || '{}')
+      content = (b.content ?? b.description ?? '').toString()
+    } catch { content = post.body || '' }
+    content = content.replace(/\n{3,}/g, '\n\n').trim()
+    if (!content) continue
+    blocks.push(`### Лекция ${number}${title ? `: ${title}` : ''}\n${content.slice(0, MAX_CHARS)}`)
+  }
+  return blocks
 })
 
 const quickItems = [
@@ -224,12 +259,94 @@ const emoji = (url: string) => {
   return 'FILE'
 }
 
-const fmt = (t: string) =>
-  t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\*\*(.*?)\*\*/gs, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/gs, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>')
+// Похоже на денежную сумму ($5, $12.50) — не формула, рендерить как есть.
+const looksLikeCurrency = (tex: string) => /^\s*\d[\d,.\s]*\s*$/.test(tex)
+const renderMath = (tex: string, displayMode: boolean) => {
+  try {
+    return katex.renderToString(tex.trim(), { displayMode, throwOnError: false, strict: false })
+  } catch {
+    return displayMode ? `$$${tex}$$` : `$${tex}$`
+  }
+}
+
+const inlineFmt = (s: string) => s
+  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+  .replace(/\*(.*?)\*/g, '<em>$1</em>')
+  .replace(/`([^`]+)`/g, '<code>$1</code>')
+
+// Таблицу опознаём по строке-разделителю (только "-", "|", ":", пробелы) —
+// а не по обязательным крайним "|", т.к. модель их часто опускает.
+// Требуем "|" и в самой строке-разделителе, иначе горизонтальная черта "---"
+// (частый в ответах разделитель разделов) ошибочно считалась бы таблицей.
+const isTableRow = (l: string) => l.includes('|')
+const isTableSep = (l: string) => /^[-|:\s]+$/.test(l) && l.includes('-') && l.includes('|')
+const isUl = (l: string) => /^\s*[-*]\s+\S/.test(l)
+const isOl = (l: string) => /^\s*\d+\.\s+\S/.test(l)
+const splitRow = (l: string) => {
+  let s = l.trim()
+  if (s.startsWith('|')) s = s.slice(1)
+  if (s.endsWith('|')) s = s.slice(0, -1)
+  return s.split('|').map(c => c.trim())
+}
+const stripMarker = (l: string) => l.replace(/^\s*(?:[-*]|\d+\.)\s+/, '')
+
+// Формулы (KaTeX) и код-блоки рендерятся до построчного разбора; код-блоки —
+// через плейсхолдеры, чтобы их внутренние переносы строк не путались со
+// списками/таблицами при построчном разборе ниже.
+const fmt = (t: string): string => {
+  let s = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+  const codeBlocks: string[] = []
+  s = s.replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, _lang, code) => {
+    codeBlocks.push(`<pre class="code-bl"><code>${code}</code></pre>`)
+    return ` CODE${codeBlocks.length - 1} `
+  })
+
+  s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => renderMath(tex, true))
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_, tex) => renderMath(tex, true))
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_, tex) => renderMath(tex, false))
+    .replace(/\$([^$\n]+?)\$/g, (m, tex) => (looksLikeCurrency(tex) ? m : renderMath(tex, false)))
+
+  const lines = s.split('\n')
+  const parts: { block: boolean; html: string }[] = []
+  let i = 0
+  while (i < lines.length) {
+    const line = lines[i]
+    if (/^ CODE\d+ $/.test(line.trim())) {
+      parts.push({ block: true, html: line.trim() })
+      i++
+      continue
+    }
+    if (isTableRow(line) && isTableSep(lines[i + 1] || '')) {
+      const header = splitRow(line).map(inlineFmt)
+      i += 2
+      const rows: string[][] = []
+      while (i < lines.length && isTableRow(lines[i])) { rows.push(splitRow(lines[i]).map(inlineFmt)); i++ }
+      let html = '<table class="md-table"><thead><tr>' + header.map(c => `<th>${c}</th>`).join('') + '</tr></thead>'
+      if (rows.length) html += '<tbody>' + rows.map(r => '<tr>' + r.map(c => `<td>${c}</td>`).join('') + '</tr>').join('') + '</tbody>'
+      html += '</table>'
+      parts.push({ block: true, html })
+      continue
+    }
+    if (isUl(line) || isOl(line)) {
+      const ordered = isOl(line)
+      const items: string[] = []
+      while (i < lines.length && (ordered ? isOl(lines[i]) : isUl(lines[i]))) { items.push(inlineFmt(stripMarker(lines[i]))); i++ }
+      const tag = ordered ? 'ol' : 'ul'
+      parts.push({ block: true, html: `<${tag}>${items.map(it => `<li>${it}</li>`).join('')}</${tag}>` })
+      continue
+    }
+    parts.push({ block: false, html: inlineFmt(line) })
+    i++
+  }
+
+  let html = ''
+  parts.forEach((p, idx) => {
+    if (!p.block && idx > 0 && !parts[idx - 1].block) html += '<br>'
+    html += p.html
+  })
+  return html.replace(/ CODE(\d+) /g, (_, idx) => codeBlocks[Number(idx)])
+}
 
 const scrollBottom = () => nextTick(() => {
   if (msgsEl.value) msgsEl.value.scrollTop = msgsEl.value.scrollHeight
@@ -408,6 +525,13 @@ const loadAllFiles = async () => {
 const buildSystem = (): string => {
   const className = props.className || 'этого класса'
   let sys = `Ты — опытный ИИ-ассистент и педагог класса "${className}". Помогаешь студентам понять материалы, объясняешь темы доступно, помогаешь решать задания и проверяешь работы. Отвечай на русском языке. Будь точным, дружелюбным и педагогически грамотным.`
+  sys += ` Материалы курса помечены заголовками вида "### Лекция N: <тема>" — если студент просит объяснить материал по номеру (например "объясни 2 лекцию"), найди блок с этим номером и объясняй именно его. Объясняй подробно: раскрывай ключевые понятия, приводи примеры и связи между идеями, а не просто пересказывай заголовок. Математические формулы записывай в LaTeX: инлайн — $...$ или \\(...\\), блочные — $$...$$ или \\[...\\]. Код — в блоках \`\`\`язык.`
+
+  // Текст самих лекций (JSON content/description постов) — до файлов, чтобы
+  // текстовые лекции без вложений тоже были видны модели.
+  if (lectureTextBlocks.value.length > 0) {
+    sys += `\n\n${'='.repeat(60)}\nТЕКСТ ЛЕКЦИЙ:\n${'='.repeat(60)}\n\n${lectureTextBlocks.value.join('\n\n')}`
+  }
 
   // Add assignments context (titles, descriptions, criteria)
   if (props.assignments && props.assignments.length > 0) {
@@ -640,6 +764,15 @@ onMounted(() => {
 :deep(.msg-bubble code) { background: rgba(255,255,255,.12); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
 :deep(.msg-bubble strong) { font-weight: 700; }
 :deep(.msg-bubble em) { font-style: italic; opacity: .9; }
+:deep(.msg-bubble .code-bl) { background: #0a0a16; color: #99e6f0; border-radius: 8px; padding: 12px; margin: 6px 0; overflow-x: auto; font-size: 12px; font-family: monospace; line-height: 1.6; }
+:deep(.msg-bubble .code-bl code) { background: none; padding: 0; }
+:deep(.msg-bubble .katex) { font-size: 1em; }
+:deep(.msg-bubble .katex-display) { margin: 8px 0; overflow-x: auto; overflow-y: hidden; }
+:deep(.msg-bubble ul), :deep(.msg-bubble ol) { margin: 6px 0; padding-left: 20px; }
+:deep(.msg-bubble li) { margin: 2px 0; }
+:deep(.msg-bubble .md-table) { border-collapse: collapse; margin: 8px 0; font-size: 12.5px; display: block; overflow-x: auto; max-width: 100%; }
+:deep(.msg-bubble .md-table th), :deep(.msg-bubble .md-table td) { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+:deep(.msg-bubble .md-table th) { background: rgba(0,0,0,.04); font-weight: 700; }
 
 /* Typing indicator */
 .typing-bbl { display: flex; align-items: center; gap: 5px; padding: 14px 18px; }
