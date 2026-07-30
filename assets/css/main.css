@@ -162,11 +162,6 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(142,142,147,.5)}
 .input::placeholder{color:var(--text4)}
 .input-sm{padding:7px 10px;font-size:13px}
 
-/* ====== AVATAR ====== */
-.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;user-select:none}
-.av-xs{width:24px;height:24px;font-size:10px}
-.av-sm{width:36px;height:36px;font-size:14px}
-.av-md{width:44px;height:44px;font-size:17px}
 
 /* ====== MODAL ====== */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}

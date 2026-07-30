@@ -16,12 +16,6 @@
             <span class="bc-cur">{{ classMeta.subject || classTitle }}</span>
           </div>
         </div>
-        <div class="cd-topbar-right">
-          <div class="topbar-user-av">
-            <img v-if="auth.avatar" :src="auth.avatar" class="tav-img"/>
-            <div v-else class="tav-init">{{ uInit }}</div>
-          </div>
-        </div>
       </div>
 
       <!-- ══ Main layout ══ -->
@@ -530,7 +524,6 @@ const { openPreview } = useFilePreview()
 
 const classId = computed(() => Number(route.params.id))
 const isTeacher = computed(() => auth.user?.role === 'teacher' || auth.user?.role === 'admin')
-const uInit = computed(() => (auth.nickname || auth.user?.email || '?')[0]?.toUpperCase())
 
 const loading = ref(true)
 const tab = ref<'lectures' | 'assignments' | 'ai'>('lectures')
@@ -1010,11 +1003,8 @@ onMounted(async () => {
 .topbar-tab{padding:0 18px;height:52px;font-size:13px;font-weight:500;color:var(--text4);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap}
 .topbar-tab:hover{color:var(--text1)}
 .topbar-tab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:600}
-.cd-topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:16px}
 .icon-btn2{width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
 .icon-btn2:hover{border-color:var(--border2);color:var(--teal)}
-.tav-img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(var(--teal-rgb),.25)}
-.tav-init{width:32px;height:32px;border-radius:50%;background:var(--teal);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
 
 /* Layout */
 .cd-layout{display:flex;flex:1;overflow:hidden;gap:0}
@@ -1316,5 +1306,5 @@ onMounted(async () => {
 .es-icon-wrap{width:64px;height:64px;border-radius:18px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);margin-bottom:4px;opacity:.8}
 
 /* File type badge in rendered content */
-:deep(.file-type-badge){display:inline-flex;align-items:center;justify-content:center;background:var(--text3);color:#fff;font-size:9px;font-weight:800;letter-spacing:.06em;padding:2px 6px;border-radius:4px;flex-shrink:0;line-height:1.4}
+:deep(.file-type-badge){display:inline-flex;align-items:center;justify-content:center;background:var(--teal);color:#fff;font-size:9px;font-weight:800;letter-spacing:.06em;padding:2px 6px;border-radius:4px;flex-shrink:0;line-height:1.4}
 </style>

@@ -46,7 +46,6 @@ export const translations: Record<string, Record<Lang, string>> = {
   'settings.nick_ok': { ru: '✓ Доступен', en: '✓ Available', kk: '✓ Қолжетімді' },
   'settings.nick_err': { ru: '✕ Занят', en: '✕ Taken', kk: '✕ Алынған' },
   'settings.nick_saved': { ru: 'Ник сохранён', en: 'Nickname saved', kk: 'Лақап ат сақталды' },
-  'settings.avatar_updated': { ru: 'Аватар обновлён', en: 'Avatar updated', kk: 'Аватар жаңартылды' },
   'settings.nick_check': { ru: 'Проверьте никнейм', en: 'Check nickname', kk: 'Лақап атты тексеру' },
   'settings.language': { ru: 'Язык', en: 'Language', kk: 'Тіл' },
   'settings.student': { ru: 'Студент', en: 'Student', kk: 'Студент' },

@@ -16,14 +16,6 @@
           <button class="btn btn-teal btn-lg save-btn-desktop" @click="saveProfile">{{ t('settings.save') }}</button>
         </div>
         <div class="profile-form">
-          <label class="avatar-upload-area" title="Upload photo">
-            <input type="file" accept="image/*" style="display:none" @change="onAvatarPick"/>
-            <img v-if="auth.avatar" :src="auth.avatar" class="prof-av"/>
-            <div v-else class="prof-av-init">{{ uInit }}</div>
-            <div class="av-overlay">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            </div>
-          </label>
           <div class="fields-grid">
             <div class="field-group">
               <label class="field-label">{{ t('settings.full_name') }}</label>
@@ -147,7 +139,6 @@ const doLogout = () => { logout() }
 const fullnameInput = ref(''); const nickOk = ref<boolean|null>(null); const nickChecking = ref(false)
 const isDark = ref(false); const followSystem = ref(false)
 
-const uInit = computed(() => (auth.fullname || auth.nickname || auth.user?.email || '?')[0]?.toUpperCase())
 const roleLabel = computed(() => {
   const role = auth.user?.role
   if (role === 'admin') return t('settings.admin')
@@ -168,12 +159,6 @@ const saveProfile = async () => {
     try { await authSvc.updateMe(fn) } catch {}
   }
   toast.ok(t('settings.nick_saved'))
-}
-const onAvatarPick = (e: Event) => {
-  const f = (e.target as HTMLInputElement).files?.[0]; if (!f) return
-  const r = new FileReader()
-  r.onload = () => { auth.setAvatar(r.result as string); toast.ok(t('settings.avatar_updated')) }
-  r.readAsDataURL(f)
 }
 const setTheme = (dark: boolean) => {
   isDark.value = dark
@@ -200,11 +185,6 @@ onMounted(() => {
 .scard-sub{font-size:13px;color:var(--text4)}
 .scard-h3{font-size:16px;font-weight:700;color:var(--text1)}
 .profile-form{display:flex;gap:28px;align-items:flex-start}
-.avatar-upload-area{position:relative;display:block;cursor:pointer;width:90px;height:90px;flex-shrink:0}
-.prof-av{width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--surface);box-shadow:var(--sh-sm)}
-.prof-av-init{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;box-shadow:0 6px 18px -3px rgba(var(--teal-rgb),.45)}
-.av-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);border-radius:50%;opacity:0;display:flex;align-items:center;justify-content:center;transition:opacity .2s}
-.avatar-upload-area:hover .av-overlay{opacity:1}
 .fields-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .field-group{display:flex;flex-direction:column;gap:6px}
 .field-label{font-size:11px;font-weight:700;color:var(--text4);letter-spacing:.08em;text-transform:uppercase}

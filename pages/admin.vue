@@ -51,7 +51,6 @@
               <tr v-for="u in fUsers" :key="u.id">
                 <td>
                   <div style="display:flex;align-items:center;gap:8px">
-                    <div :class="['av','av-sm',colorFor(u.id)]">{{(u.full_name || u.email)[0].toUpperCase()}}</div>
                     <span style="font-size:13px;font-weight:500">{{u.full_name || u.email.split('@')[0]}}</span>
                   </div>
                 </td>
@@ -257,7 +256,6 @@
           <div class="cl-section">
             <div class="cl-section-label">Создатель</div>
             <div v-if="classCreator" class="member-row">
-              <div :class="['av','av-sm',colorFor(classCreator.id)]">{{ (classCreator.full_name||classCreator.email||'?')[0].toUpperCase() }}</div>
               <div class="member-info">
                 <div class="member-name">{{ classCreator.full_name || classCreator.email.split('@')[0] }}</div>
                 <div class="member-email">{{ classCreator.email }}</div>
@@ -280,7 +278,6 @@
             </div>
             <div v-else class="members-list">
               <div v-for="m in membersList" :key="m.id" class="member-row">
-                <div :class="['av','av-sm',colorFor(m.id)]">{{ (m.full_name||m.email||'?')[0].toUpperCase() }}</div>
                 <div class="member-info">
                   <div class="member-name">{{ m.full_name || m.email.split('@')[0] }}</div>
                   <div class="member-email">{{ m.email }}</div>
@@ -304,7 +301,6 @@
             </div>
             <div v-else class="members-list">
               <div v-for="u in rejoinable" :key="u.id" class="member-row">
-                <div :class="['av','av-sm',colorFor(u.id)]">{{ (u.full_name||u.email||'?')[0].toUpperCase() }}</div>
                 <div class="member-info">
                   <div class="member-name">{{ u.full_name || u.email.split('@')[0] }}</div>
                   <div class="member-email">{{ u.email }}</div>
@@ -354,8 +350,6 @@ const tab = ref('users'); const users = ref<any[]>([]); const loadingU = ref(fal
 const togglingAi = ref<Record<number, boolean>>({})
 const nu = ref({ e: '', p: '', r: 'student' }); const classesCount = ref(0)
 const today = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.')
-const avColors = ['bg-b0', 'bg-b1', 'bg-b2', 'bg-b3', 'bg-b4', 'bg-b5']
-const colorFor = (id: number) => avColors[id % avColors.length]
 const fUsers = computed(() => users.value.filter(u => {
   const q = sq.value.toLowerCase()
   return u.email.toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q)
@@ -474,7 +468,6 @@ onMounted(async () => {
 .action-title{font-size:14px;font-weight:600;margin-bottom:2px}
 .action-desc{font-size:12px;color:var(--text3)}
 .action-card .btn{margin-left:auto}
-.bg-b0{background:#2563eb}.bg-b1{background:#009aaf}.bg-b2{background:#059669}.bg-b3{background:#d97706}.bg-b4{background:#dc2626}.bg-b5{background:#0891b2}
 /* AI quota badge */
 .ai-quota-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px}
 .ai-quota-badge.unlimited{background:rgba(52,211,153,.1);color:#10b981;border:1px solid rgba(52,211,153,.25)}

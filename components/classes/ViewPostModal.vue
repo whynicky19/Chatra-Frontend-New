@@ -145,7 +145,7 @@ const submitWork = async () => {
 .vp-files-label{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
 .vp-file-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);text-decoration:none;color:var(--text1);transition:background .15s;margin-bottom:4px}
 .vp-file-row:hover{background:var(--blue-l);color:var(--blue)}
-.file-type-badge-sm{display:inline-flex;align-items:center;justify-content:center;background:var(--text3);color:#fff;font-size:9px;font-weight:800;letter-spacing:.04em;padding:3px 6px;border-radius:4px;flex-shrink:0;min-width:32px}
+.file-type-badge-sm{display:inline-flex;align-items:center;justify-content:center;background:var(--teal);color:#fff;font-size:9px;font-weight:800;letter-spacing:.04em;padding:3px 6px;border-radius:4px;flex-shrink:0;min-width:32px}
 .vp-images{margin-bottom:14px}
 .images-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
 .img-thumb{display:block;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--border);aspect-ratio:1;background:var(--surface2)}

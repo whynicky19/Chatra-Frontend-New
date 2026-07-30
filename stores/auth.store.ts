@@ -18,7 +18,6 @@ export const useAuthStore = defineStore('auth', {
     user: null as User | null,
     nickname: '' as string,
     fullname: '' as string,
-    avatar: '' as string,
   }),
 
   getters: {
@@ -45,8 +44,6 @@ export const useAuthStore = defineStore('auth', {
         this.nickname = n || ''
         const fn = localStorage.getItem(`_fullname_${u.id}`)
         this.fullname = fn || ''
-        const a = localStorage.getItem(`_avatar_${u.id}`)
-        this.avatar = a || ''
         if (n) {
           const reg = safeParse(localStorage.getItem('_nick_registry'))
           reg[u.id] = n
@@ -56,11 +53,6 @@ export const useAuthStore = defineStore('auth', {
           const reg = safeParse(localStorage.getItem('_fullname_registry'))
           reg[u.id] = fn
           localStorage.setItem('_fullname_registry', JSON.stringify(reg))
-        }
-        if (a) {
-          const reg = safeParse(localStorage.getItem('_avatar_registry'))
-          reg[u.id] = a
-          localStorage.setItem('_avatar_registry', JSON.stringify(reg))
         }
         refreshRegistries()
       }
@@ -72,7 +64,6 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       this.nickname = ''
       this.fullname = ''
-      this.avatar = ''
       if (import.meta.client) {
         localStorage.removeItem('_tk')
         localStorage.removeItem('_rtk')
@@ -105,17 +96,6 @@ export const useAuthStore = defineStore('auth', {
         const reg = safeParse(localStorage.getItem('_nick_registry'))
         reg[this.user.id] = n
         localStorage.setItem('_nick_registry', JSON.stringify(reg))
-        refreshRegistries()
-      }
-    },
-
-    setAvatar(a: string) {
-      this.avatar = a
-      if (import.meta.client && this.user) {
-        localStorage.setItem(`_avatar_${this.user.id}`, a)
-        const reg = safeParse(localStorage.getItem('_avatar_registry'))
-        reg[this.user.id] = a
-        localStorage.setItem('_avatar_registry', JSON.stringify(reg))
         refreshRegistries()
       }
     },
