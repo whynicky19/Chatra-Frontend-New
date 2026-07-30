@@ -390,5 +390,14 @@ onMounted(() => {
   .ro-actions{flex-direction:column-reverse}
   .ro-actions .btn{width:100%}
   .ro-dl-date{width:100%}
+  /* Индикатор шагов не переносился на новую строку — на 320-375px ширина
+     3 подписей + линий-соединителей превышала доступную ширину и обрезалась. */
+  .ro-steps{flex-wrap:wrap;row-gap:10px}
+  .ro-step-label{white-space:normal}
+  .ro-step-line{width:16px}
+}
+@media (max-width:375px){
+  .ro-step-label{font-size:12px}
+  .ro-step-line{width:10px;margin:0 4px}
 }
 </style>

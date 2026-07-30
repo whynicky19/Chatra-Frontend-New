@@ -464,9 +464,10 @@ onMounted(async () => {
 .role-sel{border:1px solid var(--border2);border-radius:var(--r-sm);padding:3px 8px;font-size:12px;cursor:pointer;background:var(--surface);color:var(--text1)}
 .action-cards{display:flex;flex-direction:column;gap:10px}
 .action-card{display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-xs)}
+.action-card>div:not(.action-icon){flex:1;min-width:0}
 .action-icon{width:40px;height:40px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .action-title{font-size:14px;font-weight:600;margin-bottom:2px}
-.action-desc{font-size:12px;color:var(--text3)}
+.action-desc{font-size:12px;color:var(--text3);overflow:hidden;text-overflow:ellipsis}
 .action-card .btn{margin-left:auto}
 /* AI quota badge */
 .ai-quota-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px}
@@ -502,12 +503,12 @@ onMounted(async () => {
 .cl-sub{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Class detail modal */
-.cl-detail-modal{max-width:460px;width:100%;padding:0;overflow:hidden}
-.cl-modal-cover{height:160px;background-size:cover;background-position:center;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:16px 20px}
+.cl-detail-modal{max-width:460px;width:100%;padding:0;overflow:hidden;display:flex;flex-direction:column}
+.cl-modal-cover{height:160px;flex-shrink:0;background-size:cover;background-position:center;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:16px 20px}
 .cl-modal-close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(4px)}
 .cl-modal-close:hover{background:rgba(0,0,0,.65)}
 .cl-modal-title{font-size:20px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);margin:0}
-.cl-modal-body{padding:0 20px 20px}
+.cl-modal-body{padding:0 20px 20px;overflow-y:auto;flex:1;min-height:0}
 .cl-section{margin-top:20px}
 .cl-section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .cl-count-badge{background:var(--text3);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:100px}
@@ -541,9 +542,9 @@ onMounted(async () => {
   .ai-sum-card { min-width: 110px; padding: 10px 12px; }
   .ai-filter-row { flex-wrap: wrap; gap: 8px; }
   .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
+  .ai-pagination { flex-wrap: wrap; gap: 8px; }
 }
 @media (max-width:480px) {
-  .stats-row { grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .stat-card { padding: 10px 6px; }
   .stat-val { font-size: 16px; }
 }

@@ -1157,7 +1157,7 @@ onMounted(async () => {
 .criteria-edit-list{display:flex;flex-direction:column;gap:10px}
 .criterion-edit-row{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md)}
 .criterion-edit-top{display:flex;gap:8px;align-items:center}
-.criterion-name-inp{flex:1}
+.criterion-name-inp{flex:1;min-width:0}
 .criterion-weight-inp{width:80px;flex-shrink:0;text-align:center}
 .criterion-del-btn{width:30px;height:38px;flex-shrink:0;border-radius:var(--r-sm);background:transparent;border:1px solid transparent;color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
 .criterion-del-btn:hover:not(:disabled){background:var(--red-l);border-color:rgba(220,38,38,.2);color:var(--red)}

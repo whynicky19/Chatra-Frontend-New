@@ -186,4 +186,20 @@ const submit = async () => {
 
 .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width:768px) {
+  .modal { max-width: 100%; max-height: 96dvh; border-radius: var(--r-2xl) var(--r-2xl) 0 0; }
+  .modal-head { padding: 16px 14px 12px; }
+  .modal-body { padding: 14px; }
+  .modal-foot { padding: 12px 14px 24px; flex-direction: column-reverse; gap: 8px; }
+  .modal-foot .btn { width: 100%; min-height: 44px; }
+  .inp { font-size: 16px; }
+  .inp-ta { font-size: 16px; }
+  .file-drop { padding: 14px; }
+  .file-rm { width: 32px; height: 32px; }
+}
+@media (max-width:480px) {
+  .modal-body { padding: 12px; }
+  .modal-foot { padding: 10px 12px 20px; }
+}
 </style>

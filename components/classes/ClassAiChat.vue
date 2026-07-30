@@ -723,7 +723,7 @@ onMounted(() => {
 .hdr-badge { position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; background: var(--yellow); border-radius: 8px; font-size: 10px; font-weight: 700; color: #1c1c1e; display: flex; align-items: center; justify-content: center; border: 2px solid var(--surface); padding: 0 3px; }
 
 /* Body */
-.ai-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+.ai-body { flex: 1; display: flex; overflow: hidden; min-height: 0; position: relative; }
 
 /* Sidebar (teacher tools) */
 .ai-sidebar { width: 265px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 18px; }
@@ -792,6 +792,15 @@ html.dark .send-btn.locked { background: var(--surface3, var(--surface2)); }
      при фокусе — из-за этого поле выглядит "не влезающим" и скролл ломается. */
   .ai-textarea { font-size: 16px; padding: 10px 13px; }
   .ai-input-bar { padding: 10px 12px; }
+
+  /* Фиксированная ширина 265px у .ai-sidebar сжимала .ai-msgs почти до нуля
+     на экранах ≤768px (места оставалось меньше 110px) — сайдбар вылезал за
+     пределы экрана. На мобильном превращаем его в полноэкранную шторку
+     поверх чата вместо колонки рядом с сообщениями. */
+  .ai-sidebar { position: absolute; inset: 0; width: 100%; z-index: 20; }
+  .ai-floating-actions { z-index: 30; }
+  .ai-msgs { min-width: 0; }
+  .quick-grid { grid-template-columns: 1fr; }
 }
 
 /* Spinners */

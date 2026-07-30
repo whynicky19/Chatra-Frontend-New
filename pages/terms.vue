@@ -216,7 +216,7 @@ useHead({ title: computed(() => c.value.title) })
 @media (max-width: 768px) {
   .pp-page { padding: 0 16px 48px; }
   .pp-title { font-size: 24px; }
-  .pp-lang { padding: 10px 12px; min-height: 40px; }
+  .pp-lang { padding: 10px 12px; min-height: 44px; }
   .pp-back { position: relative; }
   .pp-back::after { content: ''; position: absolute; top: -12px; bottom: -12px; left: -8px; right: -8px; }
 }

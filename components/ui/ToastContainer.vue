@@ -23,4 +23,9 @@ const store=useToastStore()
 .t-info .t-dot{background:var(--blue)}.t-info{border-left:3px solid var(--blue)}
 .t-enter-active{transition:all .25s ease}.t-leave-active{transition:all .2s ease}
 .t-enter-from{opacity:0;transform:translateX(20px)}.t-leave-to{opacity:0;transform:translateX(20px)}
+@media (max-width:480px){
+  .tc{left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom, 0px))}
+  .toast{min-width:0;max-width:100%;width:100%}
+  .t-enter-from,.t-leave-to{transform:translateY(12px)}
+}
 </style>

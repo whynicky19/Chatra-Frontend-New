@@ -572,7 +572,7 @@ watch(() => store.activeId, () => scroll())
   .ai-sidebar.mobile-open { transform: translateX(0) }
 
   .sb-head { padding: env(safe-area-inset-top, 0px) 14px 0; height: calc(54px + env(safe-area-inset-top, 0px)) }
-  .menu-btn.floating { top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px }
+  .menu-btn.floating { top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px; width: 44px; height: 44px }
   .ios-scrim { display: block; position: absolute; top: 0; left: 0; right: 0; z-index: 2; pointer-events: none;
     height: calc(env(safe-area-inset-top, 0px) + 16px);
     background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%); opacity: .8 }

@@ -274,7 +274,7 @@ html.dark .glow { opacity: .1; }
 }
 
 @media (max-width: 768px) {
-  .lang-btn { padding: 10px 16px; min-height: 40px; display: inline-flex; align-items: center; }
+  .lang-btn { padding: 10px 16px; min-height: 44px; display: inline-flex; align-items: center; }
 }
 @media (max-width: 480px) {
   .org-content { padding: 24px 18px; }
