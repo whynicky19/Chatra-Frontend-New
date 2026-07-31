@@ -113,9 +113,10 @@ import { parseUtc } from '~/composables/useDeadline'
 definePageMeta({ layout: 'default' })
 
 const router = useRouter()
-const { lang } = useI18n()
+const { lang, t } = useI18n()
 const tt = (ru: string, kk: string, en: string) =>
   lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
+const goBack = () => router.push('/')
 const assignSvc = useAssignmentsSvc()
 const classesSvc = useClassesSvc()
 const toast = useToast()
@@ -272,7 +273,9 @@ onMounted(async () => {
 </script>
 <style scoped>
 .pg{height:100%;overflow-y:auto;background:var(--bg);width:100%}
-.pg-head{padding:28px 32px 0;display:flex;align-items:center;gap:14px}
+.back-row{display:inline-flex;align-items:center;gap:2px;background:none;border:none;color:var(--teal);font-size:15px;font-weight:500;cursor:pointer;padding:4px 0;margin:20px 0 0 32px;font-family:inherit;transition:opacity .15s}
+.back-row:hover{opacity:.7}
+.pg-head{padding:8px 32px 0;display:flex;align-items:center;gap:14px}
 .head-icon{width:44px;height:44px;border-radius:14px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .pg-sub{font-size:13px;color:var(--text4);margin-top:2px}
 .pg-title{font-size:24px;font-weight:800;letter-spacing:-.02em}
@@ -340,7 +343,9 @@ onMounted(async () => {
 }
 @media(max-width:768px){
   .pg{overflow-x:hidden}
-  .pg-head{padding:calc(18px + env(safe-area-inset-top, 0px)) 16px 0}
+  .back-row{margin:calc(14px + env(safe-area-inset-top, 0px)) 0 0 16px;position:relative;min-height:44px;display:inline-flex}
+  .back-row::after{content:'';position:absolute;top:-9px;bottom:-9px;left:-4px;right:-4px}
+  .pg-head{padding:6px 16px 0}
   .head-icon{display:none}
   .pg-body{padding:14px 16px 28px}
   .cal-layout{gap:16px}
