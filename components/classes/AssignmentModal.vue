@@ -40,7 +40,8 @@
           <div class="section-label">{{ t('am.task_files') }}</div>
           <div class="files-row">
             <a v-for="f in assignmentFiles" :key="f.url" href="#" class="file-chip" @click.prevent="openPreview(f.url, f.name)">
-              <span class="ftb ftb-sm">{{ getEmoji(f.url) }}</span> {{ f.name }}
+              <img v-if="isImageUrl(f.url)" :src="f.url" class="ftb-thumb" alt="" />
+              <span v-else class="ftb ftb-sm">{{ getEmoji(f.url) }}</span> {{ f.name }}
             </a>
           </div>
         </div>
@@ -94,35 +95,19 @@
 
           <div v-if="mySubmission.file_url || parsedSubmittedUrls.length" class="sub-file">
             <a v-for="url in (parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url])" :key="url" href="#" class="file-chip" @click.prevent="openPreview(url, getFileName(url))">
-              <span class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
+              <img v-if="isImageUrl(url)" :src="url" class="ftb-thumb" alt="" />
+              <span v-else class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
             </a>
           </div>
 
-          <!-- Grade card -->
-          <div v-if="mySubmission.grade" class="grade-card">
-            <div class="grade-card-top">
-              <div class="grade-score"><span class="grade-num">{{ mySubmission.grade.score }}</span><span class="grade-denom">/ {{ assignment.max_score }}</span></div>
-              <div class="grade-meta">
-                <div class="grade-pct">{{ Math.round(mySubmission.grade.score / assignment.max_score * 100) }}%</div>
-                <div class="grade-by-tag">
-                  <svg v-if="mySubmission.grade.graded_by === 'ai'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  {{ mySubmission.grade.graded_by === 'ai' ? t('am.ai') : t('am.teacher') }}
-                </div>
-              </div>
-            </div>
-            <div v-if="mySubmission.grade.feedback" class="grade-feedback">
-              <div class="section-label">{{ t('am.feedback') }}</div>
-              <div class="feedback-text">{{ mySubmission.grade.feedback }}</div>
-            </div>
-            <div v-if="parsedCriteriaScores" class="grade-criteria">
-              <div class="section-label">{{ t('am.by_criteria') }}</div>
-              <div v-for="cs in parsedCriteriaScores" :key="cs.name" class="cs-item">
-                <div class="cs-top"><span class="cs-name">{{ cs.name }}</span><span class="cs-pts">{{ cs.score }} / {{ cs.max }}</span></div>
-                <div v-if="cs.comment" class="cs-comment">{{ cs.comment }}</div>
-                <div class="cs-bar"><div class="cs-bar-fill" :style="{ width: (cs.score / cs.max * 100) + '%' }"></div></div>
-              </div>
-            </div>
+          <!-- Grade card — круговой результат в духе Apple Fitness + анализ ИИ -->
+          <div v-if="mySubmission.grade" class="grade-result-wrap">
+            <GradeResultCard
+              :grade="mySubmission.grade"
+              :max-score="assignment.max_score"
+              :criteria="parsedCriteriaScores || []"
+              :rubric="parsedCriteria"
+            />
           </div>
 
           <div v-else-if="mySubmission.status === 'grading'" class="grading-pending">
@@ -558,6 +543,10 @@ const getEmoji = (url: string) => {
   if (['png','jpg','jpeg','gif','webp'].includes(e)) return 'IMG'
   return 'FILE'
 }
+const isImageUrl = (url: string) => {
+  const e = url.split('.').pop()?.split('?')[0]?.toLowerCase() || ''
+  return ['png','jpg','jpeg','gif','webp'].includes(e)
+}
 const fileSz = (f: File) => f.size < 1048576 ? (f.size/1024).toFixed(0)+' KB' : (f.size/1048576).toFixed(1)+' MB'
 
 const clearFiles = () => { submittedFiles.value = []; uploadedUrl.value = '' }
@@ -837,6 +826,7 @@ onMounted(async () => {
 .file-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; max-width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); color: var(--text2); font-size: 13px; font-weight: 600; text-decoration: none; transition: all .15s; cursor: pointer; word-break: break-word; overflow-wrap: anywhere; }
 .file-chip:hover { background: var(--surface3); }
 .file-chip.small { font-size: 12px; padding: 5px 10px; }
+.ftb-thumb { width: 28px; height: 22px; object-fit: cover; border-radius: 5px; flex-shrink: 0; }
 .criteria-list { display: flex; flex-direction: column; gap: 8px; }
 .criterion { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 12px 14px; }
 .criterion-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
@@ -888,6 +878,7 @@ onMounted(async () => {
 
 /* Grade card */
 .grade-card { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--r-xl); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.grade-result-wrap { padding: 4px 0 8px; }
 .grade-card-top { display: flex; align-items: center; justify-content: space-between; }
 .grade-score { display: flex; align-items: baseline; gap: 3px; }
 .grade-num { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 42px; font-weight: 900; color: var(--text1); line-height: 1; }
