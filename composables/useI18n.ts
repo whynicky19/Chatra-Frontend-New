@@ -216,6 +216,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'common.cancel': { ru: 'Отмена', en: 'Cancel', kk: 'Болдырмау' },
   'common.privacy': { ru: 'Политика конфиденциальности', en: 'Privacy Policy', kk: 'Құпиялылық саясаты' },
   'common.terms': { ru: 'Условия использования', en: 'Terms of Service', kk: 'Пайдалану шарттары' },
+  'common.rules': { ru: 'Правила сообщества', en: 'Community Guidelines', kk: 'Қоғамдастық ережелері' },
 
   // Deadlines
   'deadline.in_hours_1': { ru: 'СРОК ЧЕРЕЗ {n} ЧАС', en: 'DUE IN {n} HOUR', kk: 'МЕРЗІМ {n} САҒАТ' },
