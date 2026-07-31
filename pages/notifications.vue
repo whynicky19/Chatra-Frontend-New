@@ -18,6 +18,7 @@
           v-for="item in sorted"
           :key="item.key"
           :class="['notif-card', { unread: !item.read }]"
+          :style="!item.read ? { borderLeftColor: item.color } : {}"
           @click="markRead(item.key)"
         >
           <div class="notif-icon" :style="{ background: item.color + '18', border: '1px solid ' + item.color + '30' }">
@@ -194,15 +195,16 @@ onMounted(async () => {
 .pg-body{padding:20px 32px 32px}
 .empty-state{display:flex;flex-direction:column;align-items:center;gap:16px;padding:80px 0;color:var(--text4);font-size:14px}
 .notif-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:10px;width:100%}
-.notif-card{display:flex;align-items:flex-start;gap:14px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;transition:all .15s;position:relative}
-.notif-card:hover{background:var(--surface2);border-color:var(--border2)}
-.notif-card.unread{border-left:3px solid;background:var(--surface)}
+.notif-card{display:flex;align-items:flex-start;gap:14px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-xs);cursor:pointer;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s,background .15s,border-color .15s;position:relative}
+.notif-card:hover{background:var(--surface2);border-color:var(--border2);transform:translateY(-1px);box-shadow:var(--sh-sm)}
+.notif-card:active{transform:translateY(0) scale(.99)}
+.notif-card.unread{border-left:3px solid var(--teal);background:var(--surface)}
 .notif-icon{width:42px;height:42px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .notif-body{flex:1;min-width:0}
 .notif-title{font-size:14px;font-weight:600;margin-bottom:3px;color:var(--text1)}
 .notif-desc{font-size:13px;color:var(--text3);margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .notif-date{font-size:11px;color:var(--text4)}
-.unread-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.unread-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px;box-shadow:0 0 0 3px rgba(var(--teal-rgb),.15)}
 @media(max-width:768px){
   .pg-head{padding:calc(18px + env(safe-area-inset-top, 0px)) 16px 0}
   .pg-title svg{display:none}

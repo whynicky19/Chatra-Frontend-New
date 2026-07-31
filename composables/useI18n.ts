@@ -7,7 +7,7 @@ let _ready = false
 
 export const translations: Record<string, Record<Lang, string>> = {
   // Sidebar
-  'nav.classes': { ru: 'Классы', en: 'Classes', kk: 'Сыныптар' },
+  'nav.classes': { ru: 'Предметы', en: 'Subjects', kk: 'Пәндер' },
   'nav.participants': { ru: 'Участники', en: 'Participants', kk: 'Қатысушылар' },
   'nav.ai': { ru: 'ИИ Ассистент', en: 'AI Assistant', kk: 'ЖИ Көмекші' },
   'nav.settings': { ru: 'Настройки', en: 'Settings', kk: 'Параметрлер' },
@@ -21,7 +21,6 @@ export const translations: Record<string, Record<Lang, string>> = {
   'settings.appearance': { ru: 'Внешний вид', en: 'Appearance', kk: 'Сыртқы түр' },
   'settings.security': { ru: 'Безопасность', en: 'Security', kk: 'Қауіпсіздік' },
   'settings.profile_details': { ru: 'Данные профиля', en: 'Profile Details', kk: 'Профиль деректері' },
-  'settings.profile_sub': { ru: 'Управляйте публичной информацией и цифровой идентификацией.', en: 'Manage your public information and digital identity.', kk: 'Жалпыға ортақ ақпаратты және цифрлық жеке басыңызды басқарыңыз.' },
   'settings.save': { ru: 'Сохранить изменения', en: 'Save Changes', kk: 'Өзгерістерді сақтау' },
   'settings.full_name': { ru: 'ПОЛНОЕ ИМЯ', en: 'FULL NAME', kk: 'ТОЛЫҚ АТЫ' },
   'settings.email': { ru: 'EMAIL АДРЕС', en: 'EMAIL ADDRESS', kk: 'EMAIL МЕКЕНЖАЙЫ' },
@@ -57,8 +56,8 @@ export const translations: Record<string, Record<Lang, string>> = {
   'support.help_center': { ru: 'Центр помощи', en: 'Help Center', kk: 'Көмек орталығы' },
 
   // Classes
-  'classes.title': { ru: 'Классы', en: 'Classes', kk: 'Сыныптар' },
-  'classes.catalog': { ru: 'Классы', en: 'Classes', kk: 'Сыныптар' },
+  'classes.title': { ru: 'Предметы', en: 'Subjects', kk: 'Пәндер' },
+  'classes.catalog': { ru: 'Предметы', en: 'Subjects', kk: 'Пәндер' },
   'classes.create': { ru: 'Создать класс', en: 'Create Class', kk: 'Сынып жасау' },
   'classes.join_code': { ru: 'Войти по коду', en: 'Join by Code', kk: 'Кодпен кіру' },
   'classes.no_classes': { ru: 'У вас нет классов', en: 'You have no classes', kk: 'Сізде сыныптар жоқ' },

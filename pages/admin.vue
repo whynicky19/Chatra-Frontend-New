@@ -27,7 +27,7 @@
       <div class="tabs" style="margin-bottom:20px">
         <button :class="['tab-btn',{active:tab==='users'}]" @click="tab='users'">Пользователи</button>
         <button :class="['tab-btn',{active:tab==='actions'}]" @click="tab='actions'">Действия</button>
-        <button :class="['tab-btn',{active:tab==='classes'}]" @click="switchToClasses">Классы</button>
+        <button :class="['tab-btn',{active:tab==='classes'}]" @click="switchToClasses">Предметы</button>
         <button :class="['tab-btn','tab-ai-btn',{active:tab==='ai-usage'}]" @click="switchToAiUsage">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           Запросы к ИИ

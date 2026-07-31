@@ -2,7 +2,6 @@
   <div class="pg anim-in">
     <div class="pg-head">
       <h1 class="pg-title">{{ t('settings.title') }}</h1>
-      <p class="pg-sub">{{ lang === 'ru' ? 'Управляйте аккаунтом и настройками' : lang === 'kk' ? 'Аккаунтыңызды және параметрлерді басқарыңыз' : 'Manage your account and preferences' }}</p>
     </div>
 
     <div class="pg-body">
@@ -11,7 +10,6 @@
         <div class="scard-head">
           <div>
             <h2 class="scard-title">{{ t('settings.profile_details') }}</h2>
-            <p class="scard-sub">{{ t('settings.profile_sub') }}</p>
           </div>
           <button class="btn btn-teal btn-lg save-btn-desktop" @click="saveProfile">{{ t('settings.save') }}</button>
         </div>
