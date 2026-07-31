@@ -6,7 +6,7 @@ let _api: AxiosInstance | null = null
 let _baseURL: string | null = null
 let _loggingOut = false
 let _refreshing = false
-let _refreshQueue: Array<(token: string) => void> = []
+let _refreshQueue: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = []
 
 export const resetLogoutFlag = () => { _loggingOut = false }
 
@@ -83,10 +83,13 @@ export const useApi = (): AxiosInstance => {
       original._retry = true
 
       if (_refreshing) {
-        return new Promise((resolve) => {
-          _refreshQueue.push((token) => {
-            original.headers.Authorization = `Bearer ${token}`
-            resolve(_api!.request(original))
+        return new Promise((resolve, reject) => {
+          _refreshQueue.push({
+            resolve: (token) => {
+              original.headers.Authorization = `Bearer ${token}`
+              resolve(_api!.request(original))
+            },
+            reject,
           })
         })
       }
@@ -111,12 +114,16 @@ export const useApi = (): AxiosInstance => {
           auth.setRefreshToken(data.refresh_token)
         } catch {}
 
-        _refreshQueue.forEach(cb => cb(data.access_token))
+        _refreshQueue.forEach(q => q.resolve(data.access_token))
         _refreshQueue = []
 
         original.headers.Authorization = `Bearer ${data.access_token}`
         return _api!.request(original)
-      } catch {
+      } catch (refreshErr) {
+        // Иначе запросы, вставшие в очередь пока шёл refresh, зависали бы
+        // навсегда (их промис никогда не resolve/reject) — бесконечный
+        // спиннер, хотя пользователя уже увело на /login через doLogout().
+        _refreshQueue.forEach(q => q.reject(refreshErr))
         _refreshQueue = []
         doLogout()
         return Promise.reject(e)

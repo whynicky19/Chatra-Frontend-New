@@ -44,6 +44,7 @@ import { useClassesSvc } from '~/services/classes'
 import { useNotificationsSvc } from '~/services/notifications'
 import { parseUtc } from '~/composables/useDeadline'
 import { useNotificationsStore } from '~/stores/notifications.store'
+import { useToast } from '~/composables/useToast'
 definePageMeta({ layout: 'default' })
 
 const auth = useAuthStore()
@@ -51,6 +52,7 @@ const assignSvc = useAssignmentsSvc()
 const classesSvc = useClassesSvc()
 const notifSvc = useNotificationsSvc()
 const notifStore = useNotificationsStore()
+const toast = useToast()
 
 interface NotifItem {
   key: string
@@ -177,7 +179,11 @@ onMounted(async () => {
 
     items.value = collected
     notifStore.setUnread(collected.filter(i => !i.read).length)
-  } catch {}
+  } catch {
+    // Раньше молча показывали "Уведомлений нет", неотличимое от настоящего
+    // пустого списка при реальном сбое загрузки.
+    toast.err('Не удалось загрузить уведомления')
+  }
   finally { loading.value = false }
 })
 </script>

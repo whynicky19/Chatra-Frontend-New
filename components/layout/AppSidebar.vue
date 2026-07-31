@@ -76,7 +76,7 @@
   </aside>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from '#app'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAuth } from '~/composables/useAuth'
@@ -106,14 +106,19 @@ const toggleSidebar = () => {
     }
   }
 }
+let resizeHandler: (() => void) | null = null
 onMounted(() => {
   if (import.meta.client) {
     isCollapsed.value = localStorage.getItem('_sidebar_collapsed') === '1'
     applyCollapsedClass(isCollapsed.value)
-    const check = () => { isMobile.value = window.innerWidth <= 768 }
-    check()
-    window.addEventListener('resize', check)
+    resizeHandler = () => { isMobile.value = window.innerWidth <= 768 }
+    resizeHandler()
+    window.addEventListener('resize', resizeHandler)
   }
+})
+onUnmounted(() => {
+  if (import.meta.client && resizeHandler) window.removeEventListener('resize', resizeHandler)
+  if (collapsedClassTimer) { clearTimeout(collapsedClassTimer); collapsedClassTimer = null }
 })
 </script>
 <style scoped>

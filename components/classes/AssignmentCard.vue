@@ -93,7 +93,7 @@ const daysLeft = computed(() => {
 const deadline = computed(() => !!parsedDeadline.value)
 
 const accentClass = computed(() => {
-  if (!props.mySubmission || !props.isTeacher === false) {
+  if (props.mySubmission && !props.isTeacher) {
     if (props.mySubmission?.status === 'graded') return 'accent-green'
     if (props.mySubmission?.status === 'grading') return 'accent-purple'
     if (props.mySubmission?.status === 'submitted') return 'accent-green'

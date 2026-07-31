@@ -457,8 +457,8 @@
             </div>
             <div class="criteria-total">
               {{ lang==='ru'?'Сумма весов:':'Total weight:' }}
-              <strong :style="{color: editAsgForm.criteria.reduce((s,c)=>s+Number(c.weight),0) === editAsgForm.max_score ? 'var(--teal)' : 'var(--yellow)'}">
-                {{ editAsgForm.criteria.reduce((s,c)=>s+Number(c.weight),0) }}
+              <strong :style="{color: editAsgWeightTotal === editAsgForm.max_score ? 'var(--teal)' : 'var(--red)'}">
+                {{ editAsgWeightTotal }}
               </strong>
               / {{ editAsgForm.max_score }}
             </div>
@@ -466,7 +466,7 @@
         </div>
         <div class="modal-foot">
           <button class="btn btn-white" @click="editingAssignment=null">{{ t('general.cancel') }}</button>
-          <button class="btn btn-teal" :disabled="editAsgSaving" @click="saveEditAssignment">
+          <button class="btn btn-teal" :disabled="editAsgSaving || !canSaveEditAssignment" @click="saveEditAssignment">
             <div v-if="editAsgSaving" class="spinner" style="width:13px;height:13px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
             <span v-else>{{ t('general.save') }}</span>
           </button>
@@ -550,6 +550,13 @@ const editAsgForm = ref<{ title: string; description: string; max_score: number;
 const editAsgFiles = ref<{ name: string; url: string }[]>([])
 const editAsgSaving = ref(false)
 const loadingAssignments = ref(false)
+const editAsgWeightTotal = computed(() => editAsgForm.value.criteria.reduce((s, c) => s + Number(c.weight), 0))
+const canSaveEditAssignment = computed(() =>
+  editAsgForm.value.title.trim() &&
+  editAsgForm.value.criteria.length > 0 &&
+  editAsgForm.value.criteria.every(c => c.name.trim() && c.weight > 0) &&
+  editAsgWeightTotal.value === editAsgForm.value.max_score
+)
 
 const ratingData = ref({ avg_score: 0, avg_percent: 0, graded_count: 0, total_score: 0, max_possible: 0 })
 const loadingRating = ref(false)
@@ -870,7 +877,7 @@ const addCriterion = () => { editAsgForm.value.criteria.push({ name: '', weight:
 const removeCriterion = (i: number) => { if (editAsgForm.value.criteria.length > 1) editAsgForm.value.criteria.splice(i, 1) }
 
 const saveEditAssignment = async () => {
-  if (!editingAssignment.value) return
+  if (!editingAssignment.value || !canSaveEditAssignment.value) return
   editAsgSaving.value = true
   try {
     // Пришиваем сохранённые файлы обратно в description (бэкенд не хранит file_urls у заданий)
@@ -964,8 +971,15 @@ onMounted(async () => {
   const qTab = route.query.tab as string
   if (qTab === 'assignments' || qTab === 'ai') {
     tab.value = qTab
-    if (qTab === 'assignments') loadAssignments()
   }
+
+  // Задания грузим всегда, а не только при заходе на вкладку "Задания" —
+  // от них зависит виджет "Ближайший дедлайн" в сайдбаре (v-if="nextDeadline"),
+  // который должен быть виден независимо от того, на какой вкладке юзер
+  // приземлился (по умолчанию — "Лекции"). loadAssignments идемпотентна
+  // (guard на assignmentsLoaded/loadingAssignments), повторный вызов при
+  // клике на вкладку — no-op.
+  loadAssignments()
 
   loading.value = true
   try {
@@ -977,7 +991,6 @@ onMounted(async () => {
     // Преподавателю/админу yearly-класса — подгрузить список учебных лет.
     if (isOwnerOrAdmin.value && isYearly.value) loadCohorts()
   } catch { toast.err(t('general.error')) } finally { loading.value = false }
-  if (!isTeacher.value) loadRating()
 })
 </script>
 

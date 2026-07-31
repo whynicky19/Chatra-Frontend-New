@@ -104,6 +104,7 @@ import { useRouter } from '#app'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useClassesSvc } from '~/services/classes'
 import { useI18n } from '~/composables/useI18n'
+import { useToast } from '~/composables/useToast'
 import { parseUtc } from '~/composables/useDeadline'
 definePageMeta({ layout: 'default' })
 
@@ -113,6 +114,7 @@ const tt = (ru: string, kk: string, en: string) =>
   lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
 const assignSvc = useAssignmentsSvc()
 const classesSvc = useClassesSvc()
+const toast = useToast()
 const loading = ref(false)
 
 interface DlItem {
@@ -256,7 +258,11 @@ onMounted(async () => {
         deadline: a.deadline,
         submitted: submittedIds.has(a.id),
       }))
-  } catch {}
+  } catch {
+    // classesSvc.list() упал (сетевая ошибка/5xx) — раньше это молча давало
+    // "Нет предстоящих дедлайнов", неотличимое от настоящего пустого списка.
+    toast.err(tt('Не удалось загрузить дедлайны', 'Мерзімдерді жүктеу мүмкін болмады', 'Failed to load deadlines'))
+  }
   finally { loading.value = false }
 })
 </script>

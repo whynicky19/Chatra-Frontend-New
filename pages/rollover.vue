@@ -147,6 +147,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from '#app'
 import { useAuthStore } from '~/stores/auth.store'
+import { useAuth } from '~/composables/useAuth'
 import { useCohortsSvc, type RolloverPreviewItem, type DeadlineResponse } from '~/services/cohorts'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
@@ -155,6 +156,7 @@ definePageMeta({ layout: 'default' })
 
 const router = useRouter()
 const auth = useAuthStore()
+const { fetchMe } = useAuth()
 const cohortsSvc = useCohortsSvc()
 const toast = useToast()
 const { t, lang } = useI18n()
@@ -290,7 +292,13 @@ const publishAll = async (grp: ResultGroup) => {
   } catch (err: any) { toast.err(err?.response?.data?.detail || t('general.error')) }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // При жёсткой перезагрузке страницы auth.user ещё не подгружен (профиль
+  // тянется в layouts/default.vue асинхронно, а дочерний onMounted страницы
+  // срабатывает раньше родительского в layout) — без этого ожидания реального
+  // учителя/админа выкидывало бы на "/" по пустому auth.user.
+  if (auth.token && !auth.user) await fetchMe()
+
   // Только преподаватель/админ
   if (!(auth.user?.role === 'teacher' || auth.user?.role === 'admin')) {
     router.replace('/')

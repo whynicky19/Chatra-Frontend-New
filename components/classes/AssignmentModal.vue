@@ -197,7 +197,7 @@
               </template>
             </div>
             <div v-if="submittedFiles.length" class="attached-files-list">
-              <div v-for="(f, i) in submittedFiles" :key="i" class="attached-file-row">
+              <div v-for="(f, i) in submittedFiles" :key="`${f.name}_${f.size}_${f.lastModified}`" class="attached-file-row">
                 <span class="ftb ftb-sm">{{ getEmoji(f.name) }}</span>
                 <span class="af-name">{{ f.name }}</span>
                 <span class="af-size">{{ fileSz(f) }}</span>
@@ -348,7 +348,7 @@
             </div>
             <div class="mgf-actions">
               <button class="btn btn-ghost" @click="showManualGrade = false">{{ t('am.cancel') }}</button>
-              <button class="btn btn-teal" :disabled="savingGrade || manualScore < 0" @click="saveManualGrade">
+              <button class="btn btn-teal" :disabled="savingGrade || manualScore < 0 || manualScore > assignment.max_score" @click="saveManualGrade">
                 <div v-if="savingGrade" class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
                 <span v-else>{{ t('am.save_grade') }}</span>
               </button>
@@ -601,18 +601,23 @@ const loadSubs = async () => {
 
 const runAiGrade = async () => {
   if (!activeSub.value || grading.value) return
+  const subId = activeSub.value.id
   grading.value = true
   startCheckSteps()
   try {
-    const result = await svc.aiGrade(activeSub.value.id)
+    const result = await svc.aiGrade(subId)
     const patch = {
       status: result.status,
       grade: result.grade || undefined,
       ai_confidence: result.ai_confidence,
       ai_review_reasons: result.ai_review_reasons,
     }
-    activeSub.value = { ...activeSub.value, ...patch }
-    const idx = submissions.value.findIndex(s => s.id === activeSub.value!.id)
+    // Учитель мог уйти «Назад к списку» (activeSub = null) или открыть другую
+    // сдачу, пока запрос летел — применяем patch к activeSub, только если это
+    // всё ещё та же сдача, иначе спред null дал бы объект без id/submitted_at
+    // и рендер экрана детали упал бы на fmtDate(undefined).
+    if (activeSub.value?.id === subId) activeSub.value = { ...activeSub.value, ...patch }
+    const idx = submissions.value.findIndex(s => s.id === subId)
     if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], ...patch }
     if (result.status === 'needs_review') {
       toast.ok(t('am.needs_review_toast'))
@@ -656,9 +661,11 @@ watch(activeSub, (sub) => {
 
 const saveManualGrade = async () => {
   if (!activeSub.value || savingGrade.value) return
+  if (manualScore.value > props.assignment.max_score) return
+  const subId = activeSub.value.id
   savingGrade.value = true
   try {
-    const grade = await svc.saveGrade(activeSub.value.id, {
+    const grade = await svc.saveGrade(subId, {
       score: manualScore.value,
       feedback: manualFeedback.value || undefined,
       graded_by: 'teacher'
@@ -667,8 +674,12 @@ const saveManualGrade = async () => {
     // сдача уже проходила через needs_review/recheck) больше не относится к
     // делу и вводит в заблуждение рядом с новым баллом (см. бэкенд-фикс в
     // save_grade — он тоже её чистит, здесь просто не ждём лишний рефетч).
-    activeSub.value = { ...activeSub.value, grade, status: 'graded', ai_confidence: null, ai_review_reasons: null }
-    const idx = submissions.value.findIndex(s => s.id === activeSub.value!.id)
+    // activeSub могли обнулить/сменить, пока запрос летел — не подставляем
+    // patch в чужую/несуществующую сдачу (см. комментарий в runAiGrade).
+    if (activeSub.value?.id === subId) {
+      activeSub.value = { ...activeSub.value, grade, status: 'graded', ai_confidence: null, ai_review_reasons: null }
+    }
+    const idx = submissions.value.findIndex(s => s.id === subId)
     if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], grade, status: 'graded', ai_confidence: null, ai_review_reasons: null }
     toast.ok(`${t('am.grade_saved')}: ${grade.score} / ${props.assignment.max_score}`)
     showManualGrade.value = false
@@ -683,9 +694,10 @@ const saveManualGrade = async () => {
 const confirmingSuggested = ref(false)
 const confirmSuggested = async () => {
   if (!activeSub.value?.grade || confirmingSuggested.value) return
+  const subId = activeSub.value.id
   confirmingSuggested.value = true
   try {
-    const grade = await svc.saveGrade(activeSub.value.id, {
+    const grade = await svc.saveGrade(subId, {
       score: activeSub.value.grade.score,
       feedback: activeSub.value.grade.feedback || undefined,
       criteria_scores: parsedActiveScores.value || undefined,
@@ -695,8 +707,11 @@ const confirmSuggested = async () => {
     // сдача уже проходила через needs_review/recheck) больше не относится к
     // делу и вводит в заблуждение рядом с новым баллом (см. бэкенд-фикс в
     // save_grade — он тоже её чистит, здесь просто не ждём лишний рефетч).
-    activeSub.value = { ...activeSub.value, grade, status: 'graded', ai_confidence: null, ai_review_reasons: null }
-    const idx = submissions.value.findIndex(s => s.id === activeSub.value!.id)
+    // activeSub могли обнулить/сменить, пока запрос летел (см. runAiGrade).
+    if (activeSub.value?.id === subId) {
+      activeSub.value = { ...activeSub.value, grade, status: 'graded', ai_confidence: null, ai_review_reasons: null }
+    }
+    const idx = submissions.value.findIndex(s => s.id === subId)
     if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], grade, status: 'graded', ai_confidence: null, ai_review_reasons: null }
     toast.ok(`${t('am.grade_saved')}: ${grade.score} / ${props.assignment.max_score}`)
   } catch (e: any) { toast.err(e?.response?.data?.detail || t('am.err_save_grade')) }

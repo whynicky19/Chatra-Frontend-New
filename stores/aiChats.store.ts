@@ -208,7 +208,15 @@ export const useAiChatsStore = defineStore('aiChats', {
 
       if (hasFile) {
         if (isImageFile(file!)) {
-          imageBase64 = await fileToBase64(file!)
+          try {
+            imageBase64 = await fileToBase64(file!)
+          } catch {
+            // FileReader может упасть на битом файле — раньше это было
+            // необработанным отклонением промиса: сообщение молча терялось,
+            // sending даже не успевал стать true/false.
+            useToast().err('AI: не удалось прочитать файл')
+            return
+          }
           displayText = displayText || `[Изображение: ${file!.name}]`
         } else {
           displayText = displayText

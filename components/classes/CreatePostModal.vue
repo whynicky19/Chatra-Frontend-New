@@ -37,7 +37,7 @@
           </div>
 
           <div v-if="selFiles.length" class="files-list">
-            <div v-for="(f, i) in selFiles" :key="i" class="file-item">
+            <div v-for="(f, i) in selFiles" :key="`${f.name}_${f.size}_${f.lastModified}`" class="file-item">
               <span class="ftb">{{ fileIcon(f) }}</span>
               <span class="file-name">{{ f.name }}</span>
               <span class="file-size">{{ fileSize(f) }}</span>

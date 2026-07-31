@@ -155,8 +155,16 @@ const institutionLabel = computed(() => {
 const saveProfile = async () => {
   const fn = fullnameInput.value.trim()
   if (fn) {
+    try {
+      await authSvc.updateMe(fn)
+    } catch {
+      // Сервер не принял имя — не сохраняем локально и не показываем "успех":
+      // иначе клиент считал бы себя сохранённым, пока для остальных
+      // (учителей/одноклассников) видно старое имя (рассинхрон, скрытый от юзера).
+      toast.err(t('general.error'))
+      return
+    }
     auth.setFullname(fn)
-    try { await authSvc.updateMe(fn) } catch {}
   }
   toast.ok(t('settings.nick_saved'))
 }

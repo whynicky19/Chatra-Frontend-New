@@ -76,7 +76,7 @@
                   </div>
                   <span v-else style="font-size:12px;color:var(--text4)">—</span>
                 </td>
-                <td style="font-size:12px;color:var(--text4)">{{today}}</td>
+                <td style="font-size:12px;color:var(--text4)">{{fmtDate(u.created_at)}}</td>
                 <td>
                   <div style="display:flex;gap:4px">
                     <select :value="u.role" class="role-sel" :disabled="u.id===auth.user?.id" @change="setRole(u.id,($event.target as HTMLSelectElement).value)">
@@ -336,6 +336,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth.store'
+import { useAuth } from '~/composables/useAuth'
 import { useNotificationsStore } from '~/stores/notifications.store'
 import { useToast } from '~/composables/useToast'
 import { useAdminSvc } from '~/services/admin'
@@ -344,12 +345,12 @@ import { useI18n } from '~/composables/useI18n'
 import { fixFileUrl } from '~/composables/useFileUrl'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const toast = useToast(); const adminSvc = useAdminSvc()
+const { fetchMe } = useAuth()
 const { t, lang } = useI18n()
 const classesSvc = useClassesSvc()
 const tab = ref('users'); const users = ref<any[]>([]); const loadingU = ref(false); const sq = ref(''); const showCreate = ref(false); const crU = ref(false)
 const togglingAi = ref<Record<number, boolean>>({})
 const nu = ref({ e: '', p: '', r: 'student' }); const classesCount = ref(0)
-const today = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.')
 const fUsers = computed(() => users.value.filter(u => {
   const q = sq.value.toLowerCase()
   return u.email.toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q)
@@ -388,12 +389,18 @@ const openClass = async (cl: any) => {
   membersList.value = []; loadingMembers.value = true
   rejoinable.value = []; loadingRejoin.value = true
   try {
-    membersList.value = await classesSvc.members(cl.id)
+    const members = await classesSvc.members(cl.id)
+    // Админ мог быстро кликнуть по другому классу, пока запрос летел —
+    // не подставляем ответ по классу A в уже открытую карточку класса B.
+    if (selectedClass.value?.id === cl.id) membersList.value = members
   } catch {}
-  finally { loadingMembers.value = false }
+  finally { if (selectedClass.value?.id === cl.id) loadingMembers.value = false }
   // Кандидаты на возврат — студенты из архивных потоков, не в активном.
-  try { rejoinable.value = await classesSvc.rejoinableStudents(cl.id) } catch {}
-  finally { loadingRejoin.value = false }
+  try {
+    const students = await classesSvc.rejoinableStudents(cl.id)
+    if (selectedClass.value?.id === cl.id) rejoinable.value = students
+  } catch {}
+  finally { if (selectedClass.value?.id === cl.id) loadingRejoin.value = false }
 }
 
 // Вернуть студента в активный поток (доступ даёт админ).
@@ -436,6 +443,11 @@ const doDel = async (id: number) => { try { await adminSvc.del(id); users.value 
 const createU = async () => { crU.value = true; try { const u = await adminSvc.create({ email: nu.value.e, password: nu.value.p, role: nu.value.r }); users.value.unshift(u); showCreate.value = false; nu.value = { e: '', p: '', r: 'student' }; toast.ok('Создан') } catch (e: any) { toast.err(e?.response?.data?.detail || 'Ошибка') } finally { crU.value = false } }
 
 onMounted(async () => {
+  // При жёсткой перезагрузке /admin auth.user ещё не подгружен (профиль
+  // тянется асинхронно в layouts/default.vue, а onMounted страницы
+  // срабатывает раньше onMounted родительского layout) — без ожидания
+  // настоящий админ видел бы пустую панель без единого признака ошибки.
+  if (auth.token && !auth.user) await fetchMe()
   if (!auth.isAdmin) return
   loadingU.value = true
   try { users.value = await adminSvc.users() } catch {} finally { loadingU.value = false }

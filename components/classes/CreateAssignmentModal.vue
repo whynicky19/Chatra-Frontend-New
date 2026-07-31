@@ -36,7 +36,7 @@
             <span style="font-size:13px;color:var(--text3)">Перетащите или <strong style="color:var(--teal)">выберите файлы</strong> задания</span>
           </div>
           <div v-if="taskFiles.length" class="attached-files">
-            <div v-for="(f, i) in taskFiles" :key="i" class="attached-file">
+            <div v-for="(f, i) in taskFiles" :key="`${f.name}_${f.size}_${f.lastModified}`" class="attached-file">
               <span class="ftb ftb-sm">{{ fileEmoji(f) }}</span>
               <span class="af-name">{{ f.name }}</span>
               <span class="af-size">{{ fileSz(f) }}</span>
@@ -68,7 +68,7 @@
 
           <!-- Список прикреплённых эталонов -->
           <div v-if="refFiles.length" class="attached-files" style="margin-bottom:8px">
-            <div v-for="(rf, i) in refFiles" :key="i" class="attached-file ref-attached ref-done">
+            <div v-for="(rf, i) in refFiles" :key="`${rf.name}_${rf.url || (rf.file ? rf.file.size + '_' + rf.file.lastModified : i)}`" class="attached-file ref-attached ref-done">
               <span class="ftb ftb-sm">{{ fileEmoji(rf.file) }}</span>
               <div class="ref-file-info">
                 <span class="af-name" style="color:var(--green)">{{ rf.name }}</span>
@@ -121,7 +121,7 @@
               Добавить
             </button>
           </div>
-          <div class="criteria-hint">Сумма весов критериев должна быть равна макс. баллу ({{ totalWeight }}/{{ form.max_score }})</div>
+          <div class="criteria-hint" :class="{ 'criteria-hint-err': totalWeight !== form.max_score }">Сумма весов критериев должна быть равна макс. баллу ({{ totalWeight }}/{{ form.max_score }})</div>
 
           <div class="criteria-list">
             <div v-for="(c, i) in form.criteria" :key="i" class="criterion-row">
@@ -289,7 +289,8 @@ const totalWeight = computed(() => form.value.criteria.reduce((s, c) => s + (c.w
 const canSubmit = computed(() =>
   form.value.title.trim() &&
   form.value.criteria.length > 0 &&
-  form.value.criteria.every(c => c.name.trim() && c.weight > 0)
+  form.value.criteria.every(c => c.name.trim() && c.weight > 0) &&
+  totalWeight.value === form.value.max_score
 )
 
 const addCriterion = () => form.value.criteria.push({ name: '', weight: 0, description: '' })
@@ -353,19 +354,31 @@ const submit = async () => {
 
     const created = await svc.create(body)
 
-    // Загружаем варианты с эталонами
+    // Задание уже создано на сервере — с этого момента ошибку варианта
+    // нельзя показывать как "ошибка создания задания" (общий catch ниже):
+    // учитель повторил бы сабмит и получил бы дубликат задания. Ловим
+    // отдельно и просто предупреждаем, что варианты нужно доложить руками.
+    let variantsFailed = false
     for (const v of variants.value) {
-      let url = v.fileUrl
-      if (v.file) {
-        const { file_url } = await uploadSvc.upload(v.file)
-        url = file_url
-      }
-      if (url) {
-        await svc.addVariant(created.id, { variant_number: v.number, title: v.title || undefined, reference_solution_url: url })
+      try {
+        let url = v.fileUrl
+        if (v.file) {
+          const { file_url } = await uploadSvc.upload(v.file)
+          url = file_url
+        }
+        if (url) {
+          await svc.addVariant(created.id, { variant_number: v.number, title: v.title || undefined, reference_solution_url: url })
+        }
+      } catch {
+        variantsFailed = true
+        break
       }
     }
 
     toast.ok('Задание создано')
+    if (variantsFailed) {
+      toast.err('Не все варианты с эталонами удалось загрузить — добавьте их в уже созданном задании')
+    }
     emit('created', created)
   } catch (e: any) {
     toast.err(e?.response?.data?.detail || 'Ошибка создания задания')
@@ -400,6 +413,7 @@ const submit = async () => {
 
 .criteria-head { display: flex; align-items: center; justify-content: space-between; }
 .criteria-hint { font-size: 12px; color: var(--text4); margin-top: 2px; }
+.criteria-hint-err { color: var(--red); }
 .criteria-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .criterion-row { display: grid; grid-template-columns: 28px 1fr 90px 32px; gap: 8px; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 10px; }
 .criterion-num { font-size: 12px; font-weight: 700; color: var(--text4); text-align: center; }
