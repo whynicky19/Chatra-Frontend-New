@@ -180,7 +180,7 @@ html.dark .glow { opacity: .1; }
 }
 .logo-mark {
   position: absolute; inset: 0;
-  background: var(--text1);
+  background: linear-gradient(180deg, #40D0E4, #00829C);
   -webkit-mask: url('/logo-icon.png') center / contain no-repeat;
   mask: url('/logo-icon.png') center / contain no-repeat;
 }

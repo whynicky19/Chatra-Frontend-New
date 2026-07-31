@@ -86,7 +86,7 @@ onUnmounted(() => {
 }
 .auth-logo-mark {
   position: absolute; inset: 0;
-  background: var(--text1);
+  background: linear-gradient(180deg, #40D0E4, #00829C);
   -webkit-mask: url('/logo.png') center / contain no-repeat;
   mask: url('/logo.png') center / contain no-repeat;
 }
