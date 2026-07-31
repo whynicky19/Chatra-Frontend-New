@@ -14,10 +14,10 @@
         </button>
       </div>
 
-      <!-- Логотип: «примеряет» цвет выбранной организации -->
+      <!-- Логотип: цвет фиксирован (чёрный/белый по теме), не зависит от выбора -->
       <div class="org-brand r1">
         <span class="logo-glow" :style="{ background: accent, opacity: picked ? .34 : .18 }"></span>
-        <span class="logo-mark" :style="{ backgroundColor: accent }"></span>
+        <span class="logo-mark"></span>
       </div>
 
       <!-- Заголовок -->
@@ -180,9 +180,9 @@ html.dark .glow { opacity: .1; }
 }
 .logo-mark {
   position: absolute; inset: 0;
+  background: var(--text1);
   -webkit-mask: url('/logo-icon.png') center / contain no-repeat;
   mask: url('/logo-icon.png') center / contain no-repeat;
-  transition: background-color .45s ease;
 }
 
 /* Заголовок */

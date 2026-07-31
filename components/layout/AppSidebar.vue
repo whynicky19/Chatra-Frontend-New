@@ -3,11 +3,11 @@
     <!-- Logo — click to toggle sidebar -->
     <div class="sb-logo" @click="toggleSidebar">
       <template v-if="!isCollapsed">
-        <img src="/logo-icon.png" class="logo-img-new" alt="Chatra"/>
+        <span class="logo-img-new" role="img" aria-label="Chatra"></span>
         <span class="logo-name">Chatra</span>
       </template>
       <template v-else>
-        <img src="/logo.png" class="logo-img-collapsed" alt="Chatra"/>
+        <span class="logo-img-collapsed" role="img" aria-label="Chatra"></span>
       </template>
     </div>
 
@@ -126,9 +126,9 @@ onUnmounted(() => {
 html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22,.78))}
 .sb.collapsed{width:56px}
 .sb-logo{display:flex;align-items:center;gap:8px;padding:14px 12px 8px;cursor:pointer;flex-shrink:0;overflow:hidden;min-height:52px}
-.logo-img-new{width:34px;height:34px;object-fit:contain;flex-shrink:0}
-.logo-img-collapsed{width:30px;height:30px;object-fit:contain;flex-shrink:0;margin:0 auto}
-.logo-name{font-size:16px;font-weight:800;color:var(--teal);letter-spacing:.04em;flex:1;overflow:hidden;white-space:nowrap}
+.logo-img-new{width:34px;height:34px;flex-shrink:0;background:var(--text1);-webkit-mask:url('/logo-icon.png') center / contain no-repeat;mask:url('/logo-icon.png') center / contain no-repeat}
+.logo-img-collapsed{width:30px;height:30px;flex-shrink:0;margin:0 auto;background:var(--text1);-webkit-mask:url('/logo.png') center / contain no-repeat;mask:url('/logo.png') center / contain no-repeat}
+.logo-name{font-size:16px;font-weight:800;color:var(--text1);letter-spacing:.04em;flex:1;overflow:hidden;white-space:nowrap}
 .lang-switch{display:flex;align-items:center;gap:4px;padding:4px 14px 10px;flex-shrink:0}
 .lang-btn{padding:4px 12px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:var(--text4);background:transparent;border:1px solid transparent;cursor:pointer;transition:all .15s;letter-spacing:.05em}
 .lang-btn.active{background:var(--teal-l);border-color:var(--border2);color:var(--teal)}
