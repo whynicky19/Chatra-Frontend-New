@@ -20,22 +20,19 @@
         <button class="btn btn-icon btn-ghost" @click="$emit('close')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
 
-      <!-- Tabs -->
-      <div class="am-tabs">
+      <!-- Tabs (teacher/admin only — "Задание"/"Работы"; student gets one unified page, no tabs) -->
+      <div v-if="canSeeSubmissions" class="am-tabs">
         <button :class="['am-tab', { active: tab === 'info' }]" @click="tab = 'info'">{{ t('am.tab_task') }}</button>
-        <button v-if="canSeeSubmissions" :class="['am-tab', { active: tab === 'submissions' }]" @click="tab = 'submissions'; loadSubs()">
+        <button :class="['am-tab', { active: tab === 'submissions' }]" @click="tab = 'submissions'; loadSubs()">
           {{ t('am.tab_works') }} <span v-if="submissions.length" class="tab-count">{{ submissions.length }}</span>
-        </button>
-        <button v-if="!canSeeSubmissions" :class="['am-tab', { active: tab === 'submit' }]" @click="tab = 'submit'">
-          {{ mySubmission ? t('am.my_work') : (readonly ? t('am.view') : t('am.submit_tab')) }}
         </button>
       </div>
 
-      <!-- ═══ INFO TAB ═══ -->
-      <div v-if="tab === 'info'" class="am-body">
+      <!-- ═══ INFO TAB (teacher/admin) ═══ -->
+      <div v-if="canSeeSubmissions && tab === 'info'" class="am-body">
         <div v-if="descriptionText" class="desc-block">{{ descriptionText }}</div>
 
-        <!-- Assignment files (if teacher attached) -->
+        <!-- Assignment files -->
         <div v-if="assignmentFiles.length" class="section">
           <div class="section-label">{{ t('am.task_files') }}</div>
           <div class="files-row">
@@ -46,8 +43,8 @@
           </div>
         </div>
 
-        <!-- Reference solution files (teacher only) -->
-        <div v-if="canSeeSubmissions && referenceFiles.length" class="section">
+        <!-- Reference solution files -->
+        <div v-if="referenceFiles.length" class="section">
           <div class="section-label">{{ t('am.reference_files') }}</div>
           <div class="files-row">
             <a v-for="f in referenceFiles" :key="f.url" href="#" class="file-chip" @click.prevent="openPreview(f.url, f.name)">
@@ -56,7 +53,7 @@
           </div>
         </div>
 
-        <div v-if="canSeeSubmissions" class="section">
+        <div class="section">
           <div class="section-label">{{ t('am.criteria') }}</div>
           <div class="criteria-list">
             <div v-for="c in parsedCriteria" :key="c.name" class="criterion">
@@ -71,81 +68,31 @@
         </div>
       </div>
 
-      <!-- ═══ SUBMIT TAB (student) ═══ -->
-      <div v-if="tab === 'submit' && !canSeeSubmissions" class="am-body">
+      <!-- ═══ STUDENT: единая страница задания (описание+файлы слева, статус/оценка справа) ═══ -->
+      <div v-if="!canSeeSubmissions" class="am-body">
+        <div v-if="descriptionText" class="desc-block">{{ descriptionText }}</div>
 
-        <!-- Already submitted -->
-        <div v-if="mySubmission" class="submitted-panel">
-          <div class="sub-status-bar">
-            <div :class="['sub-status-chip', mySubmission.status]">
-              <svg v-if="['submitted','graded'].includes(mySubmission.status)" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              <svg v-else-if="mySubmission.status === 'grading'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <svg v-else-if="mySubmission.status === 'needs_review'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              {{ statusLabel(mySubmission.status) }}
-            </div>
-            <span v-if="mySubmission.variant_number" class="variant-badge">{{ t('am.variant') }} {{mySubmission.variant_number }}</span>
-            <span class="sub-date">{{ fmtDate(mySubmission.submitted_at) }}</span>
-          </div>
-
-          <div v-if="mySubmission.text_content" class="preview-block">
-            <div class="preview-label">{{ t('am.your_answer') }}</div>
-            <div class="preview-text">{{ mySubmission.text_content }}</div>
-          </div>
-
-          <div v-if="mySubmission.file_url || parsedSubmittedUrls.length" class="sub-file">
-            <a v-for="url in (parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url])" :key="url" href="#" class="file-chip" @click.prevent="openPreview(url, getFileName(url))">
-              <img v-if="isImageUrl(url)" :src="url" class="ftb-thumb" alt="" />
-              <span v-else class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
+        <div v-if="assignmentFiles.length" class="section">
+          <div class="section-label">{{ t('am.task_files') }}</div>
+          <div class="files-row">
+            <a v-for="f in assignmentFiles" :key="f.url" href="#" class="file-chip" @click.prevent="openPreview(f.url, f.name)">
+              <img v-if="isImageUrl(f.url)" :src="f.url" class="ftb-thumb" alt="" />
+              <span v-else class="ftb ftb-sm">{{ getEmoji(f.url) }}</span> {{ f.name }}
             </a>
           </div>
-
-          <!-- Grade card — круговой результат в духе Apple Fitness + анализ ИИ -->
-          <div v-if="mySubmission.grade" class="grade-result-wrap">
-            <GradeResultCard
-              :grade="mySubmission.grade"
-              :max-score="assignment.max_score"
-              :criteria="parsedCriteriaScores || []"
-              :rubric="parsedCriteria"
-            />
-          </div>
-
-          <div v-else-if="mySubmission.status === 'grading'" class="grading-pending">
-            <div class="grading-dots"><span></span><span></span><span></span></div>
-            {{ checkStepText }}
-          </div>
-
-          <div v-else-if="mySubmission.status === 'needs_review'" class="needs-review-student">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            {{ t('am.needs_review_student_msg') }}
-          </div>
-
-          <!-- Retract button (only if not graded, not archived) -->
-          <button v-if="mySubmission.status !== 'graded' && !readonly" class="btn btn-ghost retract-btn" :disabled="retracting" @click="retract">
-            <div v-if="retracting" class="spinner"></div>
-            <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-            {{ retracting ? t('am.canceling') : t('am.retract_resubmit') }}
-          </button>
         </div>
 
         <!-- Read-only notice for archived students (no submission) -->
-        <div v-else-if="readonly" class="readonly-panel">
+        <div v-if="!mySubmission && readonly" class="readonly-panel">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           {{ t('am.readonly_archive') }}
         </div>
 
-        <!-- Submit form -->
-        <div v-else class="submit-form">
+        <!-- Not submitted yet: single-column submit form -->
+        <div v-else-if="!mySubmission" class="submit-form">
           <div v-if="isOverdue" class="overdue-warn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             {{ t('am.overdue_warn') }}
-          </div>
-
-          <!-- Assignment files hint -->
-          <div v-if="assignmentFiles.length" class="task-files-hint">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            {{ t('am.task_files') }}:
-            <a v-for="f in assignmentFiles" :key="f.url" href="#" class="file-chip small" @click.prevent="openPreview(f.url, f.name)"><span class="ftb ftb-sm">{{ getEmoji(f.url) }}</span> {{ f.name }}</a>
           </div>
 
           <!-- Variant selector -->
@@ -201,6 +148,71 @@
             {{ submitting ? (uploading ? t('am.uploading_file') : t('am.sending')) : t('am.submit_work_btn') }}
           </button>
         </div>
+
+        <!-- Already submitted: two-column layout — answer on the left, status/grade on the right -->
+        <div v-else class="ad-grid">
+          <div class="ad-col-main">
+            <div v-if="mySubmission.text_content" class="preview-block">
+              <div class="preview-label">{{ t('am.your_answer') }}</div>
+              <div class="preview-text">{{ mySubmission.text_content }}</div>
+            </div>
+            <div v-if="mySubmission.file_url || parsedSubmittedUrls.length" class="sub-file">
+              <a v-for="url in (parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url])" :key="url" href="#" class="file-chip" @click.prevent="openPreview(url, getFileName(url))">
+                <img v-if="isImageUrl(url)" :src="url" class="ftb-thumb" alt="" />
+                <span v-else class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
+              </a>
+            </div>
+            <!-- Разбор по критериям — слева, рядом с ответом, а не под кольцом справа -->
+            <GradeCriteriaCard
+              v-if="mySubmission.grade"
+              :grade="mySubmission.grade"
+              :criteria="parsedCriteriaScores || []"
+              :rubric="parsedCriteria"
+            />
+          </div>
+
+          <div class="ad-col-side">
+            <!-- "Сдано"/"Оценено" больше не дублируются текстом — как на странице
+                 задания в приложении, чип остаётся только для промежуточных
+                 статусов (проверяется/на ручной проверке/просрочено). -->
+            <div class="sub-status-bar">
+              <div v-if="!['submitted','graded'].includes(mySubmission.status)" :class="['sub-status-chip', mySubmission.status]">
+                <svg v-if="mySubmission.status === 'grading'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <svg v-else-if="mySubmission.status === 'needs_review'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                {{ statusLabel(mySubmission.status) }}
+              </div>
+              <span v-if="mySubmission.variant_number" class="variant-badge">{{ t('am.variant') }} {{mySubmission.variant_number }}</span>
+              <span class="sub-date">{{ fmtDate(mySubmission.submitted_at) }}</span>
+            </div>
+
+            <!-- Grade card — тот же компонент, что и у преподавателя -->
+            <div v-if="mySubmission.grade" class="grade-result-wrap">
+              <GradeResultCard
+                :grade="mySubmission.grade"
+                :max-score="assignment.max_score"
+                :criteria="parsedCriteriaScores || []"
+              />
+            </div>
+
+            <div v-else-if="mySubmission.status === 'grading'" class="grading-pending">
+              <div class="grading-dots"><span></span><span></span><span></span></div>
+              {{ checkStepText }}
+            </div>
+
+            <div v-else-if="mySubmission.status === 'needs_review'" class="needs-review-student">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              {{ t('am.needs_review_student_msg') }}
+            </div>
+
+            <!-- Retract button (only if not graded, not archived) -->
+            <button v-if="mySubmission.status !== 'graded' && !readonly" class="btn btn-ghost retract-btn" :disabled="retracting" @click="retract">
+              <div v-if="retracting" class="spinner"></div>
+              <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+              {{ retracting ? t('am.canceling') : t('am.retract_resubmit') }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- ═══ SUBMISSIONS TAB (teacher) ═══ -->
@@ -224,119 +236,131 @@
             </div>
           </div>
 
-          <div v-if="activeSub.text_content" class="sub-text-section">
-            <div class="section-label">{{ t('am.student_answer') }}</div>
-            <div class="sub-text">{{ activeSub.text_content }}</div>
-          </div>
-
-          <div v-if="activeSub.file_url || parsedActiveUrls.length" class="sub-file-section">
-            <div class="section-label">{{ t('am.attached_files') }}</div>
-            <a v-for="url in (parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url])" :key="url" href="#" class="file-chip" @click.prevent="openPreview(url, getFileName(url))">
-              <span class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
-            </a>
-          </div>
-
-          <!-- Needs review card: Статус / Предлагаемая оценка ИИ / Уверенность / Причины / Анализ ИИ + 2 действия -->
-          <div v-if="activeSub.status === 'needs_review'" class="needs-review-banner">
-            <div class="nrb-title">{{ t('am.status_needs_review_label') }}</div>
-
-            <div v-if="activeSub.grade" class="nrb-row">
-              <span class="nrb-row-label">{{ t('am.suggested_score_label') }}</span>
-              <span class="nrb-row-value">{{ activeSub.grade.score }} / {{ assignment.max_score }}</span>
+          <!-- Needs review: pending human decision, kept as its own single-column card (unchanged) -->
+          <template v-if="activeSub.status === 'needs_review'">
+            <div v-if="activeSub.text_content" class="sub-text-section">
+              <div class="section-label">{{ t('am.student_answer') }}</div>
+              <div class="sub-text">{{ activeSub.text_content }}</div>
             </div>
-            <div v-if="activeSub.ai_confidence != null" class="nrb-row">
-              <span class="nrb-row-label">{{ t('am.confidence_label') }}</span>
-              <span class="nrb-row-value">{{ activeSub.ai_confidence }}%</span>
+            <div v-if="activeSub.file_url || parsedActiveUrls.length" class="sub-file-section">
+              <div class="section-label">{{ t('am.attached_files') }}</div>
+              <a v-for="url in (parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url])" :key="url" href="#" class="file-chip" @click.prevent="openPreview(url, getFileName(url))">
+                <span class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
+              </a>
             </div>
 
-            <template v-if="parsedActiveReviewReasons">
-              <div class="nrb-section-label">{{ t('am.review_reasons_label') }}</div>
-              <ul class="nrb-reasons">
-                <li v-for="(r, i) in parsedActiveReviewReasons" :key="i">{{ r }}</li>
-              </ul>
-            </template>
+            <!-- Needs review card: Статус / Предлагаемая оценка ИИ / Уверенность / Причины / Анализ ИИ + 2 действия -->
+            <div class="needs-review-banner">
+              <div class="nrb-title">{{ t('am.status_needs_review_label') }}</div>
 
-            <template v-if="activeSub.grade">
-              <div class="nrb-section-label">{{ t('am.ai_analysis_label') }}</div>
-              <div v-if="activeSub.grade.feedback" class="feedback-text">{{ activeSub.grade.feedback }}</div>
-              <div v-if="parsedActiveScores" class="grade-criteria">
-                <div v-for="cs in parsedActiveScores" :key="cs.name" class="cs-item">
-                  <div class="cs-top"><span class="cs-name">{{ cs.name }}</span><span class="cs-pts">{{ cs.score }} / {{ cs.max }}</span></div>
-                  <div v-if="cs.comment" class="cs-comment">{{ cs.comment }}</div>
-                  <div class="cs-bar"><div class="cs-bar-fill" :style="{ width: (cs.score / cs.max * 100) + '%' }"></div></div>
+              <div v-if="activeSub.grade" class="nrb-row">
+                <span class="nrb-row-label">{{ t('am.suggested_score_label') }}</span>
+                <span class="nrb-row-value">{{ activeSub.grade.score }} / {{ assignment.max_score }}</span>
+              </div>
+              <div v-if="activeSub.ai_confidence != null" class="nrb-row">
+                <span class="nrb-row-label">{{ t('am.confidence_label') }}</span>
+                <span class="nrb-row-value">{{ activeSub.ai_confidence }}%</span>
+              </div>
+
+              <template v-if="parsedActiveReviewReasons">
+                <div class="nrb-section-label">{{ t('am.review_reasons_label') }}</div>
+                <ul class="nrb-reasons">
+                  <li v-for="(r, i) in parsedActiveReviewReasons" :key="i">{{ r }}</li>
+                </ul>
+              </template>
+
+              <template v-if="activeSub.grade">
+                <div class="nrb-section-label">{{ t('am.ai_analysis_label') }}</div>
+                <div v-if="activeSub.grade.feedback" class="feedback-text">{{ activeSub.grade.feedback }}</div>
+                <div v-if="parsedActiveScores" class="grade-criteria">
+                  <div v-for="cs in parsedActiveScores" :key="cs.name" class="cs-item">
+                    <div class="cs-top"><span class="cs-name">{{ cs.name }}</span><span class="cs-pts">{{ cs.score }} / {{ cs.max }}</span></div>
+                    <div v-if="cs.comment" class="cs-comment">{{ cs.comment }}</div>
+                    <div class="cs-bar"><div class="cs-bar-fill" :style="{ width: (cs.score / cs.max * 100) + '%' }"></div></div>
+                  </div>
                 </div>
-              </div>
-            </template>
+              </template>
 
-            <div class="grade-actions">
-              <button class="btn btn-purple" :disabled="!activeSub.grade || confirmingSuggested" @click="confirmSuggested">
-                <div v-if="confirmingSuggested" class="spinner"></div>
-                <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                {{ t('am.confirm_suggested') }}
-              </button>
-              <button class="btn btn-teal" @click="showManualGrade = !showManualGrade">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                {{ t('am.change_score') }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Normal states: existing grade card + Check/Recheck AI + Grade manually -->
-          <template v-else>
-            <div v-if="activeSub.grade" class="grade-card">
-              <div class="grade-card-top">
-                <div class="grade-score"><span class="grade-num">{{ activeSub.grade.score }}</span><span class="grade-denom">/ {{ assignment.max_score }}</span></div>
-                <div class="grade-by-tag">
-                  <svg v-if="activeSub.grade.graded_by === 'ai'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  {{ activeSub.grade.graded_by === 'ai' ? t('am.ai_check') : t('am.teacher') }}
-                </div>
+              <div class="grade-actions">
+                <button class="btn btn-purple" :disabled="!activeSub.grade || confirmingSuggested" @click="confirmSuggested">
+                  <div v-if="confirmingSuggested" class="spinner"></div>
+                  <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  {{ t('am.confirm_suggested') }}
+                </button>
+                <button class="btn btn-teal" @click="showManualGrade = !showManualGrade">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  {{ t('am.change_score') }}
+                </button>
               </div>
-              <div v-if="activeSub.ai_confidence != null" class="confidence-pill">{{ t('am.confidence_label') }}: {{ activeSub.ai_confidence }}%</div>
-              <div v-if="activeSub.grade.feedback" class="grade-feedback">
-                <div class="section-label">{{ t('am.feedback') }}</div>
-                <div class="feedback-text">{{ activeSub.grade.feedback }}</div>
-              </div>
-              <div v-if="parsedActiveScores" class="grade-criteria">
-                <div class="section-label">{{ t('am.by_criteria') }}</div>
-                <div v-for="cs in parsedActiveScores" :key="cs.name" class="cs-item">
-                  <div class="cs-top"><span class="cs-name">{{ cs.name }}</span><span class="cs-pts">{{ cs.score }} / {{ cs.max }}</span></div>
-                  <div v-if="cs.comment" class="cs-comment">{{ cs.comment }}</div>
-                  <div class="cs-bar"><div class="cs-bar-fill" :style="{ width: (cs.score / cs.max * 100) + '%' }"></div></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="grade-actions">
-              <button class="btn btn-purple" :disabled="grading" @click="runAiGrade">
-                <div v-if="grading" class="spinner"></div>
-                <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                {{ grading ? checkStepText : (activeSub.grade ? t('am.recheck_ai') : t('am.check_ai')) }}
-              </button>
-              <button class="btn btn-teal" @click="showManualGrade = !showManualGrade">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                {{ activeSub.grade ? t('am.set_manual') : t('am.grade_manual') }}
-              </button>
             </div>
           </template>
 
-          <!-- Manual grade form -->
-          <div v-if="showManualGrade" ref="manualGradeFormEl" class="manual-grade-form">
-            <div class="mgf-title">{{ t('am.manual_grade') }}</div>
-            <div class="mgf-score-row">
-              <label class="mgf-label">{{ t('am.score') }} (0 – {{ assignment.max_score }})</label>
-              <input v-model.number="manualScore" type="number" :min="0" :max="assignment.max_score" class="mgf-input" />
-              <div class="mgf-pct">{{ manualScore > 0 ? Math.round(manualScore / assignment.max_score * 100) + '%' : '0%' }}</div>
+          <!-- Normal states: two-column layout — student answer on the left, same grade card the
+               student sees + grading actions on the right (parity with app) -->
+          <div v-else class="ad-grid">
+            <div class="ad-col-main">
+              <div v-if="activeSub.text_content" class="sub-text-section">
+                <div class="section-label">{{ t('am.student_answer') }}</div>
+                <div class="sub-text">{{ activeSub.text_content }}</div>
+              </div>
+              <div v-if="activeSub.file_url || parsedActiveUrls.length" class="sub-file-section">
+                <div class="section-label">{{ t('am.attached_files') }}</div>
+                <a v-for="url in (parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url])" :key="url" href="#" class="file-chip" @click.prevent="openPreview(url, getFileName(url))">
+                  <span class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
+                </a>
+              </div>
+              <!-- Разбор по критериям — слева, рядом с ответом, а не под кольцом справа -->
+              <GradeCriteriaCard
+                v-if="activeSub.grade"
+                :grade="activeSub.grade"
+                :criteria="parsedActiveScores || []"
+                :rubric="parsedCriteria"
+              />
             </div>
-            <div class="mgf-field">
-              <label class="mgf-label">{{ t('am.comment_optional') }}</label>
-              <textarea v-model="manualFeedback" class="mgf-textarea" rows="3" :placeholder="t('am.feedback_placeholder')"></textarea>
-            </div>
-            <div class="mgf-actions">
-              <button class="btn btn-ghost" @click="showManualGrade = false">{{ t('am.cancel') }}</button>
-              <button class="btn btn-teal" :disabled="savingGrade || manualScore < 0 || manualScore > assignment.max_score" @click="saveManualGrade">
-                <div v-if="savingGrade" class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
-                <span v-else>{{ t('am.save_grade') }}</span>
-              </button>
+
+            <div class="ad-col-side">
+              <div v-if="activeSub.grade" class="grade-result-wrap">
+                <GradeResultCard
+                  :grade="activeSub.grade"
+                  :max-score="assignment.max_score"
+                  :criteria="parsedActiveScores || []"
+                  :ai-confidence="activeSub.ai_confidence"
+                  :show-confidence="true"
+                />
+              </div>
+
+              <div class="grade-actions">
+                <button class="btn btn-purple" :disabled="grading" @click="runAiGrade">
+                  <div v-if="grading" class="spinner"></div>
+                  <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  {{ grading ? checkStepText : (activeSub.grade ? t('am.recheck_ai') : t('am.check_ai')) }}
+                </button>
+                <button class="btn btn-teal" @click="showManualGrade = !showManualGrade">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  {{ activeSub.grade ? t('am.set_manual') : t('am.grade_manual') }}
+                </button>
+              </div>
+
+              <!-- Manual grade form -->
+              <div v-if="showManualGrade" ref="manualGradeFormEl" class="manual-grade-form">
+                <div class="mgf-title">{{ t('am.manual_grade') }}</div>
+                <div class="mgf-score-row">
+                  <label class="mgf-label">{{ t('am.score') }} (0 – {{ assignment.max_score }})</label>
+                  <input v-model.number="manualScore" type="number" :min="0" :max="assignment.max_score" class="mgf-input" />
+                  <div class="mgf-pct">{{ manualScore > 0 ? Math.round(manualScore / assignment.max_score * 100) + '%' : '0%' }}</div>
+                </div>
+                <div class="mgf-field">
+                  <label class="mgf-label">{{ t('am.comment_optional') }}</label>
+                  <textarea v-model="manualFeedback" class="mgf-textarea" rows="3" :placeholder="t('am.feedback_placeholder')"></textarea>
+                </div>
+                <div class="mgf-actions">
+                  <button class="btn btn-ghost" @click="showManualGrade = false">{{ t('am.cancel') }}</button>
+                  <button class="btn btn-teal" :disabled="savingGrade || manualScore < 0 || manualScore > assignment.max_score" @click="saveManualGrade">
+                    <div v-if="savingGrade" class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
+                    <span v-else>{{ t('am.save_grade') }}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -794,14 +818,20 @@ onMounted(async () => {
     try {
       const subs = await svc.mySubmissions()
       mySubmission.value = subs.find(s => s.assignment_id === props.assignment.id) ?? null
-      if (mySubmission.value) tab.value = 'submit'
     } catch {}
   }
 })
 </script>
 
 <style scoped>
-.am-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r-2xl); width: 100%; max-width: 680px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden; }
+.am-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r-2xl); width: 100%; max-width: 1040px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden; }
+
+/* Двухколоночная раскладка: слева описание/ответ, справа статус/оценка — как
+   на референсе и на странице задания в приложении (кольцо результата сбоку,
+   а не под ответом). На мобильных схлопывается в одну колонку (см. media). */
+.ad-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; align-items: start; }
+.ad-col-main { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.ad-col-side { display: flex; flex-direction: column; gap: 18px; min-width: 0; position: sticky; top: 0; }
 .am-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 22px 24px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .am-head-l { display: flex; gap: 14px; }
 .am-ico { width: 44px; height: 44px; background: var(--surface2); border: 1px solid var(--border); color: var(--text3); border-radius: var(--r-lg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -925,7 +955,7 @@ onMounted(async () => {
 
 /* Submissions tab */
 .subs-stats { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
-.btn-bulk-grade { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 14px; padding: 11px 16px; background: linear-gradient(135deg,#7c3aed,#6d28d9); color: #fff; border: none; border-radius: var(--r-md); font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .15s; font-family: inherit; }
+.btn-bulk-grade { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 14px; padding: 11px 16px; background: linear-gradient(180deg,var(--teal-h),var(--teal-d)); color: #fff; border: none; border-radius: var(--r-md); font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .15s; font-family: inherit; }
 .btn-bulk-grade:hover { opacity: .85; }
 .btn-bulk-grade:disabled { opacity: .6; cursor: not-allowed; }
 .stat-chip { display: flex; flex-direction: column; align-items: center; padding: 12px 18px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); min-width: 80px; }
@@ -1011,6 +1041,8 @@ onMounted(async () => {
   .desc-block { font-size: 13px; word-break: break-word; }
   .grade-card { padding: 14px; }
   .grade-card-top { flex-wrap: wrap; gap: 8px; }
+  .ad-grid { grid-template-columns: 1fr; gap: 16px; }
+  .ad-col-side { position: static; }
 }
 @media (max-width:480px) {
   .am-head-l { flex-direction: column; gap: 8px; }

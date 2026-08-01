@@ -36,30 +36,6 @@
       </div>
     </div>
 
-    <!-- Критерии: детальный разбор -->
-    <div v-if="criteria.length" class="grc-section">
-      <div class="grc-heading">{{ t('am.by_criteria') }}</div>
-      <div class="grc-criteria-list">
-        <div v-for="c in criteria" :key="c.name" class="grc-criterion">
-          <div class="grc-criterion-top">
-            <span class="grc-criterion-name">{{ c.name }}</span>
-            <span class="grc-criterion-score" :style="{ color: bandColor(c.score, c.max) }">{{ c.score }} / {{ c.max }}</span>
-          </div>
-          <div v-if="rubricDesc(c.name)" class="grc-criterion-desc">{{ rubricDesc(c.name) }}</div>
-          <div class="grc-criterion-bar"><div class="grc-criterion-bar-fill" :style="{ width: barWidth(c.score, c.max), background: bandGradient(c.score, c.max) }"></div></div>
-          <div v-if="c.comment" class="grc-criterion-comment">{{ c.comment }}</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Комментарий преподавателя -->
-    <div v-if="!gradedByAi && grade.feedback" class="grc-teacher-comment">
-      <div class="grc-tc-head">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        {{ t('am.teacher_comment') }}
-      </div>
-      <p class="grc-tc-text">{{ grade.feedback }}</p>
-    </div>
   </div>
 </template>
 
@@ -69,13 +45,11 @@ import { useI18n } from '~/composables/useI18n'
 import ScoreRing from './ScoreRing.vue'
 
 interface CriterionScore { name: string; score: number; max: number; comment?: string }
-interface RubricItem { name: string; description?: string }
 
 const props = defineProps<{
   grade: { score: number; feedback?: string | null; graded_by: string }
   maxScore: number
   criteria: CriterionScore[]
-  rubric?: RubricItem[]
   aiConfidence?: number | null
   showConfidence?: boolean
 }>()
@@ -109,18 +83,6 @@ const weaknesses = computed(() => {
   return out
 })
 
-const rubricDesc = (name: string) => props.rubric?.find(r => r.name === name)?.description || ''
-const barWidth = (score: number, max: number) => `${max > 0 ? Math.min(100, Math.max(0, (score / max) * 100)) : 0}%`
-
-const bandOf = (score: number, max: number) => {
-  const ratio = max > 0 ? score / max : 0
-  if (ratio >= 0.85) return ['#34D399', '#059669']
-  if (ratio >= 0.70) return ['#60A5FA', '#2563EB']
-  if (ratio >= 0.50) return ['#FBBF24', '#D97706']
-  return ['#F87171', '#DC2626']
-}
-const bandColor = (score: number, max: number) => bandOf(score, max)[1]
-const bandGradient = (score: number, max: number) => { const [a, b] = bandOf(score, max); return `linear-gradient(90deg, ${a}, ${b})` }
 </script>
 
 <style scoped>
@@ -142,20 +104,6 @@ const bandGradient = (score: number, max: number) => { const [a, b] = bandOf(sco
 .grc-bullet-row { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; line-height: 1.5; color: var(--text2); }
 .grc-bullet-card.ok .grc-bullet-row svg { color: var(--green); flex-shrink: 0; margin-top: 1px; }
 .grc-bullet-card.warn .grc-bullet-row svg { color: #d97706; flex-shrink: 0; margin-top: 1px; }
-
-.grc-criteria-list { display: flex; flex-direction: column; gap: 10px; }
-.grc-criterion { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px; }
-.grc-criterion-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
-.grc-criterion-name { font-size: 13.5px; font-weight: 700; color: var(--text1); }
-.grc-criterion-score { font-size: 13px; font-weight: 800; white-space: nowrap; }
-.grc-criterion-desc { font-size: 12.5px; color: var(--text4); margin-bottom: 8px; line-height: 1.4; }
-.grc-criterion-bar { height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; margin: 8px 0; }
-.grc-criterion-bar-fill { height: 100%; border-radius: 4px; transition: width .8s cubic-bezier(.22,1,.36,1); }
-.grc-criterion-comment { font-size: 13px; color: var(--text3); line-height: 1.55; }
-
-.grc-teacher-comment { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; }
-.grc-tc-head { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--text4); margin-bottom: 8px; }
-.grc-tc-text { font-size: 14px; line-height: 1.65; color: var(--text1); margin: 0; white-space: pre-wrap; }
 
 @media (max-width: 640px) {
   .grc-analysis-grid { grid-template-columns: 1fr; }
