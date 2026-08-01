@@ -127,6 +127,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'class.delete_assignment': { ru: 'Задание удалено', en: 'Assignment deleted', kk: 'Тапсырма жойылды' },
   'class.delete_post': { ru: 'Удалено', en: 'Deleted', kk: 'Жойылды' },
   'class.lecture_badge': { ru: 'Лекция', en: 'Lecture', kk: 'Дәріс' },
+  'class.attached_files_label': { ru: 'Материалы', en: 'Materials', kk: 'Материалдар' },
   'class.files': { ru: 'файл', en: 'file', kk: 'файл' },
   'class.files2': { ru: 'файла', en: 'files', kk: 'файл' },
   'class.files5': { ru: 'файлов', en: 'files', kk: 'файл' },
@@ -235,6 +236,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'general.search': { ru: 'Поиск...', en: 'Search...', kk: 'Іздеу...' },
   'general.continue': { ru: 'Продолжить', en: 'Continue', kk: 'Жалғастыру' },
   'general.back': { ru: 'Назад', en: 'Back', kk: 'Артқа' },
+  'general.description': { ru: 'Описание', en: 'Description', kk: 'Сипаттама' },
 
   // Cohorts / academic years / rollover
   'cohort.no_active_cohort': {

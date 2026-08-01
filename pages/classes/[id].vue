@@ -488,7 +488,16 @@
         </div>
         <h2 class="sheet-title">{{ cleanTitle(viewingPost.title) }}</h2>
         <div class="sheet-date">{{ fmtDate(viewingPost.created_at) }}</div>
-        <div class="sheet-body" v-html="renderBody(getFullBody(viewingPost))" @click="onBodyClick"></div>
+
+        <div v-if="viewingPostDescription" class="sheet-section">
+          <div class="sheet-section-label">{{ t('general.description') }}</div>
+          <div class="sheet-body" v-html="viewingPostDescription" @click="onBodyClick"></div>
+        </div>
+
+        <div v-if="viewingPostFiles.length" class="sheet-section">
+          <div class="sheet-section-label">{{ t('class.attached_files_label') }}</div>
+          <FileListCard :files="viewingPostFiles" @open="openPreview" />
+        </div>
       </div>
     </div>
   </div>
@@ -740,6 +749,11 @@ const getFullBody = (p: any): string => {
 }
 const ATTACHMENT_LINK = /📎\s*\[([^\]]+)\]\(([^)]+)\)/g
 const getPreview = (p: any): string => { const body = getFullBody(p); const clean = body.replace(ATTACHMENT_LINK, '').replace(/(https?:\/\/[^\s]+)/g, '').replace(/\s+/g, ' ').trim(); return clean.length > 100 ? clean.slice(0, 100) + '…' : clean || (lang.value==='ru'?'Нет описания':'No description') }
+// Отдельные карточки "Описание" / "Материалы" в просмотре лекции — раньше текст
+// и вложения были одним нечитаемым HTML-блоком (renderBody сам оборачивал
+// файлы в <a>, без подписи, что это вложение).
+const viewingPostDescription = computed(() => viewingPost.value ? renderBody(stripFilesFromText(getFullBody(viewingPost.value))) : '')
+const viewingPostFiles = computed(() => viewingPost.value ? extractFilesFromText(getFullBody(viewingPost.value)) : [])
 const FILE_EXT = /\.(pdf|doc|docx|txt|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|webp|md)(\?[^\s]*)?/i
 // Пробел в URL допустим (оригинальное имя файла в пути) — границу задают
 // кавычки/спецсимволы JSON, а не whitespace, иначе файлы с пробелом в имени
@@ -1249,6 +1263,8 @@ onMounted(async () => {
 .sheet-badge.lecture{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 .sheet-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:24px;font-weight:900;color:var(--text1);letter-spacing:-.025em;margin-bottom:6px}
 .sheet-date{font-size:12px;color:var(--text4);margin-bottom:22px}
+.sheet-section{margin-bottom:18px}
+.sheet-section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin-bottom:8px}
 .sheet-body{font-size:14px;color:var(--text2);line-height:1.8;white-space:pre-wrap}
 :deep(.file-attachment){display:inline-flex;align-items:center;gap:9px;padding:11px 16px;margin:6px 4px;max-width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);color:var(--text2);font-size:13px;font-weight:600;text-decoration:none;transition:all .18s}
 :deep(.file-attachment:hover){background:var(--surface3);transform:translateY(-1px)}

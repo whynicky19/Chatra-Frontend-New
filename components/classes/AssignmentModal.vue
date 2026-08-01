@@ -30,7 +30,10 @@
 
       <!-- ═══ INFO TAB (teacher/admin) ═══ -->
       <div v-if="canSeeSubmissions && tab === 'info'" class="am-body">
-        <div v-if="descriptionText" class="desc-block">{{ descriptionText }}</div>
+        <div v-if="descriptionText" class="section">
+          <div class="section-label">{{ t('general.description') }}</div>
+          <div class="desc-block">{{ descriptionText }}</div>
+        </div>
 
         <!-- Assignment files -->
         <div v-if="assignmentFiles.length" class="section">
@@ -61,7 +64,10 @@
 
       <!-- ═══ STUDENT: единая страница задания (описание+файлы слева, статус/оценка справа) ═══ -->
       <div v-if="!canSeeSubmissions" class="am-body">
-        <div v-if="descriptionText" class="desc-block">{{ descriptionText }}</div>
+        <div v-if="descriptionText" class="section">
+          <div class="section-label">{{ t('general.description') }}</div>
+          <div class="desc-block">{{ descriptionText }}</div>
+        </div>
 
         <div v-if="assignmentFiles.length" class="section">
           <div class="section-label">{{ t('am.task_files') }}</div>
@@ -138,12 +144,12 @@
         <!-- Already submitted: two-column layout — answer on the left, status/grade on the right -->
         <div v-else class="ad-grid">
           <div class="ad-col-main">
-            <div v-if="mySubmission.text_content" class="preview-block">
+            <div v-if="mySubmission.text_content || mySubmission.file_url || parsedSubmittedUrls.length" class="preview-block">
               <div class="preview-label">{{ t('am.your_answer') }}</div>
-              <div class="preview-text">{{ mySubmission.text_content }}</div>
-            </div>
-            <div v-if="mySubmission.file_url || parsedSubmittedUrls.length" class="sub-file">
-              <FileThumbGrid :files="parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url]" @open="openPreview" />
+              <div v-if="mySubmission.text_content" class="preview-text">{{ mySubmission.text_content }}</div>
+              <div v-if="mySubmission.file_url || parsedSubmittedUrls.length" class="sub-file">
+                <FileThumbGrid :files="parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url]" @open="openPreview" />
+              </div>
             </div>
             <!-- Разбор по критериям — слева, рядом с ответом, а не под кольцом справа -->
             <GradeCriteriaCard
@@ -870,7 +876,8 @@ onMounted(async () => {
 .sub-status-chip.late { background: var(--red-l); color: var(--red); }
 .sub-status-chip.needs_review { background: rgba(230,162,60,.12); color: #e6a23c; }
 .sub-date { font-size: 12px; color: var(--text4); }
-.preview-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); margin-bottom: 7px; }
+.preview-block { display: flex; flex-direction: column; gap: 10px; }
+.preview-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); }
 .preview-text { font-size: 13px; color: var(--text2); line-height: 1.7; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; white-space: pre-wrap; max-height: 160px; overflow-y: auto; }
 .sub-file { }
 .retract-btn { margin-top: 4px; align-self: flex-start; color: var(--text4); font-size: 12px; }
