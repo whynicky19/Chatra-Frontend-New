@@ -35,22 +35,13 @@
         <!-- Assignment files -->
         <div v-if="assignmentFiles.length" class="section">
           <div class="section-label">{{ t('am.task_files') }}</div>
-          <div class="files-row">
-            <a v-for="f in assignmentFiles" :key="f.url" href="#" class="file-chip" @click.prevent="openPreview(f.url, f.name)">
-              <img v-if="isImageUrl(f.url)" :src="f.url" class="ftb-thumb" alt="" />
-              <span v-else class="ftb ftb-sm">{{ getEmoji(f.url) }}</span> {{ f.name }}
-            </a>
-          </div>
+          <FileListCard :files="assignmentFiles" @open="openPreview" />
         </div>
 
         <!-- Reference solution files -->
         <div v-if="referenceFiles.length" class="section">
           <div class="section-label">{{ t('am.reference_files') }}</div>
-          <div class="files-row">
-            <a v-for="f in referenceFiles" :key="f.url" href="#" class="file-chip" @click.prevent="openPreview(f.url, f.name)">
-              <span class="ftb ftb-sm">{{ getEmoji(f.url) }}</span> {{ f.name }}
-            </a>
-          </div>
+          <FileListCard :files="referenceFiles" @open="openPreview" />
         </div>
 
         <div class="section">
@@ -74,12 +65,7 @@
 
         <div v-if="assignmentFiles.length" class="section">
           <div class="section-label">{{ t('am.task_files') }}</div>
-          <div class="files-row">
-            <a v-for="f in assignmentFiles" :key="f.url" href="#" class="file-chip" @click.prevent="openPreview(f.url, f.name)">
-              <img v-if="isImageUrl(f.url)" :src="f.url" class="ftb-thumb" alt="" />
-              <span v-else class="ftb ftb-sm">{{ getEmoji(f.url) }}</span> {{ f.name }}
-            </a>
-          </div>
+          <FileListCard :files="assignmentFiles" @open="openPreview" />
         </div>
 
         <!-- Read-only notice for archived students (no submission) -->
@@ -157,10 +143,7 @@
               <div class="preview-text">{{ mySubmission.text_content }}</div>
             </div>
             <div v-if="mySubmission.file_url || parsedSubmittedUrls.length" class="sub-file">
-              <a v-for="url in (parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url])" :key="url" href="#" class="file-chip" @click.prevent="openPreview(url, getFileName(url))">
-                <img v-if="isImageUrl(url)" :src="url" class="ftb-thumb" alt="" />
-                <span v-else class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
-              </a>
+              <FileThumbGrid :files="parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url]" @open="openPreview" />
             </div>
             <!-- Разбор по критериям — слева, рядом с ответом, а не под кольцом справа -->
             <GradeCriteriaCard
@@ -244,9 +227,7 @@
             </div>
             <div v-if="activeSub.file_url || parsedActiveUrls.length" class="sub-file-section">
               <div class="section-label">{{ t('am.attached_files') }}</div>
-              <a v-for="url in (parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url])" :key="url" href="#" class="file-chip" @click.prevent="openPreview(url, getFileName(url))">
-                <span class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
-              </a>
+              <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openPreview" />
             </div>
 
             <!-- Needs review card: Статус / Предлагаемая оценка ИИ / Уверенность / Причины / Анализ ИИ + 2 действия -->
@@ -305,9 +286,7 @@
               </div>
               <div v-if="activeSub.file_url || parsedActiveUrls.length" class="sub-file-section">
                 <div class="section-label">{{ t('am.attached_files') }}</div>
-                <a v-for="url in (parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url])" :key="url" href="#" class="file-chip" @click.prevent="openPreview(url, getFileName(url))">
-                  <span class="ftb ftb-sm">{{ getEmoji(url) }}</span> {{ getFileName(url) }}
-                </a>
+                <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openPreview" />
               </div>
               <!-- Разбор по критериям — слева, рядом с ответом, а не под кольцом справа -->
               <GradeCriteriaCard
@@ -328,39 +307,41 @@
                   :show-confidence="true"
                 />
               </div>
+            </div>
+          </div>
 
-              <div class="grade-actions">
-                <button class="btn btn-purple" :disabled="grading" @click="runAiGrade">
-                  <div v-if="grading" class="spinner"></div>
-                  <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  {{ grading ? checkStepText : (activeSub.grade ? t('am.recheck_ai') : t('am.check_ai')) }}
-                </button>
-                <button class="btn btn-teal" @click="showManualGrade = !showManualGrade">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  {{ activeSub.grade ? t('am.set_manual') : t('am.grade_manual') }}
-                </button>
-              </div>
+          <!-- Действия — на всю ширину, как в приложении (нижняя панель, а не
+               узкая колонка сбоку) -->
+          <div class="grade-actions" v-if="activeSub.status !== 'needs_review'">
+            <button class="btn btn-purple" :disabled="grading" @click="runAiGrade">
+              <div v-if="grading" class="spinner"></div>
+              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              {{ grading ? checkStepText : (activeSub.grade ? t('am.recheck_ai') : t('am.check_ai')) }}
+            </button>
+            <button class="btn btn-teal" @click="showManualGrade = !showManualGrade">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              {{ activeSub.grade ? t('am.set_manual') : t('am.grade_manual') }}
+            </button>
+          </div>
 
-              <!-- Manual grade form -->
-              <div v-if="showManualGrade" ref="manualGradeFormEl" class="manual-grade-form">
-                <div class="mgf-title">{{ t('am.manual_grade') }}</div>
-                <div class="mgf-score-row">
-                  <label class="mgf-label">{{ t('am.score') }} (0 – {{ assignment.max_score }})</label>
-                  <input v-model.number="manualScore" type="number" :min="0" :max="assignment.max_score" class="mgf-input" />
-                  <div class="mgf-pct">{{ manualScore > 0 ? Math.round(manualScore / assignment.max_score * 100) + '%' : '0%' }}</div>
-                </div>
-                <div class="mgf-field">
-                  <label class="mgf-label">{{ t('am.comment_optional') }}</label>
-                  <textarea v-model="manualFeedback" class="mgf-textarea" rows="3" :placeholder="t('am.feedback_placeholder')"></textarea>
-                </div>
-                <div class="mgf-actions">
-                  <button class="btn btn-ghost" @click="showManualGrade = false">{{ t('am.cancel') }}</button>
-                  <button class="btn btn-teal" :disabled="savingGrade || manualScore < 0 || manualScore > assignment.max_score" @click="saveManualGrade">
-                    <div v-if="savingGrade" class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
-                    <span v-else>{{ t('am.save_grade') }}</span>
-                  </button>
-                </div>
-              </div>
+          <!-- Manual grade form -->
+          <div v-if="showManualGrade" ref="manualGradeFormEl" class="manual-grade-form">
+            <div class="mgf-title">{{ t('am.manual_grade') }}</div>
+            <div class="mgf-score-row">
+              <label class="mgf-label">{{ t('am.score') }} (0 – {{ assignment.max_score }})</label>
+              <input v-model.number="manualScore" type="number" :min="0" :max="assignment.max_score" class="mgf-input" />
+              <div class="mgf-pct">{{ manualScore > 0 ? Math.round(manualScore / assignment.max_score * 100) + '%' : '0%' }}</div>
+            </div>
+            <div class="mgf-field">
+              <label class="mgf-label">{{ t('am.comment_optional') }}</label>
+              <textarea v-model="manualFeedback" class="mgf-textarea" rows="3" :placeholder="t('am.feedback_placeholder')"></textarea>
+            </div>
+            <div class="mgf-actions">
+              <button class="btn btn-ghost" @click="showManualGrade = false">{{ t('am.cancel') }}</button>
+              <button class="btn btn-teal" :disabled="savingGrade || manualScore < 0 || manualScore > assignment.max_score" @click="saveManualGrade">
+                <div v-if="savingGrade" class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
+                <span v-else>{{ t('am.save_grade') }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -566,10 +547,6 @@ const getEmoji = (url: string) => {
   if (['ppt','pptx'].includes(e)) return 'PPT'
   if (['png','jpg','jpeg','gif','webp'].includes(e)) return 'IMG'
   return 'FILE'
-}
-const isImageUrl = (url: string) => {
-  const e = url.split('.').pop()?.split('?')[0]?.toLowerCase() || ''
-  return ['png','jpg','jpeg','gif','webp'].includes(e)
 }
 const fileSz = (f: File) => f.size < 1048576 ? (f.size/1024).toFixed(0)+' KB' : (f.size/1048576).toFixed(1)+' MB'
 
@@ -850,13 +827,6 @@ onMounted(async () => {
 .desc-block { font-size: 14px; color: var(--text2); line-height: 1.7; padding: 14px; background: var(--surface2); border-radius: var(--r-lg); border: 1px solid var(--border); white-space: pre-wrap; }
 .section { display: flex; flex-direction: column; gap: 10px; }
 .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); }
-.files-row { display: flex; flex-wrap: wrap; gap: 8px; }
-/* max-width + перенос слов — длинное имя файла без пробелов иначе вылезает
-   за пределы модалки вместо переноса на новую строку. */
-.file-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; max-width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); color: var(--text2); font-size: 13px; font-weight: 600; text-decoration: none; transition: all .15s; cursor: pointer; word-break: break-word; overflow-wrap: anywhere; }
-.file-chip:hover { background: var(--surface3); }
-.file-chip.small { font-size: 12px; padding: 5px 10px; }
-.ftb-thumb { width: 28px; height: 22px; object-fit: cover; border-radius: 5px; flex-shrink: 0; }
 .criteria-list { display: flex; flex-direction: column; gap: 8px; }
 .criterion { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 12px 14px; }
 .criterion-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
