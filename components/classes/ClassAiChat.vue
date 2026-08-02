@@ -76,13 +76,14 @@
 
     <!-- ── Input ── -->
     <AiLimitNotice v-if="aiLimitReached" :quota="aiQuota.quota.value"/>
+    <AiReadingNotice v-else-if="filesLoading" :ready="readyCount" :total="classFiles.length"/>
 
     <div class="ai-input-bar">
       <textarea ref="inputEl" v-model="inputTxt" class="ai-textarea"
-        :placeholder="aiLimitReached ? 'Лимит исчерпан' : 'Спросите Chatra AI'"
-        rows="1" :disabled="aiLimitReached" @keydown.enter.exact.prevent="send" @input="autoResize">
+        :placeholder="aiLimitReached ? 'Лимит исчерпан' : filesLoading ? 'Читаю материалы курса…' : 'Спросите Chatra AI'"
+        rows="1" :disabled="aiLimitReached || filesLoading" @keydown.enter.exact.prevent="send" @input="autoResize">
       </textarea>
-      <button :class="['send-btn', { locked: aiLimitReached }]" :disabled="!inputTxt.trim() || loading || aiLimitReached" @click="send">
+      <button :class="['send-btn', { locked: aiLimitReached || filesLoading }]" :disabled="!inputTxt.trim() || loading || aiLimitReached || filesLoading" @click="send">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
       </button>
     </div>
@@ -170,6 +171,14 @@ const restore = () => {
 
 // ── Computed ──────────────────────────────────────────────────────────────────
 const readyCount = computed(() => Object.keys(fileTexts.value).length)
+
+// true, пока хоть один файл класса ещё не получил запись в fileTexts (успех
+// ИЛИ читаемая заглушка ошибки — readFile всегда резолвится непустой строкой,
+// см. loadAllFiles). Раньше send() мог уйти раньше, чем файлы дочитались, и
+// модель отвечала по одному заголовку/описанию лекции, даже не подозревая,
+// что не видела реальный файл — теперь чат заблокирован до полной загрузки.
+const filesLoading = computed(() =>
+  classFiles.value.some(f => !(f.url in fileTexts.value)))
 
 // Лекции класса в порядке "1, 2, 3..." — posts.position с бэкенда (см.
 // migrations/017), с fallback на id для лекций без position (старые записи).
@@ -522,7 +531,7 @@ const loadAllFiles = async () => {
 const buildSystem = (): string => {
   const className = props.className || 'этого класса'
   let sys = `Ты — опытный ИИ-ассистент и педагог класса "${className}". Помогаешь студентам понять материалы, объясняешь темы доступно, помогаешь решать задания и проверяешь работы. Отвечай на русском языке. Будь точным, дружелюбным и педагогически грамотным.`
-  sys += ` Материалы курса помечены заголовками вида "### Лекция N: <тема>" — если студент просит объяснить материал по номеру (например "объясни 2 лекцию"), найди блок с этим номером и объясняй именно его. Объясняй подробно: раскрывай ключевые понятия, приводи примеры и связи между идеями, а не просто пересказывай заголовок. Математические формулы записывай в LaTeX: инлайн — $...$ или \\(...\\), блочные — $$...$$ или \\[...\\]. Код — в блоках \`\`\`язык.`
+  sys += ` Материалы курса помечены заголовками вида "### Лекция N: <тема>" — если студент просит объяснить материал по номеру (например "объясни 2 лекцию"), найди блок с этим номером и объясняй именно его. Если для лекции ниже есть содержимое прикреплённого файла (раздел "МАТЕРИАЛЫ КЛАССА"), объясняй строго по нему: заголовок и текст лекции мог написать учитель как угодно, и они могут не совпадать с реальным содержимым файла — доверяй файлу, а не им. Если содержимое файла ЯВНО не по теме заголовка/описания лекции, прямо скажи об этом в начале ответа, а не притворяйся, что объясняешь заявленную тему по несуществующему материалу. Объясняй подробно: раскрывай ключевые понятия, приводи примеры и связи между идеями, а не просто пересказывай заголовок. Математические формулы записывай в LaTeX: инлайн — $...$ или \\(...\\), блочные — $$...$$ или \\[...\\]. Код — в блоках \`\`\`язык.`
 
   // Текст самих лекций (JSON content/description постов) — до файлов, чтобы
   // текстовые лекции без вложений тоже были видны модели.
@@ -625,6 +634,7 @@ const pushSend = (text: string) => { inputTxt.value = text; send() }
 const send = async () => {
   const text = inputTxt.value.trim()
   if (!text || loading.value) return
+  if (filesLoading.value) return // кнопка/поле уже задизейблены в шаблоне
 
   if (aiLimitReached.value) {
     toast.err(`Дневной лимит ИИ исчерпан (${aiLimit.value} сообщений в сутки). Лимит обновится завтра.`)
