@@ -639,7 +639,10 @@ const lectures = computed(() => classPosts.value
   .filter(p => p.title?.startsWith('[LECTURE]'))
   .slice()
   .sort((a, b) => {
-    const pa = a.position ?? Infinity, pb = b.position ?? Infinity
+    // NULLS FIRST (см. тот же выбор на бэкенде, crud/posts.py: Posts.position
+    // .asc().nulls_first()) — лекции без position хронологически раньше уже
+    // пронумерованных. `?? Infinity` клал их в конец и расходился с бэкендом.
+    const pa = a.position ?? -Infinity, pb = b.position ?? -Infinity
     if (pa !== pb) return pa - pb
     return (a.id ?? 0) - (b.id ?? 0)
   }))

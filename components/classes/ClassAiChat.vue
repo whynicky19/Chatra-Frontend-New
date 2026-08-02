@@ -197,7 +197,14 @@ const numberedLectures = computed(() => {
     .filter(p => p.title?.startsWith('[LECTURE]'))
     .slice()
     .sort((a, b) => {
-      const pa = a.position ?? Infinity, pb = b.position ?? Infinity
+      // NULLS FIRST, а не LAST: лекции без position (созданные до введения
+      // нумерации) хронологически ВСЕГДА раньше уже пронумерованных — см.
+      // тот же выбор и обоснование на бэкенде, crud/posts.py:56-66
+      // (Posts.position.asc().nulls_first()). Раньше здесь стояло `??
+      // Infinity`, кладущее лекции без position в КОНЕЦ — сайт и бэкенд
+      // присваивали лекциям разные номера, и "объясни 2 лекцию" на сайте
+      // мог означать совсем другой пост, чем в приложении.
+      const pa = a.position ?? -Infinity, pb = b.position ?? -Infinity
       if (pa !== pb) return pa - pb
       return (a.id ?? 0) - (b.id ?? 0)
     })
@@ -308,18 +315,22 @@ const stripMarker = (l: string) => l.replace(/^\s*(?:[-*]|\d+\.)\s+/, '')
 // через плейсхолдеры, чтобы их внутренние переносы строк не путались со
 // списками/таблицами при построчном разборе ниже.
 const fmt = (t: string): string => {
-  let s = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  // Формулы — из СЫРОГО текста, ДО HTML-экранирования: KaTeX должен получить LaTeX-исходник как есть, включая "&" — разделитель столбцов в aligned/matrix/pmatrix. Раньше экранирование "&" → "&amp;" происходило ПЕРВЫМ шагом, ломая этот разделитель ещё до того, как формула доходила до KaTeX.
+  const mathBlocks: string[] = []
+  const stashMath = (html: string) => { mathBlocks.push(html); return ` MATH${mathBlocks.length - 1} ` }
+  let s = t
+    .replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => stashMath(renderMath(tex, true)))
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_, tex) => stashMath(renderMath(tex, true)))
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_, tex) => stashMath(renderMath(tex, false)))
+    .replace(/\$([^$\n]+?)\$/g, (m, tex) => (looksLikeCurrency(tex) ? m : stashMath(renderMath(tex, false))))
+
+  s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   const codeBlocks: string[] = []
   s = s.replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, _lang, code) => {
     codeBlocks.push(`<pre class="code-bl"><code>${code}</code></pre>`)
     return ` CODE${codeBlocks.length - 1} `
   })
-
-  s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => renderMath(tex, true))
-    .replace(/\\\[([\s\S]+?)\\\]/g, (_, tex) => renderMath(tex, true))
-    .replace(/\\\(([\s\S]+?)\\\)/g, (_, tex) => renderMath(tex, false))
-    .replace(/\$([^$\n]+?)\$/g, (m, tex) => (looksLikeCurrency(tex) ? m : renderMath(tex, false)))
 
   const lines = s.split('\n')
   const parts: { block: boolean; html: string }[] = []
@@ -359,7 +370,9 @@ const fmt = (t: string): string => {
     if (!p.block && idx > 0 && !parts[idx - 1].block) html += '<br>'
     html += p.html
   })
-  return html.replace(/ CODE(\d+) /g, (_, idx) => codeBlocks[Number(idx)])
+  return html
+    .replace(/ CODE(\d+) /g, (_, idx) => codeBlocks[Number(idx)])
+    .replace(/ MATH(\d+) /g, (_, idx) => mathBlocks[Number(idx)])
 }
 
 const scrollBottom = () => nextTick(() => {
