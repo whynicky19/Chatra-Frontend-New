@@ -172,13 +172,21 @@ const restore = () => {
 // ── Computed ──────────────────────────────────────────────────────────────────
 const readyCount = computed(() => Object.keys(fileTexts.value).length)
 
+// Ключ файла БЕЗ query/fragment — бэкенд подписывает ссылку (?exp=&sig=)
+// заново на каждый ответ (см. file_urls.py: sign_uploads_in_text), поэтому
+// classFiles.value[i].url меняется при каждом обновлении classPosts, даже
+// если сам файл тот же. fileTexts/loadingSet должны индексироваться по
+// стабильному пути, иначе filesLoading никогда не станет false после
+// такого обновления (новый url никогда не совпадёт со старым ключом).
+const stableKey = (url: string) => url.split('#')[0].split('?')[0]
+
 // true, пока хоть один файл класса ещё не получил запись в fileTexts (успех
 // ИЛИ читаемая заглушка ошибки — readFile всегда резолвится непустой строкой,
 // см. loadAllFiles). Раньше send() мог уйти раньше, чем файлы дочитались, и
 // модель отвечала по одному заголовку/описанию лекции, даже не подозревая,
 // что не видела реальный файл — теперь чат заблокирован до полной загрузки.
 const filesLoading = computed(() =>
-  classFiles.value.some(f => !(f.url in fileTexts.value)))
+  classFiles.value.some(f => !(stableKey(f.url) in fileTexts.value)))
 
 // Лекции класса в порядке "1, 2, 3..." — posts.position с бэкенда (см.
 // migrations/017), с fallback на id для лекций без position (старые записи).
@@ -508,20 +516,21 @@ const readFile = async (f: ClassFile): Promise<string> => {
 const loadAllFiles = async () => {
   const files = classFiles.value
   for (const f of files) {
-    if (fileTexts.value[f.url] || loadingSet.value.has(f.url)) continue
+    const key = stableKey(f.url)
+    if (fileTexts.value[key] || loadingSet.value.has(key)) continue
 
     const newSet = new Set(loadingSet.value)
-    newSet.add(f.url)
+    newSet.add(key)
     loadingSet.value = newSet
 
     // Run in background — don't await all at once to avoid blocking
     readFile(f).then(text => {
       if (text.trim()) {
-        fileTexts.value = { ...fileTexts.value, [f.url]: text }
+        fileTexts.value = { ...fileTexts.value, [key]: text }
       }
     }).finally(() => {
       const s = new Set(loadingSet.value)
-      s.delete(f.url)
+      s.delete(key)
       loadingSet.value = s
     })
   }
@@ -566,8 +575,8 @@ const buildSystem = (): string => {
   if (loaded.length > 0) {
     sys += `\n\n${'='.repeat(60)}\nМАТЕРИАЛЫ КЛАССА (содержимое прочитанных файлов):\n${'='.repeat(60)}`
     for (const [url, text] of loaded) {
-      const name = decodeURIComponent(url.split('/').pop()?.split('?')[0] || url)
-      const section = classFiles.value.find(f => f.url === url)?.section || ''
+      const name = decodeURIComponent(url.split('/').pop() || url)
+      const section = classFiles.value.find(f => stableKey(f.url) === url)?.section || ''
       sys += `\n\n[${section}: ${name}]\n${'-'.repeat(40)}\n${text.slice(0, MAX_CHARS)}`
     }
     sys += `\n\n${'='.repeat(60)}\nКОНЕЦ МАТЕРИАЛОВ`
