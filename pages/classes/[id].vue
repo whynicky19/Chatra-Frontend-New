@@ -386,6 +386,31 @@
             <label class="field-label">{{ lang==='ru'?'СОДЕРЖИМОЕ':'CONTENT' }}</label>
             <textarea v-model="editPostForm.content" class="field-textarea" rows="8" :placeholder="lang==='ru'?'Текст, ссылки на файлы...':'Text, file links...'"></textarea>
           </div>
+          <div v-if="editPostFiles.length" class="edit-field">
+            <label class="field-label">{{ lang==='ru'?'ПРИКРЕПЛЁННЫЕ ФАЙЛЫ':'ATTACHED FILES' }}</label>
+            <div class="edit-asg-files">
+              <div v-for="(f, i) in editPostFiles" :key="f.url" class="edit-asg-file">
+                <span class="eaf-name">{{ f.name }}</span>
+                <button class="eaf-rm" :title="lang==='ru'?'Удалить файл':'Remove file'" @click="editPostFiles.splice(i,1)">×</button>
+              </div>
+            </div>
+          </div>
+          <div v-if="editPostNewFiles.length" class="edit-field">
+            <label class="field-label">{{ lang==='ru'?'НОВЫЕ ФАЙЛЫ':'NEW FILES' }}</label>
+            <div class="edit-asg-files">
+              <div v-for="(f, i) in editPostNewFiles" :key="`${f.name}_${f.size}_${f.lastModified}`" class="edit-asg-file">
+                <span class="eaf-name">{{ f.name }}</span>
+                <button class="eaf-rm" :title="lang==='ru'?'Удалить файл':'Remove file'" @click="removeEditPostNewFile(i)">×</button>
+              </div>
+            </div>
+          </div>
+          <div class="edit-field">
+            <label class="field-label">{{ lang==='ru'?'ДОБАВИТЬ / ЗАМЕНИТЬ ФАЙЛ':'ADD / REPLACE FILE' }}</label>
+            <input type="file" style="display:none" ref="editPostFi" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.ppt,.pptx" @change="onEditPostPick" />
+            <button class="btn btn-white" style="width:100%;justify-content:center" @click="editPostFi?.click()">
+              {{ lang==='ru'?'Выбрать файл...':'Choose file...' }}
+            </button>
+          </div>
         </div>
         <div class="modal-foot">
           <button class="btn btn-white" @click="editingPost=null">{{ t('general.cancel') }}</button>
@@ -415,14 +440,39 @@
             <label class="field-label">{{ lang==='ru'?'ОПИСАНИЕ':'DESCRIPTION' }}</label>
             <textarea v-model="editAsgForm.description" class="field-textarea" rows="3" :placeholder="lang==='ru'?'Описание...':'Description...'"></textarea>
           </div>
-          <div v-if="editAsgFiles.length" class="edit-field">
-            <label class="field-label">{{ lang==='ru'?'ПРИКРЕПЛЁННЫЕ ФАЙЛЫ':'ATTACHED FILES' }}</label>
-            <div class="edit-asg-files">
+          <div class="edit-field">
+            <label class="field-label">{{ lang==='ru'?'ФАЙЛЫ ЗАДАНИЯ':'ASSIGNMENT FILES' }}</label>
+            <div v-if="editAsgFiles.length || editAsgNewFiles.length" class="edit-asg-files">
               <div v-for="(f, i) in editAsgFiles" :key="f.url" class="edit-asg-file">
                 <span class="eaf-name">{{ f.name }}</span>
                 <button class="eaf-rm" :title="lang==='ru'?'Удалить файл':'Remove file'" @click="editAsgFiles.splice(i,1)">×</button>
               </div>
+              <div v-for="(f, i) in editAsgNewFiles" :key="`new_${f.name}_${f.size}_${f.lastModified}`" class="edit-asg-file">
+                <span class="eaf-name">{{ f.name }}</span>
+                <button class="eaf-rm" :title="lang==='ru'?'Удалить файл':'Remove file'" @click="editAsgNewFiles.splice(i,1)">×</button>
+              </div>
             </div>
+            <input type="file" style="display:none" ref="editAsgTaskFi" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.ppt,.pptx" @change="onEditAsgTaskPick" />
+            <button class="btn btn-white" style="width:100%;justify-content:center;margin-top:6px" @click="editAsgTaskFi?.click()">
+              {{ lang==='ru'?'Добавить файл...':'Add file...' }}
+            </button>
+          </div>
+          <div class="edit-field edit-asg-ref-section">
+            <label class="field-label">{{ lang==='ru'?'ЭТАЛОННОЕ РЕШЕНИЕ':'REFERENCE SOLUTION' }}</label>
+            <div v-if="editAsgRefFiles.length || editAsgNewRefFiles.length" class="edit-asg-files">
+              <div v-for="(f, i) in editAsgRefFiles" :key="f.url" class="edit-asg-file">
+                <span class="eaf-name">{{ f.name }}</span>
+                <button class="eaf-rm" :title="lang==='ru'?'Удалить файл':'Remove file'" @click="editAsgRefFiles.splice(i,1)">×</button>
+              </div>
+              <div v-for="(f, i) in editAsgNewRefFiles" :key="`new_${f.name}_${f.size}_${f.lastModified}`" class="edit-asg-file">
+                <span class="eaf-name">{{ f.name }}</span>
+                <button class="eaf-rm" :title="lang==='ru'?'Удалить файл':'Remove file'" @click="editAsgNewRefFiles.splice(i,1)">×</button>
+              </div>
+            </div>
+            <input type="file" style="display:none" ref="editAsgRefFi" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.ppt,.pptx" @change="onEditAsgRefPick" />
+            <button class="btn btn-white" style="width:100%;justify-content:center;margin-top:6px" @click="editAsgRefFi?.click()">
+              {{ lang==='ru'?'Добавить эталон...':'Add reference file...' }}
+            </button>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div class="edit-field">
@@ -516,13 +566,15 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useI18n } from '~/composables/useI18n'
 import { useFilePreview } from '~/composables/useFilePreview'
 import { fixFileUrl } from '~/composables/useFileUrl'
-import { extractFilesFromText, stripFilesFromText } from '~/composables/useAttachments'
+import { extractFilesFromText, stripFilesFromText, withNameFragment, fileNameFromUrl } from '~/composables/useAttachments'
+import { useUploadSvc } from '~/services/uploads'
 import type { Assignment, Submission } from '~/services/assignments'
 
 definePageMeta({ layout: 'default' })
 
 const route = useRoute()
 const postsSvc = usePostsSvc()
+const uploadSvc = useUploadSvc()
 const assignmentsSvc = useAssignmentsSvc()
 const ratingSvc = useRatingSvc()
 const classesSvc = useClassesSvc()
@@ -552,11 +604,22 @@ const mySubmissions = ref<Submission[]>([])
 const editingPost = ref<any>(null)
 const editPostForm = ref({ title: '', content: '' })
 const editPostSaving = ref(false)
+// Уже прикреплённые файлы (можно удалить) — как в editAsgFiles
+const editPostFiles = ref<{ name: string; url: string }[]>([])
+// Новые файлы, выбранные для замены/добавления в этой сессии редактирования
+const editPostNewFiles = ref<File[]>([])
+const editPostFi = ref<HTMLInputElement | null>(null)
 
 const editingAssignment = ref<any>(null)
 const editAsgForm = ref<{ title: string; description: string; max_score: number; deadline: string; criteria: Array<{name:string;weight:number;description:string}> }>({ title: '', description: '', max_score: 100, deadline: '', criteria: [] })
 // Файлы задания живут в description как URL — в форме показываем чипами, а не текстом
 const editAsgFiles = ref<{ name: string; url: string }[]>([])
+const editAsgNewFiles = ref<File[]>([])
+const editAsgTaskFi = ref<HTMLInputElement | null>(null)
+// Эталонное решение хранится отдельно, в reference_solution_url (строка или JSON-массив URL)
+const editAsgRefFiles = ref<{ name: string; url: string }[]>([])
+const editAsgNewRefFiles = ref<File[]>([])
+const editAsgRefFi = ref<HTMLInputElement | null>(null)
 const editAsgSaving = ref(false)
 const loadingAssignments = ref(false)
 const editAsgWeightTotal = computed(() => editAsgForm.value.criteria.reduce((s, c) => s + Number(c.weight), 0))
@@ -848,21 +911,34 @@ const deletePost = async (id: number) => {
 
 const openEditPost = (p: any, type: string) => {
   editingPost.value = { ...p, type }
-  let content = ''
-  try { const b = JSON.parse(p.body); content = b.content || b.description || '' } catch { content = p.body || '' }
+  const fullBody = getFullBody(p)
+  editPostFiles.value = extractFilesFromText(fullBody)
+  editPostNewFiles.value = []
   const rawTitle = p.title || ''
   const cleanedTitle = rawTitle.replace(/^\[LECTURE\]\[\d+\]\s*/, '').trim()
-  editPostForm.value = { title: cleanedTitle, content }
+  editPostForm.value = { title: cleanedTitle, content: stripFilesFromText(fullBody) }
 }
+
+const onEditPostPick = (e: Event) => {
+  editPostNewFiles.value = [...editPostNewFiles.value, ...Array.from((e.target as HTMLInputElement).files || [])]
+  if (editPostFi.value) editPostFi.value.value = ''
+}
+const removeEditPostNewFile = (i: number) => { editPostNewFiles.value = editPostNewFiles.value.filter((_, idx) => idx !== i) }
 
 const saveEditPost = async () => {
   if (!editingPost.value) return
   editPostSaving.value = true
   try {
     const p = editingPost.value
-    let body: any = {}
-    try { body = JSON.parse(p.body) } catch {}
-    body.content = editPostForm.value.content
+    // Загружаем вновь выбранные файлы, чтобы заменить/дополнить прикрепления
+    const uploaded: string[] = []
+    for (const f of editPostNewFiles.value) {
+      const { file_url } = await uploadSvc.upload(f)
+      if (!file_url) throw new Error('upload_failed')
+      uploaded.push(`${file_url}#${encodeURIComponent(f.name)}`)
+    }
+    const files = [...editPostFiles.value.map(f => f.url), ...uploaded]
+    const body: any = { content: editPostForm.value.content, ...(files.length ? { files } : {}) }
     const prefix = `[LECTURE][${classId.value}] `
     const newTitle = prefix + editPostForm.value.title
     await postsSvc.update(p.id, newTitle, JSON.stringify(body))
@@ -887,7 +963,24 @@ const openEditAssignment = (a: any) => {
   try { criteria = JSON.parse(a.criteria || '[]') } catch {}
   if (!criteria.length) criteria = [{ name: '', weight: 10, description: '' }]
   editAsgFiles.value = extractFilesFromText(a.description)
+  editAsgNewFiles.value = []
+  let refUrls: string[] = []
+  if (a.reference_solution_url) {
+    try { const arr = JSON.parse(a.reference_solution_url); refUrls = Array.isArray(arr) ? arr : [a.reference_solution_url] }
+    catch { refUrls = [a.reference_solution_url] }
+  }
+  editAsgRefFiles.value = refUrls.map(url => ({ url, name: fileNameFromUrl(url) }))
+  editAsgNewRefFiles.value = []
   editAsgForm.value = { title: a.title || '', description: stripFilesFromText(a.description), max_score: a.max_score || 100, deadline: dl, criteria }
+}
+
+const onEditAsgTaskPick = (e: Event) => {
+  editAsgNewFiles.value = [...editAsgNewFiles.value, ...Array.from((e.target as HTMLInputElement).files || [])]
+  if (editAsgTaskFi.value) editAsgTaskFi.value.value = ''
+}
+const onEditAsgRefPick = (e: Event) => {
+  editAsgNewRefFiles.value = [...editAsgNewRefFiles.value, ...Array.from((e.target as HTMLInputElement).files || [])]
+  if (editAsgRefFi.value) editAsgRefFi.value.value = ''
 }
 
 const addCriterion = () => { editAsgForm.value.criteria.push({ name: '', weight: 10, description: '' }) }
@@ -897,15 +990,35 @@ const saveEditAssignment = async () => {
   if (!editingAssignment.value || !canSaveEditAssignment.value) return
   editAsgSaving.value = true
   try {
+    // Загружаем вновь выбранные файлы задания
+    const uploadedTaskUrls: string[] = []
+    for (const f of editAsgNewFiles.value) {
+      const { file_url } = await uploadSvc.upload(f)
+      if (!file_url) throw new Error('upload_failed')
+      uploadedTaskUrls.push(withNameFragment(file_url, f.name))
+    }
     // Пришиваем сохранённые файлы обратно в description (бэкенд не хранит file_urls у заданий)
-    const fileLines = editAsgFiles.value.map(f => f.url).join('\n')
+    const fileLines = [...editAsgFiles.value.map(f => f.url), ...uploadedTaskUrls].join('\n')
     const descWithFiles = [stripFilesFromText(editAsgForm.value.description), fileLines].filter(Boolean).join('\n')
+
+    // Загружаем вновь выбранные файлы эталонного решения
+    const uploadedRefUrls: string[] = []
+    for (const f of editAsgNewRefFiles.value) {
+      const { file_url } = await uploadSvc.upload(f)
+      if (!file_url) throw new Error('upload_failed')
+      uploadedRefUrls.push(file_url)
+    }
+    const refUrls = [...editAsgRefFiles.value.map(f => f.url), ...uploadedRefUrls]
+    // Пустая строка (а не undefined) явно очищает поле на бэкенде — там exclude_none, а не exclude_empty
+    const referenceSolutionUrl = refUrls.length > 1 ? JSON.stringify(refUrls) : (refUrls[0] || '')
+
     const updated = await assignmentsSvc.update(editingAssignment.value.id, {
       title: editAsgForm.value.title,
       description: descWithFiles,
       max_score: editAsgForm.value.max_score,
       deadline: editAsgForm.value.deadline ? new Date(editAsgForm.value.deadline).toISOString() : undefined,
       criteria: editAsgForm.value.criteria,
+      reference_solution_url: referenceSolutionUrl,
     })
     const idx = assignments.value.findIndex(x => x.id === editingAssignment.value.id)
     if (idx !== -1) assignments.value[idx] = { ...assignments.value[idx], ...updated }
@@ -1181,6 +1294,7 @@ onMounted(async () => {
 .eaf-name{flex:1;font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .eaf-rm{width:20px;height:20px;border-radius:50%;background:var(--surface3);color:var(--text4);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
 .eaf-rm:hover{background:var(--red-l);color:var(--red)}
+.edit-asg-ref-section{background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.18);border-radius:var(--r-lg);padding:12px}
 /* Criteria editing */
 .btn-add-criterion{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 12px;cursor:pointer;font-family:inherit;transition:all .15s}
 .btn-add-criterion:hover{background:var(--surface3)}
