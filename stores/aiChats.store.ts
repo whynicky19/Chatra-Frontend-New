@@ -8,26 +8,14 @@ export interface Msg {
   id: number
   role: 'user' | 'assistant'
   text: string
-  imagePreview?: string
   ts: Date
 }
 
 // Системный промпт главного ассистента — перенесён дословно из старого useAi.ts.
 const SYSTEM_PROMPT =
   'Ты AI-ассистент образовательной платформы. Отвечай на русском языке. ' +
-  'Умеешь читать рукописный текст, распознавать формулы и таблицы на изображениях. ' +
   'Все математические формулы пиши в LaTeX: инлайн — между одинарными $...$, ' +
   'формулу на отдельной строке — между двойными $$...$$. Не используй другой синтаксис для формул.'
-
-const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-
-const isImageFile = (file: File) => file.type.startsWith('image/')
 
 // Ключ localStorage-кэша сообщений конкретного треда.
 const msgsKey = (uid: number | null | undefined, threadId: number) =>
@@ -64,11 +52,7 @@ export const useAiChatsStore = defineStore('aiChats', {
     _persistMsgs() {
       if (!import.meta.client || this.activeId == null) return
       try {
-        // base64-превью не сохраняем — иначе быстро упрёмся в квоту localStorage.
-        localStorage.setItem(
-          msgsKey(this._uid(), this.activeId),
-          JSON.stringify(this.messages.map(({ imagePreview, ...rest }) => rest)),
-        )
+        localStorage.setItem(msgsKey(this._uid(), this.activeId), JSON.stringify(this.messages))
       } catch {}
     },
 
@@ -188,10 +172,8 @@ export const useAiChatsStore = defineStore('aiChats', {
       }
     },
 
-    async send(text: string, file?: File | null) {
-      const hasText = text.trim().length > 0
-      const hasFile = !!file
-      if ((!hasText && !hasFile) || this.sending) return
+    async send(text: string) {
+      if (!text.trim() || this.sending) return
 
       // Новый чат ещё не заведён на бэке — тред создаётся лениво при первой
       // отправке, чтобы композер был доступен сразу, без обязательного
@@ -203,33 +185,12 @@ export const useAiChatsStore = defineStore('aiChats', {
       }
 
       const threadId = this.activeId!
-      let imageBase64: string | undefined
-      let displayText = text.trim()
-
-      if (hasFile) {
-        if (isImageFile(file!)) {
-          try {
-            imageBase64 = await fileToBase64(file!)
-          } catch {
-            // FileReader может упасть на битом файле — раньше это было
-            // необработанным отклонением промиса: сообщение молча терялось,
-            // sending даже не успевал стать true/false.
-            useToast().err('AI: не удалось прочитать файл')
-            return
-          }
-          displayText = displayText || `[Изображение: ${file!.name}]`
-        } else {
-          displayText = displayText
-            ? `${displayText}\n[Файл: ${file!.name}]`
-            : `[Файл: ${file!.name}]`
-        }
-      }
+      const displayText = text.trim()
 
       const um: Msg = {
         id: ++this._nextId,
         role: 'user',
         text: displayText,
-        imagePreview: imageBase64,
         ts: new Date(),
       }
       this.messages = [...this.messages, um]
@@ -241,24 +202,11 @@ export const useAiChatsStore = defineStore('aiChats', {
           .slice(0, -1)
           .map(m => ({ role: m.role, content: m.text }))
 
-        let userContent: string | Array<Record<string, unknown>>
-        if (imageBase64) {
-          userContent = [
-            { type: 'image_url', image_url: { url: imageBase64, detail: 'high' } },
-            {
-              type: 'text',
-              text: text.trim() || 'Прочитай и опиши содержимое изображения. Если на нём рукописный текст — распознай и перепиши его дословно.',
-            },
-          ]
-        } else {
-          userContent = displayText
-        }
-
         const data = await useAiSvc().chat({
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
             ...history,
-            { role: 'user', content: userContent },
+            { role: 'user', content: displayText },
           ],
           max_tokens: 1500,
           temperature: 0.7,

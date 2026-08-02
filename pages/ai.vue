@@ -85,7 +85,6 @@
             <div v-if="m.role==='assistant'" class="msg-avatar">
               <span class="msg-sender">Chatra AI</span>
             </div>
-            <img v-if="m.imagePreview" :src="m.imagePreview" class="msg-img-preview" alt="uploaded"/>
             <div :class="['msg-bubble', m.role]" v-html="fmt(m.text)"></div>
           </div>
 
@@ -100,28 +99,10 @@
         </div>
       </div>
 
-      <!-- File preview bar -->
-      <div v-if="pendingFile" class="file-prev">
-        <div class="fp-info">
-          <img v-if="pendingPreview" :src="pendingPreview" class="fp-thumb" alt="preview"/>
-          <span v-if="pendingFile.type.startsWith('image/')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span>
-          <span v-else><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></span>
-          <span>{{ pendingFile.name }}</span>
-          <span v-if="pendingFile.type.startsWith('image/')" class="fp-badge">ИИ прочитает текст</span>
-        </div>
-        <button class="fp-rm" @click="clearFile">×</button>
-      </div>
-
       <AiLimitNotice v-if="quota.aiLimitReached.value" :quota="quota.quota.value" class="notice-wide"/>
 
       <!-- Input -->
       <div class="chat-inp">
-        <label class="attach-lbl" title="Прикрепить изображение / файл">
-          <input ref="fileInput" type="file" accept="image/*,.pdf,.doc,.docx,.txt" style="display:none" @change="onFilePick"/>
-          <div class="attach-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-          </div>
-        </label>
         <input
           ref="inp"
           v-model="txt"
@@ -131,8 +112,8 @@
           @keydown.enter="send"
         />
         <button
-          :class="['send-btn', {active: (txt.trim() || pendingFile) && !quota.aiLimitReached.value, locked: quota.aiLimitReached.value}]"
-          :disabled="(!txt.trim() && !pendingFile) || sending || quota.aiLimitReached.value"
+          :class="['send-btn', {active: txt.trim() && !quota.aiLimitReached.value, locked: quota.aiLimitReached.value}]"
+          :disabled="!txt.trim() || sending || quota.aiLimitReached.value"
           @click="send"
         >
           <div v-if="sending" class="spinner" style="width:14px;height:14px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
@@ -161,11 +142,8 @@ const sending = computed(() => store.sending)
 
 const area = ref<HTMLElement | null>(null)
 const inp = ref<HTMLInputElement | null>(null)
-const fileInput = ref<HTMLInputElement | null>(null)
 const sidebarEl = ref<HTMLElement | null>(null)
 const txt = ref('')
-const pendingFile = ref<File | null>(null)
-const pendingPreview = ref<string | null>(null)
 const query = ref('')
 
 const isMobile = ref(false)
@@ -337,33 +315,11 @@ const scroll = () => nextTick(() => {
   if (area.value) area.value.scrollTop = area.value.scrollHeight
 })
 
-const onFilePick = (e: Event) => {
-  const f = (e.target as HTMLInputElement).files?.[0]
-  if (!f) return
-  pendingFile.value = f
-  if (f.type.startsWith('image/')) {
-    const reader = new FileReader()
-    reader.onload = () => { pendingPreview.value = reader.result as string }
-    reader.readAsDataURL(f)
-  } else {
-    pendingPreview.value = null
-  }
-  if (fileInput.value) fileInput.value.value = ''
-}
-
-const clearFile = () => {
-  pendingFile.value = null
-  pendingPreview.value = null
-}
-
 const send = async () => {
-  if ((!txt.value.trim() && !pendingFile.value) || sending.value) return
+  if (!txt.value.trim() || sending.value) return
   const message = txt.value
-  const file = pendingFile.value
   txt.value = ''
-  pendingFile.value = null
-  pendingPreview.value = null
-  await store.send(message, file)
+  await store.send(message)
   scroll()
 }
 
@@ -520,7 +476,6 @@ watch(() => store.activeId, () => scroll())
 .chat-msg.assistant { align-self: flex-start }
 .msg-avatar { display: flex; align-items: center; gap: 8px }
 .msg-sender { font-size: 12px; font-weight: 700; color: var(--text3) }
-.msg-img-preview { max-width: 240px; max-height: 200px; border-radius: 14px; object-fit: cover; border: 1px solid var(--border2); box-shadow: 0 4px 16px rgba(0,0,0,.3) }
 .msg-bubble { padding: 14px 19px; border-radius: 22px; font-size: 14.5px; line-height: 1.62 }
 .msg-bubble.user { background: linear-gradient(135deg, var(--teal), var(--teal-h)); color: #fff; border-bottom-right-radius: 7px; box-shadow: 0 4px 20px rgba(var(--teal-rgb),.3) }
 .msg-bubble.assistant { background: var(--surface); color: var(--text1); border-top-left-radius: 7px; box-shadow: var(--sh-xs) }
@@ -530,17 +485,7 @@ watch(() => store.activeId, () => scroll())
 .typing span:nth-child(2) { animation-delay: .2s }
 .typing span:nth-child(3) { animation-delay: .4s }
 
-.file-prev { display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; background: var(--surface2); border-top: 1px solid var(--border); font-size: 13px; font-weight: 500; color: var(--text2); position: relative; z-index: 2; flex-shrink: 0 }
-.fp-info { display: flex; align-items: center; gap: 10px }
-.fp-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border2) }
-.fp-badge { font-size: 11px; font-weight: 600; background: var(--surface3); color: var(--text2); border: 1px solid var(--border2); border-radius: 100px; padding: 2px 8px }
-.fp-rm { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 20px; padding: 0; line-height: 1; transition: color .15s }
-.fp-rm:hover { color: var(--red) }
-
 .chat-inp { display: flex; align-items: center; gap: 10px; padding: 16px 20px; background: var(--surface); backdrop-filter: blur(12px); border-top: 1px solid var(--border); position: relative; z-index: 2; flex-shrink: 0 }
-.attach-lbl { cursor: pointer; flex-shrink: 0 }
-.attach-icon { width: 38px; height: 38px; border-radius: var(--r-lg); background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text3); transition: all .15s }
-.attach-icon:hover { background: rgba(var(--teal-rgb),.12); border-color: rgba(var(--teal-rgb),.2); color: var(--teal) }
 .chat-field { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 26px; padding: 12px 20px; font-size: 14px; color: var(--text1); transition: all .2s; font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif }
 .chat-field:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.1) }
 .chat-field::placeholder { color: var(--text4) }
@@ -582,7 +527,6 @@ watch(() => store.activeId, () => scroll())
   .chat-inp { padding: 10px 12px; gap: 6px }
   .chat-field { font-size: 16px; padding: 10px 14px }
   .send-btn { width: 44px; height: 44px }
-  .attach-icon { width: 44px; height: 44px }
   .tip-grid { gap: 8px; padding: 0 4px }
   .tip-card { padding: 12px; border-radius: 17px }
   .tip-icon { width: 34px; height: 34px; margin-bottom: 8px }
