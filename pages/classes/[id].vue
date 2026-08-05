@@ -7,18 +7,9 @@
     </div>
 
     <template v-else>
-      <!-- ══ Topbar — simplified ══ -->
-      <div class="cd-topbar">
-        <div class="cd-topbar-left">
-          <div class="topbar-breadcrumb">
-            <NuxtLink to="/" class="bc-link">{{ t('nav.classes') }}</NuxtLink>
-            <span class="bc-sep">›</span>
-            <span class="bc-cur">{{ classMeta.subject || classTitle }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ Main layout ══ -->
+      <!-- ══ Main layout — обложка сразу сверху, без отдельной полосы
+           "Предметы › Название" над ней (та же навигация уже есть внутри
+           самой обложки, см. .page-header-top) ══ -->
       <div class="cd-layout">
         <!-- Left content -->
         <div class="cd-main">
@@ -102,9 +93,11 @@
             {{ t('cohort.readonly_notice') }}
           </div>
 
-          <!-- Рейтинг и дедлайн для студентов — только мобайл, только во вкладке
-               «Задания» (единое размещение с приложением, где рейтинг встроен в неё). -->
-          <div v-if="!isTeacher && tab === 'assignments'" class="mobile-stats">
+          <!-- Рейтинг и дедлайн для студентов — только мобайл; раньше показывались
+               только во вкладке "Задания", из-за чего на "Лекциях" рейтинг как
+               будто пропадал — теперь виден на любой вкладке, кроме ИИ-чата
+               (там нужна вся ширина под сообщения). -->
+          <div v-if="!isTeacher && tab !== 'ai'" class="mobile-stats">
             <div class="ms-score">
               <div class="ms-score-top">
                 <span class="ms-label">{{ t('class.your_rating') }}</span>
@@ -209,11 +202,14 @@
           </div>
         </div>
 
-        <!-- Right sidebar -->
-        <div class="cd-sidebar" v-if="tab !== 'ai'">
-          <!-- Score card — студентам, только во вкладке «Задания» (единое
-               размещение с приложением: рейтинг живёт рядом с заданиями). -->
-          <div class="sidebar-card score-card" v-if="!isTeacher && tab === 'assignments'">
+        <!-- Right sidebar — остаётся смонтированным даже на вкладке ИИ и просто
+             плавно схлопывается вместе с обложкой (:class ниже, тот же
+             coverCollapsed, что двигает .page-header) при скролле чата, вместо
+             того чтобы резко исчезать по v-if при переключении вкладки. -->
+        <div class="cd-sidebar" :class="{ 'cd-sidebar-collapsed': coverCollapsed }">
+          <!-- Score card — виден студенту на любой вкладке (раньше только на
+               «Заданиях», из-за чего на «Лекциях» рейтинг был не виден). -->
+          <div class="sidebar-card score-card" v-if="!isTeacher">
             <div class="score-label">{{ t('class.your_rating') }}</div>
             <div class="score-num">
               <span class="score-big">{{ avgScoreDisplay }}</span>
@@ -252,8 +248,9 @@
             </div>
           </div>
 
-          <!-- AI learning guide -->
-          <div class="sidebar-card" v-if="!isArchivedForUser">
+          <!-- AI learning guide — не показываем, если и так уже в ИИ-чате
+               (ссылка "перейти в ИИ" была бы бессмысленна). -->
+          <div class="sidebar-card" v-if="!isArchivedForUser && tab !== 'ai'">
             <div class="ai-guide-head">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               {{ t('class.ai_guide') }}
@@ -1154,31 +1151,22 @@ onMounted(async () => {
 .tab-load{display:flex;justify-content:center;padding:60px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Topbar */
-.cd-topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
-.cd-topbar-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-.topbar-logo{display:flex;align-items:center}.topbar-logo-img{width:80px;height:auto;object-fit:contain}.topbar-logo-icon{width:30px;height:30px;border-radius:7px;background:rgba(var(--teal-rgb),.08);border:1px solid rgba(var(--teal-rgb),.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.topbar-brand{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:13px;font-weight:800;color:var(--teal);letter-spacing:.1em;flex-shrink:0}
-.topbar-search{display:flex;align-items:center;gap:7px;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:12px;color:var(--text4);cursor:pointer;flex-shrink:0}
-.topbar-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text4);overflow:hidden}
-.bc-link{color:var(--text4);transition:color .15s}.bc-link:hover{color:var(--teal)}
-.bc-sep{color:var(--text4);font-size:10px}
-.bc-cur{color:var(--teal);font-weight:600;letter-spacing:.04em;font-size:11px}
-.cd-topbar-nav{display:flex;align-items:center;gap:0;flex-shrink:0}
-.topbar-tab{padding:0 18px;height:52px;font-size:13px;font-weight:500;color:var(--text4);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap}
-.topbar-tab:hover{color:var(--text1)}
-.topbar-tab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:600}
-.icon-btn2{width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
-.icon-btn2:hover{border-color:var(--border2);color:var(--teal)}
-
 /* Layout */
 .cd-layout{display:flex;flex:1;overflow:hidden;gap:0}
 .cd-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.cd-sidebar{width:300px;flex-shrink:0;border-left:1px solid var(--border);padding:20px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;background:var(--surface)}
+/* Правый сайдбар (рейтинг/дедлайн) остаётся в DOM даже на вкладке ИИ и
+   схлопывается вместе с обложкой (см. .cd-sidebar-collapsed) — та же логика
+   и тайминг, что у .page-header/.header-collapsed ниже, чтобы обе колонки
+   визуально уезжали синхронно, а не сайдбар резко, а обложка плавно. */
+.cd-sidebar{width:300px;flex-shrink:0;border-left:1px solid var(--border);padding:20px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;background:var(--surface);opacity:1;transition:width .38s cubic-bezier(.4,0,.2,1),padding .38s cubic-bezier(.4,0,.2,1),opacity .25s ease,border-color .38s ease}
+.cd-sidebar-collapsed{width:0!important;padding-left:0!important;padding-right:0!important;opacity:0!important;border-color:transparent!important;overflow:hidden}
 
 /* Page header — collapses smoothly on scroll (min-height/opacity/padding all
-   animated) to free up room for the interface underneath. */
-.page-header{padding:20px 24px 16px;flex-shrink:0;position:relative;overflow:hidden;border-radius:0;min-height:220px;max-height:500px;display:flex;flex-direction:column;justify-content:flex-end;transition:min-height .38s cubic-bezier(.4,0,.2,1),max-height .38s cubic-bezier(.4,0,.2,1),padding .38s cubic-bezier(.4,0,.2,1),opacity .25s ease;will-change:min-height,max-height}
+   animated) to free up room for the interface underneath. Обложка теперь
+   начинается сразу с верха страницы (отдельная полоса "Предметы › Название"
+   над ней убрана) — высота увеличена ровно на столько, сколько раньше
+   занимала та полоса, чтобы обложка визуально "выросла" в её место. */
+.page-header{padding:20px 24px 16px;flex-shrink:0;position:relative;overflow:hidden;border-radius:0;min-height:272px;max-height:552px;display:flex;flex-direction:column;justify-content:flex-end;transition:min-height .38s cubic-bezier(.4,0,.2,1),max-height .38s cubic-bezier(.4,0,.2,1),padding .38s cubic-bezier(.4,0,.2,1),opacity .25s ease;will-change:min-height,max-height}
 .page-header.header-collapsed{min-height:0!important;max-height:0!important;padding-top:0!important;padding-bottom:0!important;opacity:0!important;pointer-events:none;border-width:0}
 .page-header-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.25) 0%,rgba(0,0,0,.55) 100%);z-index:0}
 .page-header .page-header-body{position:relative;z-index:1}
@@ -1349,11 +1337,14 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 
 /* Sidebar cards */
 .sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px}
-.score-card{background:linear-gradient(135deg,#2c2c2e,#1c1c1e);border:none;color:#fff}
+/* Рейтинг — тёмная карточка с акцентом бренд-цвета (не сплошная заливка):
+   тонкая цветная рамка/подсветка по краю + сам номер и прогресс-бары в
+   акцентном цвете, а не просто белым по серому. */
+.score-card{background:linear-gradient(135deg,#2c2c2e,#1c1c1e);border:1px solid rgba(var(--teal-rgb),.35);box-shadow:0 8px 22px rgba(var(--teal-rgb),.16);color:#fff}
 .score-no-grades{font-size:12px;opacity:.7;margin-top:8px;font-style:italic}
 
 .mobile-stats{display:none}
-.ms-score{flex:1;min-width:140px;background:linear-gradient(135deg,#2c2c2e,#1c1c1e);border-radius:var(--r-xl);padding:14px 16px;color:#fff}
+.ms-score{flex:1;min-width:140px;background:linear-gradient(135deg,#2c2c2e,#1c1c1e);border:1px solid rgba(var(--teal-rgb),.35);box-shadow:0 8px 22px rgba(var(--teal-rgb),.16);border-radius:var(--r-xl);padding:14px 16px;color:#fff}
 .ms-deadline{flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:14px 16px}
 .ms-score-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .ms-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
@@ -1363,8 +1354,8 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .ms-bar-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 .ms-bar-label{font-size:11px;opacity:.8}
 .ms-bar-val{font-size:11px;font-weight:700}
-.ms-bar{height:4px;background:rgba(255,255,255,.25);border-radius:4px;overflow:hidden}
-.ms-bar-fill{height:100%;background:#fff;border-radius:4px;transition:width .4s}
+.ms-bar{height:4px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden}
+.ms-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal-h),var(--teal));border-radius:4px;transition:width .4s}
 .ms-deadline .ms-label{color:var(--text4)}
 .ms-deadline-row{display:flex;align-items:center;gap:10px;margin-top:8px}
 .ms-date-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);padding:6px 10px;text-align:center;flex-shrink:0}
@@ -1375,15 +1366,15 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .score-count{font-size:11px;opacity:.65;margin-top:8px}
 .score-label{font-size:10px;font-weight:700;letter-spacing:.1em;opacity:.7;margin-bottom:8px}
 .score-num{display:flex;align-items:baseline;gap:6px;margin-bottom:16px}
-.score-big{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:52px;font-weight:900;line-height:1}
+.score-big{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:52px;font-weight:900;line-height:1;color:var(--teal)}
 .score-total{font-size:16px;font-weight:600;opacity:.8}
 .score-pts{font-size:11px}
 .score-progress-row{display:flex;justify-content:space-between;margin-bottom:6px}
 .sp-label{font-size:10px;font-weight:700;letter-spacing:.06em;opacity:.7}
 .sp-value{font-size:11px;font-weight:700}
 .progress-bar{height:5px;background:rgba(255,255,255,.2);border-radius:100px;overflow:hidden;margin-bottom:4px}
-.pb-fill{height:100%;background:#fff;border-radius:100px;transition:width .5s ease}
-.perf-fill{background:rgba(255,255,255,.8)}
+.pb-fill{height:100%;background:linear-gradient(90deg,var(--teal-h),var(--teal));border-radius:100px;transition:width .5s ease}
+.perf-fill{background:rgba(var(--teal-rgb),.55)}
 
 /* Next deadline */
 .next-deadline-label{font-size:10px;font-weight:700;color:var(--text4);letter-spacing:.1em;margin-bottom:12px}
@@ -1422,11 +1413,6 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 
 @media (max-width:768px){
   .cd-page { overflow-x: hidden; max-width: 100vw; }
-  .cd-topbar{
-    padding:env(safe-area-inset-top, 0px) 12px 0;
-    height:calc(52px + env(safe-area-inset-top, 0px));
-  }
-  .topbar-breadcrumb{max-width:160px;overflow:hidden}
   .cd-sidebar{display:none}
   .cd-layout{flex-direction:column;overflow-x:hidden}
   .mobile-stats{display:flex;gap:10px;padding:10px 12px 0;flex-wrap:wrap}
@@ -1445,9 +1431,13 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
   .tab-action-bar{padding:10px 12px;gap:8px}
   .tab-action-bar .btn{flex:1;justify-content:center;min-height:44px;font-size:12px}
   .tab-content{padding:10px 12px 80px;overflow-x:hidden}
-  .page-header{padding:14px 12px 12px;min-height:170px}
-  .page-header .page-header-top{top:14px;left:12px}
-  .page-header-gear{top:14px;right:12px}
+  /* Раньше отдельная полоса "Предметы › Название" над обложкой (высотой
+     52px + safe-area) отделяла её от статус-бара/чёлки — теперь эту
+     safe-area обложка отступает сама через padding-top, а высоту забирает
+     себе (170+52), чтобы визуально "вырасти" в освободившееся место. */
+  .page-header{padding:calc(14px + env(safe-area-inset-top, 0px)) 12px 12px;min-height:222px}
+  .page-header .page-header-top{top:calc(14px + env(safe-area-inset-top, 0px));left:12px}
+  .page-header-gear{top:calc(14px + env(safe-area-inset-top, 0px));right:12px}
   .page-title{font-size:20px}
   .item-row{padding:13px 14px;gap:12px}
   .item-icon{width:38px;height:38px}
@@ -1467,8 +1457,8 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
   .post-overlay{padding:0;align-items:flex-end}
   .sheet-title{font-size:20px}
   .field-input,.field-textarea{font-size:16px}
-  .back-link,.bc-link{position:relative;display:inline-flex}
-  .back-link::after,.bc-link::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-6px;right:-6px}
+  .back-link{position:relative;display:inline-flex}
+  .back-link::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-6px;right:-6px}
 }
 @media (max-width:480px){
   .tab-btn{font-size:11px;padding:11px 3px;letter-spacing:-.01em}

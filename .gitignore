@@ -40,3 +40,22 @@ dist
 node_modules
 .output
 .env
+
+
+
+.agents/
+.claude/
+.claude/skills/
+
+
+skills.json
+skills-lock.json
+skill.json
+skill-lock.json
+
+# Audit files
+_audit/
+*.qa.html
+
+# macOS
+.DS_Store
