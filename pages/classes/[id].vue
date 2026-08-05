@@ -563,6 +563,7 @@ import { parseUtc } from '~/composables/useDeadline'
 import { useRatingSvc } from '~/services/rating'
 import { useClassesSvc, type CohortResponse, type RotationMode } from '~/services/classes'
 import { useAuthStore } from '~/stores/auth.store'
+import { useClassesStore } from '~/stores/classes.store'
 import { useI18n } from '~/composables/useI18n'
 import { useFilePreview } from '~/composables/useFilePreview'
 import { fixFileUrl } from '~/composables/useFileUrl'
@@ -578,6 +579,7 @@ const uploadSvc = useUploadSvc()
 const assignmentsSvc = useAssignmentsSvc()
 const ratingSvc = useRatingSvc()
 const classesSvc = useClassesSvc()
+const classesStore = useClassesStore()
 const toast = useToast()
 const auth = useAuthStore()
 const { t, lang } = useI18n()
@@ -586,7 +588,12 @@ const { openPreview } = useFilePreview()
 const classId = computed(() => Number(route.params.id))
 const isTeacher = computed(() => auth.user?.role === 'teacher' || auth.user?.role === 'admin')
 
-const loading = ref(true)
+// Если карточка класса (с обложкой) уже в общем сторе — заходили с каталога —
+// показываем её сразу, без полноэкранного спиннера и без повторной загрузки
+// той же обложки: URL не меняется, значит браузер отдаёт её из кэша.
+// Свежие данные (посты, задания и т.п.) всё равно подтягиваем ниже, в фоне.
+const cachedClass = classesStore.byId(classId.value)
+const loading = ref(!cachedClass)
 const tab = ref<'lectures' | 'assignments' | 'ai'>('lectures')
 
 // Cover collapses smoothly on scroll — only inside the AI chat tab (see the
@@ -634,7 +641,7 @@ const ratingData = ref({ avg_score: 0, avg_percent: 0, graded_count: 0, total_sc
 const loadingRating = ref(false)
 const assignmentsLoaded = ref(false)
 
-const currentClass = ref<any>(null)
+const currentClass = ref<any>(cachedClass)
 const classMeta = computed(() => currentClass.value ?? {})
 // true только для ученика архивного потока — класс доступен только для чтения.
 const isArchivedForUser = computed(() => !!currentClass.value?.is_archived_for_user)
@@ -680,6 +687,7 @@ const toggleRotation = async () => {
   try {
     const updated = await classesSvc.setRotationMode(classId.value, next)
     currentClass.value = { ...currentClass.value, ...updated }
+    classesStore.upsert(currentClass.value)
     rotationYearly.value = next === 'yearly'
     toast.ok(t('cohort.rotation_saved'))
     if (next === 'yearly') await loadCohorts()
@@ -872,7 +880,7 @@ const regenerateCode = async () => {
   regeneratingCode.value = true
   try {
     const newCode = await classesSvc.regenerateCode(classId.value)
-    if (currentClass.value) currentClass.value.invite_code = newCode
+    if (currentClass.value) { currentClass.value.invite_code = newCode; classesStore.upsert(currentClass.value) }
     toast.ok(t('class.regenerate_ok') + ' ' + newCode)
   } catch (e: any) {
     toast.err(e?.response?.data?.detail || t('class.regenerate_failed'))
@@ -1111,10 +1119,17 @@ onMounted(async () => {
   // клике на вкладку — no-op.
   loadAssignments()
 
-  loading.value = true
+  // Если обложка/название уже показаны из кэша (см. cachedClass выше), не
+  // включаем полноэкранный спиннер повторно — иначе он сам по себе пересоздаст
+  // весь блок с обложкой и даст тот самый "мигающий" эффект при заходе в класс.
+  if (!cachedClass) loading.value = true
   try {
     const [cls, posts] = await Promise.all([classesSvc.get(classId.value), postsSvc.list()])
-    currentClass.value = cls
+    classesStore.upsert(cls)
+    // upsert уже сохранил прежний URL обложки, если файл не поменялся (см.
+    // sameFilePath в сторе) — берём результат оттуда, а не «сырой» cls,
+    // чтобы currentClass не переключил heroStyle на заново подписанный URL.
+    currentClass.value = classesStore.byId(classId.value) || cls
     allPosts.value = posts
     // Архивному ученику ИИ-чат недоступен — не открываем эту вкладку.
     if (isArchivedForUser.value && tab.value === 'ai') tab.value = 'lectures'

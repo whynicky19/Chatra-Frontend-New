@@ -17,3 +17,14 @@ export const fixFileUrl = (url?: string | null): string => {
     .replace(/https?:\/\/localhost:\d+/, root)
     .replace(/https?:\/\/127\.0\.0\.1:\d+/, root)
 }
+
+// Подписанные ссылки несут exp/sig в query, который бэкенд пересчитывает при
+// каждом запросе — путь файла при этом не меняется. Если сравнивать URL
+// целиком, любое фоновое обновление списка классов выглядело бы как "новая"
+// обложка и заставляло браузер перекачивать те же байты заново. Сравниваем
+// только путь, чтобы такие обновления сохраняли уже загруженный URL.
+export const sameFilePath = (a?: string | null, b?: string | null): boolean => {
+  if (!a || !b) return false
+  const path = (u: string) => u.split('?')[0]
+  return path(a) === path(b)
+}

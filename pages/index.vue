@@ -247,6 +247,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from '#app'
 import { useAuthStore } from '~/stores/auth.store'
+import { useClassesStore } from '~/stores/classes.store'
 import { usePostsSvc } from '~/services/posts'
 import { useClassesSvc } from '~/services/classes'
 import { useToast } from '~/composables/useToast'
@@ -255,9 +256,16 @@ import { useCohortErrors } from '~/composables/useCohortErrors'
 import { fixFileUrl } from '~/composables/useFileUrl'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const postsSvc = usePostsSvc(); const classesSvc = useClassesSvc(); const toast = useToast(); const router = useRouter()
+const classesStore = useClassesStore()
 const { t, lang, setLang } = useI18n()
 const cohortErrors = useCohortErrors()
-const allClasses = ref<any[]>([]); const allPosts = ref<any[]>([]); const loading = ref(true); const showCreate = ref(false)
+// Список берём из общего стора (переживает переход между страницами) — при
+// повторном заходе на каталог он уже заполнен, поэтому спиннер и пересборка
+// сетки (а с ней — и обложек) показываются только в самый первый раз за
+// сессию, дальше идёт тихое фоновое обновление без сброса списка.
+const allClasses = computed(() => classesStore.list)
+const allPosts = computed(() => classesStore.posts)
+const loading = ref(!classesStore.loaded); const showCreate = ref(false)
 const showJoin = ref(false); const joining = ref(false); const joinError = ref('')
 const deletingClass = ref<any>(null); const deleting = ref(false)
 const leavingClass = ref<any>(null); const leaving = ref(false)
@@ -396,8 +404,7 @@ const saveEditClass = async () => {
       cover_image: editForm.value.cover_image,
     })
     await preloadImage(updated.cover_thumbnail || updated.cover_image)
-    const idx = allClasses.value.findIndex(c => c.id === editingClass.value.id)
-    if (idx !== -1) allClasses.value[idx] = { ...allClasses.value[idx], ...updated }
+    classesStore.upsert(updated)
     toast.ok(lang.value==='ru' ? 'Класс обновлён' : lang.value==='kk' ? 'Сынып жаңартылды' : 'Class updated')
     editingClass.value = null
   } catch(e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
@@ -409,7 +416,7 @@ const joinClass = async () => {
   try {
     const cls = await classesSvc.joinByCode(joinCode.value)
     if (!joinedIds.value.includes(cls.id)) { joinedIds.value.push(cls.id); saveJoined() }
-    await load()
+    await refresh(true)
     showJoin.value = false; codeChars.value = ['','','','','','']
     toast.ok(`${t('classes.joined')} ${cls.name}`)
   } catch (e: any) {
@@ -439,7 +446,7 @@ const doLeave = async () => {
     leaving.value = false
     return
   }
-  allClasses.value = allClasses.value.filter(c => c.id !== id)
+  classesStore.remove(id)
   joinedIds.value = joinedIds.value.filter(i => i !== id); saveJoined()
   leaving.value = false; leavingClass.value = null
   toast.ok(t('classes.left_ok'))
@@ -448,7 +455,7 @@ const confirmDelete = (cls: any) => { deletingClass.value = cls }
 const doDelete = async () => {
   if (!deletingClass.value) return
   deleting.value = true
-  try { await classesSvc.delete(deletingClass.value.id); allClasses.value = allClasses.value.filter(c => c.id !== deletingClass.value.id); toast.ok(t('general.delete')); deletingClass.value = null }
+  try { await classesSvc.delete(deletingClass.value.id); classesStore.remove(deletingClass.value.id); toast.ok(t('general.delete')); deletingClass.value = null }
   catch(e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
   finally { deleting.value = false }
 }
@@ -461,19 +468,19 @@ const copyClassCode = (cls: any) => {
 const onCreated = async (cls: any) => {
   showCreate.value = false
   await preloadImage(cls?.cover_thumbnail || cls?.cover_image)
-  await load()
+  await refresh(true)
   if (cls?.id) {
     try { await classesSvc.join(cls.id) } catch {}
     if (!joinedIds.value.includes(cls.id)) { joinedIds.value.push(cls.id); saveJoined() }
   }
 }
-const load = async () => {
-  loading.value = true
-  try {
-    const [classes, posts] = await Promise.all([classesSvc.list(), postsSvc.list()])
-    allClasses.value = classes
-    allPosts.value = posts
-  } catch { toast.err(t('general.error')) }
+// Спиннер показываем только пока в сторе вообще ничего нет (первый заход
+// за сессию) — если каталог уже закэширован, обновляем его молча в фоне,
+// не трогая уже отрисованную сетку/обложки.
+const refresh = async (force = false) => {
+  if (!classesStore.loaded) loading.value = true
+  try { await classesStore.ensure(force) }
+  catch { toast.err(t('general.error')) }
   finally { loading.value = false }
 }
 
@@ -485,12 +492,12 @@ const syncMemberships = async (ids: number[]) => {
   const missing = ids.filter(id => !serverIds.has(id))
   if (!missing.length) return
   await Promise.all(missing.map(id => classesSvc.join(id).catch(() => {})))
-  await load()
+  await refresh(true)
 }
 
 onMounted(async () => {
   loadJoined()
-  await load()
+  await refresh()
   if (joinedIds.value.length) await syncMemberships(joinedIds.value)
 })
 
@@ -498,7 +505,7 @@ onMounted(async () => {
 watch(() => auth.user?.id, async (newId) => {
   if (newId) {
     loadJoined()
-    await load()
+    await refresh(true)
     if (joinedIds.value.length) await syncMemberships(joinedIds.value)
   }
 })
