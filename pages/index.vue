@@ -164,7 +164,7 @@
           </button>
         </div>
         <div class="join-icon-wrap">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 6v2"/><path d="M13 11v2"/><path d="M13 16v2"/></svg>
         </div>
         <p class="join-hint">{{ t('classes.join_hint') }}</p>
         <div class="frow">
@@ -608,15 +608,18 @@ watch(() => auth.user?.id, async (newId) => {
 .field-textarea{padding:10px 14px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--surface2);color:var(--text1);font-size:14px;font-family:inherit;resize:vertical;transition:border-color .15s}
 .field-textarea:focus{border-color:var(--teal);background:rgba(var(--teal-rgb),.04)}
 
-/* Join modal */
-.join-modal{max-width:400px;width:100%}
-.join-icon-wrap{width:50px;height:50px;border-radius:14px;background:var(--teal-l);border:1px solid rgba(var(--teal-rgb),.2);display:flex;align-items:center;justify-content:center;color:var(--teal);margin:0 auto 12px}
-.join-hint{font-size:13px;color:var(--text3);text-align:center;margin-bottom:20px;line-height:1.6}
+/* Join modal — своя, не бирюзовая акцентная палитра (индиго), отдельная от
+   основного тил-брендинга кнопок: иконка теперь "билет/инвайт", а не замок
+   (замок читался как "пароль", а не как код приглашения). */
+.join-modal{max-width:400px;width:100%;padding-top:4px}
+.join-icon-wrap{width:56px;height:56px;border-radius:16px;background:rgba(94,92,230,.12);border:1px solid rgba(94,92,230,.22);display:flex;align-items:center;justify-content:center;color:#5e5ce6;margin:2px auto 14px;box-shadow:0 4px 14px rgba(94,92,230,.16)}
+html.dark .join-icon-wrap{background:rgba(125,122,255,.16);border-color:rgba(125,122,255,.3);color:#8b89ff}
+.join-hint{font-size:13.5px;color:var(--text3);text-align:center;margin-bottom:22px;line-height:1.6;max-width:280px;margin-left:auto;margin-right:auto}
 .code-boxes{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
-.code-box{width:44px;height:52px;border:2px solid var(--border);border-radius:var(--r-md);background:var(--surface2);color:var(--text1);font-size:22px;font-weight:800;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,monospace;letter-spacing:.05em;transition:all .15s;outline:none}
-.code-box:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(var(--teal-rgb),.15);background:rgba(var(--teal-rgb),.05)}
+.code-box{width:44px;height:54px;border:1.5px solid var(--border);border-radius:14px;background:var(--surface2);color:var(--text1);font-size:22px;font-weight:800;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,monospace;letter-spacing:.05em;transition:all .18s cubic-bezier(.4,0,.2,1);outline:none}
+.code-box:focus{border-color:#5e5ce6;box-shadow:0 0 0 3px rgba(94,92,230,.18);background:rgba(94,92,230,.05);transform:translateY(-1px)}
 .join-err{font-size:12px;color:var(--red);text-align:center;font-weight:500;margin-top:4px}
-.join-found{margin-top:12px;border-radius:var(--r-lg);overflow:hidden;border:1px solid rgba(var(--teal-rgb),.25)}
+.join-found{margin-top:12px;border-radius:var(--r-lg);overflow:hidden;border:1px solid rgba(94,92,230,.25)}
 .found-cover{position:relative;height:60px;background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:10px 14px}
 .found-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent)}
 .found-name{position:relative;z-index:1;font-size:14px;font-weight:700;color:#fff}

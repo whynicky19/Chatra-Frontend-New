@@ -523,7 +523,14 @@ const referenceFiles = computed(() => {
 const descriptionText = computed(() => stripFilesFromText(props.assignment.description))
 
 const parsedDeadline = computed(() => props.assignment.deadline ? parseUtc(props.assignment.deadline) : null)
-const isOverdue = computed(() => parsedDeadline.value ? parsedDeadline.value < new Date() : false)
+// Для студента, который уже сдал работу (даже с опозданием), заголовок задания
+// не должен гореть красным — просрочка уже не требует действия. Красным
+// остаётся только пока сдачи нет. У преподавателя своей сдачи не бывает —
+// для него бейдж просто показывает, что дедлайн прошёл.
+const isOverdue = computed(() => {
+  if (!parsedDeadline.value || parsedDeadline.value >= new Date()) return false
+  return canSeeSubmissions.value ? true : !mySubmission.value
+})
 const deadlineStr = computed(() => parsedDeadline.value?.toLocaleString(dateLocale.value, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) ?? '')
 const canSubmit = computed(() =>
   (form.value.text.trim() || submittedFiles.value.length) &&

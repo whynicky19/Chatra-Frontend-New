@@ -47,11 +47,7 @@
       <div ref="msgsEl" class="ai-msgs" @scroll="onAiMsgsScroll">
         <div v-if="!msgs.length" class="welcome">
           <div class="welcome-title">Готов помочь!</div>
-          <div class="welcome-desc">
-            <template v-if="readyCount > 0">Прочитал {{ readyCount }} файлов — спрашивайте по материалам</template>
-            <template v-else-if="classFiles.length">Загружаю материалы класса...</template>
-            <template v-else>Задайте вопрос по теме курса</template>
-          </div>
+          <div class="welcome-desc">Задайте вопрос по теме курса</div>
           <div class="quick-grid">
             <button v-for="q in quickItems" :key="q.t" class="quick-btn" @click="pushSend(q.p)">
               <svg v-if="q.i==='book'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
@@ -76,14 +72,13 @@
 
     <!-- ── Input ── -->
     <AiLimitNotice v-if="aiLimitReached" :quota="aiQuota.quota.value"/>
-    <AiReadingNotice v-else-if="filesLoading" :ready="readyCount" :total="classFiles.length"/>
 
     <div class="ai-input-bar">
       <textarea ref="inputEl" v-model="inputTxt" class="ai-textarea"
-        :placeholder="aiLimitReached ? 'Лимит исчерпан' : filesLoading ? 'Читаю материалы курса…' : 'Спросите Chatra AI'"
-        rows="1" :disabled="aiLimitReached || filesLoading" @keydown.enter.exact.prevent="send" @input="autoResize">
+        :placeholder="aiLimitReached ? 'Лимит исчерпан' : 'Спросите Chatra AI'"
+        rows="1" :disabled="aiLimitReached" @keydown.enter.exact.prevent="send" @input="autoResize">
       </textarea>
-      <button :class="['send-btn', { locked: aiLimitReached || filesLoading }]" :disabled="!inputTxt.trim() || loading || aiLimitReached || filesLoading" @click="send">
+      <button :class="['send-btn', { locked: aiLimitReached }]" :disabled="!inputTxt.trim() || loading || aiLimitReached" @click="send">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
       </button>
     </div>
@@ -137,7 +132,6 @@ const studentMap = ref<Record<number, string>>({})
 
 // ── State ─────────────────────────────────────────────────────────────────────
 interface Msg { id: number; role: 'user' | 'assistant'; text: string }
-interface ClassFile { name: string; url: string; section: string }
 
 const msgs = ref<Msg[]>([])
 const loading = ref(false)
@@ -145,8 +139,6 @@ const inputTxt = ref('')
 const showSidebar = ref(false)
 const msgsEl = ref<HTMLElement>()
 const inputEl = ref<HTMLTextAreaElement>()
-const fileTexts = ref<Record<string, string>>({})
-const loadingSet = ref<Set<string>>(new Set())
 const pendingSubs = ref<Submission[]>([])
 const gradingId = ref<number | null>(null)
 let nextId = 0
@@ -170,24 +162,6 @@ const restore = () => {
 }
 
 // ── Computed ──────────────────────────────────────────────────────────────────
-const readyCount = computed(() => Object.keys(fileTexts.value).length)
-
-// Ключ файла БЕЗ query/fragment — бэкенд подписывает ссылку (?exp=&sig=)
-// заново на каждый ответ (см. file_urls.py: sign_uploads_in_text), поэтому
-// classFiles.value[i].url меняется при каждом обновлении classPosts, даже
-// если сам файл тот же. fileTexts/loadingSet должны индексироваться по
-// стабильному пути, иначе filesLoading никогда не станет false после
-// такого обновления (новый url никогда не совпадёт со старым ключом).
-const stableKey = (url: string) => url.split('#')[0].split('?')[0]
-
-// true, пока хоть один файл класса ещё не получил запись в fileTexts (успех
-// ИЛИ читаемая заглушка ошибки — readFile всегда резолвится непустой строкой,
-// см. loadAllFiles). Раньше send() мог уйти раньше, чем файлы дочитались, и
-// модель отвечала по одному заголовку/описанию лекции, даже не подозревая,
-// что не видела реальный файл — теперь чат заблокирован до полной загрузки.
-const filesLoading = computed(() =>
-  classFiles.value.some(f => !(stableKey(f.url) in fileTexts.value)))
-
 // Лекции класса в порядке "1, 2, 3..." — posts.position с бэкенда (см.
 // migrations/017), с fallback на id для лекций без position (старые записи).
 // Номер нужен, чтобы AI мог связать "объясни 2 лекцию" с конкретным постом.
@@ -209,36 +183,6 @@ const numberedLectures = computed(() => {
       return (a.id ?? 0) - (b.id ?? 0)
     })
     .map((post, i) => ({ post, number: i + 1, title: cleanLectureTitle(post.title) }))
-})
-
-// Extract all file URLs from class posts AND assignments
-const classFiles = computed((): ClassFile[] => {
-  const result: ClassFile[] = []
-  const FILE_RE = /\.(pdf|doc|docx|txt|md|csv|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|webp)(\?[^\s]*)?$/i
-  const URL_RE = /(https?:\/\/[^\s\n"'<>]+)/g
-
-  const addFromText = (text: string, section: string) => {
-    for (const m of [...text.matchAll(URL_RE)]) {
-      const url = m[1].replace(/[.,;:!?)\]>]+$/, '')
-      if (FILE_RE.test(url) && !result.find(f => f.url === url)) {
-        const name = decodeURIComponent(url.split('/').pop()?.split('?')[0] || url)
-        result.push({ name, url, section })
-      }
-    }
-  }
-
-  // From class posts (lectures) — помечаем номером лекции, чтобы модель
-  // могла сопоставить "2 лекция" с файлами именно этого поста.
-  for (const { post, number, title } of numberedLectures.value) {
-    addFromText(post.body || '', `Лекция ${number}${title ? `: ${title}` : ''}`)
-  }
-
-  // From assignment descriptions (teacher-attached task files)
-  for (const a of (props.assignments || [])) {
-    if (a.description) addFromText(a.description, `Задание: ${a.title}`)
-  }
-
-  return result
 })
 
 // Текст самих лекций (поле content/description в JSON-теле поста) — раньше
@@ -385,175 +329,11 @@ const autoResize = () => {
   inputEl.value.style.height = Math.min(inputEl.value.scrollHeight, 140) + 'px'
 }
 
-// ── PDF extraction (via pdf.js CDN) ───────────────────────────────────────────
-let pdfJsLoaded = false
-const ensurePdfJs = async (): Promise<boolean> => {
-  if (pdfJsLoaded) return true
-  if ((window as any).pdfjsLib) { pdfJsLoaded = true; return true }
-  return new Promise(resolve => {
-    const s = document.createElement('script')
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'
-    s.onload = () => {
-      ;(window as any).pdfjsLib.GlobalWorkerOptions.workerSrc =
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
-      pdfJsLoaded = true
-      resolve(true)
-    }
-    s.onerror = () => resolve(false)
-    document.head.appendChild(s)
-  })
-}
-
-const readPdf = async (buf: ArrayBuffer): Promise<string> => {
-  try {
-    const ok = await ensurePdfJs()
-    if (!ok) return ''
-    const pdf = await (window as any).pdfjsLib.getDocument({ data: buf }).promise
-    const pages: string[] = []
-    for (let i = 1; i <= Math.min(pdf.numPages, 40); i++) {
-      const page = await pdf.getPage(i)
-      const tc = await page.getTextContent()
-      pages.push(tc.items.map((x: any) => x.str).join(' '))
-    }
-    return pages.join('\n\n').slice(0, MAX_CHARS)
-  } catch (e) {
-    console.warn('PDF read error:', e)
-    return ''
-  }
-}
-
-// ── DOCX extraction (parse XML from zip) ──────────────────────────────────────
-const readDocx = async (buf: ArrayBuffer): Promise<string> => {
-  try {
-    // DOCX is a ZIP — find word/document.xml
-    // We use a manual ZIP parser approach via DataView
-    const bytes = new Uint8Array(buf)
-    const decoder = new TextDecoder('utf-8', { fatal: false })
-
-    // Find PK local file header signatures and extract document.xml
-    const sig = [0x50, 0x4B, 0x03, 0x04]
-    let i = 0
-    const texts: string[] = []
-
-    while (i < bytes.length - 30) {
-      // Find PK\x03\x04
-      if (bytes[i] === sig[0] && bytes[i+1] === sig[1] && bytes[i+2] === sig[2] && bytes[i+3] === sig[3]) {
-        const fnLen = bytes[i+26] | (bytes[i+27] << 8)
-        const extLen = bytes[i+28] | (bytes[i+29] << 8)
-        const fnStart = i + 30
-        const fnEnd = fnStart + fnLen
-        const dataStart = fnEnd + extLen
-        const compSize = bytes[i+18] | (bytes[i+19] << 8) | (bytes[i+20] << 16) | (bytes[i+21] << 24)
-        const fn = decoder.decode(bytes.slice(fnStart, fnEnd))
-
-        if (fn.endsWith('.xml') && (fn.includes('word/') || fn.includes('ppt/') || fn.includes('xl/'))) {
-          const compressed = bytes.slice(dataStart, dataStart + compSize)
-          try {
-            const ds = new DecompressionStream('deflate-raw')
-            const writer = ds.writable.getWriter()
-            writer.write(compressed)
-            writer.close()
-            const reader = ds.readable.getReader()
-            const chunks: Uint8Array[] = []
-            let done = false
-            while (!done) {
-              const res = await reader.read()
-              done = res.done
-              if (res.value) chunks.push(res.value)
-            }
-            const total = chunks.reduce((a, c) => a + c.length, 0)
-            const merged = new Uint8Array(total)
-            let offset = 0
-            for (const chunk of chunks) { merged.set(chunk, offset); offset += chunk.length }
-            const xml = decoder.decode(merged)
-            // Extract text from XML tags
-            const t1 = [...xml.matchAll(/<a:t[^>]*>([^<]+)<\/a:t>/g)].map(m => m[1]).join(' ')
-            const t2 = [...xml.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)].map(m => m[1]).join(' ')
-            const t3 = [...xml.matchAll(/<t[^>]*>([^<]+)<\/t>/g)].map(m => m[1]).join(' ')
-            const combined = (t1 || t2 || t3).trim()
-            if (combined) texts.push(combined)
-          } catch {}
-        }
-        i = dataStart + compSize
-      } else {
-        i++
-      }
-    }
-
-    return texts.join('\n').replace(/\s+/g, ' ').slice(0, MAX_CHARS)
-  } catch { return '' }
-}
-
-// ── Universal file reader ──────────────────────────────────────────────────────
-const readFile = async (f: ClassFile): Promise<string> => {
-  try {
-    const resp = await fetch(f.url, { mode: 'cors' })
-    if (!resp.ok) return `[Файл недоступен: ${f.name}]`
-
-    const ext = f.url.split('.').pop()?.split('?')[0]?.toLowerCase() || ''
-
-    if (ext === 'pdf') {
-      const buf = await resp.arrayBuffer()
-      const text = await readPdf(buf)
-      return text || `[PDF не содержит текста: ${f.name}]`
-    }
-
-    if (['doc', 'docx', 'pptx', 'xlsx'].includes(ext)) {
-      const buf = await resp.arrayBuffer()
-      const text = await readDocx(buf)
-      return text || `[Файл Office: ${f.name} — не удалось извлечь текст]`
-    }
-
-    if (['txt', 'md', 'csv', 'json', 'xml', 'html', 'htm'].includes(ext)) {
-      const text = await resp.text()
-      return text.slice(0, MAX_CHARS)
-    }
-
-    if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
-      return `[Изображение: ${f.name}]`
-    }
-
-    // Try as text for anything else
-    try {
-      const text = await resp.text()
-      if (text.length > 0 && text.length < MAX_CHARS * 2) return text.slice(0, MAX_CHARS)
-    } catch {}
-
-    return `[Файл: ${f.name}]`
-  } catch (e) {
-    return `[Ошибка чтения ${f.name}: ${(e as Error).message}]`
-  }
-}
-
-// ── Load all files ─────────────────────────────────────────────────────────────
-const loadAllFiles = async () => {
-  const files = classFiles.value
-  for (const f of files) {
-    const key = stableKey(f.url)
-    if (fileTexts.value[key] || loadingSet.value.has(key)) continue
-
-    const newSet = new Set(loadingSet.value)
-    newSet.add(key)
-    loadingSet.value = newSet
-
-    // Run in background — don't await all at once to avoid blocking
-    readFile(f).then(text => {
-      if (text.trim()) {
-        fileTexts.value = { ...fileTexts.value, [key]: text }
-      }
-    }).finally(() => {
-      const s = new Set(loadingSet.value)
-      s.delete(key)
-      loadingSet.value = s
-    })
-  }
-}
-
 // ── Build system prompt ────────────────────────────────────────────────────────
 const buildSystem = (): string => {
   const className = props.className || 'этого класса'
   let sys = `Ты — опытный ИИ-ассистент и педагог класса "${className}". Помогаешь студентам понять материалы, объясняешь темы доступно, помогаешь решать задания и проверяешь работы. Отвечай на русском языке. Будь точным, дружелюбным и педагогически грамотным.`
-  sys += ` Материалы курса помечены заголовками вида "### Лекция N: <тема>" — если студент просит объяснить материал по номеру (например "объясни 2 лекцию"), найди блок с этим номером и объясняй именно его. Если для лекции ниже есть содержимое прикреплённого файла (раздел "МАТЕРИАЛЫ КЛАССА"), объясняй строго по нему: заголовок и текст лекции мог написать учитель как угодно, и они могут не совпадать с реальным содержимым файла — доверяй файлу, а не им. Если содержимое файла ЯВНО не по теме заголовка/описания лекции, прямо скажи об этом в начале ответа, а не притворяйся, что объясняешь заявленную тему по несуществующему материалу. Объясняй подробно: раскрывай ключевые понятия, приводи примеры и связи между идеями, а не просто пересказывай заголовок. Математические формулы записывай в LaTeX: инлайн — $...$ или \\(...\\), блочные — $$...$$ или \\[...\\]. Код — в блоках \`\`\`язык.`
+  sys += ` Материалы курса помечены заголовками вида "### Лекция N: <тема>" — если студент просит объяснить материал по номеру (например "объясни 2 лекцию"), найди блок с этим номером и объясняй именно его. Объясняй подробно: раскрывай ключевые понятия, приводи примеры и связи между идеями, а не просто пересказывай заголовок. Математические формулы записывай в LaTeX: инлайн — $...$ или \\(...\\), блочные — $$...$$ или \\[...\\]. Код — в блоках \`\`\`язык.`
 
   // Текст самих лекций (JSON content/description постов) — до файлов, чтобы
   // текстовые лекции без вложений тоже были видны модели.
@@ -581,21 +361,6 @@ const buildSystem = (): string => {
       if (a.deadline) sys += `\nДедлайн: ${parseUtc(a.deadline).toLocaleDateString('ru-RU')}`
     }
     sys += `\n\n${'='.repeat(60)}`
-  }
-
-  // Add file contents
-  const loaded = Object.entries(fileTexts.value)
-  if (loaded.length > 0) {
-    sys += `\n\n${'='.repeat(60)}\nМАТЕРИАЛЫ КЛАССА (содержимое прочитанных файлов):\n${'='.repeat(60)}`
-    for (const [url, text] of loaded) {
-      const name = decodeURIComponent(url.split('/').pop() || url)
-      const section = classFiles.value.find(f => stableKey(f.url) === url)?.section || ''
-      sys += `\n\n[${section}: ${name}]\n${'-'.repeat(40)}\n${text.slice(0, MAX_CHARS)}`
-    }
-    sys += `\n\n${'='.repeat(60)}\nКОНЕЦ МАТЕРИАЛОВ`
-    sys += `\n\nИНСТРУКЦИИ:\n- Отвечай на вопросы, опираясь на содержимое файлов\n- Цитируй конкретные части при объяснении\n- Помогай решать задания, объясняй метод решения\n- При объяснении используй примеры и понятный язык`
-  } else if (classFiles.value.length > 0) {
-    sys += `\n\nФайлы класса ещё загружаются (${classFiles.value.map(f => f.name).join(', ')}). Отвечай по теме класса в целом.`
   }
 
   return sys
@@ -656,7 +421,6 @@ const pushSend = (text: string) => { inputTxt.value = text; send() }
 const send = async () => {
   const text = inputTxt.value.trim()
   if (!text || loading.value) return
-  if (filesLoading.value) return // кнопка/поле уже задизейблены в шаблоне
 
   if (aiLimitReached.value) {
     toast.err(`Дневной лимит ИИ исчерпан (${aiLimit.value} сообщений в сутки). Лимит обновится завтра.`)
@@ -731,15 +495,12 @@ const syncFromServer = async () => {
 }
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
-watch(() => props.classPosts?.length, () => { loadAllFiles() })
-watch(() => props.assignments?.length, () => { loadAllFiles() })
 watch(msgs, scrollBottom)
 
 onMounted(() => {
   restore()
   syncFromServer()
   nextTick(scrollBottom)
-  loadAllFiles()
   loadPending()
 })
 </script>

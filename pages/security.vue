@@ -19,11 +19,11 @@
         <div class="fields-grid">
           <div class="field-group">
             <label class="field-label">{{ t('settings.current_pw') }}</label>
-            <input v-model="curPw" type="password" class="input field-input" placeholder="••••••••" @input="pwErr=''"/>
+            <input v-model="curPw" type="password" class="input field-input" placeholder="••••••••" autocomplete="new-password" @input="pwErr=''"/>
           </div>
           <div class="field-group">
             <label class="field-label">{{ t('settings.new_pw') }}</label>
-            <input v-model="newPw" type="password" class="input field-input" placeholder="••••••••" minlength="8" @input="pwErr=''"/>
+            <input v-model="newPw" type="password" class="input field-input" placeholder="••••••••" minlength="8" autocomplete="new-password" @input="pwErr=''"/>
             <div class="nick-hint err" v-if="newPw && newPw.length < 8">{{ t('auth.pw_min8') }}</div>
           </div>
         </div>

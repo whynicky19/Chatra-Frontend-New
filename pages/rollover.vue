@@ -37,7 +37,14 @@
           </div>
 
           <template v-else>
-            <div class="ro-section-label">{{ t('rollover.select_classes') }}</div>
+            <div class="ro-section-row">
+              <div class="ro-section-label">{{ t('rollover.select_classes') }}</div>
+              <div class="ro-select-actions">
+                <button class="ro-select-link" @click="selected = new Set(items.map(i => i.class_id))">{{ lang==='ru'?'Выбрать все':lang==='kk'?'Барлығын таңдау':'Select all' }}</button>
+                <span class="ro-select-dot">·</span>
+                <button class="ro-select-link" @click="selected = new Set()">{{ lang==='ru'?'Снять всё':lang==='kk'?'Барлығын алып тастау':'Clear' }}</button>
+              </div>
+            </div>
             <div class="ro-group">
               <button v-for="it in items" :key="it.class_id" class="ro-row" :class="{ checked: selected.has(it.class_id) }" @click="toggle(it.class_id)">
                 <span class="ro-check" :class="{ on: selected.has(it.class_id) }">
@@ -207,8 +214,13 @@ const load = async () => {
   loading.value = true
   try {
     items.value = await cohortsSvc.rolloverPreview()
-    // По умолчанию выбираем все классы
-    selected.value = new Set(items.value.map(i => i.class_id))
+    // Раньше по умолчанию выбирались ВСЕ классы — учитель, открывший
+    // ролловер ради одного класса, мог не заметить остальные предвыбранные
+    // и архивировать студентов классов, которые трогать не собирался (для
+    // них это выглядело как необъяснимое исключение из класса). Теперь
+    // выбор — осознанный, по одному классу, плюс кнопка "выбрать все" для
+    // тех, кому и правда нужно перевести всё сразу.
+    selected.value = new Set()
   } catch (e: any) {
     toast.err(e?.response?.data?.detail || t('general.error'))
   } finally {
@@ -323,6 +335,12 @@ onMounted(async () => {
 .pg-sub{font-size:14px;color:var(--text4);line-height:1.6;max-width:560px}
 
 .ro-section-label{font-size:12px;font-weight:600;color:var(--text4);letter-spacing:.02em;margin:0 4px 10px;text-transform:uppercase}
+.ro-section-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ro-section-row .ro-section-label{margin-bottom:10px}
+.ro-select-actions{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.ro-select-link{background:none;border:none;padding:0;font-size:12px;font-weight:600;color:var(--teal);cursor:pointer;font-family:inherit}
+.ro-select-link:hover{opacity:.75}
+.ro-select-dot{font-size:12px;color:var(--text4);opacity:.6}
 
 /* Step indicator */
 .ro-steps{display:flex;align-items:center;margin-top:22px}

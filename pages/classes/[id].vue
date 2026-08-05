@@ -59,9 +59,12 @@
             </div>
           </div>
 
-          <!-- Tabs -->
+          <!-- Tabs — сегмент-контрол в стиле iOS (как в приложении): плавающая
+               подложка активного таба скользит внутри общей "полочки", а не
+               подчёркивание слева. -->
           <div class="tabs-wrap">
-            <div class="tabs-bar">
+            <div class="tabs-bar" :style="{ '--tab-count': tabCount, '--tab-index': tabIndex }">
+              <div class="tabs-indicator"></div>
               <button :class="['tab-btn', { active: tab === 'lectures' }]" @click="tab = 'lectures'">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
                 {{ t('class.lectures') }}
@@ -645,6 +648,10 @@ const currentClass = ref<any>(cachedClass)
 const classMeta = computed(() => currentClass.value ?? {})
 // true только для ученика архивного потока — класс доступен только для чтения.
 const isArchivedForUser = computed(() => !!currentClass.value?.is_archived_for_user)
+// Сегмент-контрол вкладок: сколько сейчас реально показано (у архивного
+// студента вкладки "ИИ" нет) и позиция активной — двигает плавающую подложку.
+const tabCount = computed(() => isArchivedForUser.value ? 2 : 3)
+const tabIndex = computed(() => tab.value === 'lectures' ? 0 : tab.value === 'assignments' ? 1 : 2)
 
 // ── Потоки (учебные годы) — управление преподавателем-владельцем / админом ──
 const isOwnerOrAdmin = computed(() => auth.user?.role === 'admin' || currentClass.value?.created_by === auth.user?.id)
@@ -1234,14 +1241,20 @@ onMounted(async () => {
 .page-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:26px;font-weight:900;color:var(--text1);letter-spacing:-.02em;text-shadow:0 1px 3px rgba(0,0,0,.1)}
 .page-header-actions{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 
-/* Tabs */
-.tabs-wrap{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border)}
-.tabs-bar{display:flex;align-items:center;padding:0 24px;gap:0}
-.tab-btn{display:flex;align-items:center;gap:8px;padding:14px 18px;font-size:13px;font-weight:500;color:var(--text4);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
-.tab-btn:hover{color:var(--text1)}
-.tab-btn.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:600}
-.tab-ai.active{color:var(--teal)}
-.tab-num{font-size:11px;font-weight:700;background:var(--surface2);color:var(--text3);padding:2px 8px;border-radius:100px}
+/* Tabs — iOS-style segmented control: equal-width segments floating inside a
+   rounded "well", with a sliding pill behind the active label (no more
+   underline / left-aligned text tabs). */
+.tabs-wrap{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px}
+.tabs-bar{position:relative;display:flex;align-items:stretch;padding:3px;background:var(--surface2);border-radius:12px;height:38px}
+.tabs-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / var(--tab-count));transform:translateX(calc(100% * var(--tab-index)));background:var(--surface);border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.tab-btn{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;font-size:13px;font-weight:600;color:var(--text4);background:transparent;border:none;border-radius:9px;cursor:pointer;transition:color .2s;white-space:nowrap;font-family:inherit;letter-spacing:-.01em}
+.tab-btn svg{flex-shrink:0}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--text1);font-weight:700}
+.tab-ai.active{color:var(--text1)}
+.tab-num{font-size:10px;font-weight:700;background:var(--surface3);color:var(--text3);padding:1px 6px;border-radius:100px}
+.tab-btn.active .tab-num{background:var(--teal-l);color:var(--teal)}
 
 /* Teacher create actions — below the tabs row (never inside the cover) */
 .tab-action-bar{display:flex;align-items:center;gap:8px;padding:12px 24px;flex-shrink:0;border-bottom:1px solid var(--border);background:var(--surface)}
@@ -1419,12 +1432,13 @@ onMounted(async () => {
   .mobile-stats{display:flex;gap:10px;padding:10px 12px 0;flex-wrap:wrap}
   .cd-main{overflow-x:hidden;max-width:100%}
   .tabs-wrap{
+    padding:8px 12px;
     overflow:hidden;
   }
   /* Без скролла: кнопки создания вынесены в шапку, вкладки помещаются целиком.
      Иконки скрыты на мобильном — остаётся только подпись, чтобы не обрезалось. */
-  .tabs-bar{padding:0 4px;overflow-x:hidden;flex-wrap:nowrap}
-  .tab-btn{flex:1;justify-content:center;padding:12px 4px;font-size:12px;white-space:nowrap;min-width:0;min-height:44px;gap:0}
+  .tabs-bar{overflow-x:hidden;flex-wrap:nowrap}
+  .tab-btn{font-size:12px;white-space:nowrap;min-width:0;gap:0}
   .tab-btn svg{display:none}
   .tab-num{display:none}
   /* Кнопки создания — под строкой вкладок, во всю ширину на мобильном */

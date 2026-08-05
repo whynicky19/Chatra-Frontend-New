@@ -11,13 +11,6 @@
       </template>
     </div>
 
-    <!-- Language switcher -->
-    <div class="lang-switch" v-if="!isCollapsed">
-      <button :class="['lang-btn', { active: lang === 'ru' }]" @click.stop="setLang('ru')">RU</button>
-      <button :class="['lang-btn', { active: lang === 'en' }]" @click.stop="setLang('en')">EN</button>
-      <button :class="['lang-btn', { active: lang === 'kk' }]" @click.stop="setLang('kk')">KZ</button>
-    </div>
-
     <nav class="sb-nav">
       <NuxtLink to="/" class="sb-item" :class="{active:route.path==='/'||route.path.startsWith('/classes')}">
         <div class="item-icon">
@@ -55,11 +48,6 @@
     </div>
 
     <div class="sb-bottom">
-      <!-- Mobile language switcher -->
-      <div class="lang-switch-mobile">
-        <button v-for="l in [{code:'ru',label:'RU'},{code:'en',label:'EN'},{code:'kk',label:'KZ'}]" :key="l.code"
-          :class="['lang-btn-mob', { active: lang === l.code }]" @click.stop="setLang(l.code as any)">{{ l.label }}</button>
-      </div>
       <a href="https://t.me/whynickyy" target="_blank" class="sb-item help-item" :title="t('support.help_center')">
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -82,7 +70,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useAuth } from '~/composables/useAuth'
 import { useI18n } from '~/composables/useI18n'
 const auth = useAuthStore(); const { logout } = useAuth(); const route = useRoute()
-const { t, lang, setLang } = useI18n()
+const { t } = useI18n()
 const doLogout = () => { logout() }
 
 const isCollapsed = ref(false)
@@ -129,10 +117,6 @@ html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22
 .logo-img-new{width:34px;height:34px;flex-shrink:0;background:linear-gradient(180deg,#40D0E4,#00829C);-webkit-mask:url('/logo-icon.png') center / contain no-repeat;mask:url('/logo-icon.png') center / contain no-repeat}
 .logo-img-collapsed{width:30px;height:30px;flex-shrink:0;margin:0 auto;background:linear-gradient(180deg,#40D0E4,#00829C);-webkit-mask:url('/logo.png') center / contain no-repeat;mask:url('/logo.png') center / contain no-repeat}
 .logo-name{font-size:16px;font-weight:800;color:var(--text1);letter-spacing:.04em;flex:1;overflow:hidden;white-space:nowrap}
-.lang-switch{display:flex;align-items:center;gap:4px;padding:4px 14px 10px;flex-shrink:0}
-.lang-btn{padding:4px 12px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:var(--text4);background:transparent;border:1px solid transparent;cursor:pointer;transition:all .15s;letter-spacing:.05em}
-.lang-btn.active{background:var(--teal-l);border-color:var(--border2);color:var(--teal)}
-.lang-btn:hover:not(.active){background:var(--glass2);color:var(--text2)}
 .sb-nav{flex:1;padding:4px 6px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;overflow-x:hidden}
 .sb-item{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:var(--r-md);font-size:14px;font-weight:500;color:var(--text3);transition:all .15s;cursor:pointer;text-decoration:none;position:relative;white-space:nowrap}
 .sb-item:hover{background:var(--surface2);color:var(--text1)}
@@ -148,7 +132,6 @@ html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22
 .logout-item:hover{background:var(--red-l)!important;color:var(--red)!important}
 .fio-nudge{display:flex;align-items:center;gap:8px;margin:0 6px 8px;padding:10px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:var(--r-md);font-size:12px;font-weight:600;color:#b45309;cursor:pointer;transition:background .15s;}
 .fio-nudge:hover{background:rgba(245,158,11,.18);}
-.lang-switch-mobile{display:none}
 
 @media (max-width:768px){
   /* iOS-таб-бар: матовое стекло, иконки с подписями */
@@ -175,7 +158,7 @@ html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22
     border-color:rgba(255,255,255,.1);
   }
   .sb.collapsed{width:auto!important}
-  .sb-logo,.lang-switch,.fio-nudge,.sb-bottom{display:none}
+  .sb-logo,.fio-nudge,.sb-bottom{display:none}
   .sb-nav{
     flex-direction:row;
     flex:1;
@@ -215,7 +198,6 @@ html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22
   .sb-item.active::after{display:none}
   .sb-item:active .item-icon{transform:scale(.92);transition:transform .1s}
   .collapsed .sb-item{justify-content:center}
-  .lang-switch-mobile{display:none}
 }
 @media (max-width:480px){
   .sb{bottom:calc(8px + env(safe-area-inset-bottom, 0px));left:8px;right:8px;height:62px}
