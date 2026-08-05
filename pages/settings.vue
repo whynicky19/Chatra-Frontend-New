@@ -24,7 +24,9 @@
               <label class="field-label">{{ t('settings.email') }}</label>
               <input :value="auth.user?.email" class="input field-input" readonly style="opacity:.7;cursor:default"/>
             </div>
-            <div class="field-group">
+            <!-- Роль скрыта для студентов — не несёт полезной информации в их
+                 профиле; преподаватели/админы её по-прежнему видят. -->
+            <div class="field-group" v-if="auth.isTeacher">
               <label class="field-label">{{ t('settings.role') }}</label>
               <div class="input field-input field-locked">
                 {{ roleLabel }}
@@ -194,7 +196,10 @@ onMounted(() => {
 .fields-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .field-group{display:flex;flex-direction:column;gap:6px}
 .field-label{font-size:11px;font-weight:700;color:var(--text4);letter-spacing:.08em;text-transform:uppercase}
-.field-input{background:var(--bg2)!important;border:none!important;border-radius:14px!important;padding:12px 16px!important}
+/* text-overflow вместо жёсткого обрезания без "…" — на узких экранах длинный
+   email/ФИО раньше просто пропадал за краем поля без какого-либо намёка,
+   что там ещё есть текст. */
+.field-input{background:var(--bg2)!important;border:none!important;border-radius:14px!important;padding:12px 16px!important;text-overflow:ellipsis}
 html.dark .field-input{background:var(--surface2)!important}
 .field-input:focus{box-shadow:0 0 0 2px var(--teal)!important}
 .field-locked{display:flex;align-items:center;color:var(--text2)}
@@ -242,8 +247,12 @@ html.dark .field-input{background:var(--surface2)!important}
   .scard-head { flex-direction: column; gap: 12px; margin-bottom: 16px; }
   .save-btn-desktop { display: none; }
   .save-btn-mobile { display: flex; width: 100%; min-height: 50px; margin-top: 16px; }
-  .profile-form { flex-direction: column; align-items: center; gap: 16px; }
-  .fields-grid { grid-template-columns: 1fr; gap: 12px; }
+  /* align-items:center (без явного align-items flex по умолчанию — stretch)
+     не растягивал .fields-grid на всю ширину — на широких "мобильных"
+     экранах (~768) поля сжимались до содержимого и оставляли пустую
+     половину карточки, самое заметное на этой странице "unnaturally narrow". */
+  .profile-form { flex-direction: column; gap: 16px; }
+  .fields-grid { grid-template-columns: 1fr; gap: 12px; width: 100%; }
   .two-col-row { grid-template-columns: 1fr; gap: 14px; }
   .field-input { font-size: 16px; }
   .input { font-size: 16px !important; }

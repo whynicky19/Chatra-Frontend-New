@@ -692,6 +692,13 @@ watch(() => auth.user?.id, async (newId) => {
   .card-action-btn{position:relative}
   .card-action-btn::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-4px;right:-4px}
 }
+/* На планшетных ширинах (~600–768) единственная teal-кнопка растягивалась
+   flex:1 на всю строку и выглядела непропорционально огромной рядом с
+   компактными иконками — на телефонных ширинах (<600) full-width CTA
+   уместен, здесь ограничиваем её естественной шириной. */
+@media (min-width:600px) and (max-width:768px){
+  .pg-head-r .btn-teal, .pg-head-r .btn-outline-teal{flex:0 1 auto;max-width:280px}
+}
 @media (max-width:480px){
   .content-area{padding:calc(14px + env(safe-area-inset-top, 0px)) 16px 90px}
   .code-box{width:40px;height:48px;font-size:18px}

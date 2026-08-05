@@ -1249,10 +1249,15 @@ onMounted(async () => {
    rounded "well", with a sliding pill behind the active label (no more
    underline / left-aligned text tabs). */
 .tabs-wrap{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px}
-.tabs-bar{position:relative;display:flex;align-items:stretch;padding:3px;background:var(--surface2);border-radius:12px;height:38px}
+/* min-height, не height: на узких экранах подпись таба может занять чуть
+   больше места (см. ≤480px), фиксированная высота обрезала бы её снизу —
+   тот самый "надписи съехали вниз" баг. */
+.tabs-bar{position:relative;display:flex;align-items:stretch;padding:3px;background:var(--surface2);border-radius:12px;min-height:38px}
 .tabs-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / var(--tab-count));transform:translateX(calc(100% * var(--tab-index)));background:var(--surface);border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:transform .28s cubic-bezier(.4,0,.2,1)}
 html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
-.tab-btn{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;font-size:13px;font-weight:600;color:var(--text4);background:transparent;border:none;border-radius:9px;cursor:pointer;transition:color .2s;white-space:nowrap;font-family:inherit;letter-spacing:-.01em}
+/* Fluid font-size вместо трёх фиксированных ступеней на разных брейкпоинтах —
+   плавно сжимается на узких экранах вместо скачков. */
+.tab-btn{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;font-size:clamp(11px,3.2vw,13px);font-weight:600;color:var(--text4);background:transparent;border:none;border-radius:9px;cursor:pointer;transition:color .2s;white-space:nowrap;font-family:inherit;letter-spacing:-.01em}
 .tab-btn svg{flex-shrink:0}
 .tab-btn:hover{color:var(--text2)}
 .tab-btn.active{color:var(--text1);font-weight:700}
@@ -1442,12 +1447,9 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
     padding:8px 12px;
     overflow:hidden;
   }
-  /* Без скролла: кнопки создания вынесены в шапку, вкладки помещаются целиком.
-     Иконки скрыты на мобильном — остаётся только подпись, чтобы не обрезалось. */
+  /* Без скролла: кнопки создания вынесены в шапку, вкладки помещаются целиком. */
   .tabs-bar{overflow-x:hidden;flex-wrap:nowrap}
-  .tab-btn{font-size:12px;white-space:nowrap;min-width:0;gap:0}
-  .tab-btn svg{display:none}
-  .tab-num{display:none}
+  .tab-btn{white-space:nowrap;min-width:0}
   /* Кнопки создания — под строкой вкладок, во всю ширину на мобильном */
   .tab-action-bar{padding:10px 12px;gap:8px}
   .tab-action-bar .btn{flex:1;justify-content:center;min-height:44px;font-size:12px}
@@ -1456,7 +1458,10 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
      52px + safe-area) отделяла её от статус-бара/чёлки — теперь эту
      safe-area обложка отступает сама через padding-top, а высоту забирает
      себе (170+52), чтобы визуально "вырасти" в освободившееся место. */
-  .page-header{padding:calc(14px + env(safe-area-inset-top, 0px)) 12px 12px;min-height:222px}
+  /* Fluid по ширине вьюпорта вместо одного фиксированного значения на все
+     ширины 320–768: без обложки-фото 222px были почти пустым серым блоком
+     на узких телефонах (см. apple-design: избегать фиксированных высот). */
+  .page-header{padding:calc(14px + env(safe-area-inset-top, 0px)) 12px 12px;min-height:clamp(170px,34vw,230px)}
   .page-header .page-header-top{top:calc(14px + env(safe-area-inset-top, 0px));left:12px}
   .page-header-gear{top:calc(14px + env(safe-area-inset-top, 0px));right:12px}
   .page-title{font-size:20px}
@@ -1481,8 +1486,16 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
   .back-link{position:relative;display:inline-flex}
   .back-link::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-6px;right:-6px}
 }
+/* Иконки/счётчики табов скрываем только на настоящих телефонных ширинах —
+   на планшетных (~600–768) места достаточно, и без них таб выглядел
+   полупустым (см. apple-design: избегать неестественно широких пустых зон). */
+@media (max-width:599px){
+  .tab-btn{gap:0}
+  .tab-btn svg{display:none}
+  .tab-num{display:none}
+}
 @media (max-width:480px){
-  .tab-btn{font-size:11px;padding:11px 3px;letter-spacing:-.01em}
+  .tab-btn{padding:0 3px}
   .tab-content{padding:8px 10px 80px}
   .item-row{padding:12px 10px;gap:10px}
   .page-title{font-size:18px}

@@ -131,7 +131,9 @@ html.dark .org-badge.school{color:#fbbf24}
 .org-switch-btn:hover{color:var(--teal)}
 
 @media (max-width:768px) {
-  .auth-card { padding: 22px 18px; border-radius: 20px; max-width: 100%; width: 100%; box-shadow: var(--sh-sm); }
+  /* max-width как на десктопе (400px) — не 100%: на широких "мобильных"
+     (~600–768) карточка иначе растягивалась почти во весь экран. */
+  .auth-card { padding: 22px 18px; border-radius: 20px; max-width: 400px; width: 100%; box-shadow: var(--sh-sm); }
   .auth-title { font-size: 23px; }
   .auth-sub { margin-bottom: 16px; font-size: 14px; }
   .input { font-size: 16px !important; padding: 12px 15px !important; }

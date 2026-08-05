@@ -109,7 +109,11 @@ onUnmounted(() => {
   .auth-shell { cursor: default; }
   .auth-content {
     padding: calc(14px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
-    gap: 14px; max-width: 100%;
+    gap: 14px;
+    /* max-width не снижаем до 100% — на телефонных ширинах это и так не
+       превышало 440px, а на широких "мобильных" (~600–768, планшет/большой
+       телефон в landscape) форма растягивалась почти во весь экран вместо
+       аккуратной читаемой карточки. */
   }
   .auth-brand { width: 104px; height: 104px; }
   .lang-btn { padding: 10px 14px; font-size: 11px; min-height: 40px; display: inline-flex; align-items: center; }
