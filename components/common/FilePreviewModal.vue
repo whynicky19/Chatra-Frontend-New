@@ -1,6 +1,7 @@
 <template>
+  <Transition name="modal">
   <div v-if="previewFile" class="overlay" @click.self="closePreview">
-    <div class="fp-modal anim-scale">
+    <div class="fp-modal">
       <div class="fp-head">
         <div class="fp-title truncate">{{ previewFile.name }}</div>
         <div class="fp-actions">
@@ -51,6 +52,7 @@
       </div>
     </div>
   </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">

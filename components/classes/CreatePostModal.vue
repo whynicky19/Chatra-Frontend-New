@@ -1,6 +1,6 @@
 <template>
   <div class="overlay" @click.self="$emit('close')">
-    <div class="modal anim-scale">
+    <div class="modal">
       <div class="modal-head">
         <div class="modal-head-l">
           <div class="modal-ico ico-lec">
@@ -59,7 +59,7 @@
 
       <div class="modal-foot">
         <button class="btn btn-ghost" @click="$emit('close')">Отмена</button>
-        <button class="btn btn-purple" :disabled="!title.trim() || loading" @click="submit">
+        <button class="btn btn-teal" :disabled="!title.trim() || loading" @click="submit">
           <div v-if="loading" class="spinner"></div>
           <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           Опубликовать лекцию

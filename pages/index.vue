@@ -31,9 +31,19 @@
 
 
         <div class="classes-grid">
-          <div v-if="loading" style="grid-column:1/-1;display:flex;justify-content:center;padding:60px">
-            <div class="spinner" style="width:28px;height:28px;border-width:3px"></div>
-          </div>
+          <!-- Скелетон повторяет реальную раскладку карточки — тот же приём,
+               что уже был только в архиве классов, а самый частый экран
+               (каталог) получал просто спиннер на пустом фоне. -->
+          <template v-if="loading">
+            <div v-for="n in 6" :key="n" class="class-card skeleton-card">
+              <div class="skel-cover"></div>
+              <div class="skel-body">
+                <div class="skel-line skel-title"></div>
+                <div class="skel-line skel-desc"></div>
+                <div class="skel-line skel-meta"></div>
+              </div>
+            </div>
+          </template>
 
           <div v-else-if="!visibleClasses.length" class="empty-state" style="grid-column:1/-1">
             <div class="es-icon-wrap">
@@ -56,25 +66,20 @@
                 </button>
               </div>
               <div class="card-body">
-                <div class="card-title-row">
-                  <h3 class="card-name">{{ cls.name }}</h3>
-                  <div class="card-subject-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-                  </div>
-                </div>
+                <h3 class="card-name">{{ cls.name }}</h3>
                 <p class="card-desc">{{ cls.description || (lang==='ru' ? 'Нажмите для просмотра' : lang==='kk' ? 'Көру үшін басыңыз' : 'Click to view') }}</p>
-                <div class="card-teacher" v-if="cls.teacher">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  {{ cls.teacher }}
-                </div>
+                <!-- Учитель и число уроков — одна тихая строка метаданных вместо
+                     двух отдельных, чтобы не спорить за внимание с названием и CTA. -->
                 <div class="card-meta">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  {{ lectureCount(cls.id) }} {{ lang === 'ru' ? 'уроков' : lang === 'kk' ? 'сабақ' : 'lessons' }}
+                  <template v-if="cls.teacher">{{ cls.teacher }} · </template>{{ lectureCount(cls.id) }} {{ lang === 'ru' ? 'уроков' : lang === 'kk' ? 'сабақ' : 'lessons' }}
                 </div>
                 <div class="card-footer">
                   <div class="card-action-row">
                     <button v-if="!auth.isTeacher" class="card-action-btn" @click.stop="goClass(cls.id)">{{ getActionLabel(cls) }} →</button>
                     <button v-else class="card-action-btn" @click.stop="goClass(cls.id)">{{ lang === 'ru' ? 'Открыть курс' : lang === 'kk' ? 'Курсты ашу' : 'Open course' }} →</button>
+                    <!-- Второстепенное действие (выйти/удалить) — тихое по
+                         умолчанию, проявляется на hover карточки, чтобы не
+                         соперничать с основным CTA за внимание. -->
                     <div class="card-controls">
                       <button v-if="!auth.isTeacher" class="ctrl-btn" @click.stop="confirmLeave(cls)" :title="t('classes.left')">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -111,11 +116,13 @@
     </div>
 
 
-    <LazyCreateClassModal v-if="showCreate" @close="showCreate=false" @created="onCreated"/>
+    <Transition name="modal">
+      <LazyCreateClassModal v-if="showCreate" @close="showCreate=false" @created="onCreated"/>
+    </Transition>
 
-
+    <Transition name="modal">
     <div v-if="editingClass" class="overlay" @click.self="editingClass=null">
-      <div class="modal anim-scale edit-class-modal">
+      <div class="modal edit-class-modal">
         <div class="modal-head">
           <span class="modal-title">{{ lang==='ru' ? 'Редактировать класс' : lang==='kk' ? 'Сыныпты өңдеу' : 'Edit Class' }}</span>
           <button class="btn btn-icon btn-ghost" @click="editingClass=null">
@@ -153,10 +160,11 @@
         </div>
       </div>
     </div>
+    </Transition>
 
-
+    <Transition name="modal">
     <div v-if="showJoin" class="overlay" @click.self="showJoin=false">
-      <div class="modal anim-scale join-modal">
+      <div class="modal join-modal">
         <div class="modal-head">
           <span class="modal-title">{{ t('classes.join_title') }}</span>
           <button class="btn btn-icon btn-ghost" @click="showJoin=false">
@@ -194,10 +202,12 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- Delete confirm modal -->
+    <Transition name="modal">
     <div v-if="deletingClass" class="overlay" @click.self="deletingClass=null">
-      <div class="modal anim-scale" style="max-width:400px">
+      <div class="modal" style="max-width:400px">
         <div class="modal-head">
           <span class="modal-title">{{ t('classes.delete_title') }}</span>
           <button class="btn btn-icon btn-ghost" @click="deletingClass=null">
@@ -217,10 +227,12 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- Leave confirm modal -->
+    <Transition name="modal">
     <div v-if="leavingClass" class="overlay" @click.self="leavingClass=null">
-      <div class="modal anim-scale" style="max-width:400px">
+      <div class="modal" style="max-width:400px">
         <div class="modal-head">
           <span class="modal-title">{{ t('classes.leave_title') }}</span>
           <button class="btn btn-icon btn-ghost" @click="leavingClass=null">
@@ -240,6 +252,7 @@
         </div>
       </div>
     </div>
+    </Transition>
   </div>
 </template>
 
@@ -551,8 +564,11 @@ watch(() => auth.user?.id, async (newId) => {
 .lookup-status{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:12px;color:var(--text4);font-weight:500}
 
 /* Class card */
-.class-card{background:var(--surface);border-radius:var(--r-xl);overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--sh-xs);border:1px solid var(--border)}
-.class-card:hover{transform:translateY(-4px);box-shadow:var(--sh-md);border-color:var(--border2)}
+/* transition намеренно не переопределяется здесь — берётся из общего правила
+   .scard,.class-card,.card в main.css (единая спокойная кривая для всех
+   поднимающихся карточек сайта). */
+.class-card{background:var(--surface);border-radius:var(--r-xl);overflow:hidden;cursor:pointer;box-shadow:var(--sh-xs);border:1px solid var(--border)}
+.class-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--border2)}
 
 .card-cover{position:relative;height:200px;overflow:hidden;background:linear-gradient(135deg,#3a3a3c,#232326);display:flex;align-items:flex-end;padding:0}
 .card-code-chip{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(80,80,80,.75);color:rgba(255,255,255,.92);padding:4px 10px;border-radius:6px;letter-spacing:.08em;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:all .15s;line-height:1}
@@ -562,21 +578,44 @@ watch(() => auth.user?.id, async (newId) => {
 .card-edit-btn:hover{background:rgba(var(--teal-rgb),.7);border-color:rgba(var(--teal-rgb),.5)}
 
 .card-body{padding:18px 18px 16px}
-.card-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
-.card-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:17px;font-weight:800;color:var(--text1);line-height:1.25;flex:1}
-.card-subject-icon{width:30px;height:30px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0}
+/* Название — единственный явный заголовок карточки (декоративная иконка
+   предмета рядом с ним убрана: она была одинаковой для всех карточек и не
+   несла информации, только конкурировала за внимание с названием). */
+.card-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:17px;font-weight:800;color:var(--text1);line-height:1.25;margin-bottom:6px}
 .card-desc{font-size:13px;color:var(--text4);line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card-teacher{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text3);font-weight:500;margin-bottom:8px}
-.card-teacher svg{flex-shrink:0;color:var(--text4)}
-.card-meta{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text4);margin-bottom:14px}
+/* Учитель + число уроков — одна тихая строка вместо двух */
+.card-meta{font-size:12px;color:var(--text4);margin-bottom:14px}
 .card-footer{border-top:1px solid var(--border);padding-top:14px}
 .card-action-row{display:flex;align-items:center;justify-content:space-between}
 .card-action-btn{font-size:13px;font-weight:600;color:var(--teal);background:none;border:none;cursor:pointer;padding:0;transition:opacity .15s;font-family:inherit}
 .card-action-btn:hover{opacity:.75}
-.card-controls{display:flex;gap:6px}
+/* Второстепенное действие (выйти/удалить) — приглушено по умолчанию и
+   проявляется вместе с hover карточки, чтобы не спорить с CTA за внимание
+   при обычном просмотре сетки (apple-design: restraint/иерархия). */
+.card-controls{display:flex;gap:6px;opacity:0;transform:translateX(4px);transition:opacity .15s,transform .15s}
+.class-card:hover .card-controls, .class-card:focus-within .card-controls{opacity:1;transform:translateX(0)}
 .ctrl-btn{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
 .ctrl-btn:hover{background:var(--surface3);color:var(--text2)}
 .ctrl-del:hover{background:var(--red-l);border-color:rgba(220,38,38,.3);color:var(--red)}
+@media (hover:none){
+  /* Без указателя-мыши (тач) второстепенное действие всегда видно — нет
+     ховера, чтобы его проявить. */
+  .card-controls{opacity:1;transform:none}
+}
+
+/* Skeleton loading — повторяет раскладку .class-card (см. .skeleton в
+   main.css за паттерном) */
+.skeleton-card{pointer-events:none}
+@keyframes skel-shine{0%{background-position:-200px 0}100%{background-position:calc(200px + 100%) 0}}
+.skel-cover{height:200px;background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:400px 100%;animation:skel-shine 1.4s ease infinite}
+.skel-body{padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px}
+.skel-line{height:14px;border-radius:6px;background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:400px 100%;animation:skel-shine 1.4s ease infinite}
+.skel-title{width:60%}
+.skel-desc{width:90%;height:11px}
+.skel-meta{width:40%;height:11px;margin-top:6px}
+@media (prefers-reduced-motion: reduce){
+  .skel-cover, .skel-line{animation:none}
+}
 
 /* Add card */
 .add-card{background:var(--surface);border:2px dashed var(--border);cursor:pointer;transition:all .2s;min-height:360px;display:flex}
@@ -643,7 +682,7 @@ watch(() => auth.user?.id, async (newId) => {
   .btn-head-icon .btn-head-label{display:none}
   .btn-head-icon{width:48px;height:48px;padding:0;justify-content:center;border-radius:14px;flex-shrink:0}
   .classes-grid{grid-template-columns:1fr;gap:14px}
-  .card-cover{height:160px}
+  .card-cover,.skel-cover{height:160px}
   .card-body{padding:16px}
   .add-card{min-height:120px}
   .add-card-inner{padding:24px 16px}

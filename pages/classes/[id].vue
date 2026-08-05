@@ -281,15 +281,22 @@
     </div>
 
     <!-- Modals -->
-    <LazyCreatePostModal v-if="showCreate" :class-id="classId" @close="showCreate = false" @created="onPostCreated" />
-    <LazyCreateAssignmentModal v-if="showCreateAssignment" :class-id="classId" @close="showCreateAssignment = false" @created="onAssignmentCreated" />
-    <LazyAssignmentModal v-if="activeAssignment" :assignment="activeAssignment" :is-teacher="isTeacher" :readonly="isArchivedForUser" :cohort-id="teacherViewCohortId" @close="activeAssignment = null" @submitted="onSubmitted" />
+    <Transition name="modal">
+      <LazyCreatePostModal v-if="showCreate" :class-id="classId" @close="showCreate = false" @created="onPostCreated" />
+    </Transition>
+    <Transition name="modal">
+      <LazyCreateAssignmentModal v-if="showCreateAssignment" :class-id="classId" @close="showCreateAssignment = false" @created="onAssignmentCreated" />
+    </Transition>
+    <Transition name="modal">
+      <LazyAssignmentModal v-if="activeAssignment" :assignment="activeAssignment" :is-teacher="isTeacher" :readonly="isArchivedForUser" :cohort-id="teacherViewCohortId" @close="activeAssignment = null" @submitted="onSubmitted" />
+    </Transition>
 
     <!-- Class info hub — code, regenerate code, academic-year picker,
          entry point to rotation settings. Single gear button on the cover
          opens this instead of crowding the cover with separate buttons. -->
+    <Transition name="modal">
     <div v-if="showClassInfo" class="overlay" @click.self="showClassInfo=false">
-      <div class="modal anim-scale class-info-modal" style="max-width:420px;width:100%">
+      <div class="modal class-info-modal" style="max-width:420px;width:100%">
         <div class="modal-head">
           <span class="modal-title">{{ t('cohort.settings') }}</span>
           <button class="btn btn-icon btn-ghost" @click="showClassInfo=false">
@@ -337,10 +344,12 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- Class settings (rotation mode) — owner/admin -->
+    <Transition name="modal">
     <div v-if="showSettings" class="overlay" @click.self="showSettings=false">
-      <div class="modal anim-scale" style="max-width:440px;width:100%">
+      <div class="modal" style="max-width:440px;width:100%">
         <div class="modal-head">
           <span class="modal-title">{{ t('cohort.rotation_title') }}</span>
           <button class="btn btn-icon btn-ghost" @click="showSettings=false">
@@ -367,10 +376,12 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- Edit Post Modal -->
+    <Transition name="modal">
     <div v-if="editingPost" class="overlay" @click.self="editingPost=null">
-      <div class="modal anim-scale" style="max-width:520px;width:100%">
+      <div class="modal" style="max-width:520px;width:100%">
         <div class="modal-head">
           <span class="modal-title">{{ lang==='ru' ? 'Редактировать лекцию' : 'Edit Lecture' }}</span>
           <button class="btn btn-icon btn-ghost" @click="editingPost=null">
@@ -421,10 +432,12 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- Edit Assignment Modal -->
+    <Transition name="modal">
     <div v-if="editingAssignment" class="overlay" @click.self="editingAssignment=null">
-      <div class="modal anim-scale" style="max-width:520px;width:100%">
+      <div class="modal" style="max-width:520px;width:100%">
         <div class="modal-head">
           <span class="modal-title">{{ lang==='ru'?'Редактировать задание':'Edit Assignment' }}</span>
           <button class="btn btn-icon btn-ghost" @click="editingAssignment=null">
@@ -523,10 +536,12 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- Post viewer -->
+    <Transition name="modal">
     <div v-if="viewingPost" class="post-overlay" @click.self="viewingPost = null">
-      <div class="post-sheet anim-scale">
+      <div class="post-sheet">
         <div class="sheet-head">
           <div class="sheet-badge lecture">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
@@ -550,6 +565,7 @@
         </div>
       </div>
     </div>
+    </Transition>
   </div>
 </template>
 
@@ -1391,8 +1407,14 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .ai-guide-link{font-size:12px;font-weight:700;color:var(--teal);background:none;border:none;cursor:pointer;padding:0;transition:opacity .15s}
 .ai-guide-link:hover{opacity:.7}
 
-/* Post viewer */
-.post-overlay{position:fixed;inset:0;background:rgba(0,30,36,.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:24px;backdrop-filter:blur(4px)}
+/* Post viewer — тот же затемнённый стеклянный оверлей, что и у остальных
+   модалок сайта (раньше был отдельный тёмно-тиловый тон и слабый blur —
+   собственная, непохожая на прочие модалки трактовка одного и того же
+   паттерна). */
+.post-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);display:flex;align-items:center;justify-content:center;z-index:1000;padding:24px}
+@media (prefers-reduced-transparency: reduce) {
+  .post-overlay { background: rgba(0,0,0,.6); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
 .post-sheet{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-2xl);padding:30px;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;box-shadow:var(--sh-lg)}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .sheet-badge{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:5px 14px;border-radius:100px}
@@ -1408,7 +1430,6 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
    обрезки многоточием (раньше max-width:280px+ellipsis резал длинные имена). */
 :deep(.file-attachment span){white-space:normal;word-break:break-word;overflow-wrap:anywhere}
 :deep(.link-inline){color:var(--teal);text-decoration:underline;text-underline-offset:3px;word-break:break-all}
-.anim-scale{animation:scaleIn .2s ease both}
 @keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
 
 @media (max-width:768px){

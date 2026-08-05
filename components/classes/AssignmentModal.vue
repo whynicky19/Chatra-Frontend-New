@@ -1,6 +1,6 @@
 <template>
   <div class="overlay" @click.self="$emit('close')">
-    <div class="am-modal anim-scale">
+    <div class="am-modal">
 
       <!-- Header -->
       <div class="am-head">
@@ -134,7 +134,7 @@
             </div>
           </div>
 
-          <button class="btn btn-purple btn-full" :disabled="!canSubmit || submitting" @click="doSubmit">
+          <button class="btn btn-teal btn-full" :disabled="!canSubmit || submitting" @click="doSubmit">
             <div v-if="submitting" class="spinner"></div>
             <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
             {{ submitting ? (uploading ? t('am.uploading_file') : t('am.sending')) : t('am.submit_work_btn') }}
@@ -269,7 +269,7 @@
               </template>
 
               <div class="grade-actions">
-                <button class="btn btn-purple" :disabled="!activeSub.grade || confirmingSuggested" @click="confirmSuggested">
+                <button class="btn btn-teal" :disabled="!activeSub.grade || confirmingSuggested" @click="confirmSuggested">
                   <div v-if="confirmingSuggested" class="spinner"></div>
                   <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                   {{ t('am.confirm_suggested') }}
@@ -319,7 +319,7 @@
           <!-- Действия — на всю ширину, как в приложении (нижняя панель, а не
                узкая колонка сбоку) -->
           <div class="grade-actions" v-if="activeSub.status !== 'needs_review'">
-            <button class="btn btn-purple" :disabled="grading" @click="runAiGrade">
+            <button class="btn btn-teal" :disabled="grading" @click="runAiGrade">
               <div v-if="grading" class="spinner"></div>
               <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               {{ grading ? checkStepText : (activeSub.grade ? t('am.recheck_ai') : t('am.check_ai')) }}

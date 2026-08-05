@@ -147,7 +147,9 @@ onMounted(async () => {
         title: 'Новое задание',
         desc: a.title,
         date: a.created_at,
-        color: '#6366f1',
+        // Фирменный teal, не отдельный акцент (раньше индиго #6366f1 — вне
+        // бренда: единственный акцент сайта это --teal).
+        color: '#00B1C9',
         read: isRead(key),
       })
     }

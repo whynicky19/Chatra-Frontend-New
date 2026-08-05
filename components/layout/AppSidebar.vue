@@ -137,6 +137,10 @@ html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22
 .logout-item:hover{background:var(--red-l)!important;color:var(--red)!important}
 .fio-nudge{display:flex;align-items:center;gap:8px;margin:0 6px 8px;padding:10px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:var(--r-md);font-size:12px;font-weight:600;color:#b45309;cursor:pointer;transition:background .15s;}
 .fio-nudge:hover{background:rgba(245,158,11,.18);}
+/* Тёмная тема: #b45309 на затемнённом янтарном фоне даёт контраст ~3.4:1
+   (ниже WCAG AA 4.5:1 для обычного текста) — светлее оттенок, как уже
+   сделано в AiLimitNotice для того же предупреждающего цвета. */
+html.dark .fio-nudge{color:#fbbf24}
 
 @media (max-width:768px){
   /* iOS-таб-бар: матовое стекло, иконки с подписями */
@@ -207,5 +211,13 @@ html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22
 @media (max-width:480px){
   .sb{bottom:calc(8px + env(safe-area-inset-bottom, 0px));left:8px;right:8px;height:62px}
   .item-icon{height:28px;min-width:46px;padding:0 10px}
+}
+
+/* Плотный fallback вместо стекла для пользователей с настройкой
+   "уменьшить прозрачность" — идёт последним, чтобы перебить и десктопный,
+   и мобильный (таб-бар) варианты .sb выше. */
+@media (prefers-reduced-transparency: reduce){
+  .sb{background:var(--surface)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  html.dark .sb{background:var(--surface)!important}
 }
 </style>

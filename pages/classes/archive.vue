@@ -137,7 +137,7 @@ onMounted(() => load())
 
 .classes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
 
-.class-card{background:var(--surface);border-radius:var(--r-xl);overflow:hidden;cursor:pointer;transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s;box-shadow:var(--sh-xs);border:1px solid var(--border)}
+.class-card{background:var(--surface);border-radius:var(--r-xl);overflow:hidden;cursor:pointer;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s;box-shadow:var(--sh-xs);border:1px solid var(--border)}
 .class-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
 .arch-card{opacity:.82;filter:grayscale(.28)}
 .arch-card:hover{opacity:1;filter:grayscale(0)}

@@ -1,6 +1,6 @@
 <template>
   <div class="overlay" @click.self="$emit('close')">
-    <div class="modal anim-scale">
+    <div class="modal">
       <div class="modal-head">
         <div class="modal-head-l">
           <div class="modal-ico">
@@ -189,7 +189,7 @@
 
       <div class="modal-foot">
         <button class="btn btn-ghost" @click="$emit('close')">Отмена</button>
-        <button class="btn btn-purple" :disabled="!canSubmit || saving" @click="submit">
+        <button class="btn btn-teal" :disabled="!canSubmit || saving" @click="submit">
           <div v-if="saving" class="spinner" style="width:14px;height:14px;border-width:2px"></div>
           <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           Создать задание

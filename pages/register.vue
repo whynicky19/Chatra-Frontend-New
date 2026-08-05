@@ -122,6 +122,11 @@ const sub = async () => {
 .org-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;padding:4px 10px;border-radius:100px}
 .org-badge.university{background:rgba(var(--teal-rgb),.1);color:var(--teal-d);border:1px solid rgba(var(--teal-rgb),.25)}
 .org-badge.school{background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.25)}
+/* Тёмная тема: тёмные оттенки (--teal-d, #b45309) на полупрозрачном тёмном
+   фоне дают контраст ~3.5:1 — ниже WCAG AA 4.5:1. Светлее вариант каждого
+   акцента специально для тёмной темы, как уже сделано в AiLimitNotice. */
+html.dark .org-badge.university{color:var(--teal)}
+html.dark .org-badge.school{color:#fbbf24}
 .org-switch-btn{font-size:11px;font-weight:600;color:var(--text4);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s}
 .org-switch-btn:hover{color:var(--teal)}
 

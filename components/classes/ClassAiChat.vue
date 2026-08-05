@@ -61,9 +61,11 @@
 
         <template v-else>
           <div v-for="m in msgs" :key="m.id" :class="['msg-row', m.role]">
+            <div v-if="m.role==='assistant'" class="msg-sender">Chatra AI</div>
             <div class="msg-bubble" v-html="fmt(m.text)"></div>
           </div>
           <div v-if="loading" class="msg-row assistant">
+            <div class="msg-sender">Chatra AI</div>
             <div class="msg-bubble typing-bbl"><span></span><span></span><span></span></div>
           </div>
         </template>
@@ -544,12 +546,16 @@ onMounted(() => {
 .quick-btn:hover { background: rgba(var(--teal-rgb),.07); border-color: rgba(var(--teal-rgb),.25); color: var(--teal); transform: translateY(-1px); }
 .quick-icon { font-size: 17px; flex-shrink: 0; }
 
-/* Bubbles */
-.msg-row { display: flex; align-items: flex-end; }
-.msg-row.user { justify-content: flex-end; }
-.msg-bubble { max-width: 82%; padding: 11px 15px; border-radius: 18px; font-size: 13.5px; line-height: 1.65; word-break: break-word; }
-.msg-row.assistant .msg-bubble { background: var(--surface); border: 1px solid var(--border); color: var(--text1); border-bottom-left-radius: 4px; }
-.msg-row.user .msg-bubble { background: linear-gradient(135deg,var(--teal),var(--teal-h)); color: #fff; border-bottom-right-radius: 4px; }
+/* Bubbles — геометрия синхронизирована с pages/ai.vue (тот же "Chatra AI",
+   только на отдельной странице) — раньше это были два независимо
+   подобранных значения (радиус/паддинг/тень) для одной и той же фичи. */
+.msg-row { display: flex; flex-direction: column; gap: 6px; max-width: 78%; }
+.msg-row.user { align-self: flex-end; align-items: flex-end; }
+.msg-row.assistant { align-self: flex-start; }
+.msg-sender { font-size: 12px; font-weight: 700; color: var(--text3); }
+.msg-bubble { padding: 12px 17px; border-radius: 20px; font-size: 14px; line-height: 1.6; word-break: break-word; }
+.msg-row.assistant .msg-bubble { background: var(--surface); border: 1px solid var(--border); color: var(--text1); border-bottom-left-radius: 6px; }
+.msg-row.user .msg-bubble { background: linear-gradient(135deg,var(--teal),var(--teal-h)); color: #fff; border-bottom-right-radius: 6px; box-shadow: 0 4px 20px rgba(var(--teal-rgb),.3); }
 :deep(.msg-bubble code) { background: rgba(255,255,255,.12); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
 :deep(.msg-bubble strong) { font-weight: 700; }
 :deep(.msg-bubble em) { font-style: italic; opacity: .9; }
@@ -593,6 +599,8 @@ html.dark .send-btn.locked { background: var(--surface3, var(--surface2)); }
   .ai-sidebar { position: absolute; inset: 0; width: 100%; z-index: 20; }
   .ai-floating-actions { z-index: 30; }
   .ai-msgs { min-width: 0; }
+  .msg-row { max-width: 88%; }
+  .msg-bubble { padding: 11px 15px; font-size: 15px; border-radius: 19px; }
   .quick-grid { grid-template-columns: 1fr; }
 }
 

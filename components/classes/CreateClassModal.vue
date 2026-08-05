@@ -1,6 +1,6 @@
 <template>
   <div class="overlay" @click.self="$emit('close')">
-    <div class="modal anim-scale" style="max-width:480px;width:100%">
+    <div class="modal" style="max-width:480px;width:100%">
       <div class="modal-head">
         <span class="modal-title">Создать класс</span>
         <button class="btn btn-icon btn-ghost" @click="$emit('close')">
@@ -51,7 +51,7 @@
 
       <div class="modal-foot">
         <button class="btn btn-white" @click="$emit('close')">Отмена</button>
-        <button class="btn btn-blue" :disabled="!title.trim()||loading" @click="submit">
+        <button class="btn btn-teal" :disabled="!title.trim()||loading" @click="submit">
           <div v-if="loading" class="spinner" style="width:13px;height:13px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
           <span v-else>Создать класс</span>
         </button>

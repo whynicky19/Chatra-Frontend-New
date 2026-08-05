@@ -470,15 +470,18 @@ watch(() => store.activeId, () => scroll())
 @keyframes rise { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
 @media (prefers-reduced-motion: reduce) { .tip-card { animation: none } }
 
+/* Геометрия пузырей синхронизирована с ClassAiChat.vue (тот же "Chatra AI",
+   только внутри урока) — раньше это были два независимо подобранных
+   значения (радиус/паддинг/тень) для одной и той же фичи. */
 .chat-msgs { display: flex; flex-direction: column; gap: 22px }
-.chat-msg { display: flex; flex-direction: column; gap: 8px; max-width: 72% }
+.chat-msg { display: flex; flex-direction: column; gap: 8px; max-width: 78% }
 .chat-msg.user { align-self: flex-end; align-items: flex-end }
 .chat-msg.assistant { align-self: flex-start }
 .msg-avatar { display: flex; align-items: center; gap: 8px }
 .msg-sender { font-size: 12px; font-weight: 700; color: var(--text3) }
-.msg-bubble { padding: 14px 19px; border-radius: 22px; font-size: 14.5px; line-height: 1.62 }
-.msg-bubble.user { background: linear-gradient(135deg, var(--teal), var(--teal-h)); color: #fff; border-bottom-right-radius: 7px; box-shadow: 0 4px 20px rgba(var(--teal-rgb),.3) }
-.msg-bubble.assistant { background: var(--surface); color: var(--text1); border-top-left-radius: 7px; box-shadow: var(--sh-xs) }
+.msg-bubble { padding: 12px 17px; border-radius: 20px; font-size: 14px; line-height: 1.6 }
+.msg-bubble.user { background: linear-gradient(135deg, var(--teal), var(--teal-h)); color: #fff; border-bottom-right-radius: 6px; box-shadow: 0 4px 20px rgba(var(--teal-rgb),.3) }
+.msg-bubble.assistant { background: var(--surface); border: 1px solid var(--border); color: var(--text1); border-bottom-left-radius: 6px; box-shadow: var(--sh-xs) }
 
 .typing { display: flex; gap: 5px; padding: 4px 0 }
 .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--text4); animation: pulse 1.2s infinite }

@@ -20,7 +20,7 @@ const store=useToastStore()
 .t-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .t-ok .t-dot{background:var(--green)}.t-ok{border-left:3px solid var(--green)}
 .t-err .t-dot{background:var(--red)}.t-err{border-left:3px solid var(--red)}
-.t-info .t-dot{background:var(--blue)}.t-info{border-left:3px solid var(--blue)}
+.t-info .t-dot{background:var(--teal)}.t-info{border-left:3px solid var(--teal)}
 .t-enter-active{transition:all .25s ease}.t-leave-active{transition:all .2s ease}
 .t-enter-from{opacity:0;transform:translateX(20px)}.t-leave-to{opacity:0;transform:translateX(20px)}
 @media (max-width:480px){

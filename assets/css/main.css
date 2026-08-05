@@ -6,6 +6,15 @@ a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
 button{cursor:pointer;border:none;background:none;font-family:inherit;font-size:inherit;-webkit-tap-highlight-color:transparent}
 input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 img{display:block;max-width:100%}
+
+/* Единый брендированный focus-ring для клавиатурной навигации — виден только
+   при навигации с клавиатуры (:focus-visible), не мешает мышиному/тач-клику.
+   Без него часть кастомных элементов (кнопки, пункты меню, карточки с
+   tabindex) либо не получала видимого фокуса вовсе, либо показывала
+   нативный синий аутлайн браузера поверх скруглённых поверхностей. */
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:4px}
+
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(120,120,128,.28);border-radius:10px}
@@ -330,10 +339,11 @@ h3,h4{letter-spacing:-.012em}
 .reveal-delay-3 { transition-delay: 0.21s; }
 .reveal-delay-4 { transition-delay: 0.28s; }
 
-/* ====== УЛУЧШЕННЫЕ HOVER ЭФФЕКТЫ ====== */
-.btn {
-  transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
-}
+/* ====== УЛУЧШЕННЫЕ HOVER ЭФФЕКТЫ ======
+   Обычный hover/press — не "жест с инерцией" (флик, драг), поэтому без
+   перелёта (critically damped, см. apple-design): перелёт здесь раньше
+   перебивал спокойные per-property transition из основного правила .btn
+   выше по каскаду (та же селекторность, но позже в файле — побеждало это). */
 .btn-teal:hover, .btn-blue:hover, .btn-purple:hover {
   transform: translateY(-2px) scale(1.01);
 }
@@ -353,9 +363,11 @@ h3,h4{letter-spacing:-.012em}
   .sb-item:hover { transform: none; }
 }
 
-/* Карточки */
+/* Карточки — единая спокойная кривая для hover-lift (совпадает с
+   .archive-entry/.notif-card/.tip-card ниже), без перелёта: подъём карточки
+   по ховеру мыши — не жест с инерцией. */
 .scard, .class-card, .card {
-  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+  transition: transform 0.2s cubic-bezier(.22,1,.36,1), box-shadow 0.2s, border-color 0.15s, background 0.15s;
 }
 @media (hover:hover) {
   .scard:hover, .class-card:hover, .card:hover {
@@ -380,32 +392,35 @@ h3,h4{letter-spacing:-.012em}
   box-shadow: 0 0 0 3px rgba(var(--teal-rgb),0.12), 0 0 20px rgba(var(--teal-rgb),0.06);
 }
 
-/* ====== MODAL ENTER/LEAVE ====== */
-.modal-enter-active {
-  animation: modal-in 0.3s cubic-bezier(0.16,1,0.3,1);
+/* ====== MODAL ENTER/LEAVE ======
+   <Transition name="modal"> оборачивает .overlay (см. использования в
+   шаблонах). Сам оверлей — только затемнение (fade), а вложенный .modal —
+   отдельно масштаб+прозрачность, симметрично на вход И на выход (раньше
+   .modal входил через анимацию anim-scale, а выходил мгновенно, без единого
+   кадра — см. apple-design, §7: путь появления и исчезновения должен
+   совпадать). */
+.modal-enter-active, .modal-leave-active { transition: opacity .2s ease; }
+.modal-enter-from, .modal-leave-to { opacity: 0; }
+.modal-enter-active .modal, .modal-leave-active .modal,
+.modal-enter-active .post-sheet, .modal-leave-active .post-sheet,
+.modal-enter-active .am-modal, .modal-leave-active .am-modal,
+.modal-enter-active .fp-modal, .modal-leave-active .fp-modal {
+  transition: transform .22s cubic-bezier(.16,1,.3,1), opacity .22s cubic-bezier(.16,1,.3,1);
 }
-.modal-leave-active {
-  animation: modal-out 0.18s ease;
+.modal-enter-from .modal, .modal-enter-from .post-sheet,
+.modal-enter-from .am-modal, .modal-enter-from .fp-modal { transform: scale(.94) translateY(12px); opacity: 0; }
+.modal-leave-to .modal, .modal-leave-to .post-sheet,
+.modal-leave-to .am-modal, .modal-leave-to .fp-modal { transform: scale(.96); opacity: 0; }
+@media (max-width:768px) {
+  /* Мобильная модалка — bottom sheet, поэтому симметричный путь — по
+     вертикали (снизу вверх и обратно вниз), а не масштаб. */
+  .modal-enter-from .modal, .modal-leave-to .modal,
+  .modal-enter-from .post-sheet, .modal-leave-to .post-sheet,
+  .modal-enter-from .am-modal, .modal-leave-to .am-modal,
+  .modal-enter-from .fp-modal, .modal-leave-to .fp-modal { transform: translateY(100%); opacity: 1; }
 }
-@keyframes modal-in {
-  from { opacity:0; transform:scale(0.94) translateY(12px); }
-  to   { opacity:1; transform:scale(1) translateY(0); }
-}
-@keyframes modal-out {
-  from { opacity:1; transform:scale(1); }
-  to   { opacity:0; transform:scale(0.96); }
-}
-
-/* ====== TOAST ====== */
-.toast-enter-active { animation: toast-in 0.3s cubic-bezier(0.16,1,0.3,1); }
-.toast-leave-active { animation: toast-out 0.2s ease; }
-@keyframes toast-in {
-  from { opacity:0; transform:translateX(32px) scale(0.95); }
-  to   { opacity:1; transform:translateX(0) scale(1); }
-}
-@keyframes toast-out {
-  from { opacity:1; transform:translateX(0); }
-  to   { opacity:0; transform:translateX(32px); }
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter-from .modal, .modal-leave-to .modal { transform: none; }
 }
 
 /* ====== CHAT MESSAGE ENTER ====== */
@@ -441,23 +456,10 @@ h3,h4{letter-spacing:-.012em}
     padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Плавное открытие модалок снизу */
-  .modal {
-    animation: slide-up 0.32s cubic-bezier(0.16,1,0.3,1);
-  }
-  @keyframes slide-up {
-    from { transform:translateY(100%); opacity:0; }
-    to   { transform:translateY(0); opacity:1; }
-  }
-
-  /* Overlay fade */
-  .overlay {
-    animation: overlay-in 0.22s ease;
-  }
-  @keyframes overlay-in {
-    from { opacity:0; }
-    to   { opacity:1; }
-  }
+  /* Открытие/закрытие модалки снизу (bottom sheet) и fade оверлея теперь
+     обрабатывает <Transition name="modal"> (см. MODAL ENTER/LEAVE) — единая
+     логика для входа И выхода вместо одноразовой CSS-анимации только на
+     появление. */
 
   /* Chip buttons — крупнее на мобиле */
   .e-chip {
@@ -525,6 +527,19 @@ html {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ====== REDUCED TRANSPARENCY ====== */
+/* Стеклянные поверхности (оверлей модалок здесь; сайдбар/таб-бар — свой
+   fallback в AppSidebar.vue) становятся плотными вместо размытых для
+   пользователей с этой ОС-настройкой. */
+@media (prefers-reduced-transparency: reduce) {
+  .overlay {
+    background: rgba(0,0,0,.6);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 /* ====== SCHOOL ORG THEME (amber) ====== */
 /* Applied via JS (applyOrgTheme) and data-org attribute as fallback */
 :root[data-org="school"] {
