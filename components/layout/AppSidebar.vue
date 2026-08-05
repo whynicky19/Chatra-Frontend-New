@@ -117,9 +117,10 @@ html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22
 .logo-img-new{width:34px;height:34px;flex-shrink:0;background:linear-gradient(180deg,#40D0E4,#00829C);-webkit-mask:url('/logo-icon.png') center / contain no-repeat;mask:url('/logo-icon.png') center / contain no-repeat}
 /* Иконка-марка без надписи "CHATRA" (logo.png её содержит и при 30px
    превращалась в нечитаемое пятно текста) — logo-icon.png, тот же файл,
-   что и в развёрнутом состоянии, увеличенный до предела ширины свёрнутого
-   сайдбара (56px), саму ширину сайдбара не трогаем. */
-.logo-img-collapsed{width:40px;height:40px;flex-shrink:0;margin:0 auto;background:linear-gradient(180deg,#40D0E4,#00829C);-webkit-mask:url('/logo-icon.png') center / contain no-repeat;mask:url('/logo-icon.png') center / contain no-repeat}
+   что и в развёрнутом состоянии. Размер — близко к масштабу навигационных
+   иконок (.item-icon, ~20px), а не во всю ширину свёрнутого сайдбара,
+   которую не трогаем. */
+.logo-img-collapsed{width:22px;height:22px;flex-shrink:0;margin:0 auto;background:linear-gradient(180deg,#40D0E4,#00829C);-webkit-mask:url('/logo-icon.png') center / contain no-repeat;mask:url('/logo-icon.png') center / contain no-repeat}
 .logo-name{font-size:16px;font-weight:800;color:var(--text1);letter-spacing:.04em;flex:1;overflow:hidden;white-space:nowrap}
 .sb-nav{flex:1;padding:4px 6px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;overflow-x:hidden}
 .sb-item{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:var(--r-md);font-size:14px;font-weight:500;color:var(--text3);transition:all .15s;cursor:pointer;text-decoration:none;position:relative;white-space:nowrap}
