@@ -173,4 +173,18 @@ watch(() => previewFile.value?.url, (url) => { if (url) load() })
 .fp-sheet :deep(table){border-collapse:collapse;font-size:13px}
 .fp-sheet :deep(td),.fp-sheet :deep(th){border:1px solid var(--border);padding:4px 8px;white-space:nowrap}
 .fp-text{width:100%;padding:20px;font-size:13px;line-height:1.6;color:var(--text1);white-space:pre-wrap;word-break:break-word;font-family:inherit}
+
+/* Mobile — тот же паттерн шторки снизу, что и у остальных модалок
+   (.overlay уже получает padding:0/align-items:flex-end глобально из
+   main.css, здесь адаптируем сам .fp-modal под .modal/.post-sheet). */
+@media (max-width: 768px) {
+  .fp-modal{width:100%;max-width:100%;max-height:92vh;max-height:92dvh;border-radius:28px 28px 0 0;padding-bottom:env(safe-area-inset-bottom, 0px)}
+  .fp-modal::before{content:'';display:block;width:36px;height:5px;border-radius:3px;background:var(--surface3);margin:10px auto 0;flex-shrink:0}
+  .fp-head{padding:10px 14px 12px}
+  .fp-title{font-size:13px}
+  .fp-actions .btn-sm{padding:8px 10px;font-size:12px;gap:4px}
+  .fp-iframe{min-height:70vh}
+  .fp-docx{padding:14px}
+  .fp-sheet{padding:10px}
+}
 </style>
