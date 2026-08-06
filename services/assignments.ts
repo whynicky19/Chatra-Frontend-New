@@ -3,7 +3,6 @@ import { useApi } from './api'
 export interface Criterion {
   name: string
   weight: number
-  description?: string
 }
 
 export interface Assignment {
@@ -18,23 +17,12 @@ export interface Assignment {
   is_active: boolean
   created_by: number
   reference_solution_url?: string
-  variants?: Variant[]
-}
-
-export interface Variant {
-  id: number
-  assignment_id: number
-  variant_number: number
-  title?: string
-  reference_solution_url: string
-  created_at: string
 }
 
 export interface SubmissionCreate {
   text_content?: string
   file_url?: string
   file_urls?: string[]
-  variant_number?: number
   student_name?: string
 }
 
@@ -97,7 +85,6 @@ export const useAssignmentsSvc = () => {
       title: string
       description?: string
       criteria: Criterion[]
-      max_score: number
       deadline?: string
       reference_solution_url?: string
     }): Promise<Assignment> => {
@@ -109,7 +96,6 @@ export const useAssignmentsSvc = () => {
       title: string
       description: string
       criteria: Criterion[]
-      max_score: number
       deadline: string
       is_active: boolean
       reference_solution_url: string
@@ -120,24 +106,6 @@ export const useAssignmentsSvc = () => {
 
     delete: async (id: number): Promise<void> => {
       await api.delete(`/assignments/${id}`)
-    },
-
-    listVariants: async (assignmentId: number): Promise<Variant[]> => {
-      const { data } = await api.get(`/assignments/${assignmentId}/variants`)
-      return data
-    },
-
-    addVariant: async (assignmentId: number, body: {
-      variant_number: number
-      title?: string
-      reference_solution_url: string
-    }): Promise<Variant> => {
-      const { data } = await api.post(`/assignments/${assignmentId}/variants`, body)
-      return data
-    },
-
-    deleteVariant: async (assignmentId: number, variantId: number): Promise<void> => {
-      await api.delete(`/assignments/${assignmentId}/variants/${variantId}`)
     },
 
     submit: async (assignmentId: number, body: SubmissionCreate): Promise<Submission> => {

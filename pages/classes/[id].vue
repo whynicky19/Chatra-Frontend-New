@@ -487,15 +487,9 @@
               {{ lang==='ru'?'Добавить эталон...':'Add reference file...' }}
             </button>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div class="edit-field">
-              <label class="field-label">{{ lang==='ru'?'МАКС. БАЛЛ':'MAX SCORE' }}</label>
-              <input v-model.number="editAsgForm.max_score" type="number" class="field-input" min="1" max="1000"/>
-            </div>
-            <div class="edit-field">
-              <label class="field-label">{{ lang==='ru'?'ДЕДЛАЙН':'DEADLINE' }}</label>
-              <input v-model="editAsgForm.deadline" type="datetime-local" class="field-input"/>
-            </div>
+          <div class="edit-field">
+            <label class="field-label">{{ lang==='ru'?'ДЕДЛАЙН':'DEADLINE' }}</label>
+            <input v-model="editAsgForm.deadline" type="datetime-local" class="field-input"/>
           </div>
           <!-- Criteria -->
           <div class="edit-field">
@@ -515,7 +509,6 @@
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                   </button>
                 </div>
-                <input v-model="c.description" class="field-input" :placeholder="lang==='ru'?'Описание критерия (необязательно)...':'Criterion description (optional)...'"/>
               </div>
             </div>
             <div class="criteria-total">
@@ -634,7 +627,7 @@ const editPostNewFiles = ref<File[]>([])
 const editPostFi = ref<HTMLInputElement | null>(null)
 
 const editingAssignment = ref<any>(null)
-const editAsgForm = ref<{ title: string; description: string; max_score: number; deadline: string; criteria: Array<{name:string;weight:number;description:string}> }>({ title: '', description: '', max_score: 100, deadline: '', criteria: [] })
+const editAsgForm = ref<{ title: string; description: string; max_score: number; deadline: string; criteria: Array<{name:string;weight:number}> }>({ title: '', description: '', max_score: 100, deadline: '', criteria: [] })
 // Файлы задания живут в description как URL — в форме показываем чипами, а не текстом
 const editAsgFiles = ref<{ name: string; url: string }[]>([])
 const editAsgNewFiles = ref<File[]>([])
@@ -987,9 +980,9 @@ const openEditAssignment = (a: any) => {
     const pad = (n: number) => String(n).padStart(2, '0')
     return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`
   })() : ''
-  let criteria: Array<{name:string;weight:number;description:string}> = []
+  let criteria: Array<{name:string;weight:number}> = []
   try { criteria = JSON.parse(a.criteria || '[]') } catch {}
-  if (!criteria.length) criteria = [{ name: '', weight: 10, description: '' }]
+  if (!criteria.length) criteria = [{ name: '', weight: 10 }]
   editAsgFiles.value = extractFilesFromText(a.description)
   editAsgNewFiles.value = []
   let refUrls: string[] = []
@@ -1011,7 +1004,7 @@ const onEditAsgRefPick = (e: Event) => {
   if (editAsgRefFi.value) editAsgRefFi.value.value = ''
 }
 
-const addCriterion = () => { editAsgForm.value.criteria.push({ name: '', weight: 10, description: '' }) }
+const addCriterion = () => { editAsgForm.value.criteria.push({ name: '', weight: 10 }) }
 const removeCriterion = (i: number) => { if (editAsgForm.value.criteria.length > 1) editAsgForm.value.criteria.splice(i, 1) }
 
 const saveEditAssignment = async () => {
@@ -1043,7 +1036,6 @@ const saveEditAssignment = async () => {
     const updated = await assignmentsSvc.update(editingAssignment.value.id, {
       title: editAsgForm.value.title,
       description: descWithFiles,
-      max_score: editAsgForm.value.max_score,
       deadline: editAsgForm.value.deadline ? new Date(editAsgForm.value.deadline).toISOString() : undefined,
       criteria: editAsgForm.value.criteria,
       reference_solution_url: referenceSolutionUrl,

@@ -87,19 +87,6 @@
             {{ t('am.overdue_warn') }}
           </div>
 
-          <!-- Variant selector -->
-          <div v-if="assignmentVariants.length" class="field">
-            <label class="field-label">{{ t('am.your_variant') }}</label>
-            <div class="variant-chips">
-              <button v-for="v in assignmentVariants" :key="v.id"
-                :class="['variant-chip', { active: form.variantNumber === v.variant_number }]"
-                @click="form.variantNumber = v.variant_number">
-                {{ t('am.variant') }} {{v.variant_number }}{{ v.title ? ': ' + v.title : '' }}
-              </button>
-            </div>
-            <div v-if="assignmentVariants.length && !form.variantNumber" class="field-hint-warn">{{ t('am.pick_variant') }}</div>
-          </div>
-
           <div class="field">
             <label class="field-label">{{ t('am.answer_text') }}</label>
             <textarea v-model="form.text" class="inp inp-ta" rows="6" :placeholder="t('am.answer_placeholder')"></textarea>
@@ -422,7 +409,7 @@ import { useCohortErrors } from '~/composables/useCohortErrors'
 import { useAuthStore } from '~/stores/auth.store'
 import { useFilePreview } from '~/composables/useFilePreview'
 import { extractFilesFromText, stripFilesFromText, fileNameFromUrl, withNameFragment } from '~/composables/useAttachments'
-import type { Assignment, Submission, Variant } from '~/services/assignments'
+import type { Assignment, Submission } from '~/services/assignments'
 
 const props = defineProps<{ assignment: Assignment; isTeacher?: boolean; readonly?: boolean; cohortId?: number }>()
 const emit = defineEmits(['close', 'submitted'])
@@ -445,7 +432,6 @@ const studentMap = ref<Record<number, string>>({})
 const tab = ref<'info'|'submit'|'submissions'>('info')
 const searchQuery = ref('')
 const mySubmission = ref<Submission|null>(null)
-const assignmentVariants = ref<Variant[]>([])
 const submissions = ref<Submission[]>([])
 const activeSub = ref<Submission|null>(null)
 const loadingSubs = ref(false)
@@ -484,7 +470,7 @@ const uploadedUrl = ref('')
 const submittedFiles = ref<File[]>([])
 const uploadIdxSub = ref(0)
 const uploadPctSub = ref(0)
-const form = ref({ text: '', file: null as File|null, variantNumber: null as number|null })
+const form = ref({ text: '', file: null as File|null })
 
 const filteredSubmissions = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
@@ -534,8 +520,7 @@ const isOverdue = computed(() => {
 const deadlineStr = computed(() => parsedDeadline.value?.toLocaleString(dateLocale.value, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) ?? '')
 const canSubmit = computed(() =>
   (form.value.text.trim() || submittedFiles.value.length) &&
-  !submitting.value &&
-  (assignmentVariants.value.length === 0 || form.value.variantNumber !== null)
+  !submitting.value
 )
 
 const getStudentName = (id: number) => studentMap.value[id] || `${t('am.student_hash')} #${id}`
@@ -754,7 +739,7 @@ const retract = async () => {
   try {
     await svc.retractSubmission(mySubmission.value.id)
     mySubmission.value = null
-    form.value = { text: '', file: null, variantNumber: null }
+    form.value = { text: '', file: null }
     uploadedUrl.value = ''
     toast.ok(t('am.retracted'))
     emit('submitted', null)
@@ -784,7 +769,6 @@ const doSubmit = async () => {
     const sub = await svc.submit(props.assignment.id, {
       text_content: form.value.text.trim() || undefined,
       file_urls: fileUrls.length ? fileUrls : undefined,
-      variant_number: form.value.variantNumber ?? undefined,
       student_name: auth.fullname || undefined,
     })
     mySubmission.value = sub
@@ -800,10 +784,6 @@ const doSubmit = async () => {
 }
 
 onMounted(async () => {
-  try {
-    assignmentVariants.value = await svc.listVariants(props.assignment.id)
-  } catch {}
-
   if (!canSeeSubmissions.value) {
     try {
       const subs = await svc.mySubmissions()
@@ -986,12 +966,7 @@ onMounted(async () => {
 .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.variant-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.variant-chip { padding: 7px 16px; border: 1px solid var(--border2); border-radius: 100px; font-size: 13px; font-weight: 600; color: var(--text3); background: var(--surface2); cursor: pointer; transition: all .15s; font-family: inherit; }
-.variant-chip:hover { border-color: rgba(var(--teal-rgb),.4); color: var(--teal); }
-.variant-chip.active { background: rgba(var(--teal-rgb),.12); border-color: rgba(var(--teal-rgb),.4); color: var(--teal); }
 .variant-badge { display: inline-flex; align-items: center; padding: 2px 10px; background: var(--surface3); border: 1px solid var(--border2); border-radius: 100px; font-size: 11px; font-weight: 700; color: var(--text2); white-space: nowrap; }
-.field-hint-warn { font-size: 12px; color: var(--yellow, #f59e0b); margin-top: 4px; }
 
 @media (max-width:768px) {
   .am-modal { max-width: 100%; max-height: 92dvh; border-radius: var(--r-2xl) var(--r-2xl) 0 0; }
@@ -1011,8 +986,6 @@ onMounted(async () => {
   .sub-student { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sub-meta { flex-wrap: wrap; gap: 4px; }
   .sub-status-bar { flex-wrap: wrap; gap: 8px; }
-  .variant-chips { gap: 6px; }
-  .variant-chip { padding: 9px 14px; min-height: 44px; }
   .grade-actions { flex-direction: column; gap: 8px; }
   .grade-actions .btn { width: 100%; justify-content: center; }
   .af-rm { width: 32px; height: 32px; font-size: 15px; }

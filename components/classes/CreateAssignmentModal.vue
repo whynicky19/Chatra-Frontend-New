@@ -101,15 +101,9 @@
         </div>
         <!-- ─────────────────────────────────────────────────────────────── -->
 
-        <div class="field-row">
-          <div class="field">
-            <label class="field-label">Макс. балл</label>
-            <input v-model.number="form.max_score" type="number" class="inp" min="1" max="1000" />
-          </div>
-          <div class="field">
-            <label class="field-label">Дедлайн</label>
-            <input v-model="form.deadline" type="datetime-local" class="inp" />
-          </div>
+        <div class="field">
+          <label class="field-label">Дедлайн</label>
+          <input v-model="form.deadline" type="datetime-local" class="inp" />
         </div>
 
         <!-- Criteria -->
@@ -121,15 +115,12 @@
               Добавить
             </button>
           </div>
-          <div class="criteria-hint" :class="{ 'criteria-hint-err': totalWeight !== form.max_score }">Сумма весов критериев должна быть равна макс. баллу ({{ totalWeight }}/{{ form.max_score }})</div>
+          <div class="criteria-hint" :class="{ 'criteria-hint-err': totalWeight !== form.max_score }">Сумма весов критериев должна быть равна {{ form.max_score }} баллам ({{ totalWeight }}/{{ form.max_score }})</div>
 
           <div class="criteria-list">
             <div v-for="(c, i) in form.criteria" :key="i" class="criterion-row">
               <div class="criterion-num">{{ i + 1 }}</div>
-              <div class="criterion-fields">
-                <input v-model="c.name" class="inp inp-sm" placeholder="Название критерия" />
-                <input v-model="c.description" class="inp inp-sm" placeholder="Описание (необязательно)" />
-              </div>
+              <input v-model="c.name" class="inp inp-sm" placeholder="Название критерия" />
               <div class="criterion-weight">
                 <input v-model.number="c.weight" type="number" class="inp inp-sm weight-inp" min="1" placeholder="Баллы" />
               </div>
@@ -144,46 +135,6 @@
             </div>
           </div>
         </div>
-
-        <!-- ─── ВАРИАНТЫ ─────────────────────────────────────────────── -->
-        <div class="field var-section">
-          <div class="ref-header">
-            <div class="ref-header-l">
-              <div class="ref-ico" style="background:var(--surface2);border-color:var(--border);color:var(--text3)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-              </div>
-              <div>
-                <div class="ref-title">Варианты заданий</div>
-                <div class="ref-desc">Добавьте варианты с отдельными эталонными решениями (необязательно)</div>
-              </div>
-            </div>
-            <button class="btn btn-ghost btn-sm" @click="addVariant">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              Вариант
-            </button>
-          </div>
-          <div v-for="(v, i) in variants" :key="i" class="variant-row">
-            <div class="variant-num">{{ v.number }}</div>
-            <input v-model="v.title" class="inp inp-sm" placeholder="Название (необязательно)" style="flex:1" />
-            <div v-if="!v.fileUrl && !v.file" class="var-upload-btn" @click="triggerVarFile(i)">
-              <input type="file" style="display:none" :ref="el => { if(el) varFileInputs[i] = el as HTMLInputElement }" @change="onPickVarFile($event, i)" />
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Эталон
-            </div>
-            <div v-else class="var-file-chip">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--green)"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>{{ v.file ? v.file.name.slice(0,20) : 'Загружен' }}</span>
-              <button class="af-rm" @click="v.file=null;v.fileUrl=''">×</button>
-            </div>
-            <button class="btn btn-icon btn-ghost btn-sm del-btn" @click="variants.splice(i,1)">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-            </button>
-          </div>
-          <div v-if="!variants.length" class="no-criteria" style="padding:12px">
-            <span>Без вариантов — одно общее эталонное решение</span>
-          </div>
-        </div>
-        <!-- ──────────────────────────────────────────────────────────── -->
 
       </div>
 
@@ -226,17 +177,6 @@ const uploadingTask = ref(false)
 const uploadingRef = ref(false)
 const uploadIdx = ref(0)
 const uploadPct = ref(0)
-
-// ─── Variants ────────────────────────────────────────────────────────────────
-interface VariantDraft { number: number; title: string; file: File | null; fileUrl: string }
-const variants = ref<VariantDraft[]>([])
-const varFileInputs = ref<HTMLInputElement[]>([])
-const addVariant = () => variants.value.push({ number: variants.value.length + 1, title: '', file: null, fileUrl: '' })
-const triggerVarFile = (i: number) => varFileInputs.value[i]?.click()
-const onPickVarFile = (e: Event, i: number) => {
-  const f = (e.target as HTMLInputElement).files?.[0]
-  if (f) { variants.value[i].file = f; variants.value[i].fileUrl = '' }
-}
 
 const fileEmoji = (f: File | null) => {
   if (!f) return 'FILE'
@@ -282,7 +222,7 @@ const form = ref({
   description: '',
   max_score: 100,
   deadline: '',
-  criteria: [{ name: '', weight: 100, description: '' }]
+  criteria: [{ name: '', weight: 100 }]
 })
 
 const totalWeight = computed(() => form.value.criteria.reduce((s, c) => s + (c.weight || 0), 0))
@@ -293,7 +233,7 @@ const canSubmit = computed(() =>
   totalWeight.value === form.value.max_score
 )
 
-const addCriterion = () => form.value.criteria.push({ name: '', weight: 0, description: '' })
+const addCriterion = () => form.value.criteria.push({ name: '', weight: 0 })
 const removeCriterion = (i: number) => form.value.criteria.splice(i, 1)
 
 const submit = async () => {
@@ -346,39 +286,14 @@ const submit = async () => {
       class_id: props.classId,
       title: form.value.title.trim(),
       description,
-      criteria: form.value.criteria.map(c => ({ name: c.name, weight: c.weight, description: c.description || undefined })),
-      max_score: form.value.max_score,
+      criteria: form.value.criteria.map(c => ({ name: c.name, weight: c.weight })),
       reference_solution_url: resolvedRefUrl,
     }
     if (form.value.deadline) body.deadline = new Date(form.value.deadline).toISOString()
 
     const created = await svc.create(body)
 
-    // Задание уже создано на сервере — с этого момента ошибку варианта
-    // нельзя показывать как "ошибка создания задания" (общий catch ниже):
-    // учитель повторил бы сабмит и получил бы дубликат задания. Ловим
-    // отдельно и просто предупреждаем, что варианты нужно доложить руками.
-    let variantsFailed = false
-    for (const v of variants.value) {
-      try {
-        let url = v.fileUrl
-        if (v.file) {
-          const { file_url } = await uploadSvc.upload(v.file)
-          url = file_url
-        }
-        if (url) {
-          await svc.addVariant(created.id, { variant_number: v.number, title: v.title || undefined, reference_solution_url: url })
-        }
-      } catch {
-        variantsFailed = true
-        break
-      }
-    }
-
     toast.ok('Задание создано')
-    if (variantsFailed) {
-      toast.err('Не все варианты с эталонами удалось загрузить — добавьте их в уже созданном задании')
-    }
     emit('created', created)
   } catch (e: any) {
     toast.err(e?.response?.data?.detail || 'Ошибка создания задания')
@@ -403,7 +318,6 @@ const submit = async () => {
 .modal-foot { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
 
 .field { display: flex; flex-direction: column; gap: 7px; }
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .field-label { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; }
 
 .inp { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 13px; color: var(--text1); font-size: 13px; width: 100%; transition: border-color .15s; }
@@ -417,7 +331,6 @@ const submit = async () => {
 .criteria-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .criterion-row { display: grid; grid-template-columns: 28px 1fr 90px 32px; gap: 8px; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 10px; }
 .criterion-num { font-size: 12px; font-weight: 700; color: var(--text4); text-align: center; }
-.criterion-fields { display: flex; flex-direction: column; gap: 6px; }
 .weight-inp { text-align: center; }
 .del-btn { color: var(--red); opacity: .6; }
 .del-btn:hover { opacity: 1; background: var(--red-l); }
@@ -457,29 +370,17 @@ const submit = async () => {
 .upload-prog span { font-size: 11px; color: var(--teal); }
 .spinner { border: 2px solid var(--border2); border-top-color: var(--teal); border-radius: 50%; animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.var-section { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 16px; gap: 12px; }
-.variant-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-.variant-row:last-of-type { border-bottom: none; }
-.variant-num { width: 28px; height: 28px; border-radius: 50%; background: var(--surface3); color: var(--text2); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.var-upload-btn { display: flex; align-items: center; gap: 5px; padding: 6px 12px; background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); border-radius: var(--r-md); color: var(--green); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .15s; }
-.var-upload-btn:hover { background: rgba(52,211,153,.15); }
-.var-file-chip { display: flex; align-items: center; gap: 6px; padding: 5px 10px; background: rgba(52,211,153,.07); border: 1px solid rgba(52,211,153,.2); border-radius: var(--r-md); font-size: 12px; color: var(--text2); white-space: nowrap; max-width: 160px; }
-.var-file-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 @media (max-width:768px) {
   .modal { max-width: 100%; max-height: 96dvh; border-radius: var(--r-2xl) var(--r-2xl) 0 0; }
   .modal-head { padding: 16px 14px 12px; }
   .modal-body { padding: 14px 14px; }
   .modal-foot { padding: 12px 14px 24px; }
-  .field-row { grid-template-columns: 1fr; gap: 12px; }
   .inp { font-size: 16px; }
   .inp-ta { font-size: 16px; min-height: 80px; }
   .criterion-row { grid-template-columns: 24px 1fr 70px 28px; gap: 6px; padding: 8px; }
   .file-drop { padding: 14px; }
   .ref-section { padding: 12px; }
-  .var-section { padding: 12px; }
-  .variant-row { flex-wrap: wrap; gap: 6px; }
-  .var-upload-btn { min-height: 44px; }
   .af-rm { width: 32px; height: 32px; font-size: 15px; }
 }
 @media (max-width:480px) {

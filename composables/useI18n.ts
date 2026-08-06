@@ -411,8 +411,6 @@ export const translations: Record<string, Record<Lang, string>> = {
   'am.retract_resubmit': { ru: 'Отозвать и сдать заново', en: 'Retract and resubmit', kk: 'Қайтарып, қайта тапсыру' },
   'am.readonly_archive': { ru: 'Класс доступен только для чтения: ваш учебный год в архиве', en: 'This class is read-only: your academic year is archived', kk: 'Сынып тек оқуға қолжетімді: оқу жылыңыз мұрағатта' },
   'am.overdue_warn': { ru: 'Дедлайн истёк — работа будет помечена как просроченная', en: 'Deadline passed — the work will be marked as overdue', kk: 'Мерзім өтті — жұмыс мерзімі өткен деп белгіленеді' },
-  'am.your_variant': { ru: 'Ваш вариант *', en: 'Your variant *', kk: 'Сіздің нұсқаңыз *' },
-  'am.pick_variant': { ru: 'Выберите вариант перед сдачей', en: 'Choose a variant before submitting', kk: 'Тапсырмас бұрын нұсқаны таңдаңыз' },
   'am.answer_text': { ru: 'Текст ответа', en: 'Answer text', kk: 'Жауап мәтіні' },
   'am.answer_placeholder': { ru: 'Напишите ваш ответ...', en: 'Write your answer...', kk: 'Жауабыңызды жазыңыз...' },
   'am.attach_files': { ru: 'Прикрепить файлы', en: 'Attach files', kk: 'Файлдарды тіркеу' },
