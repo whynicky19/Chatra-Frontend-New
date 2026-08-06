@@ -31,24 +31,6 @@
       <div class="frow"><label class="flabel">Период</label><input v-model="period" class="input" placeholder="Например: 2024-2025"/></div>
       <div class="frow"><label class="flabel">Учитель / Преподаватель</label><input v-model="teacher" class="input" placeholder="Ваше имя"/></div>
 
-      <!-- Общие критерии оценивания -->
-      <div class="frow">
-        <div class="criteria-header">
-          <label class="flabel">Общие критерии оценивания</label>
-          <button class="btn-add-crit" type="button" @click="addCriterion">+ Добавить</button>
-        </div>
-        <div class="criteria-hint">ИИ будет использовать их для всех заданий без собственных критериев</div>
-        <div class="criteria-list">
-          <div v-for="(c, i) in defaultCriteria" :key="i" class="crit-row">
-            <span class="crit-num">{{ i + 1 }}</span>
-            <input v-model="c.name" class="input input-sm" placeholder="Название критерия" />
-            <input v-model.number="c.weight" type="number" class="input input-sm weight-inp" min="1" placeholder="Баллы" />
-            <button class="crit-rm" type="button" @click="defaultCriteria.splice(i,1)">×</button>
-          </div>
-          <div v-if="!defaultCriteria.length" class="no-crit">Критерии не заданы — ИИ оценит по умолчанию</div>
-        </div>
-      </div>
-
       <div class="modal-foot">
         <button class="btn btn-white" @click="$emit('close')">Отмена</button>
         <button class="btn btn-teal" :disabled="!title.trim()||loading" @click="submit">
@@ -68,9 +50,6 @@ const classesSvc = useClassesSvc(); const toast = useToast()
 const title = ref(''); const period = ref(''); const teacher = ref(''); const description = ref(''); const loading = ref(false)
 const coverPreview = ref<string|null>(null); const coverBase64 = ref<string|null>(null)
 const fileInput = ref<HTMLInputElement|null>(null)
-const defaultCriteria = ref<{name: string; weight: number}[]>([])
-
-const addCriterion = () => defaultCriteria.value.push({ name: '', weight: 10 })
 
 const onImagePick = (e: Event) => {
   const f = (e.target as HTMLInputElement).files?.[0]; if (!f) return
@@ -111,27 +90,9 @@ const submit = async () => {
 .cover-ph-hint { font-size: 11px; color: var(--text4); }
 .cover-remove { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; background: rgba(0,0,0,.75); border: 1px solid rgba(255,255,255,.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; }
 .cover-remove:hover { background: rgba(248,113,113,.8); }
-.criteria-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.criteria-hint { font-size: 11px; color: var(--text4); margin-bottom: 8px; line-height: 1.5; }
-.criteria-list { display: flex; flex-direction: column; gap: 6px; }
-.crit-row { display: grid; grid-template-columns: 22px 1fr 72px 24px; gap: 6px; align-items: center; }
-.crit-num { font-size: 11px; font-weight: 700; color: var(--text4); text-align: center; }
-.input-sm { padding: 7px 9px; font-size: 13px; }
-.weight-inp { text-align: center; }
-.crit-rm { width: 22px; height: 22px; border-radius: 50%; background: transparent; border: none; color: var(--text4); cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; transition: all .15s; }
-.crit-rm:hover { background: var(--red-l, rgba(248,113,113,.12)); color: #f87171; }
-.no-crit { font-size: 12px; color: var(--text4); padding: 8px 0; }
-.btn-add-crit { font-size: 12px; font-weight: 600; color: var(--text2); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; transition: all .15s; }
-.btn-add-crit:hover { background: var(--surface3); }
 
 @media (max-width:768px) {
   .cover-upload { height: 110px; }
-  .crit-row { grid-template-columns: 20px 1fr 64px 22px; gap: 4px; }
-  .input-sm { font-size: 16px; }
-  .btn-add-crit { min-height: 44px; padding: 6px 14px; }
-}
-@media (max-width:480px) {
-  .crit-row { grid-template-columns: 18px 1fr 56px 20px; gap: 3px; }
 }
 </style>
 
