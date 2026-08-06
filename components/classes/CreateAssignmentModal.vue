@@ -115,15 +115,13 @@
               Добавить
             </button>
           </div>
-          <div class="criteria-hint" :class="{ 'criteria-hint-err': totalWeight !== form.max_score }">Сумма весов критериев должна быть равна {{ form.max_score }} баллам ({{ totalWeight }}/{{ form.max_score }})</div>
+          <div class="criteria-hint">Баллы распределяются поровну между критериями — всего {{ form.max_score }}</div>
 
           <div class="criteria-list">
             <div v-for="(c, i) in form.criteria" :key="i" class="criterion-row">
               <div class="criterion-num">{{ i + 1 }}</div>
               <input v-model="c.name" class="inp inp-sm" placeholder="Название критерия" />
-              <div class="criterion-weight">
-                <input v-model.number="c.weight" type="number" class="inp inp-sm weight-inp" min="1" placeholder="Баллы" />
-              </div>
+              <span class="criterion-pts">{{ c.weight }}</span>
               <button class="btn btn-icon btn-ghost btn-sm del-btn" @click="removeCriterion(i)">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
@@ -225,16 +223,25 @@ const form = ref({
   criteria: [{ name: '', weight: 100 }]
 })
 
-const totalWeight = computed(() => form.value.criteria.reduce((s, c) => s + (c.weight || 0), 0))
 const canSubmit = computed(() =>
   form.value.title.trim() &&
   form.value.criteria.length > 0 &&
-  form.value.criteria.every(c => c.name.trim() && c.weight > 0) &&
-  totalWeight.value === form.value.max_score
+  form.value.criteria.every(c => c.name.trim())
 )
 
-const addCriterion = () => form.value.criteria.push({ name: '', weight: 0 })
-const removeCriterion = (i: number) => form.value.criteria.splice(i, 1)
+// Баллы за критерии больше не задаются вручную — делим max_score поровну,
+// остаток (при неровном делении) добавляем первым критериям по порядку.
+const redistributeWeights = () => {
+  const list = form.value.criteria
+  const n = list.length
+  if (!n) return
+  const base = Math.floor(form.value.max_score / n)
+  const rem = form.value.max_score - base * n
+  list.forEach((c, i) => { c.weight = base + (i < rem ? 1 : 0) })
+}
+
+const addCriterion = () => { form.value.criteria.push({ name: '', weight: 0 }); redistributeWeights() }
+const removeCriterion = (i: number) => { form.value.criteria.splice(i, 1); redistributeWeights() }
 
 const submit = async () => {
   if (!canSubmit.value || saving.value) return
@@ -327,11 +334,10 @@ const submit = async () => {
 
 .criteria-head { display: flex; align-items: center; justify-content: space-between; }
 .criteria-hint { font-size: 12px; color: var(--text4); margin-top: 2px; }
-.criteria-hint-err { color: var(--red); }
 .criteria-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-.criterion-row { display: grid; grid-template-columns: 28px 1fr 90px 32px; gap: 8px; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 10px; }
+.criterion-row { display: grid; grid-template-columns: 28px 1fr 40px 32px; gap: 8px; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 10px; }
 .criterion-num { font-size: 12px; font-weight: 700; color: var(--text4); text-align: center; }
-.weight-inp { text-align: center; }
+.criterion-pts { font-size: 12px; font-weight: 700; color: var(--teal); text-align: center; }
 .del-btn { color: var(--red); opacity: .6; }
 .del-btn:hover { opacity: 1; background: var(--red-l); }
 .no-criteria { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 20px; color: var(--text4); font-size: 13px; }
@@ -378,7 +384,7 @@ const submit = async () => {
   .modal-foot { padding: 12px 14px 24px; }
   .inp { font-size: 16px; }
   .inp-ta { font-size: 16px; min-height: 80px; }
-  .criterion-row { grid-template-columns: 24px 1fr 70px 28px; gap: 6px; padding: 8px; }
+  .criterion-row { grid-template-columns: 24px 1fr 36px 28px; gap: 6px; padding: 8px; }
   .file-drop { padding: 14px; }
   .ref-section { padding: 12px; }
   .af-rm { width: 32px; height: 32px; font-size: 15px; }
@@ -386,6 +392,6 @@ const submit = async () => {
 @media (max-width:480px) {
   .modal-body { padding: 12px 12px; }
   .modal-foot { padding: 10px 12px 20px; }
-  .criterion-row { grid-template-columns: 20px 1fr 60px 24px; gap: 4px; }
+  .criterion-row { grid-template-columns: 20px 1fr 32px 24px; gap: 4px; }
 }
 </style>

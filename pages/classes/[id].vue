@@ -75,15 +75,17 @@
           </div>
 
           <!-- Teacher create actions — below the nav row, shown only on the tabs
-               they apply to (never on AI chat). -->
+               they apply to (never on AI chat). Единый нейтральный стиль для
+               обеих плиток — как в приложении (равный вес действий, без
+               выделения одной из них цветом). -->
           <div class="tab-action-bar" v-if="canManage && ['lectures','assignments'].includes(tab)">
-            <button class="btn btn-white btn-sm" @click="showCreateAssignment = true">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            <button class="quick-action-btn" @click="showCreateAssignment = true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
               {{ t('class.assignment_btn') }}
             </button>
-            <button class="btn btn-teal btn-sm" @click="showCreate = true">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              {{ t('class.add') }}
+            <button class="quick-action-btn" @click="showCreate = true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+              {{ t('class.lecture_btn') }}
             </button>
           </div>
 
@@ -504,7 +506,7 @@
               <div v-for="(c, i) in editAsgForm.criteria" :key="i" class="criterion-edit-row">
                 <div class="criterion-edit-top">
                   <input v-model="c.name" class="field-input criterion-name-inp" :placeholder="lang==='ru'?'Название критерия...':'Criterion name...'"/>
-                  <input v-model.number="c.weight" type="number" class="field-input criterion-weight-inp" min="1" :placeholder="lang==='ru'?'Вес':'Weight'"/>
+                  <span class="criterion-pts">{{ c.weight }}</span>
                   <button class="criterion-del-btn" @click="removeCriterion(i)" :disabled="editAsgForm.criteria.length <= 1">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                   </button>
@@ -512,11 +514,7 @@
               </div>
             </div>
             <div class="criteria-total">
-              {{ lang==='ru'?'Сумма весов:':'Total weight:' }}
-              <strong :style="{color: editAsgWeightTotal === editAsgForm.max_score ? 'var(--teal)' : 'var(--red)'}">
-                {{ editAsgWeightTotal }}
-              </strong>
-              / {{ editAsgForm.max_score }}
+              {{ lang==='ru'?'Баллы распределяются поровну — всего':'Points split evenly — total' }} {{ editAsgForm.max_score }}
             </div>
           </div>
         </div>
@@ -638,12 +636,10 @@ const editAsgNewRefFiles = ref<File[]>([])
 const editAsgRefFi = ref<HTMLInputElement | null>(null)
 const editAsgSaving = ref(false)
 const loadingAssignments = ref(false)
-const editAsgWeightTotal = computed(() => editAsgForm.value.criteria.reduce((s, c) => s + Number(c.weight), 0))
 const canSaveEditAssignment = computed(() =>
   editAsgForm.value.title.trim() &&
   editAsgForm.value.criteria.length > 0 &&
-  editAsgForm.value.criteria.every(c => c.name.trim() && c.weight > 0) &&
-  editAsgWeightTotal.value === editAsgForm.value.max_score
+  editAsgForm.value.criteria.every(c => c.name.trim())
 )
 
 const ratingData = ref({ avg_score: 0, avg_percent: 0, graded_count: 0, total_score: 0, max_possible: 0 })
@@ -1004,8 +1000,19 @@ const onEditAsgRefPick = (e: Event) => {
   if (editAsgRefFi.value) editAsgRefFi.value.value = ''
 }
 
-const addCriterion = () => { editAsgForm.value.criteria.push({ name: '', weight: 10 }) }
-const removeCriterion = (i: number) => { if (editAsgForm.value.criteria.length > 1) editAsgForm.value.criteria.splice(i, 1) }
+// Баллы за критерии больше не задаются вручную — делим max_score поровну,
+// остаток (при неровном делении) добавляем первым критериям по порядку.
+const redistributeCriteriaWeights = () => {
+  const list = editAsgForm.value.criteria
+  const n = list.length
+  if (!n) return
+  const target = editAsgForm.value.max_score || 100
+  const base = Math.floor(target / n)
+  const rem = target - base * n
+  list.forEach((c, i) => { c.weight = base + (i < rem ? 1 : 0) })
+}
+const addCriterion = () => { editAsgForm.value.criteria.push({ name: '', weight: 0 }); redistributeCriteriaWeights() }
+const removeCriterion = (i: number) => { if (editAsgForm.value.criteria.length > 1) { editAsgForm.value.criteria.splice(i, 1); redistributeCriteriaWeights() } }
 
 const saveEditAssignment = async () => {
   if (!editingAssignment.value || !canSaveEditAssignment.value) return
@@ -1257,8 +1264,18 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .tab-num{font-size:10px;font-weight:700;background:var(--surface3);color:var(--text3);padding:1px 6px;border-radius:100px}
 .tab-btn.active .tab-num{background:var(--teal-l);color:var(--teal)}
 
-/* Teacher create actions — below the tabs row (never inside the cover) */
-.tab-action-bar{display:flex;align-items:center;gap:8px;padding:12px 24px;flex-shrink:0;border-bottom:1px solid var(--border);background:var(--surface)}
+/* Teacher create actions — below the tabs row (never inside the cover).
+   Мягкая тень вместо жёсткой линии-разделителя (в духе Apple: edge effect,
+   а не hairline) — граница появляется только когда есть что отделять. */
+.tab-action-bar{display:flex;align-items:center;gap:10px;padding:10px 24px 14px;flex-shrink:0;background:var(--surface);box-shadow:0 8px 12px -10px rgba(0,0,0,.16)}
+html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
+
+/* Обе плитки — одного веса и стиля, как в приложении: ни одно из двух
+   действий не важнее другого, поэтому нет выделения цветом. */
+.quick-action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;background:var(--surface2);border:none;border-radius:var(--r-lg);color:var(--text1);font-size:13px;font-weight:600;letter-spacing:-.01em;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;cursor:pointer;transition:background .18s ease,transform .12s cubic-bezier(.32,.72,0,1)}
+.quick-action-btn svg{flex-shrink:0}
+.quick-action-btn:hover{background:var(--surface3)}
+.quick-action-btn:active{transform:scale(.97)}
 
 /* Tab content */
 .tab-content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px}
@@ -1331,7 +1348,7 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .criterion-edit-row{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md)}
 .criterion-edit-top{display:flex;gap:8px;align-items:center}
 .criterion-name-inp{flex:1;min-width:0}
-.criterion-weight-inp{width:80px;flex-shrink:0;text-align:center}
+.criterion-pts{width:32px;flex-shrink:0;text-align:center;font-size:13px;font-weight:700;color:var(--teal)}
 .criterion-del-btn{width:30px;height:38px;flex-shrink:0;border-radius:var(--r-sm);background:transparent;border:1px solid transparent;color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
 .criterion-del-btn:hover:not(:disabled){background:var(--red-l);border-color:rgba(220,38,38,.2);color:var(--red)}
 .criterion-del-btn:disabled{opacity:.3;cursor:not-allowed}
@@ -1443,8 +1460,8 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
   .tabs-bar{overflow-x:hidden;flex-wrap:nowrap}
   .tab-btn{white-space:nowrap;min-width:0}
   /* Кнопки создания — под строкой вкладок, во всю ширину на мобильном */
-  .tab-action-bar{padding:10px 12px;gap:8px}
-  .tab-action-bar .btn{flex:1;justify-content:center;min-height:44px;font-size:12px}
+  .tab-action-bar{padding:8px 12px 12px;gap:8px}
+  .quick-action-btn{min-height:44px;font-size:12px}
   .tab-content{padding:10px 12px 80px;overflow-x:hidden}
   /* Раньше отдельная полоса "Предметы › Название" над обложкой (высотой
      52px + safe-area) отделяла её от статус-бара/чёлки — теперь эту

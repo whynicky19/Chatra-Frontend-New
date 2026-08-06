@@ -99,6 +99,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'class.no_assignments_teacher': { ru: 'Нажмите «Задание» чтобы создать первое', en: 'Click "Assignment" to create the first one', kk: 'Бірінші тапсырманы жасау үшін «Тапсырма» батырмасын басыңыз' },
   'class.no_assignments_student': { ru: 'Учитель добавит задания', en: 'Teacher will add assignments', kk: 'Мұғалім тапсырмалар қосады' },
   'class.add': { ru: 'Добавить', en: 'Add', kk: 'Қосу' },
+  'class.lecture_btn': { ru: 'Лекция', en: 'Lecture', kk: 'Дәріс' },
   'class.assignment_btn': { ru: 'Задание', en: 'Assignment', kk: 'Тапсырма' },
   'class.code': { ru: 'Код:', en: 'Code:', kk: 'Код:' },
   'class.code_copied': { ru: 'Код скопирован:', en: 'Code copied:', kk: 'Код көшірілді:' },
