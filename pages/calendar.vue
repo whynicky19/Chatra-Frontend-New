@@ -110,9 +110,14 @@ import { useClassesSvc } from '~/services/classes'
 import { useI18n } from '~/composables/useI18n'
 import { useToast } from '~/composables/useToast'
 import { parseUtc } from '~/composables/useDeadline'
+import { useAuthStore } from '~/stores/auth.store'
 definePageMeta({ layout: 'default' })
 
 const router = useRouter()
+const auth = useAuthStore()
+if (auth.isTeacher || auth.isAdmin) {
+  router.replace('/')
+}
 const { lang, t } = useI18n()
 const tt = (ru: string, kk: string, en: string) =>
   lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en

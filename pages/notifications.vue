@@ -57,6 +57,9 @@ definePageMeta({ layout: 'default' })
 const router = useRouter()
 const { t } = useI18n()
 const auth = useAuthStore()
+if (auth.isTeacher || auth.isAdmin) {
+  router.replace('/')
+}
 const assignSvc = useAssignmentsSvc()
 const classesSvc = useClassesSvc()
 const notifSvc = useNotificationsSvc()

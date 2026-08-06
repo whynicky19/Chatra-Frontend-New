@@ -12,12 +12,12 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
               {{ t('classes.create') }}
             </button>
-            <button class="btn btn-teal" @click="showJoin=true">{{ t('classes.join_code') }}</button>
-            <NuxtLink to="/calendar" class="btn btn-head-icon" title="Дедлайны">
+            <button v-if="!auth.isTeacher && !auth.isAdmin" class="btn btn-teal" @click="showJoin=true">{{ t('classes.join_code') }}</button>
+            <NuxtLink v-if="!auth.isTeacher && !auth.isAdmin" to="/calendar" class="btn btn-head-icon" title="Дедлайны">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <span class="btn-head-label">Дедлайны</span>
             </NuxtLink>
-            <NuxtLink to="/notifications" class="btn btn-head-icon" title="Уведомления">
+            <NuxtLink v-if="!auth.isTeacher && !auth.isAdmin" to="/notifications" class="btn btn-head-icon" title="Уведомления">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
               <span class="btn-head-label">Уведомления</span>
             </NuxtLink>
@@ -51,7 +51,7 @@
             </div>
             <div class="es-title">{{ auth.isTeacher ? t('classes.no_classes_teacher') : t('classes.no_classes') }}</div>
             <div class="es-sub">{{ auth.isTeacher ? t('classes.no_classes_sub_teacher') : t('classes.no_classes_sub_student') }}</div>
-            <button class="btn btn-teal es-btn" @click="showJoin=true">{{ t('classes.join_code') }}</button>
+            <button v-if="!auth.isTeacher && !auth.isAdmin" class="btn btn-teal es-btn" @click="showJoin=true">{{ t('classes.join_code') }}</button>
           </div>
 
           <template v-else>
