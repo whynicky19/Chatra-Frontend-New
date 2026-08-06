@@ -93,6 +93,38 @@ const download = () => {
 // изображения» — переключаемся на общий экран ошибки с кнопкой «Скачать».
 const onImgError = () => { errorMsg.value = 'Не удалось загрузить предпросмотр файла' }
 
+// docx-preview рисует вставленные картинки как <div style="width:...pt;height:...pt">
+// с <img> внутри, а обрезку (Word crop) — через clip-path (в %) + transform:scale()
+// на самом img (числа завязаны именно на исходный px-размер img). Поэтому просто
+// задавить img через max-width/height:auto нельзя — сломает пропорции/обрезку.
+// Вместо этого при переполнении экрана пропорционально уменьшаем width/height
+// у div-обёртки И у img внутри на один и тот же коэффициент — clip-path (в %)
+// и transform:scale() остаются валидны, картинка просто становится меньше целиком.
+const fitDocxDrawings = (container: HTMLElement) => {
+  // clientWidth включает паддинг контейнера (14px с каждой стороны на мобильном) —
+  // реальная область под контент уже, иначе картинка вплотную упрётся в паддинг.
+  const cs = getComputedStyle(container)
+  const available = container.clientWidth - parseFloat(cs.paddingLeft || '0') - parseFloat(cs.paddingRight || '0')
+  if (!available) return
+  container.querySelectorAll<HTMLDivElement>('div[style*="display: inline-block"]').forEach(wrap => {
+    const rect = wrap.getBoundingClientRect()
+    if (rect.width <= available) return
+    const scale = available / rect.width
+    const scaleProp = (el: HTMLElement, prop: 'width' | 'height' | 'left' | 'top') => {
+      const raw = parseFloat(el.style[prop])
+      if (!isNaN(raw)) el.style[prop] = `${raw * scale}pt`
+    }
+    scaleProp(wrap, 'width')
+    scaleProp(wrap, 'height')
+    wrap.querySelectorAll<HTMLImageElement>('img').forEach(img => {
+      scaleProp(img, 'width')
+      scaleProp(img, 'height')
+      scaleProp(img, 'left')
+      scaleProp(img, 'top')
+    })
+  })
+}
+
 const load = async () => {
   errorMsg.value = ''
   sheetHtml.value = ''
@@ -131,7 +163,20 @@ const load = async () => {
       if (docxContainer.value) {
         docxContainer.value.innerHTML = ''
         const { renderAsync } = await import('docx-preview')
-        await renderAsync(blob, docxContainer.value, undefined, { className: 'docx-view', inWrapper: false })
+        // На мобильном докс рендерился с фиксированной шириной страницы (~800px+,
+        // как в Word) и вылезал горизонтальным скроллом — ignoreWidth/ignoreHeight
+        // убирают эту фиксацию, текст и таблицы перетекают под реальную ширину экрана.
+        const isMobile = window.innerWidth <= 768
+        await renderAsync(blob, docxContainer.value, undefined, { className: 'docx-view', inWrapper: false, ignoreWidth: isMobile, ignoreHeight: isMobile })
+        if (isMobile) {
+          // Контейнер всё ещё скрыт через v-show (loading=true), поэтому его
+          // clientWidth сейчас 0 — измерять/подгонять картинки можно только
+          // после того, как он реально станет видимым (внешний finally ниже
+          // выставит loading=false ещё раз — идемпотентно, не страшно).
+          loading.value = false
+          await nextTick()
+          fitDocxDrawings(docxContainer.value)
+        }
       }
     } else if (k === 'sheet') {
       const buf = await res.arrayBuffer()
@@ -184,7 +229,17 @@ watch(() => previewFile.value?.url, (url) => { if (url) load() })
   .fp-title{font-size:13px}
   .fp-actions .btn-sm{padding:8px 10px;font-size:12px;gap:4px}
   .fp-iframe{min-height:70vh}
-  .fp-docx{padding:14px}
+  .fp-docx{padding:8px}
+  /* Настоящий узкий текст — это не наш паддинг, а поля страницы самого Word-
+     документа: docx-preview всегда переносит pageMargins в padding секции
+     (не зависит от ignoreWidth/ignoreHeight), а это обычно ~1 дюйм = 96px —
+     на телефоне это съедало почти половину экрана. Прижимаем поля страницы
+     под мобильный размер, а не под печатный. */
+  .fp-docx :deep(section){padding:16px!important}
+  /* Картинки уже подгоняются в JS (fitDocxDrawings в load()) с сохранением
+     clip-path/transform обрезки Word — здесь только таблицы, у них после
+     ignoreWidth нет обёртки с transform, поэтому safe просто ограничить шириной. */
+  .fp-docx :deep(table){max-width:100%;table-layout:fixed;word-break:break-word}
   .fp-sheet{padding:10px}
 }
 </style>
