@@ -1,12 +1,9 @@
 <template>
   <div class="org-shell">
-    <!-- Мягкое цветное «дыхание» по углам: выбранный тип проступает сильнее -->
-    <div class="glow glow-uni" :class="{ strong: picked === 'university' }"></div>
-    <div class="glow glow-school" :class="{ strong: picked === 'school' }"></div>
-
     <div class="org-content">
       <!-- Lang switcher -->
-      <div class="lang-row r0">
+      <div class="lang-row">
+        <span class="lang-thumb" :style="{ transform: `translateX(${langIndex * 100}%)` }"></span>
         <button v-for="l in langs" :key="l.code"
           :class="['lang-btn', { active: lang === l.code }]"
           @click="setLang(l.code as any)">
@@ -14,18 +11,12 @@
         </button>
       </div>
 
-      <!-- Логотип: цвет фиксирован (чёрный/белый по теме), не зависит от выбора -->
-      <div class="org-brand r1">
-        <span class="logo-glow" :style="{ background: accent, opacity: picked ? .34 : .18 }"></span>
-        <span class="logo-mark"></span>
-      </div>
+      <!-- Логотип -->
+      <span class="org-logo" role="img" aria-label="Chatra" :style="{ background: `linear-gradient(180deg, ${accent}, ${accentDark})` }"></span>
 
       <!-- Заголовок -->
-      <div class="org-head r2">
-        <h1 class="org-title">{{ tt('Добро пожаловать', 'Қош келдіңіз', 'Welcome') }}</h1>
-        <h1 class="org-title accent" :style="{ color: picked ? accent : 'var(--text1)' }">
-          {{ tt('в Chatra', 'Chatra-ға', 'to Chatra') }}
-        </h1>
+      <div class="org-head">
+        <h1 class="org-title">{{ tt('Добро пожаловать в Chatra', 'Chatra-ға қош келдіңіз', 'Welcome to Chatra') }}</h1>
         <p class="org-sub">{{ tt('Выберите тип организации — оформление настроится под него.',
           'Ұйым түрін таңдаңыз — безендіру соған бейімделеді.',
           'Choose your organization type — the theme will adapt to it.') }}</p>
@@ -33,7 +24,7 @@
 
       <!-- Карточки -->
       <div class="org-options">
-        <button class="org-option r3" :class="{ selected: picked === 'university' }"
+        <button class="org-option" :class="{ selected: picked === 'university' }"
           :style="picked === 'university' ? selStyle(TEAL) : {}"
           @click="pick('university')">
           <span class="org-option-icon uni-tile"><span class="uni-glyph"></span></span>
@@ -46,11 +37,11 @@
           </span>
         </button>
 
-        <button class="org-option r4" :class="{ selected: picked === 'school' }"
+        <button class="org-option" :class="{ selected: picked === 'school' }"
           :style="picked === 'school' ? selStyle(AMBER) : {}"
           @click="pick('school')">
           <span class="org-option-icon school-tile">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
               <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
               <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
             </svg>
@@ -66,9 +57,9 @@
       </div>
 
       <!-- Продолжить -->
-      <div class="org-footer r5">
+      <div class="org-footer">
         <button class="continue-btn" :disabled="!picked"
-          :style="picked ? { background: accent, boxShadow: `0 7px 22px -4px ${accent}55` } : {}"
+          :style="picked ? { background: accent } : {}"
           @click="proceed">
           {{ tt('Продолжить', 'Жалғастыру', 'Continue') }}
         </button>
@@ -99,15 +90,20 @@ const langs = [
   { code: 'kk', label: 'KZ' },
 ]
 
+const langIndex = computed(() => Math.max(0, langs.findIndex(l => l.code === lang.value)))
+
+const TEAL_D = '#00829C'
+const AMBER_D = '#B45309'
+
 const picked = ref<'university' | 'school' | null>(null)
 const accent = computed(() => picked.value === 'school' ? AMBER : TEAL)
+const accentDark = computed(() => picked.value === 'school' ? AMBER_D : TEAL_D)
 
 const tt = (ru: string, kk: string, en: string) =>
   lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
 
 const selStyle = (c: string) => ({
   borderColor: c,
-  boxShadow: `0 7px 22px -4px ${c}44`,
 })
 
 const pick = (type: 'university' | 'school') => { picked.value = type }
@@ -126,162 +122,140 @@ const proceed = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
 }
-
-/* Угловые свечения */
-.glow {
-  position: absolute; inset: 0;
-  pointer-events: none;
-  opacity: .07;
-  transition: opacity .5s ease;
-}
-html.dark .glow { opacity: .1; }
-.glow.strong { opacity: .16 !important; }
-.glow-uni    { background: radial-gradient(circle at 0% 0%,   #00B1C9 0%, transparent 55%); }
-.glow-school { background: radial-gradient(circle at 100% 100%, #F59E0B 0%, transparent 55%); }
 
 .org-content {
-  position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
   padding: 32px 24px;
-  width: 100%; max-width: 440px;
+  width: 100%; max-width: 400px;
+  animation: content-fade .32s ease both;
+}
+@keyframes content-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-/* Lang row */
+/* Lang row: сегментированный переключатель со скользящим ползунком */
 .lang-row {
-  display: flex; gap: 4px;
-  margin-bottom: 30px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  position: relative;
+  display: flex; align-items: center;
+  margin-bottom: 28px;
+  background: var(--surface2);
   border-radius: 100px;
   padding: 3px;
+}
+.lang-thumb {
+  position: absolute; top: 3px; bottom: 3px; left: 3px;
+  width: calc((100% - 6px) / 3);
+  background: var(--surface);
+  border-radius: 100px;
   box-shadow: var(--sh-xs);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
 }
 .lang-btn {
-  padding: 5px 14px; border-radius: 100px;
-  font-size: 12px; font-weight: 700; letter-spacing: .05em;
-  transition: all .18s;
-  color: var(--text4);
+  position: relative; z-index: 1;
+  width: 44px; padding: 6px 0; border-radius: 100px;
+  font-size: 12px; font-weight: 700; letter-spacing: .04em;
+  color: var(--text3);
+  transition: color .2s ease;
 }
-.lang-btn:hover { color: var(--text2); }
-.lang-btn.active { background: var(--teal); color: #fff; }
+.lang-btn.active { color: var(--text1); }
 
-/* Логотип: PNG как маска, чтобы перекрашивать в цвет выбора */
-.org-brand { position: relative; width: 104px; height: 104px; margin-bottom: 24px; }
-.logo-glow {
-  position: absolute; left: 50%; top: 50%;
-  width: 64px; height: 64px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  filter: blur(30px);
-  transition: background .45s ease, opacity .45s ease;
-}
-.logo-mark {
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, #40D0E4, #00829C);
-  -webkit-mask: url('/logo-icon.png') center / contain no-repeat;
-  mask: url('/logo-icon.png') center / contain no-repeat;
+/* Логотип: однотонная маска, тонируется под выбранный акцент */
+.org-logo {
+  display: block;
+  width: 84px; aspect-ratio: 1200 / 734;
+  margin-bottom: 22px;
+  -webkit-mask: url('/logo.png') center / contain no-repeat;
+  mask: url('/logo.png') center / contain no-repeat;
+  transition: background .3s ease;
 }
 
 /* Заголовок */
-.org-head { text-align: center; margin-bottom: 32px; }
+.org-head { text-align: center; margin-bottom: 30px; }
 .org-title {
-  font-size: 30px; font-weight: 800;
-  letter-spacing: -.02em; line-height: 1.12;
+  font-size: 24px; font-weight: 700;
+  letter-spacing: -.015em; line-height: 1.2;
   color: var(--text1);
 }
-.org-title.accent { transition: color .45s ease; }
 .org-sub {
-  margin-top: 10px;
-  font-size: 14.5px; color: var(--text4); line-height: 1.45;
-  max-width: 320px; margin-left: auto; margin-right: auto;
+  margin-top: 8px;
+  font-size: 14px; color: var(--text4); line-height: 1.45;
+  max-width: 300px; margin-left: auto; margin-right: auto;
 }
 
 /* Карточки */
-.org-options { display: flex; flex-direction: column; gap: 13px; width: 100%; }
+.org-options { display: flex; flex-direction: column; gap: 10px; width: 100%; }
 .org-option {
   display: flex; align-items: center; gap: 14px;
-  padding: 15px 16px;
-  border-radius: 20px;
-  border: 2px solid transparent;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
   background: var(--surface);
-  box-shadow: var(--sh-sm);
   text-align: left;
-  transition: transform .16s ease, border-color .22s ease, box-shadow .22s ease, background .22s ease;
+  transition: transform .15s ease, border-color .2s ease, background .2s ease;
 }
-.org-option:hover { transform: translateY(-1px); }
-.org-option:active { transform: scale(.978); }
+.org-option:hover { background: var(--surface2); }
+.org-option:active { transform: scale(.985); }
+.org-option.selected { border-width: 2px; padding: 13.5px 15.5px; }
 
 .org-option-icon {
-  width: 54px; height: 54px; border-radius: 16px;
+  width: 44px; height: 44px; border-radius: 13px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.uni-tile    { background: linear-gradient(135deg, #006475, #009AAF); }
-.school-tile { background: linear-gradient(135deg, #B45309, #F59E0B); }
+.uni-tile    { background: #00B1C9; }
+.school-tile { background: #F59E0B; }
 .uni-glyph {
-  width: 28px; height: 28px; display: block;
+  width: 24px; height: 24px; display: block;
   background: #fff;
   -webkit-mask: url('/uni-logo.png') center / contain no-repeat;
   mask: url('/uni-logo.png') center / contain no-repeat;
 }
 
 .org-option-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.org-option-title { font-size: 16.5px; font-weight: 700; letter-spacing: -.01em; color: var(--text1); }
-.org-option-sub   { font-size: 13px; color: var(--text4); margin-top: 2px; }
+.org-option-title { font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; color: var(--text1); }
+.org-option-sub   { font-size: 12.5px; color: var(--text4); margin-top: 1px; }
 
 /* Радио-отметка в стиле списков iOS */
 .radio {
-  width: 26px; height: 26px; border-radius: 50%;
+  width: 24px; height: 24px; border-radius: 50%;
   border: 1.6px solid var(--border2);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  transition: all .22s ease;
+  transition: all .2s ease;
 }
 
 /* Продолжить */
-.org-footer { width: 100%; margin-top: 26px; display: flex; flex-direction: column; align-items: center; }
+.org-footer { width: 100%; margin-top: 22px; display: flex; flex-direction: column; align-items: center; }
 .continue-btn {
-  width: 100%; height: 52px;
-  border-radius: 16px;
+  width: 100%; height: 50px;
+  border-radius: 14px;
   background: var(--surface2);
   color: var(--text4);
-  font-size: 16px; font-weight: 700;
-  transition: all .3s ease;
+  font-size: 15px; font-weight: 600;
+  transition: background .2s ease, color .2s ease;
 }
 .continue-btn:not(:disabled) { color: #fff; }
-.continue-btn:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.05); }
 .continue-btn:not(:disabled):active { transform: scale(.98); }
 .continue-btn:disabled { cursor: not-allowed; }
 .org-note { margin-top: 12px; font-size: 12px; color: var(--text4); text-align: center; }
 
-/* Ступенчатое появление */
-.r0, .r1, .r2, .r3, .r4, .r5 { animation: rise .5s cubic-bezier(.16,1,.3,1) both; }
-.r1 { animation-delay: .05s; }
-.r2 { animation-delay: .12s; }
-.r3 { animation-delay: .2s; }
-.r4 { animation-delay: .27s; }
-.r5 { animation-delay: .35s; }
-@keyframes rise {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 @media (prefers-reduced-motion: reduce) {
-  .r0, .r1, .r2, .r3, .r4, .r5 { animation: none; }
-  .glow, .logo-mark, .logo-glow, .org-title.accent, .org-option, .radio, .continue-btn { transition: none; }
+  .org-content { animation: none; }
+  .org-logo, .org-option, .radio, .continue-btn, .lang-thumb { transition: none; }
 }
 
 @media (max-width: 768px) {
-  .lang-btn { padding: 10px 16px; min-height: 44px; display: inline-flex; align-items: center; }
+  .lang-btn { width: 48px; padding: 10px 0; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 }
 @media (max-width: 480px) {
   .org-content { padding: 24px 18px; }
-  .org-title { font-size: 26px; }
-  .org-brand { width: 88px; height: 88px; margin-bottom: 20px; }
-  .org-option { padding: 13px 14px; }
-  .org-option-icon { width: 48px; height: 48px; border-radius: 14px; }
-  .uni-glyph { width: 24px; height: 24px; }
+  .org-title { font-size: 21px; }
+  .org-logo { width: 72px; margin-bottom: 18px; }
+  .org-option { padding: 12px 14px; }
+  .org-option.selected { padding: 11.5px 13.5px; }
+  .org-option-icon { width: 40px; height: 40px; border-radius: 12px; }
+  .uni-glyph { width: 20px; height: 20px; }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-card anim-scale">
+  <div class="auth-card">
     <!-- Org type badge -->
     <div class="org-badge-row">
       <div :class="['org-badge', org.isSchool ? 'school' : 'university']">
@@ -75,14 +75,14 @@ const sub = async () => {
 </script>
 <style scoped>
 /* Карточка вокруг формы, чтобы не сливалась с фоном */
-.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;box-shadow:var(--sh-md);padding:28px 26px;width:100%;max-width:400px;margin:0 auto}
-.auth-title{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-bottom:6px;color:var(--text1);text-align:center}
-.auth-sub{font-size:15px;color:var(--text4);margin-bottom:28px;text-align:center;line-height:1.4}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--sh-sm);padding:28px 26px;width:100%;max-width:400px;margin:0 auto}
+.auth-title{font-size:24px;font-weight:700;letter-spacing:-.015em;line-height:1.2;margin-bottom:6px;color:var(--text1);text-align:center}
+.auth-sub{font-size:14.5px;color:var(--text4);margin-bottom:26px;text-align:center;line-height:1.4}
 .auth-form{display:flex;flex-direction:column}
 .frow{margin-bottom:14px}
 .flabel{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.04em;display:block;margin-bottom:6px}
-.input{background:var(--bg)!important;border:1px solid var(--border)!important;border-radius:16px!important;padding:13px 18px!important;color:var(--text1)!important}
-.input:focus{border-color:var(--teal)!important;box-shadow:0 0 0 2px rgba(var(--teal-rgb),.25)!important}
+.input{background:var(--bg)!important;border:1px solid var(--border)!important;border-radius:14px!important;padding:13px 18px!important;color:var(--text1)!important;transition:border-color .15s ease,box-shadow .15s ease}
+.input:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(var(--teal-rgb),.16)!important}
 .input::placeholder{color:var(--text4)!important}
 .pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text4);background:none;border:none;cursor:pointer;padding:4px;transition:color .15s}
 .pw-eye:hover{color:var(--teal)}
@@ -95,8 +95,9 @@ const sub = async () => {
 .forgot-link:hover{color:var(--teal-h)}
 .input-err{border-color:var(--red)!important;background:var(--red-l)!important}
 .input-err:focus{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(220,38,38,0.12)!important}
-/* Org badge */
-.auth-submit{height:52px;border-radius:16px;font-size:15px;font-weight:700}
+/* Кнопка входа: плоская заливка акцентом, без цветного ореола тени */
+.auth-submit{height:50px;border-radius:14px;font-size:15px;font-weight:600;background:var(--teal)!important;box-shadow:none!important}
+.auth-submit:hover{background:var(--teal-h)!important;box-shadow:none!important;transform:none!important}
 .org-badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .org-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;padding:4px 10px;border-radius:100px}
 .org-badge.university{background:rgba(var(--teal-rgb),.1);color:var(--teal-d);border:1px solid rgba(var(--teal-rgb),.25)}

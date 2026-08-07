@@ -419,7 +419,7 @@ const setClassFilter = (classId: number | null) => { aiFilterClass.value = aiFil
 const switchToAiUsage = () => { tab.value = 'ai-usage'; if (!aiLogs.value.length && !aiLoading.value) loadAiUsage(1) }
 
 // ── Classes ───────────────────────────────────────────────────────────────────
-const clCovers = ['linear-gradient(135deg,#006475,#009aaf)','linear-gradient(135deg,#0c4a6e,#0369a1)','linear-gradient(135deg,#134e4a,#0d9488)','linear-gradient(135deg,#312e81,#4338ca)','linear-gradient(135deg,#1e3a5f,#2563eb)']
+const clCovers = ['linear-gradient(135deg,var(--teal-d),var(--teal))','linear-gradient(135deg,#0c4a6e,#0369a1)','linear-gradient(135deg,#134e4a,#0d9488)','linear-gradient(135deg,#312e81,#4338ca)','linear-gradient(135deg,#1e3a5f,#2563eb)']
 const coverGrad = (id: number) => clCovers[id % clCovers.length]
 
 const classes = ref<any[]>([]); const loadingCl = ref(false)

@@ -120,7 +120,7 @@ const cleanDesc = (s?: string) => (s || '').replace(/(https?:\/\/[^\s]+)/g, '').
 .accent-blue { background: var(--text4); }
 .accent-green { background: var(--green); }
 .accent-red { background: var(--red); }
-.accent-purple { background: #4dd6e8; }
+.accent-purple { background: var(--purple); }
 
 .asgn-ico-wrap { width: 44px; height: 44px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .ico-blue { background: var(--surface3); color: var(--text3); border: 1px solid var(--border); }

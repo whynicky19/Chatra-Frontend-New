@@ -93,7 +93,7 @@ const covers = [
   'linear-gradient(135deg,#9f1239,#e11d48)',
   'linear-gradient(135deg,#065f46,#059669)',
   'linear-gradient(135deg,#3730a3,#4f46e5)',
-  'linear-gradient(135deg,#006475,#009aaf)',
+  'linear-gradient(135deg,var(--teal-d),var(--teal))',
 ]
 const coverGrad = (id: number) => covers[id % covers.length]
 const coverUrl = (cls: any) => fixFileUrl(cls.cover_thumbnail || cls.cover_image)
