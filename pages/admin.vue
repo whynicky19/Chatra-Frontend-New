@@ -190,6 +190,7 @@
         </div>
 
         <!-- Table -->
+        <div class="ai-log-heading">Журнал запросов</div>
         <div v-if="aiLoading" class="center-loading center-loading-lg"><div class="spinner"></div></div>
         <div v-else class="users-table ai-table">
           <table>
@@ -252,10 +253,20 @@
       </div>
 
       <div v-else-if="tab==='classes'">
+        <div class="u-search-row">
+          <div class="search-wrap u-search-wrap">
+            <svg class="u-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input v-model="clq" class="search-inp" placeholder="Поиск предметов..."/>
+          </div>
+        </div>
         <div v-if="loadingCl" class="center-loading"><div class="spinner"></div></div>
         <div v-else class="cl-grid">
-          <div v-for="cl in classes" :key="cl.id" class="cl-card" @click="openClass(cl)">
+          <div v-for="cl in fClasses" :key="cl.id" class="cl-card" @click="openClass(cl)">
             <div class="cl-cover" :style="(cl.cover_thumbnail || cl.cover_image) ? `background-image:url(${fixFileUrl(cl.cover_thumbnail || cl.cover_image)})` : `background:${coverGrad(cl.id)}`">
+              <span v-if="cl.member_count != null" class="cl-member-chip">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                {{ cl.member_count }}
+              </span>
             </div>
             <div class="cl-body">
               <div class="cl-name">{{ cl.name }}</div>
@@ -265,7 +276,7 @@
               </div>
             </div>
           </div>
-          <div v-if="!classes.length" class="u-empty-cell">Классов нет</div>
+          <div v-if="!fClasses.length" class="u-empty-cell">{{ classes.length ? 'Ничего не найдено' : 'Классов нет' }}</div>
         </div>
       </div>
     </div>
@@ -298,18 +309,21 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
           <div class="cl-modal-title">{{ selectedClass?.name }}</div>
+          <div v-if="selectedClass?.created_at" class="cl-modal-sub">Создан {{ fmtDate(selectedClass.created_at) }}</div>
         </div>
 
         <div class="cl-modal-body">
           <!-- Creator -->
           <div class="cl-section">
             <div class="cl-section-label">Создатель</div>
-            <div v-if="classCreator" class="member-row">
-              <div class="member-info">
-                <div class="member-name">{{ classCreator.full_name || classCreator.email.split('@')[0] }}</div>
-                <div class="member-email">{{ classCreator.email }}</div>
+            <div v-if="classCreator" class="members-list">
+              <div class="member-row">
+                <div class="member-info">
+                  <div class="member-name">{{ classCreator.full_name || classCreator.email.split('@')[0] }}</div>
+                  <div class="member-email">{{ classCreator.email }}</div>
+                </div>
+                <span :class="['badge', classCreator.role==='admin'?'badge-teal':'badge-gray']">{{ classCreator.role }}</span>
               </div>
-              <span :class="['badge', classCreator.role==='admin'?'badge-teal':'badge-gray']">{{ classCreator.role }}</span>
             </div>
             <div v-else class="cl-unknown">Неизвестно</div>
           </div>
@@ -428,7 +442,8 @@ const switchToAiUsage = () => { tab.value = 'ai-usage'; if (!aiLogs.value.length
 const clCovers = ['linear-gradient(135deg,var(--teal-d),var(--teal))','linear-gradient(135deg,#0c4a6e,#0369a1)','linear-gradient(135deg,#134e4a,#0d9488)','linear-gradient(135deg,#312e81,#4338ca)','linear-gradient(135deg,#1e3a5f,#2563eb)']
 const coverGrad = (id: number) => clCovers[id % clCovers.length]
 
-const classes = ref<any[]>([]); const loadingCl = ref(false)
+const classes = ref<any[]>([]); const loadingCl = ref(false); const clq = ref('')
+const fClasses = computed(() => classes.value.filter(cl => cl.name.toLowerCase().includes(clq.value.toLowerCase())))
 const showMembers = ref(false); const membersList = ref<any[]>([]); const loadingMembers = ref(false)
 const selectedClass = ref<any>(null)
 const classCreator = computed(() => selectedClass.value?.created_by ? users.value.find(u => u.id === selectedClass.value.created_by) ?? null : null)
@@ -620,7 +635,8 @@ onUnmounted(() => {
 .ai-filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .ai-filter-wrap{flex:1;max-width:260px}
 .ai-filter-select{cursor:pointer}
-.ai-total-badge{font-size:13px;font-weight:600;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);padding:5px 12px}
+.ai-total-badge{font-size:12px;font-weight:700;color:var(--teal);background:rgba(var(--teal-rgb),.1);border:1px solid rgba(var(--teal-rgb),.2);border-radius:100px;padding:5px 12px}
+.ai-log-heading{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin:18px 0 10px}
 .ai-class-chip{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(var(--teal-rgb),.1);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.2)}
 /* "Общий чат" — нейтральная категория, не отдельный цвет акцента (раньше
    индиго #6366f1, вне бренда — единственный акцент сайта это --teal). */
@@ -640,7 +656,8 @@ onUnmounted(() => {
 .cl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
 .cl-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--sh-xs)}
 .cl-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:rgba(var(--teal-rgb),.25)}
-.cl-cover{height:130px;background-size:cover;background-position:center;background-repeat:no-repeat}
+.cl-cover{height:130px;background-size:cover;background-position:center;background-repeat:no-repeat;position:relative}
+.cl-member-chip{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);padding:4px 9px;border-radius:100px}
 .cl-body{padding:14px 16px 16px}
 .cl-name{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cl-sub{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -651,6 +668,7 @@ onUnmounted(() => {
 .cl-modal-close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(4px)}
 .cl-modal-close:hover{background:rgba(0,0,0,.65)}
 .cl-modal-title{font-size:20px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);margin:0}
+.cl-modal-sub{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);text-shadow:0 1px 4px rgba(0,0,0,.5);margin-top:2px}
 .cl-modal-body{padding:0 20px 20px;overflow-y:auto;flex:1;min-height:0}
 .cl-section{margin-top:20px}
 .cl-section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin-bottom:10px;display:flex;align-items:center;gap:8px}
@@ -659,8 +677,10 @@ onUnmounted(() => {
 .cl-unknown{font-size:13px;color:var(--text4);padding:8px 0}
 .cl-subtitle{font-size:12px;color:var(--text4);margin:-4px 0 10px}
 
-/* Members */
-.members-list{display:flex;flex-direction:column;max-height:280px;overflow-y:auto}
+/* Members — inset grouped list (iOS Settings style): rows share one
+   rounded surface instead of floating with bare bottom borders, so
+   related items visually read as one group. */
+.members-list{display:flex;flex-direction:column;max-height:280px;overflow-y:auto;background:var(--surface2);border-radius:var(--r-md);padding:0 12px}
 .member-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
 .member-row:last-child{border-bottom:none}
 .member-info{flex:1;min-width:0}
