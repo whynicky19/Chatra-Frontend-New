@@ -60,7 +60,7 @@
                     <div v-if="u.role==='student'" class="u-ai-row">
                       <span :class="['ai-quota-badge', u.ai_unlimited ? 'unlimited' : 'limited']">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        {{ u.ai_unlimited ? 'Безлимит' : '5 запросов' }}
+                        {{ u.ai_unlimited ? 'Безлимит' : `${AI_LIMIT} запросов/24ч` }}
                       </span>
                       <button
                         :class="['btn btn-sm ai-toggle-btn', u.ai_unlimited ? 'btn-ghost' : 'btn-teal']"
@@ -111,7 +111,7 @@
               <div v-if="u.role==='student'" class="u-card-ai">
                 <span :class="['ai-quota-badge', u.ai_unlimited ? 'unlimited' : 'limited']">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  {{ u.ai_unlimited ? 'Безлимит' : '5 запросов' }}
+                  {{ u.ai_unlimited ? 'Безлимит' : `${AI_LIMIT} запросов/24ч` }}
                 </span>
                 <button
                   :class="['btn btn-sm ai-toggle-btn', u.ai_unlimited ? 'btn-ghost' : 'btn-teal']"
@@ -390,6 +390,7 @@ import { useAdminSvc } from '~/services/admin'
 import { useClassesSvc } from '~/services/classes'
 import { useI18n } from '~/composables/useI18n'
 import { fixFileUrl } from '~/composables/useFileUrl'
+import { AI_LIMIT } from '~/composables/useAiQuota'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const toast = useToast(); const adminSvc = useAdminSvc()
 const { fetchMe } = useAuth()
