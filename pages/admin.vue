@@ -41,11 +41,19 @@
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="tabs admin-tabs">
-        <button :class="['tab-btn',{active:tab==='users'}]" @click="tab='users'">Пользователи</button>
-        <button :class="['tab-btn',{active:tab==='classes'}]" @click="switchToClasses">Предметы</button>
-        <button :class="['tab-btn','tab-ai-btn',{active:tab==='ai-usage'}]" @click="switchToAiUsage">
+      <!-- Tabs — тот же сегмент-контрол в стиле iOS, что и на странице класса:
+           плавающая подложка скользит внутри общей "полочки" на всю ширину. -->
+      <div class="tabs-bar" :style="{ '--tab-count': 3, '--tab-index': adminTabIndex }">
+        <div class="tabs-indicator"></div>
+        <button :class="['tab-btn',{active:tab==='users'}]" @click="tab='users'">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          Пользователи
+        </button>
+        <button :class="['tab-btn',{active:tab==='classes'}]" @click="switchToClasses">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          Предметы
+        </button>
+        <button :class="['tab-btn',{active:tab==='ai-usage'}]" @click="switchToAiUsage">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           Запросы к ИИ
         </button>
@@ -77,12 +85,7 @@
               <thead><tr><th>Имя</th><th>Email</th><th>Роль</th><th>ИИ доступ</th><th>Дата регистрации</th><th></th></tr></thead>
               <tbody>
                 <tr v-for="u in fUsers" :key="u.id">
-                  <td class="u-name">
-                    <div class="u-name-row">
-                      <AdminAvatar :name="u.full_name || u.email" :seed="u.id"/>
-                      <span>{{u.full_name || u.email.split('@')[0]}}</span>
-                    </div>
-                  </td>
+                  <td class="u-name">{{u.full_name || u.email.split('@')[0]}}</td>
                   <td class="u-email">{{u.email}}</td>
                   <td>
                     <span :class="['badge',u.role==='admin'?'badge-teal':'badge-gray']">{{u.role}}</span>
@@ -129,7 +132,6 @@
           <div class="users-cards">
             <div v-for="u in fUsers" :key="u.id" class="u-card">
               <div class="u-card-top">
-                <AdminAvatar :name="u.full_name || u.email" :seed="u.id" size="md"/>
                 <div class="u-card-id">
                   <div class="u-card-name">{{u.full_name || u.email.split('@')[0]}}</div>
                   <div class="u-card-email">{{u.email}}</div>
@@ -368,7 +370,6 @@
             <div class="cl-section-label">Создатель</div>
             <div v-if="classCreator" class="members-list">
               <div class="member-row">
-                <AdminAvatar :name="classCreator.full_name || classCreator.email" :seed="classCreator.id"/>
                 <div class="member-info">
                   <div class="member-name">{{ classCreator.full_name || classCreator.email.split('@')[0] }}</div>
                   <div class="member-email">{{ classCreator.email }}</div>
@@ -399,7 +400,6 @@
             </div>
             <div v-else class="members-list members-list-lg">
               <div v-for="m in filteredMembersList" :key="m.id" class="member-row">
-                <AdminAvatar :name="m.full_name || m.email" :seed="m.id"/>
                 <div class="member-info">
                   <div class="member-name">{{ m.full_name || m.email.split('@')[0] }}</div>
                   <div class="member-email">{{ m.email }}</div>
@@ -423,7 +423,6 @@
             </div>
             <div v-else class="members-list">
               <div v-for="u in rejoinable" :key="u.id" class="member-row">
-                <AdminAvatar :name="u.full_name || u.email" :seed="u.id"/>
                 <div class="member-info">
                   <div class="member-name">{{ u.full_name || u.email.split('@')[0] }}</div>
                   <div class="member-email">{{ u.email }}</div>
@@ -476,6 +475,7 @@ const { fetchMe } = useAuth()
 const { t, lang } = useI18n()
 const classesSvc = useClassesSvc()
 const tab = ref('users'); const users = ref<any[]>([]); const loadingU = ref(false); const sq = ref(''); const showCreate = ref(false); const crU = ref(false)
+const adminTabIndex = computed(() => tab.value === 'users' ? 0 : tab.value === 'classes' ? 1 : 2)
 const togglingAi = ref<Record<number, boolean>>({})
 const nu = ref({ e: '', p: '', r: 'student' }); const classesCount = ref(0)
 const roleFilter = ref('all')
@@ -668,7 +668,16 @@ onUnmounted(() => {
 .search-wrap{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-md);padding:8px 10px}
 .search-inp{flex:1;border:none;background:none;font-size:13px;color:var(--text1)}
 .search-inp::placeholder{color:var(--text4)}
-.admin-tabs{margin-bottom:20px}
+/* Tabs — тот же сегмент-контрол, что на странице класса (pages/classes/[id].vue):
+   равные сегменты внутри скруглённой "полочки" с плавающей подложкой активного
+   таба, на всю ширину контента вместо трёх кнопок слева. */
+.tabs-bar{position:relative;display:flex;align-items:stretch;padding:3px;background:var(--surface2);border-radius:12px;min-height:38px;margin-bottom:20px}
+.tabs-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / var(--tab-count));transform:translateX(calc(100% * var(--tab-index)));background:var(--surface);border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.tab-btn{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;min-height:38px;font-size:clamp(11px,3.2vw,13px);font-weight:600;color:var(--text4);background:transparent;border:none;border-radius:9px;cursor:pointer;transition:color .2s;white-space:nowrap;font-family:inherit;letter-spacing:-.01em}
+.tab-btn svg{flex-shrink:0}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--text1);font-weight:700}
 .u-search-row{display:flex;gap:8px;margin-bottom:12px;align-items:center}
 .u-search-wrap{flex:1}
 .u-search-icon{color:var(--text4)}
@@ -678,7 +687,6 @@ onUnmounted(() => {
 .u-role-chip.active{color:var(--teal);background:rgba(var(--teal-rgb),.1);border-color:rgba(var(--teal-rgb),.28)}
 .u-role-chip-n{font-size:10.5px;font-weight:700;color:var(--text4);background:var(--surface2);border-radius:100px;padding:1px 6px}
 .u-role-chip.active .u-role-chip-n{color:var(--teal);background:rgba(var(--teal-rgb),.14)}
-.u-name-row{display:flex;align-items:center;gap:10px}
 .u-loading, .center-loading{display:flex;justify-content:center;padding:24px}
 .center-loading-lg{padding:32px}
 .center-loading-sm{padding:16px}
@@ -711,8 +719,8 @@ onUnmounted(() => {
    таблица со скроллом в сторону, которая раньше была только у админки. */
 .users-cards{display:none}
 .u-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;box-shadow:var(--sh-xs);display:flex;flex-direction:column;gap:10px}
-.u-card-top{display:flex;align-items:center;gap:10px}
-.u-card-id{min-width:0;flex:1}
+.u-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.u-card-id{min-width:0}
 .u-card-name{font-size:14px;font-weight:600;color:var(--text1)}
 .u-card-email{font-size:12px;color:var(--text4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .u-card-ai{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -738,7 +746,6 @@ onUnmounted(() => {
 .item-menu-item.danger:hover{background:var(--red-l)}
 
 /* AI Usage */
-.tab-ai-btn{display:flex;align-items:center;gap:6px}
 
 /* Token leaderboard — horizontal bar chart, one accent hue for the single
    "tokens" series (identity already carried by the row label, so no
@@ -867,7 +874,8 @@ onUnmounted(() => {
   .ai-bar-row { grid-template-columns: minmax(64px,96px) 1fr auto; gap: 8px; }
   .ai-bar-value { min-width: 44px; font-size: 11px; }
   .ai-filter-row { flex-wrap: wrap; gap: 8px; }
-  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
+  .tabs-bar { flex-wrap: nowrap; }
+  .tab-btn { white-space: nowrap; min-width: 0; padding: 0 4px; }
   .ai-pagination { flex-wrap: wrap; gap: 8px; }
   .pg-sub { margin-left: 0; }
   .item-menu-btn { width: 44px; height: 44px; }
@@ -880,8 +888,16 @@ onUnmounted(() => {
   .cl-modal-cover { height: 150px; }
   .cl-modal-title { font-size: 19px; }
 }
+/* Иконки табов скрываем только на настоящих телефонных ширинах (как на
+   странице класса) — на планшетных места хватает, без иконок таб выглядел бы
+   полупустым. */
+@media (max-width:599px) {
+  .tab-btn { gap: 0; }
+  .tab-btn svg { display: none; }
+}
 @media (max-width:480px) {
   .stat-card { padding: 10px 6px; }
   .stat-val { font-size: 16px; }
+  .tab-btn { padding: 0 2px; }
 }
 </style>
