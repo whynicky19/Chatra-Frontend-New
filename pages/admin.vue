@@ -6,27 +6,35 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           Админ-панель
         </h1>
+        <p class="pg-sub">Пользователи, классы и активность ИИ</p>
       </div>
     </div>
     <div class="pg-body">
       <!-- Stats -->
       <div class="stats-row">
         <div class="stat-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-          <div class="stat-val">{{users.length}}</div>
-          <div class="stat-lbl">Пользователей</div>
+          <div class="stat-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div>
+            <div class="stat-val">{{users.length}}</div>
+            <div class="stat-lbl">Пользователей</div>
+          </div>
         </div>
         <div class="stat-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-          <div class="stat-val">{{classesCount}}</div>
-          <div class="stat-lbl">Классов</div>
+          <div class="stat-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <div>
+            <div class="stat-val">{{classesCount}}</div>
+            <div class="stat-lbl">Классов</div>
+          </div>
         </div>
       </div>
 
       <!-- Tabs -->
       <div class="tabs admin-tabs">
         <button :class="['tab-btn',{active:tab==='users'}]" @click="tab='users'">Пользователи</button>
-        <button :class="['tab-btn',{active:tab==='actions'}]" @click="tab='actions'">Действия</button>
         <button :class="['tab-btn',{active:tab==='classes'}]" @click="switchToClasses">Предметы</button>
         <button :class="['tab-btn','tab-ai-btn',{active:tab==='ai-usage'}]" @click="switchToAiUsage">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -41,7 +49,10 @@
             <svg class="u-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input v-model="sq" class="search-inp" placeholder="Поиск пользователей..."/>
           </div>
-          <button class="btn btn-teal btn-sm" @click="showCreate=true">+ Создать</button>
+          <button class="btn btn-teal btn-sm" @click="showCreate=true">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Создать
+          </button>
         </div>
         <div v-if="loadingU" class="u-loading"><div class="spinner"></div></div>
         <template v-else>
@@ -59,16 +70,18 @@
                   <td>
                     <div v-if="u.role==='student'" class="u-ai-row">
                       <span :class="['ai-quota-badge', u.ai_unlimited ? 'unlimited' : 'limited']">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        {{ u.ai_unlimited ? 'Безлимит' : `${AI_LIMIT} запросов/24ч` }}
+                        {{ u.ai_unlimited ? 'Безлимит' : `${AI_LIMIT}/24ч` }}
                       </span>
                       <button
-                        :class="['btn btn-sm ai-toggle-btn', u.ai_unlimited ? 'btn-ghost' : 'btn-teal']"
+                        type="button"
+                        role="switch"
+                        :aria-checked="u.ai_unlimited"
+                        :class="['ai-switch', { on: u.ai_unlimited, busy: togglingAi[u.id] }]"
                         :disabled="togglingAi[u.id]"
+                        :title="u.ai_unlimited ? 'Ограничить до дневного лимита' : 'Разрешить безлимитный доступ'"
                         @click="toggleAiUnlimited(u)"
                       >
-                        <div v-if="togglingAi[u.id]" class="spinner" style="width:10px;height:10px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
-                        <span v-else>{{ u.ai_unlimited ? 'Ограничить' : 'Разрешить' }}</span>
+                        <span class="ai-switch-thumb"></span>
                       </button>
                     </div>
                     <span v-else class="u-ai-none">—</span>
@@ -81,14 +94,8 @@
                         <option value="teacher">teacher</option>
                         <option value="admin">admin</option>
                       </select>
-                      <button v-if="u.is_active" class="btn btn-icon btn-ghost btn-sm" :disabled="u.id===auth.user?.id" @click="doBlock(u.id)" title="Заблокировать">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                      </button>
-                      <button v-else class="btn btn-icon btn-ghost btn-sm" @click="doUnblock(u.id)" title="Разблокировать">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                      </button>
-                      <button class="btn btn-icon btn-danger btn-sm" :disabled="u.id===auth.user?.id" @click="doDel(u.id)">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                      <button v-if="u.id!==auth.user?.id" class="item-menu-btn" @click.stop="toggleUserMenu($event, u.id)" title="Ещё">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
                       </button>
                     </div>
                   </td>
@@ -110,16 +117,18 @@
               </div>
               <div v-if="u.role==='student'" class="u-card-ai">
                 <span :class="['ai-quota-badge', u.ai_unlimited ? 'unlimited' : 'limited']">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  {{ u.ai_unlimited ? 'Безлимит' : `${AI_LIMIT} запросов/24ч` }}
+                  {{ u.ai_unlimited ? 'Безлимит' : `${AI_LIMIT}/24ч` }}
                 </span>
                 <button
-                  :class="['btn btn-sm ai-toggle-btn', u.ai_unlimited ? 'btn-ghost' : 'btn-teal']"
+                  type="button"
+                  role="switch"
+                  :aria-checked="u.ai_unlimited"
+                  :class="['ai-switch', { on: u.ai_unlimited, busy: togglingAi[u.id] }]"
                   :disabled="togglingAi[u.id]"
+                  :title="u.ai_unlimited ? 'Ограничить до дневного лимита' : 'Разрешить безлимитный доступ'"
                   @click="toggleAiUnlimited(u)"
                 >
-                  <div v-if="togglingAi[u.id]" class="spinner" style="width:10px;height:10px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
-                  <span v-else>{{ u.ai_unlimited ? 'Ограничить' : 'Разрешить' }}</span>
+                  <span class="ai-switch-thumb"></span>
                 </button>
               </div>
               <div class="u-card-date">Регистрация: {{fmtDate(u.created_at)}}</div>
@@ -129,36 +138,14 @@
                   <option value="teacher">teacher</option>
                   <option value="admin">admin</option>
                 </select>
-                <button v-if="u.is_active" class="btn btn-icon btn-ghost btn-sm" :disabled="u.id===auth.user?.id" @click="doBlock(u.id)" title="Заблокировать">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                </button>
-                <button v-else class="btn btn-icon btn-ghost btn-sm" @click="doUnblock(u.id)" title="Разблокировать">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                </button>
-                <button class="btn btn-icon btn-danger btn-sm" :disabled="u.id===auth.user?.id" @click="doDel(u.id)">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                <button v-if="u.id!==auth.user?.id" class="item-menu-btn" @click.stop="toggleUserMenu($event, u.id)" title="Ещё">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
                 </button>
               </div>
             </div>
             <div v-if="!fUsers.length" class="u-empty-cell">Пользователи не найдены</div>
           </div>
         </template>
-      </div>
-
-      <!-- Actions tab -->
-      <div v-else-if="tab==='actions'">
-        <div class="action-cards">
-          <div class="action-card">
-            <div class="action-icon action-icon-teal">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-            </div>
-            <div>
-              <div class="action-title">Создать пользователя</div>
-              <div class="action-desc">Добавить нового участника</div>
-            </div>
-            <button class="btn btn-teal btn-sm" @click="showCreate=true">Создать</button>
-          </div>
-        </div>
       </div>
 
       <!-- AI Usage tab -->
@@ -283,6 +270,24 @@
       </div>
     </div>
 
+    <!-- "⋮" menu for a user row — one shared popover instead of separate
+         block/unblock/delete icons cluttering every row (same pattern as
+         the lecture/assignment card menu in classes/[id].vue). -->
+    <div v-if="activeMenuUser" class="item-menu" :style="{ top: userMenuPos.top + 'px', right: userMenuPos.right + 'px' }" @click.stop>
+      <button v-if="activeMenuUser.is_active" class="item-menu-item" @click="onMenuBlock">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        <span>Заблокировать</span>
+      </button>
+      <button v-else class="item-menu-item" @click="onMenuUnblock">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Разблокировать</span>
+      </button>
+      <button class="item-menu-item danger" @click="onMenuDeleteUser">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        <span>Удалить</span>
+      </button>
+    </div>
+
     <!-- Class detail modal -->
     <Transition name="modal">
     <div v-if="showMembers" class="overlay" @click.self="showMembers=false">
@@ -381,7 +386,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAuth } from '~/composables/useAuth'
 import { useNotificationsStore } from '~/stores/notifications.store'
@@ -490,6 +495,23 @@ const doUnblock = async (id: number) => { try { await adminSvc.unblock(id); cons
 const doDel = async (id: number) => { try { await adminSvc.del(id); users.value = users.value.filter(u => u.id !== id); toast.ok('Удалён') } catch { toast.err('Ошибка') } }
 const createU = async () => { crU.value = true; try { const u = await adminSvc.create({ email: nu.value.e, password: nu.value.p, role: nu.value.r }); users.value.unshift(u); showCreate.value = false; nu.value = { e: '', p: '', r: 'student' }; toast.ok('Создан') } catch (e: any) { toast.err(e?.response?.data?.detail || 'Ошибка') } finally { crU.value = false } }
 
+// ── User row "⋮" menu (block/unblock/delete) — one shared popover ──────────────
+const openUserMenu = ref<number | null>(null)
+const userMenuPos = ref({ top: 0, right: 0 })
+const closeUserMenu = () => { openUserMenu.value = null }
+const toggleUserMenu = (e: MouseEvent, id: number) => {
+  if (openUserMenu.value === id) { closeUserMenu(); return }
+  const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  userMenuPos.value = { top: r.bottom + 6, right: window.innerWidth - r.right }
+  openUserMenu.value = id
+}
+const activeMenuUser = computed(() => openUserMenu.value == null ? null : users.value.find(u => u.id === openUserMenu.value) ?? null)
+const onUserMenuDocClick = () => { if (openUserMenu.value != null) closeUserMenu() }
+const onUserMenuScroll = () => { if (openUserMenu.value != null) closeUserMenu() }
+const onMenuBlock = () => { const id = openUserMenu.value; closeUserMenu(); if (id != null) doBlock(id) }
+const onMenuUnblock = () => { const id = openUserMenu.value; closeUserMenu(); if (id != null) doUnblock(id) }
+const onMenuDeleteUser = () => { const id = openUserMenu.value; closeUserMenu(); if (id != null) doDel(id) }
+
 onMounted(async () => {
   // При жёсткой перезагрузке /admin auth.user ещё не подгружен (профиль
   // тянется асинхронно в layouts/default.vue, а onMounted страницы
@@ -501,16 +523,24 @@ onMounted(async () => {
   try { users.value = await adminSvc.users() } catch {} finally { loadingU.value = false }
   try { classes.value = await classesSvc.listAll(); classesCount.value = classes.value.length } catch {}
   loadAiSummary()
+  document.addEventListener('click', onUserMenuDocClick)
+  document.addEventListener('scroll', onUserMenuScroll, true)
+})
+onUnmounted(() => {
+  document.removeEventListener('click', onUserMenuDocClick)
+  document.removeEventListener('scroll', onUserMenuScroll, true)
 })
 </script>
 <style scoped>
 .pg{height:100%;overflow-y:auto;background:var(--bg)}
 .pg-head{padding:24px 32px 0;display:flex;align-items:center}
 .pg-title{font-size:20px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.pg-sub{font-size:13px;color:var(--text4);margin-top:3px;margin-left:28px}
 .pg-body{padding:20px 32px 32px}
 .stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh-xs)}
-.stat-val{font-size:22px;font-weight:700}
+.stat-icon{width:38px;height:38px;border-radius:var(--r-md);background:var(--teal-l);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-val{font-size:22px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .stat-lbl{font-size:12px;color:var(--text3)}
 .search-wrap{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-md);padding:8px 10px}
 .search-inp{flex:1;border:none;background:none;font-size:13px;color:var(--text1)}
@@ -533,11 +563,19 @@ onMounted(async () => {
 .users-table .col-right{text-align:right}
 .u-name{font-size:13px;font-weight:500}
 .u-email{font-size:13px;color:var(--text3)}
-.u-ai-row{display:flex;align-items:center;gap:6px}
+.u-ai-row{display:flex;align-items:center;gap:8px}
 .u-ai-none{font-size:12px;color:var(--text4)}
-.ai-toggle-btn{font-size:11px;padding:3px 8px}
 .u-date{font-size:12px;color:var(--text4)}
-.u-actions-row{display:flex;gap:4px}
+.u-actions-row{display:flex;align-items:center;gap:6px}
+
+/* iOS-style switch — replaces the old text "Разрешить/Ограничить" button so
+   the row reads as a single Settings-style toggle instead of badge+button. */
+.ai-switch{width:38px;height:22px;border-radius:100px;background:var(--surface3);border:1px solid var(--border);position:relative;flex-shrink:0;transition:background .2s,border-color .2s}
+.ai-switch:disabled{opacity:.5;cursor:not-allowed}
+.ai-switch.busy{opacity:.6}
+.ai-switch.on{background:var(--teal);border-color:var(--teal)}
+.ai-switch-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.34,1.56,.64,1)}
+.ai-switch.on .ai-switch-thumb{transform:translateX(16px)}
 /* Мобиле: карточки вместо таблицы с горизонтальным скроллом — тот же приём,
    что уже используется в остальном приложении (notif-card/asgn-card), а не
    таблица со скроллом в сторону, которая раньше была только у админки. */
@@ -552,18 +590,22 @@ onMounted(async () => {
 .u-card-actions{display:flex;align-items:center;gap:6px}
 .u-card-actions .role-sel{flex:1;min-width:0}
 .role-sel{border:1px solid var(--border2);border-radius:var(--r-sm);padding:3px 8px;font-size:12px;cursor:pointer;background:var(--surface);color:var(--text1)}
-.action-cards{display:flex;flex-direction:column;gap:10px}
-.action-card{display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-xs)}
-.action-card>div:not(.action-icon){flex:1;min-width:0}
-.action-icon{width:40px;height:40px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.action-icon-teal{background:var(--teal-l)}
-.action-title{font-size:14px;font-weight:600;margin-bottom:2px}
-.action-desc{font-size:12px;color:var(--text3);overflow:hidden;text-overflow:ellipsis}
-.action-card .btn{margin-left:auto}
 /* AI quota badge */
-.ai-quota-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px}
+.ai-quota-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap}
 .ai-quota-badge.unlimited{background:rgba(52,211,153,.1);color:#10b981;border:1px solid rgba(52,211,153,.25)}
 .ai-quota-badge.limited{background:var(--surface2);color:var(--text4);border:1px solid var(--border)}
+
+/* "⋮" row menu — shared popover for block/unblock/delete (same pattern as
+   the lecture/assignment card menu on the class page, kept consistent so a
+   "more actions" affordance always looks and behaves the same way). */
+.item-menu-btn{width:32px;height:32px;border-radius:10px;background:transparent;border:1px solid transparent;color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
+.item-menu-btn:hover{background:var(--surface2);color:var(--text1)}
+.item-menu{position:fixed;z-index:1000;min-width:180px;padding:6px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.16),var(--sh-md);display:flex;flex-direction:column;transform-origin:top right;animation:itemMenuIn .16s cubic-bezier(.16,1,.3,1) both}
+@keyframes itemMenuIn{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.item-menu-item{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:10px;background:none;border:none;font-size:13.5px;font-weight:600;color:var(--text2);text-align:left;cursor:pointer;transition:background .12s;font-family:inherit;width:100%}
+.item-menu-item:hover{background:var(--surface2)}
+.item-menu-item.danger{color:var(--red)}
+.item-menu-item.danger:hover{background:var(--red-l)}
 
 /* AI Usage */
 .tab-ai-btn{display:flex;align-items:center;gap:6px}
@@ -652,6 +694,8 @@ onMounted(async () => {
   .ai-filter-row { flex-wrap: wrap; gap: 8px; }
   .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
   .ai-pagination { flex-wrap: wrap; gap: 8px; }
+  .pg-sub { margin-left: 0; }
+  .item-menu-btn { width: 44px; height: 44px; }
 }
 @media (max-width:480px) {
   .stat-card { padding: 10px 6px; }
