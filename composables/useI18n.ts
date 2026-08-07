@@ -129,6 +129,16 @@ export const translations: Record<string, Record<Lang, string>> = {
   'class.delete_post': { ru: 'Удалено', en: 'Deleted', kk: 'Жойылды' },
   'class.lecture_badge': { ru: 'Лекция', en: 'Lecture', kk: 'Дәріс' },
   'class.attached_files_label': { ru: 'Материалы', en: 'Materials', kk: 'Материалдар' },
+
+  // Lecture screen / document viewer
+  'lecture.no_description': { ru: 'Нет описания', en: 'No description', kk: 'Сипаттама жоқ' },
+  'lecture.no_files': { ru: 'Нет прикреплённых файлов', en: 'No attached files', kk: 'Тіркелген файлдар жоқ' },
+  'lecture.select_file': { ru: 'Выберите файл для просмотра', en: 'Select a file to preview', kk: 'Қарау үшін файлды таңдаңыз' },
+  'lecture.download': { ru: 'Скачать', en: 'Download', kk: 'Жүктеу' },
+  'lecture.fullscreen': { ru: 'Во весь экран', en: 'Fullscreen', kk: 'Толық экран' },
+  'lecture.zoom_in': { ru: 'Увеличить', en: 'Zoom in', kk: 'Ұлғайту' },
+  'lecture.zoom_out': { ru: 'Уменьшить', en: 'Zoom out', kk: 'Кішірейту' },
+  'lecture.unsupported': { ru: 'Предпросмотр для этого типа файла пока не поддерживается', en: "Preview isn't supported for this file type yet", kk: 'Бұл файл түрі үшін алдын ала қарау әлі қолдау көрсетілмейді' },
   'class.files': { ru: 'файл', en: 'file', kk: 'файл' },
   'class.files2': { ru: 'файла', en: 'files', kk: 'файл' },
   'class.files5': { ru: 'файлов', en: 'files', kk: 'файл' },

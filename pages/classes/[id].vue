@@ -140,7 +140,7 @@
                 <div class="es-p">{{ isTeacher ? t('class.no_lectures_teacher') : t('class.no_lectures_student') }}</div>
               </div>
               <div v-else class="items-list">
-                <div v-for="p in lectures" :key="p.id" class="item-row" @click="viewPost(p, 'lecture')">
+                <div v-for="p in lectures" :key="p.id" class="item-row" @click="router.push(`/classes/${classId}/lecture/${p.id}`)">
                   <div class="item-body">
                     <div class="item-title">{{ cleanTitle(p.title) }}</div>
                     <div class="item-desc">{{ getPreview(p) }}</div>
@@ -528,41 +528,12 @@
       </div>
     </div>
     </Transition>
-
-    <!-- Post viewer -->
-    <Transition name="modal">
-    <div v-if="viewingPost" class="post-overlay" @click.self="viewingPost = null">
-      <div class="post-sheet">
-        <div class="sheet-head">
-          <div class="sheet-badge lecture">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-            {{ t('class.lecture_badge') }}
-          </div>
-          <button class="btn btn-icon btn-ghost" @click="viewingPost = null">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
-        </div>
-        <h2 class="sheet-title">{{ cleanTitle(viewingPost.title) }}</h2>
-        <div class="sheet-date">{{ fmtDate(viewingPost.created_at) }}</div>
-
-        <div v-if="viewingPostDescription" class="sheet-section">
-          <div class="sheet-section-label">{{ t('general.description') }}</div>
-          <div class="sheet-body" v-html="viewingPostDescription" @click="onBodyClick"></div>
-        </div>
-
-        <div v-if="viewingPostFiles.length" class="sheet-section">
-          <div class="sheet-section-label">{{ t('class.attached_files_label') }}</div>
-          <FileListCard :files="viewingPostFiles" @open="openPreview" />
-        </div>
-      </div>
-    </div>
-    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRoute } from '#app'
+import { useRoute, useRouter } from '#app'
 import { useToast } from '~/composables/useToast'
 import { usePostsSvc } from '~/services/posts'
 import { useAssignmentsSvc } from '~/services/assignments'
@@ -572,15 +543,16 @@ import { useClassesSvc, type CohortResponse, type RotationMode } from '~/service
 import { useAuthStore } from '~/stores/auth.store'
 import { useClassesStore } from '~/stores/classes.store'
 import { useI18n } from '~/composables/useI18n'
-import { useFilePreview } from '~/composables/useFilePreview'
 import { fixFileUrl } from '~/composables/useFileUrl'
 import { extractFilesFromText, stripFilesFromText, withNameFragment, fileNameFromUrl } from '~/composables/useAttachments'
+import { cleanLectureTitle as cleanTitle, fileEntryToLink, getFullBody } from '~/composables/usePostBody'
 import { useUploadSvc } from '~/services/uploads'
 import type { Assignment, Submission } from '~/services/assignments'
 
 definePageMeta({ layout: 'default' })
 
 const route = useRoute()
+const router = useRouter()
 const postsSvc = usePostsSvc()
 const uploadSvc = useUploadSvc()
 const assignmentsSvc = useAssignmentsSvc()
@@ -590,7 +562,6 @@ const classesStore = useClassesStore()
 const toast = useToast()
 const auth = useAuthStore()
 const { t, lang } = useI18n()
-const { openPreview } = useFilePreview()
 
 const classId = computed(() => Number(route.params.id))
 const isTeacher = computed(() => auth.user?.role === 'teacher' || auth.user?.role === 'admin')
@@ -609,7 +580,6 @@ const coverCollapsed = ref(false)
 watch(tab, () => { coverCollapsed.value = false })
 const showCreate = ref(false)
 const showCreateAssignment = ref(false)
-const viewingPost = ref<any>(null)
 const activeAssignment = ref<Assignment | null>(null)
 const allPosts = ref<any[]>([])
 const assignments = ref<Assignment[]>([])
@@ -792,91 +762,15 @@ const pendingCount = computed(() => assignments.value.filter(a => !mySubmissions
 const doneCount = computed(() => mySubmissions.value.filter(s => s.status === 'submitted' || s.status === 'graded').length)
 const lateCount = computed(() => mySubmissions.value.filter(s => s.status === 'late').length + assignments.value.filter(a => !mySubmissionsMap.value[a.id] && a.deadline && parseUtc(a.deadline) < new Date()).length)
 
-const cleanTitle = (t: string) => t.replace(/^\[LECTURE\]\[\d+\]\s*/, '').trim()
 const fmtDate = (d: string) => { if (!d) return ''; try { return parseUtc(d).toLocaleDateString(lang.value === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return d } }
-// Файл из тела-JSON приложения приходит как "<url>#<имя>" (или битые легаси-строки).
-// Приводим к единому виду вложения сайта: 📎 [имя](url).
-const fileEntryToLink = (entry: any): string => {
-  if (typeof entry !== 'string' || !entry.trim()) return ''
-  if (/^https?:\/\//i.test(entry)) {
-    const hash = entry.indexOf('#')
-    if (hash !== -1) {
-      const url = entry.slice(0, hash)
-      let name = entry.slice(hash + 1)
-      try { name = decodeURIComponent(name) } catch {}
-      return `📎 [${name}](${url})`
-    }
-    return entry // голый URL — renderBody сам оформит
-  }
-  // Не-URL (легаси/битые данные): показываем только имя, без сырого JSON
-  return entry.split('\n').pop()?.trim() || ''
-}
-// Понимает оба формата тела поста: текст сайта (📎-ссылки) и JSON приложения
-// {content, files:[...]}. Никогда не возвращает сырой JSON.
-const getFullBody = (p: any): string => {
-  const raw = p?.body || ''
-  try {
-    const b = JSON.parse(raw)
-    if (b && typeof b === 'object') {
-      let text = (typeof b.content === 'string' ? b.content : (b.description || '')) || ''
-      const files = Array.isArray(b.files) ? b.files : []
-      if (files.length) {
-        const links = files.map(fileEntryToLink).filter(Boolean).join('\n')
-        if (links) text = text ? `${text}\n\n${links}` : links
-      }
-      return text
-    }
-    return raw
-  } catch { return raw }
-}
 const ATTACHMENT_LINK = /📎\s*\[([^\]]+)\]\(([^)]+)\)/g
 const getPreview = (p: any): string => { const body = getFullBody(p); const clean = body.replace(ATTACHMENT_LINK, '').replace(/(https?:\/\/[^\s]+)/g, '').replace(/\s+/g, ' ').trim(); return clean.length > 100 ? clean.slice(0, 100) + '…' : clean || (lang.value==='ru'?'Нет описания':'No description') }
-// Отдельные карточки "Описание" / "Материалы" в просмотре лекции — раньше текст
-// и вложения были одним нечитаемым HTML-блоком (renderBody сам оборачивал
-// файлы в <a>, без подписи, что это вложение).
-const viewingPostDescription = computed(() => viewingPost.value ? renderBody(stripFilesFromText(getFullBody(viewingPost.value))) : '')
-const viewingPostFiles = computed(() => viewingPost.value ? extractFilesFromText(getFullBody(viewingPost.value)) : [])
 const FILE_EXT = /\.(pdf|doc|docx|txt|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|webp|md)(\?[^\s]*)?/i
 // Пробел в URL допустим (оригинальное имя файла в пути) — границу задают
 // кавычки/спецсимволы JSON, а не whitespace, иначе файлы с пробелом в имени
 // (напр. "Lection 1.pptx") не считались бы вложениями.
 const countFiles = (p: any): number => { const body = p.body || ''; const m = body.match(new RegExp(`https?://[^\\n"'<>]+${FILE_EXT.source}`, 'gi')); return m?.length || 0 }
 const pluralFile = (n: number) => lang.value === 'ru' ? (n === 1 ? 'файл' : n < 5 ? 'файла' : 'файлов') : 'file' + (n !== 1 ? 's' : '')
-const getFileIcon = (url: string) => { const e = url.split('.').pop()?.split('?')[0]?.toLowerCase() || ''; if (e === 'pdf') return 'PDF'; if (['doc','docx','txt','md'].includes(e)) return 'DOC'; if (['xls','xlsx'].includes(e)) return 'XLS'; if (['ppt','pptx'].includes(e)) return 'PPT'; if (['png','jpg','jpeg','gif','webp'].includes(e)) return 'IMG'; return 'FILE' }
-const getFileName = (url: string) => { try { return decodeURIComponent(new URL(url).pathname.split('/').pop() || url) } catch { return url.slice(-50) } }
-const attrEscape = (s: string) => s.replace(/"/g,'&quot;')
-// Полное HTML-экранирование — для сырых данных (имя файла из URL).
-const htmlEscape = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-// safeName ДОЛЖЕН быть уже экранирован вызывающим; url экранируем для атрибутов
-// (иначе кавычка в URL вложения ломала бы href → XSS).
-const fileAnchor = (url: string, safeName: string) => {
-  const safeUrl = attrEscape(url)
-  return `<a href="${safeUrl}" data-preview-url="${safeUrl}" data-preview-name="${safeName}" rel="noopener" class="file-attachment"><span class="file-type-badge">${getFileIcon(url)}</span><span>${safeName}</span></a>`
-}
-const renderBody = (text: string): string => {
-  if (!text) return ''
-  const escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-  // Один проход: и 📎-вложения, и голые ссылки. String.replace не пересканирует
-  // вставленную разметку, поэтому сгенерированные <a> не оборачиваются повторно
-  // (иначе URL из href/data-preview-* распознавался как новая ссылка → битый HTML).
-  // URL внутри скобок 📎-вложения может содержать пробелы (оригинальное имя
-  // файла в пути, напр. "Lection 1.pptx") — границу задают сами скобки
-  // markdown-ссылки, поэтому пробел из группы не исключаем, только ')'.
-  const combined = /📎\s*\[([^\]]+)\]\((https?:\/\/[^)]+)\)|(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g
-  return escaped.replace(combined, (_m, name, attUrl, bareUrl) => {
-    // name из attachment-формата уже прошёл &<>-экранирование (в `escaped`) —
-    // добавляем только кавычку. bareUrl-имя (getFileName) сырое → полный escape.
-    if (attUrl) return fileAnchor(attUrl, attrEscape(name))
-    if (FILE_EXT.test(bareUrl)) return fileAnchor(bareUrl, htmlEscape(getFileName(bareUrl)))
-    return `<a href="${attrEscape(bareUrl)}" target="_blank" rel="noopener" class="link-inline">${bareUrl}</a>`
-  }).replace(/\n/g,'<br>')
-}
-const onBodyClick = (e: MouseEvent) => {
-  const target = (e.target as HTMLElement)?.closest('[data-preview-url]') as HTMLElement | null
-  if (!target) return
-  e.preventDefault()
-  openPreview(target.dataset.previewUrl!, target.dataset.previewName!)
-}
 
 const classCode = computed(() => currentClass.value?.invite_code || '')
 const copyCode = () => { navigator.clipboard?.writeText(classCode.value).then(() => toast.ok(t('class.code_copied') + ' ' + classCode.value)).catch(() => toast.ok(t('class.code') + ' ' + classCode.value)) }
@@ -897,7 +791,6 @@ const regenerateCode = async () => {
   }
 }
 
-const viewPost = (p: any, type: string) => { viewingPost.value = { ...p, type } }
 const onPostCreated = (p: any) => { allPosts.value.unshift(p) }
 
 // ── Item card "⋮" menu (edit/delete) — shared by lectures/assignments ──
@@ -1420,29 +1313,6 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .ai-guide-link{font-size:12px;font-weight:700;color:var(--teal);background:none;border:none;cursor:pointer;padding:0;transition:opacity .15s}
 .ai-guide-link:hover{opacity:.7}
 
-/* Post viewer — тот же затемнённый стеклянный оверлей, что и у остальных
-   модалок сайта (раньше был отдельный тёмно-тиловый тон и слабый blur —
-   собственная, непохожая на прочие модалки трактовка одного и того же
-   паттерна). */
-.post-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);display:flex;align-items:center;justify-content:center;z-index:1000;padding:24px}
-@media (prefers-reduced-transparency: reduce) {
-  .post-overlay { background: rgba(0,0,0,.6); backdrop-filter: none; -webkit-backdrop-filter: none; }
-}
-.post-sheet{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-2xl);padding:30px;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;box-shadow:var(--sh-lg)}
-.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.sheet-badge{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:5px 14px;border-radius:100px}
-.sheet-badge.lecture{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
-.sheet-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:24px;font-weight:900;color:var(--text1);letter-spacing:-.025em;margin-bottom:6px}
-.sheet-date{font-size:12px;color:var(--text4);margin-bottom:22px}
-.sheet-section{margin-bottom:18px}
-.sheet-section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin-bottom:8px}
-.sheet-body{font-size:14px;color:var(--text2);line-height:1.8;white-space:pre-wrap}
-:deep(.file-attachment){display:inline-flex;align-items:center;gap:9px;padding:11px 16px;margin:6px 4px;max-width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);color:var(--text2);font-size:13px;font-weight:600;text-decoration:none;transition:all .18s}
-:deep(.file-attachment:hover){background:var(--surface3);transform:translateY(-1px)}
-/* Полное имя файла всегда видно — переносится на новую строку вместо
-   обрезки многоточием (раньше max-width:280px+ellipsis резал длинные имена). */
-:deep(.file-attachment span){white-space:normal;word-break:break-word;overflow-wrap:anywhere}
-:deep(.link-inline){color:var(--teal);text-decoration:underline;text-underline-offset:3px;word-break:break-all}
 @keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
 
 @media (max-width:768px){
@@ -1486,10 +1356,6 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
   /* Заголовок ближайшего дедлайна обрезался эллипсисом в узкой колонке —
      переносим на 2 строки вместо жёсткого обрезания. */
   .ms-deadline-title{white-space:normal;overflow:hidden;text-overflow:ellipsis;max-width:none;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-  .post-sheet{padding:12px 16px calc(28px + env(safe-area-inset-bottom, 0px));border-radius:28px 28px 0 0;max-height:92dvh}
-  .post-sheet::before{content:'';display:block;width:36px;height:5px;border-radius:3px;background:var(--surface3);margin:0 auto 16px}
-  .post-overlay{padding:0;align-items:flex-end}
-  .sheet-title{font-size:20px}
   .field-input,.field-textarea{font-size:16px}
   .back-link{position:relative;display:inline-flex}
   .back-link::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-6px;right:-6px}
@@ -1511,7 +1377,4 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 
 /* Empty state icon */
 .es-icon-wrap{width:64px;height:64px;border-radius:18px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);margin-bottom:4px;opacity:.8}
-
-/* File type badge in rendered content */
-:deep(.file-type-badge){display:inline-flex;align-items:center;justify-content:center;background:var(--teal);color:#fff;font-size:9px;font-weight:800;letter-spacing:.06em;padding:2px 6px;border-radius:4px;flex-shrink:0;line-height:1.4}
 </style>
