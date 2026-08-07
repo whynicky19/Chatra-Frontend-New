@@ -712,19 +712,18 @@ const heroStyle = computed(() => {
   return {}
 })
 const classPosts = computed(() => allPosts.value.filter(p => p.title?.includes(`[${classId.value}]`)))
-// Лекции — в порядке "1, 2, 3..." (posts.position с бэкенда, см. migrations/017),
-// а не "новые сверху" (id.desc() из /posts без class_id) — иначе список лекций
-// и нумерация в AI-чате расходятся с фактическим порядком курса.
+// Лекции — новые сверху, старые снизу (по запросу пользователя). classPosts
+// (сырой, без сортировки) отдельно уходит в AI-чат, так что нумерация там
+// не завязана на порядок этого списка и не расходится при его инверсии.
 const lectures = computed(() => classPosts.value
   .filter(p => p.title?.startsWith('[LECTURE]'))
   .slice()
   .sort((a, b) => {
-    // NULLS FIRST (см. тот же выбор на бэкенде, crud/posts.py: Posts.position
-    // .asc().nulls_first()) — лекции без position хронологически раньше уже
-    // пронумерованных. `?? Infinity` клал их в конец и расходился с бэкендом.
+    // NULLS LAST при убывании — лекции без position (созданы раньше уже
+    // пронумерованных) уходят вниз вместе со старыми, а не всплывают наверх.
     const pa = a.position ?? -Infinity, pb = b.position ?? -Infinity
-    if (pa !== pb) return pa - pb
-    return (a.id ?? 0) - (b.id ?? 0)
+    if (pa !== pb) return pb - pa
+    return (b.id ?? 0) - (a.id ?? 0)
   }))
 
 const avgScore = computed(() => ratingData.value.avg_score || null)
