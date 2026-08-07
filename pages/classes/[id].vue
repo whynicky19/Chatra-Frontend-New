@@ -170,7 +170,7 @@
                   <div class="es-p">{{ isTeacher ? t('class.no_assignments_teacher') : t('class.no_assignments_student') }}</div>
                 </div>
                 <div v-else class="items-list">
-                  <div v-for="a in assignments" :key="a.id" class="item-row assignment-item" @click="openAssignment(a)">
+                  <div v-for="a in assignments" :key="a.id" class="item-row assignment-item" @click="goAssignment(a)">
                     <div class="item-body">
                       <div class="item-row-top">
                         <div class="item-title">{{ a.title }}</div>
@@ -188,9 +188,9 @@
                       <button v-if="canManage" class="item-menu-btn" @click.stop="toggleItemMenu($event, 'assignment-'+a.id)" :title="lang==='ru'?'Ещё':'More'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
                       </button>
-                      <button v-if="!isTeacher && isLate(a)" class="btn-late" @click.stop="openAssignment(a)">{{ t('class.submit_late') }}</button>
-                      <span v-else-if="!isTeacher && isInProgress(a)" class="btn-continue-link" @click.stop="openAssignment(a)">{{ t('class.continue') }}</span>
-                      <span v-else-if="!isTeacher" class="item-preview-link" @click.stop="openAssignment(a)">{{ t('class.preview') }}</span>
+                      <button v-if="!isTeacher && isLate(a)" class="btn-late" @click.stop="goAssignment(a)">{{ t('class.submit_late') }}</button>
+                      <span v-else-if="!isTeacher && isInProgress(a)" class="btn-continue-link" @click.stop="goAssignment(a)">{{ t('class.continue') }}</span>
+                      <span v-else-if="!isTeacher" class="item-preview-link" @click.stop="goAssignment(a)">{{ t('class.preview') }}</span>
                     </div>
                   </div>
                 </div>
@@ -290,7 +290,6 @@
       <LazyCreateAssignmentModal v-if="showCreateAssignment" :class-id="classId" @close="showCreateAssignment = false" @created="onAssignmentCreated" />
     </Transition>
     <Transition name="modal">
-      <LazyAssignmentModal v-if="activeAssignment" :assignment="activeAssignment" :is-teacher="isTeacher" :readonly="isArchivedForUser" :cohort-id="teacherViewCohortId" @close="activeAssignment = null" @submitted="onSubmitted" />
     </Transition>
 
     <!-- Class info hub — code, regenerate code, academic-year picker,
@@ -580,7 +579,6 @@ const coverCollapsed = ref(false)
 watch(tab, () => { coverCollapsed.value = false })
 const showCreate = ref(false)
 const showCreateAssignment = ref(false)
-const activeAssignment = ref<Assignment | null>(null)
 const allPosts = ref<any[]>([])
 const assignments = ref<Assignment[]>([])
 const mySubmissions = ref<Submission[]>([])
@@ -972,7 +970,10 @@ const deleteAssignment = async (a: Assignment) => {
   if (!confirm(`${lang.value==='ru'?'Удалить задание':'Delete assignment'} «${a.title}»?`)) return
   try { await assignmentsSvc.delete(a.id); assignments.value = assignments.value.filter(x => x.id !== a.id); toast.ok(t('class.delete_assignment')) } catch (e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
 }
-const openAssignment = (a: Assignment) => { activeAssignment.value = a }
+const goAssignment = (a: Assignment) => {
+  const cohort = teacherViewCohortId.value
+  router.push(`/classes/${classId.value}/assignments/${a.id}${cohort != null ? '?cohort=' + cohort : ''}`)
+}
 const onAssignmentCreated = (a: Assignment) => { assignments.value.unshift(a); showCreateAssignment.value = false }
 
 // ── Resolve the item behind the open "⋮" menu, regardless of which list it's in ──
@@ -999,22 +1000,6 @@ const onMenuDelete = () => {
   if (m.type === 'assignment') deleteAssignment(m.item)
   else deletePost(m.item.id)
 }
-const onSubmitted = (sub: Submission | null) => {
-  if (!sub) {
-    // Отзыв сдачи: AssignmentModal эмитит null (см. retract()), сдачи для
-    // этого задания больше нет — убираем её из списка по открытому заданию.
-    if (activeAssignment.value) {
-      const idx = mySubmissions.value.findIndex(s => s.assignment_id === activeAssignment.value!.id)
-      if (idx !== -1) mySubmissions.value.splice(idx, 1)
-    }
-    loadRating()
-    return
-  }
-  const idx = mySubmissions.value.findIndex(s => s.assignment_id === sub.assignment_id)
-  if (idx !== -1) mySubmissions.value[idx] = sub; else mySubmissions.value.push(sub)
-  loadRating()
-}
-
 onMounted(async () => {
   // Open a specific tab if passed via query param (e.g. from calendar deadlines)
   const qTab = route.query.tab as string

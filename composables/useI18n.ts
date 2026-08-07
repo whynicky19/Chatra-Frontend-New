@@ -98,6 +98,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'class.no_assignments': { ru: 'Заданий пока нет', en: 'No assignments yet', kk: 'Тапсырмалар әлі жоқ' },
   'class.no_assignments_teacher': { ru: 'Нажмите «Задание» чтобы создать первое', en: 'Click "Assignment" to create the first one', kk: 'Бірінші тапсырманы жасау үшін «Тапсырма» батырмасын басыңыз' },
   'class.no_assignments_student': { ru: 'Учитель добавит задания', en: 'Teacher will add assignments', kk: 'Мұғалім тапсырмалар қосады' },
+  'assignment.select': { ru: 'Выберите задание для просмотра', en: 'Select an assignment to view', kk: 'Қарау үшін тапсырманы таңдаңыз' },
   'class.add': { ru: 'Добавить', en: 'Add', kk: 'Қосу' },
   'class.lecture_btn': { ru: 'Лекция', en: 'Lecture', kk: 'Дәріс' },
   'class.assignment_btn': { ru: 'Задание', en: 'Assignment', kk: 'Тапсырма' },
