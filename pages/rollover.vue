@@ -323,7 +323,7 @@ onMounted(async () => {
 <style scoped>
 .pg{height:100%;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
 .pg-body{flex:1;overflow-y:auto;width:100%}
-.content-area{padding:32px 32px 80px;width:100%;box-sizing:border-box;max-width:820px}
+.content-area{padding:32px 32px 80px;width:100%;box-sizing:border-box}
 .spin-ring{width:30px;height:30px;border:3px solid var(--border2);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ro-load{display:flex;justify-content:center;padding:60px}
