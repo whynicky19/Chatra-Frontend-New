@@ -63,6 +63,12 @@
             Создать
           </button>
         </div>
+        <div class="u-filter-row">
+          <button v-for="f in roleFilters" :key="f.value" :class="['u-role-chip',{active:roleFilter===f.value}]" @click="roleFilter=f.value">
+            {{ f.label }}
+            <span class="u-role-chip-n">{{ roleCounts[f.value] }}</span>
+          </button>
+        </div>
         <div v-if="loadingU" class="u-loading"><div class="spinner"></div></div>
         <template v-else>
           <!-- Desktop: таблица -->
@@ -71,7 +77,12 @@
               <thead><tr><th>Имя</th><th>Email</th><th>Роль</th><th>ИИ доступ</th><th>Дата регистрации</th><th></th></tr></thead>
               <tbody>
                 <tr v-for="u in fUsers" :key="u.id">
-                  <td class="u-name">{{u.full_name || u.email.split('@')[0]}}</td>
+                  <td class="u-name">
+                    <div class="u-name-row">
+                      <AdminAvatar :name="u.full_name || u.email" :seed="u.id"/>
+                      <span>{{u.full_name || u.email.split('@')[0]}}</span>
+                    </div>
+                  </td>
                   <td class="u-email">{{u.email}}</td>
                   <td>
                     <span :class="['badge',u.role==='admin'?'badge-teal':'badge-gray']">{{u.role}}</span>
@@ -118,6 +129,7 @@
           <div class="users-cards">
             <div v-for="u in fUsers" :key="u.id" class="u-card">
               <div class="u-card-top">
+                <AdminAvatar :name="u.full_name || u.email" :seed="u.id" size="md"/>
                 <div class="u-card-id">
                   <div class="u-card-name">{{u.full_name || u.email.split('@')[0]}}</div>
                   <div class="u-card-email">{{u.email}}</div>
@@ -271,6 +283,7 @@
             <svg class="u-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input v-model="clq" class="search-inp" placeholder="Поиск предметов..."/>
           </div>
+          <span class="cl-count-hint">{{ fClasses.length }} из {{ classes.length }}</span>
         </div>
         <div v-if="loadingCl" class="center-loading"><div class="spinner"></div></div>
         <div v-else class="cl-grid">
@@ -285,7 +298,8 @@
               <div class="cl-name">{{ cl.name }}</div>
               <div class="cl-sub">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                {{ cl.teacher || creatorName(cl.created_by) }}
+                <span class="truncate">{{ cl.teacher || creatorName(cl.created_by) }}</span>
+                <template v-if="cl.created_at"><span class="cl-sub-dot">·</span><span class="cl-sub-date">{{ fmtDateShort(cl.created_at) }}</span></template>
               </div>
             </div>
           </div>
@@ -325,12 +339,36 @@
           <div v-if="selectedClass?.created_at" class="cl-modal-sub">Создан {{ fmtDate(selectedClass.created_at) }}</div>
         </div>
 
+        <!-- Quick facts — glanceable summary instead of digging through sections
+             for basics like member count, invite code or AI usage. -->
+        <div class="cl-facts">
+          <div class="cl-fact">
+            <span class="cl-fact-lbl">Участников</span>
+            <span class="cl-fact-val">{{ selectedClass?.member_count ?? membersList.length }}</span>
+          </div>
+          <div class="cl-fact">
+            <span class="cl-fact-lbl">Токенов ИИ</span>
+            <span class="cl-fact-val">{{ selectedClassAi ? selectedClassAi.total_tokens.toLocaleString() : '—' }}</span>
+          </div>
+          <div class="cl-fact">
+            <span class="cl-fact-lbl">Создан</span>
+            <span class="cl-fact-val cl-fact-val-sm">{{ selectedClass?.created_at ? fmtDateShort(selectedClass.created_at) : '—' }}</span>
+          </div>
+          <button v-if="selectedClass?.invite_code" class="cl-fact cl-fact-btn" title="Скопировать код приглашения" @click="copyInviteCode">
+            <span class="cl-fact-lbl">Код приглашения</span>
+            <span class="cl-fact-val cl-fact-code">{{ selectedClass.invite_code }}</span>
+          </button>
+        </div>
+
         <div class="cl-modal-body">
+          <p v-if="selectedClass?.description" class="cl-description">{{ selectedClass.description }}</p>
+
           <!-- Creator -->
           <div class="cl-section">
             <div class="cl-section-label">Создатель</div>
             <div v-if="classCreator" class="members-list">
               <div class="member-row">
+                <AdminAvatar :name="classCreator.full_name || classCreator.email" :seed="classCreator.id"/>
                 <div class="member-info">
                   <div class="member-name">{{ classCreator.full_name || classCreator.email.split('@')[0] }}</div>
                   <div class="member-email">{{ classCreator.email }}</div>
@@ -347,13 +385,21 @@
               Участники
               <span v-if="!loadingMembers" class="cl-count-badge">{{ membersList.length }}</span>
             </div>
+            <div v-if="!loadingMembers && membersList.length > 6" class="search-wrap cl-member-search">
+              <svg class="u-search-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input v-model="memberQuery" class="search-inp" placeholder="Найти участника..."/>
+            </div>
             <div v-if="loadingMembers" class="center-loading center-loading-sm"><div class="spinner"></div></div>
             <div v-else-if="!membersList.length" class="cl-empty">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
               <span>Участников нет</span>
             </div>
-            <div v-else class="members-list">
-              <div v-for="m in membersList" :key="m.id" class="member-row">
+            <div v-else-if="!filteredMembersList.length" class="cl-empty">
+              <span>Никого не найдено</span>
+            </div>
+            <div v-else class="members-list members-list-lg">
+              <div v-for="m in filteredMembersList" :key="m.id" class="member-row">
+                <AdminAvatar :name="m.full_name || m.email" :seed="m.id"/>
                 <div class="member-info">
                   <div class="member-name">{{ m.full_name || m.email.split('@')[0] }}</div>
                   <div class="member-email">{{ m.email }}</div>
@@ -377,6 +423,7 @@
             </div>
             <div v-else class="members-list">
               <div v-for="u in rejoinable" :key="u.id" class="member-row">
+                <AdminAvatar :name="u.full_name || u.email" :seed="u.id"/>
                 <div class="member-info">
                   <div class="member-name">{{ u.full_name || u.email.split('@')[0] }}</div>
                   <div class="member-email">{{ u.email }}</div>
@@ -431,9 +478,24 @@ const classesSvc = useClassesSvc()
 const tab = ref('users'); const users = ref<any[]>([]); const loadingU = ref(false); const sq = ref(''); const showCreate = ref(false); const crU = ref(false)
 const togglingAi = ref<Record<number, boolean>>({})
 const nu = ref({ e: '', p: '', r: 'student' }); const classesCount = ref(0)
+const roleFilter = ref('all')
+const roleFilters = [
+  { value: 'all', label: 'Все' },
+  { value: 'student', label: 'Ученики' },
+  { value: 'teacher', label: 'Учителя' },
+  { value: 'admin', label: 'Админы' },
+]
+const roleCounts = computed(() => ({
+  all: users.value.length,
+  student: users.value.filter(u => u.role === 'student').length,
+  teacher: users.value.filter(u => u.role === 'teacher').length,
+  admin: users.value.filter(u => u.role === 'admin').length,
+} as Record<string, number>))
 const fUsers = computed(() => users.value.filter(u => {
   const q = sq.value.toLowerCase()
-  return u.email.toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q)
+  const matchesQuery = u.email.toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q)
+  const matchesRole = roleFilter.value === 'all' || u.role === roleFilter.value
+  return matchesQuery && matchesRole
 }))
 
 // ── AI Usage ──────────────────────────────────────────────────────────────────
@@ -450,6 +512,7 @@ const getUserEmail = (uid: number | null) => uid ? (userMap.value[uid] || '#' + 
 // Бэкенд шлёт naive-UTC без таймзоны — без 'Z' браузер считал бы время локальным
 // и показывал бы его со сдвигом на часовой пояс.
 const fmtDate = (iso: string) => { if (!iso) return '—'; try { const withTz = /Z$|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : iso + 'Z'; const d = new Date(withTz); return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) } catch { return iso } }
+const fmtDateShort = (iso: string) => { if (!iso) return '—'; try { const withTz = /Z$|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : iso + 'Z'; return new Date(withTz).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) } catch { return iso } }
 const loadAiUsage = async (page = 1) => { aiLoading.value = true; aiPage.value = page; try { const params: any = { page, page_size: aiPageSize }; if (aiFilterClass.value !== null) params.class_id = aiFilterClass.value; const res = await adminSvc.aiUsage(params); aiLogs.value = res.items; aiTotal.value = res.total } catch { toast.err('Ошибка загрузки данных ИИ') } finally { aiLoading.value = false } }
 const loadAiSummary = async () => { try { aiSummary.value = await adminSvc.aiUsageSummary() } catch {} }
 const setClassFilter = (classId: number | null) => { aiFilterClass.value = aiFilterClass.value === classId ? null : classId; loadAiUsage(1) }
@@ -470,11 +533,29 @@ const selectedClass = ref<any>(null)
 const classCreator = computed(() => selectedClass.value?.created_by ? users.value.find(u => u.id === selectedClass.value.created_by) ?? null : null)
 const creatorName = (id: number) => { const u = users.value.find(u => u.id === id); return u ? (u.full_name || u.email) : id ? '#' + id : '—' }
 
+// Ties the class detail modal into the AI-usage numbers already loaded for
+// the "Запросы к ИИ" tab, so opening a class shows its token footprint too.
+const selectedClassAi = computed(() => selectedClass.value ? aiSummary.value.find((s: any) => s.class_id === selectedClass.value.id) ?? null : null)
+
+const memberQuery = ref('')
+const filteredMembersList = computed(() => {
+  const q = memberQuery.value.trim().toLowerCase()
+  if (!q) return membersList.value
+  return membersList.value.filter(m => m.email.toLowerCase().includes(q) || (m.full_name || '').toLowerCase().includes(q))
+})
+
+const copyInviteCode = async () => {
+  const code = selectedClass.value?.invite_code
+  if (!code) return
+  try { await navigator.clipboard.writeText(code); toast.ok('Код скопирован') } catch { toast.err('Не удалось скопировать') }
+}
+
 const rejoinable = ref<any[]>([]); const loadingRejoin = ref(false); const addingId = ref<number|null>(null)
 
 const openClass = async (cl: any) => {
   selectedClass.value = cl
   showMembers.value = true
+  memberQuery.value = ''
   membersList.value = []; loadingMembers.value = true
   rejoinable.value = []; loadingRejoin.value = true
   try {
@@ -591,6 +672,13 @@ onUnmounted(() => {
 .u-search-row{display:flex;gap:8px;margin-bottom:12px;align-items:center}
 .u-search-wrap{flex:1}
 .u-search-icon{color:var(--text4)}
+.u-filter-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.u-role-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:100px;font-size:12.5px;font-weight:600;color:var(--text3);background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all .15s}
+.u-role-chip:hover{color:var(--text1);border-color:var(--border2)}
+.u-role-chip.active{color:var(--teal);background:rgba(var(--teal-rgb),.1);border-color:rgba(var(--teal-rgb),.28)}
+.u-role-chip-n{font-size:10.5px;font-weight:700;color:var(--text4);background:var(--surface2);border-radius:100px;padding:1px 6px}
+.u-role-chip.active .u-role-chip-n{color:var(--teal);background:rgba(var(--teal-rgb),.14)}
+.u-name-row{display:flex;align-items:center;gap:10px}
 .u-loading, .center-loading{display:flex;justify-content:center;padding:24px}
 .center-loading-lg{padding:32px}
 .center-loading-sm{padding:16px}
@@ -623,8 +711,8 @@ onUnmounted(() => {
    таблица со скроллом в сторону, которая раньше была только у админки. */
 .users-cards{display:none}
 .u-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;box-shadow:var(--sh-xs);display:flex;flex-direction:column;gap:10px}
-.u-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.u-card-id{min-width:0}
+.u-card-top{display:flex;align-items:center;gap:10px}
+.u-card-id{min-width:0;flex:1}
 .u-card-name{font-size:14px;font-weight:600;color:var(--text1)}
 .u-card-email{font-size:12px;color:var(--text4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .u-card-ai{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -700,27 +788,52 @@ onUnmounted(() => {
 .cl-member-chip{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);padding:4px 9px;border-radius:100px}
 .cl-body{padding:14px 16px 16px}
 .cl-name{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cl-sub{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-sub{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text4);min-width:0}
+.cl-sub svg{flex-shrink:0}
+.cl-sub .truncate{min-width:0}
+.cl-sub-dot{flex-shrink:0;opacity:.6}
+.cl-sub-date{flex-shrink:0;white-space:nowrap}
+.cl-count-hint{font-size:12px;color:var(--text4);white-space:nowrap;flex-shrink:0}
 
-/* Class detail modal */
-.cl-detail-modal{max-width:460px;width:100%;padding:0;overflow:hidden;display:flex;flex-direction:column}
-.cl-modal-cover{height:160px;flex-shrink:0;background-size:cover;background-position:center;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:16px 20px}
+/* Class detail modal — widened considerably: the old 460px squeezed a
+   photo header, quick facts and three scrollable lists into one narrow
+   column, so almost nothing was visible without extra scrolling. */
+.cl-detail-modal{max-width:680px;width:100%;padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 64px)}
+.cl-modal-cover{height:180px;flex-shrink:0;background-size:cover;background-position:center;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:18px 22px}
 .cl-modal-close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(4px)}
 .cl-modal-close:hover{background:rgba(0,0,0,.65)}
-.cl-modal-title{font-size:20px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);margin:0}
+.cl-modal-title{font-size:22px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);margin:0}
 .cl-modal-sub{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);text-shadow:0 1px 4px rgba(0,0,0,.5);margin-top:2px}
-.cl-modal-body{padding:0 20px 20px;overflow-y:auto;flex:1;min-height:0}
+
+/* Quick facts strip — glanceable numbers right under the cover, so the
+   basics don't require scrolling into a section. */
+.cl-facts{display:grid;grid-template-columns:repeat(4,1fr);flex-shrink:0;border-bottom:1px solid var(--border)}
+.cl-fact{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-right:1px solid var(--border);background:none;border-top:none;border-bottom:none;border-left:none;text-align:left;cursor:default;font-family:inherit}
+.cl-fact:last-child{border-right:none}
+.cl-fact-btn{cursor:pointer;transition:background .15s}
+.cl-fact-btn:hover{background:var(--surface2)}
+.cl-fact-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-fact-val{font-size:16px;font-weight:700;color:var(--text1);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-fact-val-sm{font-size:13px;font-weight:600}
+.cl-fact-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;color:var(--teal)}
+
+.cl-modal-body{padding:0 22px 22px;overflow-y:auto;flex:1;min-height:0}
+.cl-description{font-size:13px;line-height:1.5;color:var(--text3);margin:18px 0 0;white-space:pre-wrap}
 .cl-section{margin-top:20px}
 .cl-section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .cl-count-badge{background:var(--text3);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:100px}
 .cl-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px 0;color:var(--text4);font-size:13px}
 .cl-unknown{font-size:13px;color:var(--text4);padding:8px 0}
 .cl-subtitle{font-size:12px;color:var(--text4);margin:-4px 0 10px}
+.cl-member-search{margin-bottom:10px;padding:6px 10px}
+.cl-member-search .search-inp{font-size:12.5px}
 
 /* Members — inset grouped list (iOS Settings style): rows share one
    rounded surface instead of floating with bare bottom borders, so
-   related items visually read as one group. */
-.members-list{display:flex;flex-direction:column;max-height:280px;overflow-y:auto;background:var(--surface2);border-radius:var(--r-md);padding:0 12px}
+   related items visually read as one group. Taller now the modal is wider,
+   so more of a class roster is visible without an extra nested scroll. */
+.members-list{display:flex;flex-direction:column;max-height:320px;overflow-y:auto;background:var(--surface2);border-radius:var(--r-md);padding:0 12px}
+.members-list-lg{max-height:420px}
 .member-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
 .member-row:last-child{border-bottom:none}
 .member-info{flex:1;min-width:0}
@@ -758,6 +871,14 @@ onUnmounted(() => {
   .ai-pagination { flex-wrap: wrap; gap: 8px; }
   .pg-sub { margin-left: 0; }
   .item-menu-btn { width: 44px; height: 44px; }
+  .u-filter-row { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .u-role-chip { flex-shrink: 0; }
+  .cl-facts { grid-template-columns: repeat(2, 1fr); }
+  .cl-fact:nth-child(2) { border-right: none; }
+  .cl-fact { border-bottom: 1px solid var(--border); }
+  .cl-fact:nth-last-child(-n+2) { border-bottom: none; }
+  .cl-modal-cover { height: 150px; }
+  .cl-modal-title { font-size: 19px; }
 }
 @media (max-width:480px) {
   .stat-card { padding: 10px 6px; }
