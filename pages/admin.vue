@@ -13,8 +13,8 @@
       <!-- Stats -->
       <div class="stats-row">
         <div class="stat-card">
-          <div class="stat-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          <div class="stat-icon stat-icon-blue">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
           </div>
           <div>
             <div class="stat-val">{{users.length}}</div>
@@ -22,12 +22,21 @@
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          <div class="stat-icon stat-icon-purple">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           </div>
           <div>
             <div class="stat-val">{{classesCount}}</div>
             <div class="stat-lbl">Классов</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-orange">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div>
+            <div class="stat-val">{{aiGrandTotalTokens.toLocaleString()}}</div>
+            <div class="stat-lbl">Токенов ИИ</div>
           </div>
         </div>
       </div>
@@ -150,20 +159,28 @@
 
       <!-- AI Usage tab -->
       <div v-else-if="tab==='ai-usage'">
-        <!-- Summary cards per class -->
-        <div v-if="aiSummary.length" class="ai-summary-row">
-          <div
-            v-for="s in aiSummary"
-            :key="s.class_id ?? 'general'"
-            :class="['ai-sum-card', { active: aiFilterClass === s.class_id }]"
-            @click="setClassFilter(s.class_id)"
-          >
-            <div class="ai-sum-top">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span class="ai-sum-label">{{ s.class_id ? 'Класс #' + s.class_id : 'Общий чат' }}</span>
-            </div>
-            <div class="ai-sum-tokens">{{ s.total_tokens.toLocaleString() }}</div>
-            <div class="ai-sum-meta">токенов · {{ s.request_count }} запросов</div>
+        <!-- Token leaderboard — bar chart per class, replaces the old card grid -->
+        <div v-if="aiSummary.length" class="ai-board">
+          <div class="ai-board-head">
+            <span class="ai-board-title">Токены по классам</span>
+            <span class="ai-board-total">Итого <strong>{{ aiGrandTotalTokens.toLocaleString() }}</strong> токенов</span>
+          </div>
+          <div class="ai-bars">
+            <button
+              v-for="s in topAiSummary"
+              :key="s.class_id ?? 'general'"
+              type="button"
+              :class="['ai-bar-row', { active: aiFilterClass === s.class_id }]"
+              :title="`${className(s.class_id)}: ${s.total_tokens.toLocaleString()} токенов, ${s.request_count} запросов`"
+              @click="setClassFilter(s.class_id)"
+            >
+              <span class="ai-bar-label">{{ className(s.class_id) }}</span>
+              <span class="ai-bar-track"><span class="ai-bar-fill" :style="{ width: barPct(s.total_tokens) + '%' }"></span></span>
+              <span class="ai-bar-value">{{ s.total_tokens.toLocaleString() }}</span>
+            </button>
+          </div>
+          <div v-if="sortedAiSummary.length > topAiSummary.length" class="ai-board-more">
+            и ещё {{ sortedAiSummary.length - topAiSummary.length }} — выберите в фильтре ниже
           </div>
         </div>
 
@@ -174,13 +191,10 @@
               <svg class="u-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <select v-model="aiFilterClass" class="search-inp ai-filter-select" @change="loadAiUsage(1)">
                 <option :value="null">Все классы</option>
-                <option v-for="s in aiSummary" :key="s.class_id ?? 'g'" :value="s.class_id">
-                  {{ s.class_id ? 'Класс #' + s.class_id : 'Общий чат' }}
+                <option v-for="s in sortedAiSummary" :key="s.class_id ?? 'g'" :value="s.class_id">
+                  {{ className(s.class_id) }}
                 </option>
               </select>
-            </div>
-            <div class="ai-total-badge" v-if="aiTotal > 0">
-              Итого: {{ aiTotalTokens.toLocaleString() }} токенов
             </div>
             <button class="btn btn-ghost btn-sm" @click="loadAiUsage(aiPage)" :disabled="aiLoading">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" :class="aiLoading?'spin':''"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
@@ -211,8 +225,7 @@
                 <td class="ai-log-idx">{{ (aiPage - 1) * aiPageSize + idx + 1 }}</td>
                 <td class="ai-log-date">{{ fmtDate(item.created_at) }}</td>
                 <td>
-                  <span v-if="item.class_id" class="ai-class-chip">Класс #{{ item.class_id }}</span>
-                  <span v-else class="ai-class-chip ai-class-general">Общий</span>
+                  <span :class="['ai-class-chip', { 'ai-class-general': !item.class_id }]">{{ className(item.class_id) }}</span>
                 </td>
                 <td>
                   <span :class="['ai-type-chip', item.endpoint === 'ai-grade' ? 'ai-type-grade' : 'ai-type-chat']">
@@ -427,7 +440,11 @@ const fUsers = computed(() => users.value.filter(u => {
 const aiLogs = ref<any[]>([]); const aiSummary = ref<any[]>([]); const aiTotal = ref(0)
 const aiPage = ref(1); const aiPageSize = 50; const aiLoading = ref(false)
 const aiFilterClass = ref<number | null>(null)
-const aiTotalTokens = computed(() => aiSummary.value.filter((s: any) => aiFilterClass.value === null || s.class_id === aiFilterClass.value).reduce((sum: number, s: any) => sum + (s.total_tokens || 0), 0))
+const aiGrandTotalTokens = computed(() => aiSummary.value.reduce((sum: number, s: any) => sum + (s.total_tokens || 0), 0))
+const sortedAiSummary = computed(() => [...aiSummary.value].sort((a: any, b: any) => (b.total_tokens || 0) - (a.total_tokens || 0)))
+const topAiSummary = computed(() => sortedAiSummary.value.slice(0, 8))
+const maxSummaryTokens = computed(() => Math.max(1, ...topAiSummary.value.map((s: any) => s.total_tokens || 0)))
+const barPct = (v: number) => Math.max(3, Math.round((v / maxSummaryTokens.value) * 100))
 const userMap = computed(() => { const m: Record<number, string> = {}; for (const u of users.value) m[u.id] = u.full_name || u.email; return m })
 const getUserEmail = (uid: number | null) => uid ? (userMap.value[uid] || '#' + uid) : '—'
 // Бэкенд шлёт naive-UTC без таймзоны — без 'Z' браузер считал бы время локальным
@@ -439,11 +456,15 @@ const setClassFilter = (classId: number | null) => { aiFilterClass.value = aiFil
 const switchToAiUsage = () => { tab.value = 'ai-usage'; if (!aiLogs.value.length && !aiLoading.value) loadAiUsage(1) }
 
 // ── Classes ───────────────────────────────────────────────────────────────────
-const clCovers = ['linear-gradient(135deg,var(--teal-d),var(--teal))','linear-gradient(135deg,#0c4a6e,#0369a1)','linear-gradient(135deg,#134e4a,#0d9488)','linear-gradient(135deg,#312e81,#4338ca)','linear-gradient(135deg,#1e3a5f,#2563eb)']
+// Apple system-color family (blue/purple/orange/green/pink) — varied like iOS
+// folder colors instead of every card defaulting to the brand teal.
+const clCovers = ['linear-gradient(135deg,var(--teal-h),var(--teal-d))','linear-gradient(135deg,#BF5AF2,#8E3FCB)','linear-gradient(135deg,#FF9F0A,#D67D00)','linear-gradient(135deg,#30D158,#1E9E44)','linear-gradient(135deg,#FF375F,#D91C46)']
 const coverGrad = (id: number) => clCovers[id % clCovers.length]
 
 const classes = ref<any[]>([]); const loadingCl = ref(false); const clq = ref('')
 const fClasses = computed(() => classes.value.filter(cl => cl.name.toLowerCase().includes(clq.value.toLowerCase())))
+const classMap = computed(() => { const m: Record<number, string> = {}; for (const cl of classes.value) m[cl.id] = cl.name; return m })
+const className = (id: number | null) => id ? (classMap.value[id] || `Класс #${id}`) : 'Общий чат'
 const showMembers = ref(false); const membersList = ref<any[]>([]); const loadingMembers = ref(false)
 const selectedClass = ref<any>(null)
 const classCreator = computed(() => selectedClass.value?.created_by ? users.value.find(u => u.id === selectedClass.value.created_by) ?? null : null)
@@ -552,9 +573,15 @@ onUnmounted(() => {
 .pg-title{font-size:20px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
 .pg-sub{font-size:13px;color:var(--text4);margin-top:3px;margin-left:28px}
 .pg-body{padding:20px 32px 32px}
-.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh-xs)}
-.stat-icon{width:38px;height:38px;border-radius:var(--r-md);background:var(--teal-l);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-icon{width:38px;height:38px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+/* Apple Settings-style icon tiles — one hue per category instead of every
+   stat tinted the same brand blue, so blue reads as "the accent" not "the
+   wallpaper". */
+.stat-icon-blue{background:rgba(var(--teal-rgb),.12);color:var(--teal)}
+.stat-icon-purple{background:rgba(191,90,242,.12);color:#BF5AF2}
+.stat-icon-orange{background:rgba(255,159,10,.14);color:#FF9F0A}
 .stat-val{font-size:22px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .stat-lbl{font-size:12px;color:var(--text3)}
 .search-wrap{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-md);padding:8px 10px}
@@ -624,23 +651,36 @@ onUnmounted(() => {
 
 /* AI Usage */
 .tab-ai-btn{display:flex;align-items:center;gap:6px}
-.ai-summary-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-.ai-sum-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 18px;cursor:pointer;transition:all .18s;min-width:140px}
-.ai-sum-card:hover{border-color:rgba(var(--teal-rgb),.4);background:rgba(var(--teal-rgb),.04)}
-.ai-sum-card.active{border-color:rgba(var(--teal-rgb),.55);background:rgba(var(--teal-rgb),.08)}
-.ai-sum-top{display:flex;align-items:center;gap:6px;color:var(--text3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.ai-sum-tokens{font-size:22px;font-weight:700;color:var(--text1);font-variant-numeric:tabular-nums}
-.ai-sum-meta{font-size:11px;color:var(--text4);margin-top:2px}
+
+/* Token leaderboard — horizontal bar chart, one accent hue for the single
+   "tokens" series (identity already carried by the row label, so no
+   categorical palette needed). Replaces the old card grid. */
+.ai-board{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:16px;box-shadow:var(--sh-xs)}
+.ai-board-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.ai-board-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4)}
+.ai-board-total{font-size:12px;color:var(--text3)}
+.ai-board-total strong{color:var(--text1);font-weight:700;font-variant-numeric:tabular-nums}
+.ai-bars{display:flex;flex-direction:column;gap:2px}
+.ai-bar-row{display:grid;grid-template-columns:minmax(90px,180px) 1fr auto;align-items:center;gap:12px;padding:7px 8px;border-radius:var(--r-sm);border:1px solid transparent;background:none;cursor:pointer;transition:background .15s,border-color .15s;text-align:left;font-family:inherit;width:100%}
+.ai-bar-row:hover{background:var(--surface2)}
+.ai-bar-row.active{background:rgba(var(--teal-rgb),.08);border-color:rgba(var(--teal-rgb),.25)}
+.ai-bar-label{font-size:12.5px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-bar-row.active .ai-bar-label{color:var(--text1)}
+.ai-bar-track{height:8px;border-radius:4px;background:var(--surface2);overflow:hidden}
+.ai-bar-fill{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal-h),var(--teal));transition:width .5s cubic-bezier(.22,1,.36,1)}
+.ai-bar-row.active .ai-bar-fill{background:linear-gradient(90deg,var(--teal),var(--teal-d))}
+.ai-bar-value{font-size:12px;font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums;min-width:58px;text-align:right}
+.ai-board-more{font-size:11.5px;color:var(--text4);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+
 .ai-controls{margin-bottom:12px}
 .ai-filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .ai-filter-wrap{flex:1;max-width:260px}
 .ai-filter-select{cursor:pointer}
-.ai-total-badge{font-size:12px;font-weight:700;color:var(--teal);background:rgba(var(--teal-rgb),.1);border:1px solid rgba(var(--teal-rgb),.2);border-radius:100px;padding:5px 12px}
 .ai-log-heading{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin:18px 0 10px}
-.ai-class-chip{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(var(--teal-rgb),.1);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.2)}
-/* "Общий чат" — нейтральная категория, не отдельный цвет акцента (раньше
-   индиго #6366f1, вне бренда — единственный акцент сайта это --teal). */
-.ai-class-general{background:var(--surface2);color:var(--text3);border-color:var(--border)}
+/* Class identity chip — neutral by default; blue is reserved for actions
+   and selection, not every table cell. */
+.ai-class-chip{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+.ai-class-general{color:var(--text4);font-style:italic}
 .ai-type-chip{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
 .ai-type-grade{background:rgba(52,211,153,.08);color:#10b981;border-color:rgba(52,211,153,.2)}
 /* "Чат" — тоже нейтральный, без своего цвета (раньше синий #3b82f6, вне
@@ -697,10 +737,11 @@ onUnmounted(() => {
 @media (max-width:768px) {
   .pg-head { padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 0; }
   .pg-body { padding: 14px 16px 28px; }
-  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+  .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
   .stat-card { padding: 12px 8px; flex-direction: column; align-items: flex-start; gap: 6px; }
-  .stat-val { font-size: 18px; }
-  .stat-lbl { font-size: 11px; }
+  .stat-icon { width: 30px; height: 30px; }
+  .stat-val { font-size: 16px; }
+  .stat-lbl { font-size: 10px; }
   /* Таблица пользователей на мобиле — карточки, не горизонтальный скролл
      (журнал ИИ-запросов реже открывают и просматривают активно вбок, для
      таблицы пользователей — основной поверхности управления — это дороже). */
@@ -709,8 +750,9 @@ onUnmounted(() => {
   .ai-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .ai-table table { min-width: 500px; }
   .pg-title { font-size: 17px; }
-  .ai-summary-row { gap: 8px; }
-  .ai-sum-card { min-width: 110px; padding: 10px 12px; }
+  .ai-board { padding: 12px 10px; }
+  .ai-bar-row { grid-template-columns: minmax(64px,96px) 1fr auto; gap: 8px; }
+  .ai-bar-value { min-width: 44px; font-size: 11px; }
   .ai-filter-row { flex-wrap: wrap; gap: 8px; }
   .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
   .ai-pagination { flex-wrap: wrap; gap: 8px; }
