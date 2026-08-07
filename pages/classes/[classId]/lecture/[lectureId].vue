@@ -108,10 +108,14 @@ const fmtDate = (d: string) => { if (!d) return ''; try { return parseUtc(d).toL
 }
 
 @media (max-width: 768px) {
+  /* flex-direction меняется на column — без flex:1 + min-height:0 эти панели
+     просто растут под весь свой контент (min-height:auto по умолчанию не даёт
+     сжаться под доступную высоту), а .lec-page{overflow:hidden} обрезает
+     лишнее вместо прокрутки. min-height:0 снимает этот флекс-минимум. */
   .lec-page { flex-direction: column; }
-  .lec-left { width: 100%; border-right: none; }
+  .lec-left { width: 100%; border-right: none; flex: 1; min-height: 0; }
   .lec-left-scroll { padding: 0 16px 32px; }
   .lec-back { margin: 14px 16px 4px; }
-  .lec-right { flex: 1; min-width: 0; padding: 0; width: 100%; }
+  .lec-right { flex: 1; min-width: 0; min-height: 0; padding: 0; width: 100%; }
 }
 </style>

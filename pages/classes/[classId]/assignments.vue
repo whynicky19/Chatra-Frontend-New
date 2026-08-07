@@ -108,11 +108,15 @@ const goBack = () => router.push(`/classes/${classId.value}?tab=assignments`)
 }
 
 @media (max-width: 768px) {
+  /* flex-direction меняется на column — без flex:1 + min-height:0 эти панели
+     просто растут под весь свой контент (min-height:auto по умолчанию не даёт
+     сжаться под доступную высоту), а .asg-page{overflow:hidden} обрезает
+     лишнее вместо прокрутки. min-height:0 снимает этот флекс-минимум. */
   .asg-page { flex-direction: column; }
-  .asg-left { width: 100%; border-right: none; }
+  .asg-left { width: 100%; border-right: none; flex: 1; min-height: 0; }
   .asg-left-head { margin: 4px 16px 16px; }
   .asg-left-scroll { padding: 0 16px 32px; }
   .asg-back { margin: 14px 16px 4px; }
-  .asg-right { flex: 1; min-width: 0; padding: 0; width: 100%; }
+  .asg-right { flex: 1; min-width: 0; min-height: 0; padding: 0; width: 100%; }
 }
 </style>
