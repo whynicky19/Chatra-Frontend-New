@@ -1,9 +1,5 @@
 <template>
   <div class="org-shell">
-    <!-- Мягкое цветное «дыхание» по углам: выбранный тип проступает сильнее -->
-    <div class="glow glow-uni" :class="{ strong: picked === 'university' }"></div>
-    <div class="glow glow-school" :class="{ strong: picked === 'school' }"></div>
-
     <div class="org-content">
       <!-- Lang switcher -->
       <div class="lang-row r0">
@@ -132,18 +128,6 @@ const proceed = () => {
   position: relative;
   overflow: hidden;
 }
-
-/* Угловые свечения */
-.glow {
-  position: absolute; inset: 0;
-  pointer-events: none;
-  opacity: .07;
-  transition: opacity .5s ease;
-}
-html.dark .glow { opacity: .1; }
-.glow.strong { opacity: .16 !important; }
-.glow-uni    { background: radial-gradient(circle at 0% 0%,   #00B1C9 0%, transparent 55%); }
-.glow-school { background: radial-gradient(circle at 100% 100%, #F59E0B 0%, transparent 55%); }
 
 .org-content {
   position: relative; z-index: 1;
@@ -274,7 +258,7 @@ html.dark .glow { opacity: .1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .r0, .r1, .r2, .r3, .r4, .r5 { animation: none; }
-  .glow, .logo-mark, .logo-glow, .org-title.accent, .org-option, .radio, .continue-btn { transition: none; }
+  .logo-mark, .logo-glow, .org-title.accent, .org-option, .radio, .continue-btn { transition: none; }
 }
 
 @media (max-width: 768px) {
