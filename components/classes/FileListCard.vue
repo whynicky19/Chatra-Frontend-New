@@ -28,16 +28,18 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
 .flc-row {
   display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px;
   border-bottom: 1px solid var(--border);
-  text-decoration: none; transition: background .1s ease-out;
+  text-decoration: none; transition: background .12s ease-out;
 }
 .flc-row:last-child { border-bottom: none; }
 .flc-row:hover { background: var(--surface3); }
+.flc-row:hover .flc-chevron { color: var(--teal); transform: translateX(2px); }
 .flc-row:active { background: var(--surface3); }
-.flc-icon, .flc-thumb { width: 40px; height: 40px; border-radius: var(--r-md); flex-shrink: 0; }
+.flc-row:active .flc-icon, .flc-row:active .flc-thumb { transform: scale(.96); }
+.flc-icon, .flc-thumb { width: 40px; height: 40px; border-radius: var(--r-md); flex-shrink: 0; transition: transform .1s ease-out; }
 .flc-icon { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; letter-spacing: .02em; }
 .flc-thumb { object-fit: cover; }
 .flc-info { flex: 1; min-width: 0; }
 .flc-name { font-size: 14px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .flc-type { font-size: 12px; color: var(--text4); letter-spacing: .02em; margin-top: 1px; }
-.flc-chevron { color: var(--text4); flex-shrink: 0; }
+.flc-chevron { color: var(--text4); flex-shrink: 0; transition: color .15s ease-out, transform .15s ease-out; }
 </style>

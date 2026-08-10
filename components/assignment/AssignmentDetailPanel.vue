@@ -829,24 +829,54 @@ onMounted(async () => {
 .badge-score { background: var(--surface2); color: var(--text2); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
 .badge-due { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text4); background: var(--surface2); padding: 3px 10px; border-radius: 100px; }
 .badge-due.overdue { background: var(--red-l); color: var(--red); }
-.am-tabs { display: flex; padding: 0 24px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.am-tab { display: flex; align-items: center; gap: 6px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text3); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all .15s; font-family: inherit; }
+/* Segmented control (Apple/iOS style): pill container + a sliding "selected"
+   pill that gets a real surface + shadow, so the active tab reads as raised
+   rather than a thin underline that got lost next to the rest of the cards. */
+.am-tabs {
+  display: flex; gap: 3px;
+  margin: 16px 24px 2px;
+  padding: 3px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  flex-shrink: 0;
+}
+.am-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 9px 16px;
+  font-size: 13px; font-weight: 600; color: var(--text3);
+  background: transparent; border: none; border-radius: var(--r-md);
+  cursor: pointer; font-family: inherit;
+  transition: color .2s ease-out, background .2s ease-out, box-shadow .2s ease-out, transform .12s ease-out;
+}
 .am-tab:hover { color: var(--text1); }
-.am-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
-.tab-count { font-size: 11px; font-weight: 700; background: var(--surface2); color: var(--text3); padding: 2px 7px; border-radius: 100px; }
+.am-tab:active { transform: scale(.97); }
+.am-tab.active {
+  color: var(--text1);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(17,24,28,.06), 0 3px 10px rgba(17,24,28,.09);
+}
+.tab-count {
+  font-size: 11px; font-weight: 700; min-width: 17px; text-align: center;
+  padding: 1px 7px; border-radius: 100px;
+  background: var(--surface3); color: var(--text3);
+  transition: background .2s ease-out, color .2s ease-out;
+}
+.am-tab.active .tab-count { background: var(--teal); color: #fff; }
 .am-body { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; }
 
 .desc-block { font-size: 14px; color: var(--text2); line-height: 1.7; padding: 14px; background: var(--surface2); border-radius: var(--r-lg); border: 1px solid var(--border); white-space: pre-wrap; }
 .section { display: flex; flex-direction: column; gap: 10px; }
 .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); }
 .criteria-list { display: flex; flex-direction: column; gap: 8px; }
-.criterion { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 12px 14px; }
+.criterion { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 13px 14px; transition: background .15s ease-out, border-color .15s ease-out; }
+.criterion:hover { background: var(--surface3); border-color: var(--border2); }
 .criterion-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
 .criterion-name { font-size: 13px; font-weight: 700; color: var(--text1); flex: 1; min-width: 0; word-break: break-word; }
-.criterion-pts { font-size: 12px; font-weight: 700; color: var(--text2); flex-shrink: 0; white-space: nowrap; }
-.criterion-desc { font-size: 12px; color: var(--text4); margin-bottom: 8px; }
-.criterion-bar { height: 4px; background: var(--surface3); border-radius: 4px; overflow: hidden; }
-.criterion-bar-fill { height: 100%; background: var(--text3); border-radius: 4px; }
+.criterion-pts { font-size: 12px; font-weight: 700; color: var(--teal); flex-shrink: 0; white-space: nowrap; background: var(--teal-l); padding: 2px 8px; border-radius: 100px; }
+.criterion-desc { font-size: 12px; color: var(--text4); line-height: 1.5; margin-bottom: 9px; }
+.criterion-bar { height: 5px; background: var(--surface3); border-radius: 4px; overflow: hidden; }
+.criterion-bar-fill { height: 100%; background: linear-gradient(90deg,var(--teal-h),var(--teal)); border-radius: 4px; transition: width .3s ease-out; }
 
 /* Submit form */
 .field { display: flex; flex-direction: column; gap: 7px; }
@@ -1007,8 +1037,8 @@ html.dark .nrb-title { color: #fbbf24; }
   .am-ico { width: 36px; height: 36px; flex-shrink: 0; }
   .am-title { font-size: 16px; margin-bottom: 6px; word-break: break-word; }
   .am-badges { flex-wrap: wrap; gap: 6px; }
-  .am-tabs { padding: 0 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
-  .am-tab { padding: 10px 12px; font-size: 12px; white-space: nowrap; flex-shrink: 0; min-height: 44px; }
+  .am-tabs { margin: 12px 10px 2px; }
+  .am-tab { padding: 10px 12px; font-size: 12.5px; white-space: nowrap; min-height: 44px; }
   .am-body { padding: 14px 14px 80px; gap: 14px; }
   .inp { font-size: 16px; }
   .inp-ta { font-size: 16px; min-height: 100px; }
