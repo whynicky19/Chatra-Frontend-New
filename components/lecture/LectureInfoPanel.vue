@@ -1,7 +1,6 @@
 <template>
   <div class="lip">
     <div class="lip-badge">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
       {{ t('class.lecture_badge') }}
     </div>
     <h1 class="lip-title">{{ title }}</h1>
@@ -37,9 +36,10 @@ const onBodyClick = (e: MouseEvent) => {
 
 <style scoped>
 .lip-badge {
-  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
-  background: var(--teal-l); color: var(--teal); border-radius: var(--r-2xl);
-  font-size: 12px; font-weight: 700; margin-bottom: 16px;
+  display: inline-flex; align-items: center; padding: 5px 12px;
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
+  border-radius: 100px; font-size: 12.5px; font-weight: 590; letter-spacing: -.01em;
+  margin-bottom: 16px;
 }
 .lip-title { font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--text1); margin: 0 0 8px; }
 .lip-date { font-size: 13px; color: var(--text4); margin-bottom: 20px; }

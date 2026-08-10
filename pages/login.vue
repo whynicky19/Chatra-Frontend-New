@@ -2,13 +2,13 @@
   <div class="auth-card">
     <!-- Org type badge -->
     <div class="org-badge-row">
-      <div :class="['org-badge', org.isSchool ? 'school' : 'university']">
-        <svg v-if="org.isSchool" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-        <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-        {{ org.isSchool ? (lang==='ru'?'Школа':lang==='kk'?'Мектеп':'School') : (lang==='ru'?'Университет':lang==='kk'?'Университет':'University') }}
-      </div>
-      <button class="org-switch-btn" @click="switchOrg">
-        {{ lang==='ru'?'Сменить':'Change' }}
+      <button :class="['org-pill', { school: org.isSchool }]" :title="lang==='ru'?'Сменить организацию':'Change organization'" @click="switchOrg">
+        <span class="org-pill-icon">
+          <svg v-if="org.isSchool" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+          <span v-else class="uni-glyph-sm"></span>
+        </span>
+        <span class="org-pill-label">{{ org.isSchool ? (lang==='ru'?'Школа':lang==='kk'?'Мектеп':'School') : (lang==='ru'?'Университет':lang==='kk'?'Университет':'University') }}</span>
+        <svg class="org-pill-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
       </button>
     </div>
 
@@ -98,17 +98,15 @@ const sub = async () => {
 /* Кнопка входа: плоская заливка акцентом, без цветного ореола тени */
 .auth-submit{height:50px;border-radius:14px;font-size:15px;font-weight:600;background:var(--teal)!important;box-shadow:none!important}
 .auth-submit:hover{background:var(--teal-h)!important;box-shadow:none!important;transform:none!important}
-.org-badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.org-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;padding:4px 10px;border-radius:100px}
-.org-badge.university{background:rgba(var(--teal-rgb),.1);color:var(--teal-d);border:1px solid rgba(var(--teal-rgb),.25)}
-.org-badge.school{background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.25)}
-/* Тёмная тема: тёмные оттенки (--teal-d, #b45309) на полупрозрачном тёмном
-   фоне дают контраст ~3.5:1 — ниже WCAG AA 4.5:1. Светлее вариант каждого
-   акцента специально для тёмной темы, как уже сделано в AiLimitNotice. */
-html.dark .org-badge.university{color:var(--teal)}
-html.dark .org-badge.school{color:#fbbf24}
-.org-switch-btn{font-size:11px;font-weight:600;color:var(--text4);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s}
-.org-switch-btn:hover{color:var(--teal)}
+.org-badge-row{display:flex;align-items:center;margin-bottom:18px}
+.org-pill{position:relative;display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 5px;border-radius:100px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;transition:transform .12s ease-out,background .15s}
+.org-pill:hover{background:var(--surface3,var(--surface2))}
+.org-pill:active{transform:scale(.96)}
+.org-pill-icon{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#006475,#009AAF);color:#fff;flex-shrink:0}
+.org-pill.school .org-pill-icon{background:linear-gradient(135deg,#B45309,#F59E0B)}
+.uni-glyph-sm{width:11px;height:11px;display:block;background:#fff;-webkit-mask:url('/uni-logo.png') center/contain no-repeat;mask:url('/uni-logo.png') center/contain no-repeat}
+.org-pill-label{font-size:12.5px;font-weight:590;color:var(--text2);letter-spacing:-.01em}
+.org-pill-chevron{color:var(--text4);flex-shrink:0;margin-left:-2px}
 
 @media (max-width:768px) {
   /* max-width как на десктопе (400px) — не 100%: на широких "мобильных"
@@ -122,8 +120,9 @@ html.dark .org-badge.school{color:#fbbf24}
   .auth-submit { height: 50px; }
   .pw-eye { min-width: 44px; min-height: 44px; right: 0; }
   .org-badge-row { margin-bottom: 14px; }
-  .forgot-link,.auth-link,.org-switch-btn{position:relative;display:inline-flex;align-items:center}
-  .forgot-link::after,.auth-link::after,.org-switch-btn::after{content:'';position:absolute;top:-13px;bottom:-13px;left:-6px;right:-6px}
+  .forgot-link,.auth-link{position:relative;display:inline-flex;align-items:center}
+  .forgot-link::after,.auth-link::after{content:'';position:absolute;top:-13px;bottom:-13px;left:-6px;right:-6px}
+  .org-pill::after{content:'';position:absolute;top:-7px;bottom:-7px;left:-4px;right:-4px}
 }
 @media (max-width:480px) {
   .auth-card { padding: 20px 16px; border-radius: 18px; }
