@@ -40,10 +40,10 @@ const gradeChip = computed(() => {
   display: flex; align-items: center; gap: 13px; width: 100%; padding: 12px 14px;
   background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg);
   text-align: left; cursor: pointer; font-family: inherit;
-  transition: background .15s, border-color .15s, transform .12s;
+  transition: background .12s ease-out, border-color .12s ease-out, transform .1s ease-out;
 }
 .ali-row:hover { background: var(--surface3); }
-.ali-row:active { transform: scale(0.98); }
+.ali-row:active { transform: scale(.98); }
 .ali-row.active { background: var(--teal-l); border-color: var(--teal); }
 .ali-icon {
   width: 40px; height: 40px; border-radius: var(--r-md); flex-shrink: 0;

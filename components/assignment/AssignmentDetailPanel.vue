@@ -227,22 +227,30 @@
 
           <!-- Needs review card: Статус / Предлагаемая оценка ИИ / Уверенность / Причины / Анализ ИИ + 2 действия -->
           <div class="needs-review-banner">
-            <div class="nrb-title">{{ t('am.status_needs_review_label') }}</div>
-
-            <div v-if="activeSub.grade" class="nrb-row">
-              <span class="nrb-row-label">{{ t('am.suggested_score_label') }}</span>
-              <span class="nrb-row-value">{{ activeSub.grade.score }} / {{ assignment.max_score }}</span>
+            <div class="nrb-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              {{ t('am.status_needs_review_label') }}
             </div>
-            <div v-if="activeSub.ai_confidence != null" class="nrb-row">
-              <span class="nrb-row-label">{{ t('am.confidence_label') }}</span>
-              <span class="nrb-row-value">{{ activeSub.ai_confidence }}%</span>
+
+            <div class="nrb-stats" v-if="activeSub.grade || activeSub.ai_confidence != null">
+              <div v-if="activeSub.grade" class="nrb-row">
+                <span class="nrb-row-label">{{ t('am.suggested_score_label') }}</span>
+                <span class="nrb-row-value">{{ activeSub.grade.score }} / {{ assignment.max_score }}</span>
+              </div>
+              <div v-if="activeSub.ai_confidence != null" class="nrb-row">
+                <span class="nrb-row-label">{{ t('am.confidence_label') }}</span>
+                <span class="nrb-row-value">{{ activeSub.ai_confidence }}%</span>
+              </div>
             </div>
 
             <template v-if="parsedActiveReviewReasons">
               <div class="nrb-section-label">{{ t('am.review_reasons_label') }}</div>
-              <ul class="nrb-reasons">
-                <li v-for="(r, i) in parsedActiveReviewReasons" :key="i">{{ r }}</li>
-              </ul>
+              <div class="nrb-reasons">
+                <div v-for="(r, i) in parsedActiveReviewReasons" :key="i" class="nrb-reason-row">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  <span>{{ r }}</span>
+                </div>
+              </div>
             </template>
 
             <template v-if="activeSub.grade">
@@ -263,7 +271,7 @@
                 <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 {{ t('am.confirm_suggested') }}
               </button>
-              <button class="btn btn-teal" @click="showManualGrade = !showManualGrade">
+              <button class="btn btn-white" @click="showManualGrade = !showManualGrade">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 {{ t('am.change_score') }}
               </button>
@@ -313,7 +321,7 @@
             <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             {{ grading ? checkStepText : (activeSub.grade ? t('am.recheck_ai') : t('am.check_ai')) }}
           </button>
-          <button class="btn btn-teal" @click="showManualGrade = !showManualGrade">
+          <button class="btn btn-white" @click="showManualGrade = !showManualGrade">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             {{ activeSub.grade ? t('am.set_manual') : t('am.grade_manual') }}
           </button>
@@ -901,14 +909,23 @@ onMounted(async () => {
 .grading-dots span:nth-child(2) { animation-delay: .2s; }
 .grading-dots span:nth-child(3) { animation-delay: .4s; }
 
-/* Needs-review banner (teacher only) — low-confidence handwriting recognition */
-.needs-review-banner { background: rgba(230, 162, 60, 0.1); border: 1px solid rgba(230, 162, 60, 0.35); border-radius: var(--r-xl); padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+/* Needs-review banner (teacher only) — low-confidence handwriting recognition.
+   Нейтральная карточка + компактный цветной статус-бейдж сверху вместо
+   сплошной заливки на весь блок — цвет остаётся акцентом, а не фоном для
+   разнородного контента (баллы, причины, разбор ИИ, кнопки). */
+.needs-review-banner { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
 .needs-review-student { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; background: rgba(230, 162, 60, 0.1); border: 1px solid rgba(230, 162, 60, 0.35); border-radius: var(--r-lg); font-size: 13px; line-height: 1.5; color: var(--text2); }
 .needs-review-student svg { flex-shrink: 0; margin-top: 1px; color: #e6a23c; }
-.nrb-title { font-size: 14px; font-weight: 700; color: var(--text1); }
-.nrb-body { font-size: 13px; color: var(--text3); }
-.nrb-confidence { font-size: 13px; font-weight: 600; color: var(--text2); }
-.nrb-reasons { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text3); display: flex; flex-direction: column; gap: 4px; }
+.nrb-title {
+  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+  font-size: 11.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  color: #b45309; background: rgba(230, 162, 60, .14); padding: 5px 12px; border-radius: 100px;
+}
+html.dark .nrb-title { color: #fbbf24; }
+.nrb-stats { display: flex; flex-direction: column; gap: 6px; }
+.nrb-reasons { display: flex; flex-direction: column; gap: 7px; }
+.nrb-reason-row { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.5; color: var(--text2); }
+.nrb-reason-row svg { color: #d97706; flex-shrink: 0; margin-top: 2px; }
 .nrb-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
 .nrb-row-label { color: var(--text3); }
 .nrb-row-value { font-weight: 700; color: var(--text1); }
@@ -935,8 +952,9 @@ onMounted(async () => {
 
 /* Submissions tab */
 .subs-stats { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
-.btn-bulk-grade { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 14px; padding: 11px 16px; background: linear-gradient(180deg,var(--teal-h),var(--teal-d)); color: #fff; border: none; border-radius: var(--r-md); font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .15s; font-family: inherit; }
+.btn-bulk-grade { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 14px; padding: 11px 16px; background: linear-gradient(180deg,var(--teal-h),var(--teal-d)); color: #fff; border: none; border-radius: var(--r-md); font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .15s, transform .1s ease-out; font-family: inherit; }
 .btn-bulk-grade:hover { opacity: .85; }
+.btn-bulk-grade:active { transform: scale(.98); }
 .btn-bulk-grade:disabled { opacity: .6; cursor: not-allowed; }
 .stat-chip { display: flex; flex-direction: column; align-items: center; padding: 12px 18px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); min-width: 80px; }
 .stat-n { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 26px; font-weight: 900; color: var(--text1); }
@@ -950,7 +968,7 @@ onMounted(async () => {
 .subs-search-clear { background: none; border: none; color: var(--text4); font-size: 16px; cursor: pointer; line-height: 1; padding: 0 2px; transition: color .15s; min-width: 32px; min-height: 32px; display: flex; align-items: center; justify-content: center; }
 .subs-search-clear:hover { color: var(--text1); }
 .subs-list { display: flex; flex-direction: column; gap: 6px; }
-.sub-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); cursor: pointer; transition: all .15s; }
+.sub-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); cursor: pointer; transition: background .12s ease-out, border-color .12s ease-out; }
 .sub-row:hover { background: var(--surface3); border-color: var(--border2); }
 .sub-av { width: 36px; height: 36px; border-radius: 50%; background: var(--surface3); color: var(--text2); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .sub-info { flex: 1; }
