@@ -39,18 +39,18 @@
 
       <!-- Assignment files -->
       <div v-if="assignmentFiles.length" class="section">
-        <div class="section-label">{{ t('am.task_files') }}</div>
+        <div class="section-label">{{ t('am.task_files') }}<span class="section-count">{{ assignmentFiles.length }}</span></div>
         <FileListCard :files="assignmentFiles" @open="openPreview" />
       </div>
 
       <!-- Reference solution files -->
       <div v-if="referenceFiles.length" class="section">
-        <div class="section-label">{{ t('am.reference_files') }}</div>
+        <div class="section-label">{{ t('am.reference_files') }}<span class="section-count">{{ referenceFiles.length }}</span></div>
         <FileListCard :files="referenceFiles" @open="openPreview" />
       </div>
 
       <div class="section">
-        <div class="section-label">{{ t('am.criteria') }}</div>
+        <div class="section-label">{{ t('am.criteria') }}<span class="section-count">{{ parsedCriteria.length }}</span></div>
         <div class="criteria-list">
           <div v-for="c in parsedCriteria" :key="c.name" class="criterion">
             <div class="criterion-top">
@@ -204,7 +204,6 @@
           {{ t('am.back_to_list') }}
         </button>
         <div class="sub-detail-header">
-          <div class="sub-av-lg">{{ getStudentInitials(activeSub.student_id) }}</div>
           <div>
             <div class="sub-student-name">{{ getStudentName(activeSub.student_id) }}</div>
             <div class="sub-student-date" style="display:flex;align-items:center;gap:8px">
@@ -381,7 +380,6 @@
           </div>
           <div class="subs-list">
             <div v-for="s in filteredSubmissions" :key="s.id" class="sub-row" @click="activeSub = s">
-              <div class="sub-av">{{ getStudentInitials(s.student_id) }}</div>
               <div class="sub-info">
                 <div class="sub-student">{{ getStudentName(s.student_id) }}</div>
                 <div class="sub-meta">
@@ -397,6 +395,7 @@
                 <span v-if="s.grade" class="grade-pill">{{ s.grade.score }}/{{ assignment.max_score }}</span>
                 <span :class="['status-mini', s.status]">{{ statusLabel(s.status) }}</span>
               </div>
+              <svg class="sub-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
           </div>
         </div>
@@ -533,7 +532,6 @@ const canSubmit = computed(() =>
 )
 
 const getStudentName = (id: number) => studentMap.value[id] || `${t('am.student_hash')} #${id}`
-const getStudentInitials = (id: number) => { const fn = studentMap.value[id]; if (!fn) return String(id); const parts = fn.trim().split(' ').filter(Boolean); return parts.map((p:string) => p[0]).join('').toUpperCase().slice(0, 2) || String(id) }
 // Единая терминология с приложением и карточкой задания: submitted → СДАНО,
 // graded → ОЦЕНЕНО, late → ПРОСРОЧЕНО, grading → ПРОВЕРЯЕТСЯ.
 const statusLabel = (s: string) => ({
@@ -823,7 +821,7 @@ onMounted(async () => {
 .ad-col-side { display: flex; flex-direction: column; gap: 18px; min-width: 0; position: sticky; top: 0; }
 .am-head { display: flex; flex-direction: column; padding: 22px 24px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .am-head-l { display: flex; gap: 14px; }
-.am-ico { width: 44px; height: 44px; background: var(--surface2); border: 1px solid var(--border); color: var(--text3); border-radius: var(--r-lg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.am-ico { width: 44px; height: 44px; background: var(--teal-l); border: 1px solid rgba(var(--teal-rgb),.18); color: var(--teal); border-radius: var(--r-lg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .am-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 19px; font-weight: 900; color: var(--text1); margin-bottom: 8px; }
 .am-badges { display: flex; gap: 8px; flex-wrap: wrap; }
 .badge-score { background: var(--surface2); color: var(--text2); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
@@ -868,6 +866,7 @@ onMounted(async () => {
 .desc-block { font-size: 14px; color: var(--text2); line-height: 1.7; padding: 14px; background: var(--surface2); border-radius: var(--r-lg); border: 1px solid var(--border); white-space: pre-wrap; }
 .section { display: flex; flex-direction: column; gap: 10px; }
 .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); }
+.section-count { margin-left: 6px; color: var(--text4); font-weight: 700; letter-spacing: 0; text-transform: none; }
 .criteria-list { display: flex; flex-direction: column; gap: 8px; }
 .criterion { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 13px 14px; transition: background .15s ease-out, border-color .15s ease-out; }
 .criterion:hover { background: var(--surface3); border-color: var(--border2); }
@@ -980,33 +979,58 @@ html.dark .nrb-title { color: #fbbf24; }
 .grading-dots span:nth-child(3) { animation-delay: .3s; }
 @keyframes bounce { 0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)} }
 
-/* Submissions tab */
-.subs-stats { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
-.btn-bulk-grade { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 14px; padding: 11px 16px; background: linear-gradient(180deg,var(--teal-h),var(--teal-d)); color: #fff; border: none; border-radius: var(--r-md); font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .15s, transform .1s ease-out; font-family: inherit; }
-.btn-bulk-grade:hover { opacity: .85; }
+/* Submissions tab — one grouped summary card (dividers, not 3 separate boxes)
+   in the spirit of iOS Health/Screen Time widgets, rather than three repeated
+   bordered chips competing for attention. */
+.subs-stats {
+  display: flex; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); margin-bottom: 14px; overflow: hidden;
+}
+.stat-chip {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; padding: 13px 8px; position: relative; min-width: 0;
+}
+.stat-chip:not(:last-child)::after {
+  content: ''; position: absolute; right: 0; top: 22%; bottom: 22%; width: 1px; background: var(--border);
+}
+.btn-bulk-grade {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+  margin-bottom: 14px; padding: 12px 16px;
+  background: linear-gradient(180deg,var(--teal-h),var(--teal-d)); color: #fff; border: none;
+  border-radius: var(--r-lg); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+  box-shadow: 0 1px 2px rgba(var(--teal-rgb),.25), 0 4px 14px rgba(var(--teal-rgb),.22);
+  transition: box-shadow .22s cubic-bezier(.32,.72,0,1), transform .15s cubic-bezier(.32,.72,0,1), opacity .15s;
+}
+.btn-bulk-grade:hover { box-shadow: 0 2px 4px rgba(var(--teal-rgb),.28), 0 8px 22px rgba(var(--teal-rgb),.3); transform: translateY(-1px); }
 .btn-bulk-grade:active { transform: scale(.98); }
-.btn-bulk-grade:disabled { opacity: .6; cursor: not-allowed; }
-.stat-chip { display: flex; flex-direction: column; align-items: center; padding: 12px 18px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); min-width: 80px; }
-.stat-n { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 26px; font-weight: 900; color: var(--text1); }
+.btn-bulk-grade:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+.stat-n { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 24px; font-weight: 900; color: var(--text1); letter-spacing: -.01em; }
 .stat-l { font-size: 11px; color: var(--text4); font-weight: 600; }
 .stat-chip.ok .stat-n { color: var(--green); }
 .stat-chip.wait .stat-n { color: var(--yellow); }
-.subs-search { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 10px; }
+.subs-search {
+  display: flex; align-items: center; gap: 8px; padding: 9px 13px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md);
+  margin-bottom: 10px; transition: border-color .15s ease-out, box-shadow .15s ease-out, background .15s ease-out;
+}
+.subs-search:focus-within { border-color: var(--teal); background: var(--surface); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.12); }
 .subs-search svg { color: var(--text4); flex-shrink: 0; }
 .subs-search-inp { flex: 1; background: transparent; border: none; outline: none; font-size: 13px; color: var(--text1); font-family: inherit; }
 .subs-search-inp::placeholder { color: var(--text4); }
 .subs-search-clear { background: none; border: none; color: var(--text4); font-size: 16px; cursor: pointer; line-height: 1; padding: 0 2px; transition: color .15s; min-width: 32px; min-height: 32px; display: flex; align-items: center; justify-content: center; }
 .subs-search-clear:hover { color: var(--text1); }
 .subs-list { display: flex; flex-direction: column; gap: 6px; }
-.sub-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); cursor: pointer; transition: background .12s ease-out, border-color .12s ease-out; }
+.sub-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); cursor: pointer; transition: background .12s ease-out, border-color .12s ease-out, transform .1s ease-out; }
 .sub-row:hover { background: var(--surface3); border-color: var(--border2); }
-.sub-av { width: 36px; height: 36px; border-radius: 50%; background: var(--surface3); color: var(--text2); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.sub-info { flex: 1; }
+.sub-row:active { transform: scale(.99); }
+.sub-info { flex: 1; min-width: 0; }
+.sub-chevron { color: var(--text4); flex-shrink: 0; transition: transform .15s ease-out; }
+.sub-row:hover .sub-chevron { transform: translateX(2px); color: var(--text3); }
 .sub-student { font-size: 13px; font-weight: 700; color: var(--text1); margin-bottom: 3px; }
 .sub-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text4); }
 .sub-tag { font-size: 14px; }
 .sub-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.grade-pill { font-size: 13px; font-weight: 700; color: var(--text1); }
+.grade-pill { font-size: 12.5px; font-weight: 700; color: var(--text1); background: var(--surface3); padding: 2px 9px; border-radius: 100px; }
 .status-mini { font-size: 11px; padding: 2px 8px; border-radius: 100px; background: var(--surface3); color: var(--text4); }
 .status-mini.graded { background: rgba(74,222,128,.1); color: var(--green); }
 .status-mini.grading { background: rgba(251,191,36,.12); color: var(--yellow); }
@@ -1016,8 +1040,7 @@ html.dark .nrb-title { color: #fbbf24; }
 .sub-detail { display: flex; flex-direction: column; gap: 16px; }
 .back-sub-btn { display: flex; align-items: center; gap: 7px; padding: 7px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); font-size: 13px; color: var(--text3); cursor: pointer; transition: all .15s; align-self: flex-start; font-family: inherit; }
 .back-sub-btn:hover { color: var(--text1); }
-.sub-detail-header { display: flex; align-items: center; gap: 12px; }
-.sub-av-lg { width: 44px; height: 44px; border-radius: 50%; background: var(--surface3); color: var(--text2); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.sub-detail-header { display: flex; align-items: center; }
 .sub-student-name { font-size: 15px; font-weight: 700; color: var(--text1); }
 .sub-student-date { font-size: 12px; color: var(--text4); }
 .sub-text-section, .sub-file-section { display: flex; flex-direction: column; gap: 7px; }
@@ -1054,9 +1077,8 @@ html.dark .nrb-title { color: #fbbf24; }
   .af-rm { width: 32px; height: 32px; font-size: 15px; }
   .subs-search-clear { min-width: 44px; min-height: 44px; }
   .back-sub-btn { min-height: 44px; }
-  .subs-stats { flex-wrap: wrap; }
-  .stat-chip { min-width: 70px; padding: 10px 12px; }
-  .stat-n { font-size: 22px; }
+  .stat-chip { padding: 10px 6px; }
+  .stat-n { font-size: 21px; }
   .btn-bulk-grade { font-size: 12px; padding: 10px 12px; }
   .desc-block { font-size: 13px; word-break: break-word; }
   .grade-card { padding: 14px; }
@@ -1068,7 +1090,6 @@ html.dark .nrb-title { color: #fbbf24; }
   .am-head-l { flex-direction: column; gap: 8px; }
   .am-head { padding: 14px 12px 10px; }
   .am-body { padding: 12px 12px 80px; }
-  .subs-stats { gap: 6px; }
 }
 
 /* Manual grade form */
