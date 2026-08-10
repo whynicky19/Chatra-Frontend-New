@@ -849,8 +849,13 @@ onMounted(async () => {
 .btn-full { width: 100%; justify-content: center; margin-top: 4px; }
 .file-drop { border: 2px dashed var(--border2); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; transition: all .18s; }
 .file-drop:hover, .file-drop.has-file { border-color: var(--teal); background: var(--glass); }
-.attached-files-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-.attached-file-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); font-size: 12px; }
+.attached-files-list {
+  display: flex; flex-direction: column; margin-top: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-md); overflow: hidden;
+}
+.attached-file-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
+.attached-file-row:last-child { border-bottom: none; }
 .attached-file-row .af-name { flex: 1; min-width: 0; font-weight: 500; color: var(--text1); word-break: break-word; overflow-wrap: anywhere; }
 .attached-file-row .af-size { color: var(--text4); white-space: nowrap; }
 .attached-file-row .af-rm { width: 20px; height: 20px; border-radius: 50%; background: var(--surface3); color: var(--text4); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all .15s; }

@@ -128,7 +128,6 @@ export const translations: Record<string, Record<Lang, string>> = {
   'class.avg_score': { ru: 'Средний балл', en: 'Avg Score', kk: 'Орташа балл' },
   'class.delete_assignment': { ru: 'Задание удалено', en: 'Assignment deleted', kk: 'Тапсырма жойылды' },
   'class.delete_post': { ru: 'Удалено', en: 'Deleted', kk: 'Жойылды' },
-  'class.lecture_badge': { ru: 'Лекция', en: 'Lecture', kk: 'Дәріс' },
   'class.attached_files_label': { ru: 'Материалы', en: 'Materials', kk: 'Материалдар' },
 
   // Lecture screen / document viewer

@@ -1,8 +1,5 @@
 <template>
   <div class="lip">
-    <div class="lip-badge">
-      {{ t('class.lecture_badge') }}
-    </div>
     <h1 class="lip-title">{{ title }}</h1>
     <div class="lip-date">{{ date }}</div>
 
@@ -11,7 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from '~/composables/useI18n'
 import { sameFilePath } from '~/composables/useFileUrl'
 
 const props = defineProps<{
@@ -21,8 +17,6 @@ const props = defineProps<{
   files: { url: string; name: string }[]
 }>()
 const emit = defineEmits<{ (e: 'open-file', index: number): void }>()
-
-const { t } = useI18n()
 
 const onBodyClick = (e: MouseEvent) => {
   const target = (e.target as HTMLElement)?.closest('[data-preview-url]') as HTMLElement | null
@@ -35,12 +29,6 @@ const onBodyClick = (e: MouseEvent) => {
 </script>
 
 <style scoped>
-.lip-badge {
-  display: inline-flex; align-items: center; padding: 5px 12px;
-  background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
-  border-radius: 100px; font-size: 12.5px; font-weight: 590; letter-spacing: -.01em;
-  margin-bottom: 16px;
-}
 .lip-title { font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--text1); margin: 0 0 8px; }
 .lip-date { font-size: 13px; color: var(--text4); margin-bottom: 20px; }
 .lip-desc { font-size: 14px; line-height: 1.65; color: var(--text2); margin-bottom: 28px; }

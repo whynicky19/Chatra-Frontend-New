@@ -20,11 +20,20 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
 </script>
 
 <style scoped>
-.flc-list { display: flex; flex-direction: column; gap: 8px; }
-.flc-row { display: flex; align-items: center; gap: 13px; width: 100%; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); text-decoration: none; transition: background .12s, transform .12s; }
+.flc-list {
+  display: flex; flex-direction: column;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); overflow: hidden;
+}
+.flc-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none; transition: background .1s ease-out;
+}
+.flc-row:last-child { border-bottom: none; }
 .flc-row:hover { background: var(--surface3); }
-.flc-row:active { transform: scale(0.98); }
-.flc-icon, .flc-thumb { width: 44px; height: 44px; border-radius: var(--r-md); flex-shrink: 0; }
+.flc-row:active { background: var(--surface3); }
+.flc-icon, .flc-thumb { width: 40px; height: 40px; border-radius: var(--r-md); flex-shrink: 0; }
 .flc-icon { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; letter-spacing: .02em; }
 .flc-thumb { object-fit: cover; }
 .flc-info { flex: 1; min-width: 0; }

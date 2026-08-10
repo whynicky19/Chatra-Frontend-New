@@ -20,8 +20,9 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
 
 <style scoped>
 .ftg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.ftg-tile { display: flex; flex-direction: column; gap: 6px; text-decoration: none; }
-.ftg-box { position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--r-lg); overflow: hidden; background: var(--surface2); }
+.ftg-tile { display: flex; flex-direction: column; gap: 6px; text-decoration: none; transition: transform .1s ease-out; }
+.ftg-tile:active { transform: scale(.96); }
+.ftg-box { position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--r-lg); overflow: hidden; background: var(--surface2); border: 1px solid var(--border); }
 .ftg-img { width: 100%; height: 100%; object-fit: cover; }
 .ftg-icon { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; letter-spacing: .02em; }
 .ftg-name { font-size: 11.5px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
