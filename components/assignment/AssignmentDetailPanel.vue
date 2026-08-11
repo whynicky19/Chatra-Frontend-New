@@ -46,6 +46,7 @@
       <!-- Reference solution files -->
       <div v-if="referenceFiles.length" class="section">
         <div class="section-label">{{ t('am.reference_files') }}<span class="section-count">{{ referenceFiles.length }}</span></div>
+        <div class="section-hint">{{ t('am.reference_files_hint') }}</div>
         <FileListCard :files="referenceFiles" @open="openPreview" />
       </div>
 
@@ -867,6 +868,7 @@ onMounted(async () => {
 .section { display: flex; flex-direction: column; gap: 10px; }
 .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); }
 .section-count { margin-left: 6px; color: var(--text4); font-weight: 700; letter-spacing: 0; text-transform: none; }
+.section-hint { font-size: 12px; color: var(--text4); margin-top: -6px; }
 .criteria-list { display: flex; flex-direction: column; gap: 8px; }
 .criterion { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 13px 14px; transition: background .15s ease-out, border-color .15s ease-out; }
 .criterion:hover { background: var(--surface3); border-color: var(--border2); }

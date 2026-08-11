@@ -934,6 +934,8 @@ const saveEditAssignment = async () => {
       title: editAsgForm.value.title,
       description: descWithFiles,
       deadline: editAsgForm.value.deadline ? new Date(editAsgForm.value.deadline).toISOString() : undefined,
+      // Поле очищено в форме — явный сигнал бэкенду снять дедлайн (см. коммент у clear_deadline в assignments.ts)
+      clear_deadline: !editAsgForm.value.deadline,
       criteria: editAsgForm.value.criteria,
       reference_solution_url: referenceSolutionUrl,
     })

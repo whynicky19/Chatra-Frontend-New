@@ -403,6 +403,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'am.submit_tab': { ru: 'Сдать', en: 'Submit', kk: 'Тапсыру' },
   'am.task_files': { ru: 'Файлы задания', en: 'Assignment files', kk: 'Тапсырма файлдары' },
   'am.reference_files': { ru: 'Эталонное решение', en: 'Reference solution', kk: 'Эталон шешім' },
+  'am.reference_files_hint': { ru: 'Видно только вам — студенты этот файл не видят', en: 'Visible only to you — students cannot see this file', kk: 'Тек сізге көрінеді — оқушылар бұл файлды көрмейді' },
   'am.check_step_1': { ru: 'Подготавливаем файлы...', en: 'Preparing files...', kk: 'Файлдарды дайындап жатырмыз...' },
   'am.check_step_2': { ru: 'Анализируем работу...', en: 'Analyzing your work...', kk: 'Жұмысты талдап жатырмыз...' },
   'am.check_step_3': { ru: 'Проверяем критерии...', en: 'Checking criteria...', kk: 'Критерийлерді тексеріп жатырмыз...' },

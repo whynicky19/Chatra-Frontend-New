@@ -31,7 +31,10 @@ const onBodyClick = (e: MouseEvent) => {
 <style scoped>
 .lip-title { font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--text1); margin: 0 0 8px; }
 .lip-date { font-size: 13px; color: var(--text4); margin-bottom: 20px; }
-.lip-desc { font-size: 14px; line-height: 1.65; color: var(--text2); margin-bottom: 28px; }
+.lip-desc {
+  font-size: 14px; line-height: 1.65; color: var(--text2); margin-bottom: 28px;
+  padding: 14px; background: var(--surface2); border-radius: var(--r-lg); border: 1px solid var(--border);
+}
 .lip-desc :deep(.link-inline) { color: var(--teal); text-decoration: none; }
 .lip-desc :deep(.link-inline:hover) { text-decoration: underline; }
 .lip-desc :deep(.file-attachment) {

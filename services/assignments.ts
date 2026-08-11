@@ -99,6 +99,10 @@ export const useAssignmentsSvc = () => {
       deadline: string
       is_active: boolean
       reference_solution_url: string
+      // exclude_none на бэкенде отбрасывает deadline: undefined/null — этот
+      // флаг единственный способ явно снять дедлайн, а не пустая строка
+      // (даты, в отличие от reference_solution_url, не парсятся из "").
+      clear_deadline: boolean
     }>): Promise<Assignment> => {
       const { data } = await api.put(`/assignments/${id}`, body)
       return data
