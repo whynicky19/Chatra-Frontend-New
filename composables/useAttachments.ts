@@ -2,9 +2,19 @@
 // (uploads/uuid.pdf#Оригинальное%20имя.pdf) — единый формат с мобильным приложением.
 // Легаси-формат сайта: "📎 [имя](url)" в описании.
 
-const MD_FILE_RE = /📎\s*\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g
+// Пробел внутри скобок не исключаем — только ')'/'\n' — иначе ссылка с
+// пробелом в оригинальном имени файла (легаси-данные, см. SIGNED_UPLOAD_URL_RE
+// ниже) обрывает совпадение и хвост "имени" остаётся сырым текстом.
+const MD_FILE_RE = /📎\s*\[([^\]\n]+)\]\((https?:\/\/[^)\n]+)\)/g
 const FILE_EXT_RE = /\.(pdf|doc|docx|txt|md|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|webp)(\?[^\s#]*)?$/i
 const URL_RE = /(https?:\/\/[^\s\n"'<>]+)/g
+// Легаси-данные (до фикса пробела в services/uploads.ts): бэкенд кладёт
+// оригинальное имя файла прямо в путь URL, из-за чего в тексте описания мог
+// сохраниться пробел прямо посреди голой ссылки — обычный URL_RE такую ссылку
+// обрывает на первом пробеле. Подписанные ссылки на файлы всегда несут
+// "?exp=<ts>&sig=<hex>", это надёжная сигнатура, отличающая их от обычного
+// текста, — по ней ловим ссылку целиком, пробелы внутри не исключаем.
+const SIGNED_UPLOAD_URL_RE = /(https?:\/\/[^\s/]+\/[^\n]*?\?exp=\d+&sig=[0-9a-f]+(?:#[^\s\n"'<>]*)?)/g
 
 /** Добавляет оригинальное имя файла во фрагмент URL */
 export const withNameFragment = (url: string, name: string): string =>
@@ -31,7 +41,13 @@ export const extractFilesFromText = (text?: string | null): { name: string; url:
     const base = url.split('#')[0]
     if (!seen.has(base)) { files.push({ url, name: m[1] }); seen.add(base) }
   }
-  const rest = desc.replace(MD_FILE_RE, '')
+  let rest = desc.replace(MD_FILE_RE, '')
+  for (const m of [...rest.matchAll(SIGNED_UPLOAD_URL_RE)]) {
+    const url = m[1].trim()
+    const base = url.split('#')[0]
+    if (!seen.has(base)) { files.push({ url, name: fileNameFromUrl(url) }); seen.add(base) }
+  }
+  rest = rest.replace(SIGNED_UPLOAD_URL_RE, '')
   for (const m of [...rest.matchAll(URL_RE)]) {
     const url = m[1].replace(/[.,;:!?]+$/, '')
     const base = url.split('#')[0]
@@ -47,6 +63,7 @@ export const extractFilesFromText = (text?: string | null): { name: string; url:
 export const stripFilesFromText = (text?: string | null): string =>
   (text || '')
     .replace(MD_FILE_RE, '')
+    .replace(SIGNED_UPLOAD_URL_RE, '')
     .replace(URL_RE, (m) => (isFileUrl(m.replace(/[.,;:!?]+$/, '')) ? '' : m))
     .replace(/\n{3,}/g, '\n\n')
     .trim()
