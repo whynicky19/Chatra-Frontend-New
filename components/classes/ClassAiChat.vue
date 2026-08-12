@@ -112,9 +112,15 @@ const props = defineProps<{
 // Сообщения листаются внутри своего собственного контейнера (не через
 // tab-content), поэтому обложка класса наверху слушает это событие отдельно,
 // чтобы точно так же плавно скрываться при скролле чата.
+//
+// Схлопывание завязано на фактический скролл (scrollTop > 24) ИЛИ на сам факт
+// наличия сообщений: при малом числе сообщений контент не переполняет
+// контейнер (scrollHeight === clientHeight), скролл физически невозможен,
+// 'scroll' не срабатывает — без проверки msgs.length обложка и правая
+// панель оставались бы развёрнутыми даже посреди активного диалога.
 const emit = defineEmits<{ (e: 'scroll-state', collapsed: boolean): void }>()
 const onAiMsgsScroll = (e: Event) => {
-  emit('scroll-state', (e.target as HTMLElement).scrollTop > 24)
+  emit('scroll-state', msgs.value.length > 0 || (e.target as HTMLElement).scrollTop > 24)
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -321,8 +327,13 @@ const fmt = (t: string): string => {
     .replace(/ MATH(\d+) /g, (_, idx) => mathBlocks[Number(idx)])
 }
 
+// Единая точка, откуда обложка/сайдбар схлопываются при появлении сообщений
+// (send/gradeOne зовут scrollBottom() сразу после push — .push() мутирует
+// массив без переприсваивания msgs.value, поэтому watch(msgs, ...) ниже на
+// него НЕ реагирует, и вызов эмита пришлось перенести сюда).
 const scrollBottom = () => nextTick(() => {
   if (msgsEl.value) msgsEl.value.scrollTop = msgsEl.value.scrollHeight
+  if (msgs.value.length > 0) emit('scroll-state', true)
 })
 
 const autoResize = () => {
