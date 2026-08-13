@@ -17,6 +17,13 @@ export interface ClassResponse {
   // скролле каталога классов. Полный cover_image — только на странице
   // класса и в местах, где обложка показывается крупно.
   cover_thumbnail?: string
+  // Оформление обложки: слаг цвета и слаг предметной иконки. По ним обложка
+  // генерируется заново, а превью рисуется локально. null — предмет создан
+  // до перехода на генерируемые обложки и показывает загруженную картинку.
+  cover_color?: string | null
+  cover_icon?: string | null
+  // 'ai' | 'fallback' | 'upload' | null
+  cover_source?: string | null
   teacher?: string
   period?: string
   rotation_mode: RotationMode
@@ -64,14 +71,20 @@ export const useClassesSvc = () => {
     leave: async (classId: number): Promise<void> => {
       await api.delete(`/classes/${classId}/leave`)
     },
+    // Обложка не загружается, а собирается сервером по паре «цвет + иконка»:
+    // предмет создаётся сразу с готовой обложкой-фолбэком, AI-версию клиент
+    // запрашивает следующим шагом через generateCover().
     create: async (
       name: string,
       description?: string,
       teacher?: string,
       period?: string,
-      cover_image?: string,
+      cover_color?: string,
+      cover_icon?: string,
     ): Promise<ClassResponse> => {
-      const { data } = await api.post('/classes/', { name, description, teacher, period, cover_image })
+      const { data } = await api.post('/classes/', {
+        name, description, teacher, period, cover_color, cover_icon,
+      })
       return data
     },
     delete: async (classId: number): Promise<void> => {
@@ -113,6 +126,20 @@ export const useClassesSvc = () => {
     },
     setRotationMode: async (classId: number, mode: RotationMode): Promise<ClassResponse> => {
       const { data } = await api.patch(`/classes/${classId}/rotation-mode`, { rotation_mode: mode })
+      return data
+    },
+    // Генерация обложки — только владелец класса. Один и тот же эндпоинт
+    // обслуживает и первую генерацию, и «Перегенерировать», и переход старого
+    // предмета с загруженной картинки на новую систему. Вызывать строго по
+    // явному действию пользователя: каждый вызов стоит денег.
+    generateCover: async (classId: number, color?: string, icon?: string): Promise<{
+      cover_image: string | null
+      cover_thumbnail: string | null
+      cover_color: string | null
+      cover_icon: string | null
+      cover_source: string | null
+    }> => {
+      const { data } = await api.post(`/classes/${classId}/cover/generate`, { color, icon })
       return data
     },
     // Перегенерация инвайт-кода — только владелец класса / админ.

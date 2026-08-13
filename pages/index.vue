@@ -117,7 +117,7 @@
 
 
     <Transition name="modal">
-      <LazyCreateClassModal v-if="showCreate" @close="showCreate=false" @created="onCreated"/>
+      <LazyCreateClassModal v-if="showCreate" @close="showCreate=false" @created="onCreated" @cover="onCoverGenerated"/>
     </Transition>
 
     <Transition name="modal">
@@ -131,13 +131,16 @@
         </div>
         <div class="edit-form">
 
-          <div class="edit-cover-preview" :style="editForm.cover_image ? {backgroundImage:`url(${fixFileUrl(editForm.cover_image)})`,backgroundSize:'cover',backgroundPosition:'center'} : {background: coverGrad(editingClass.id)}">
-            <label class="edit-cover-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              {{ lang==='ru' ? 'Загрузить обложку' : lang==='kk' ? 'Мұқаба жүктеу' : 'Upload Cover' }}
-              <input type="file" accept="image/*" class="hidden-file" @change="onCoverFile"/>
-            </label>
-          </div>
+          <CoverAppearance
+            v-model:color="editForm.cover_color"
+            v-model:icon="editForm.cover_icon"
+            :cover-url="editForm.cover_image"
+            :cover-source="editForm.cover_source"
+            :class-id="editingClass.id"
+            :generating="coverGenerating"
+            :error="coverError"
+            @generate="regenerateCover"
+          />
           <div class="edit-field">
             <label class="field-label">{{ lang==='ru' ? 'НАЗВАНИЕ КЛАССА' : lang==='kk' ? 'СЫНЫП АТАУЫ' : 'CLASS NAME' }}</label>
             <input v-model="editForm.title" class="field-input" :placeholder="lang==='ru'?'Название класса...':lang==='kk'?'Сынып атауы...':'Class name...'"/>
@@ -266,12 +269,14 @@ import { useClassesSvc } from '~/services/classes'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
 import { useCohortErrors } from '~/composables/useCohortErrors'
+import { useCoverArt } from '~/composables/useCoverArt'
 import { fixFileUrl } from '~/composables/useFileUrl'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const postsSvc = usePostsSvc(); const classesSvc = useClassesSvc(); const toast = useToast(); const router = useRouter()
 const classesStore = useClassesStore()
 const { t, lang, setLang } = useI18n()
 const cohortErrors = useCohortErrors()
+const coverArt = useCoverArt()
 // Список берём из общего стора (переживает переход между страницами) — при
 // повторном заходе на каталог он уже заполнен, поэтому спиннер и пересборка
 // сетки (а с ней — и обложек) показываются только в самый первый раз за
@@ -283,8 +288,13 @@ const showJoin = ref(false); const joining = ref(false); const joinError = ref('
 const deletingClass = ref<any>(null); const deleting = ref(false)
 const leavingClass = ref<any>(null); const leaving = ref(false)
 const editingClass = ref<any>(null)
-const editForm = ref({ title: '', description: '', teacher: '', cover_image: '' })
+const editForm = ref({
+  title: '', description: '', teacher: '',
+  cover_image: '', cover_color: 'teal', cover_icon: 'book', cover_source: '' as string | null,
+})
 const editSaving = ref(false)
+const coverGenerating = ref(false)
+const coverError = ref<string | null>(null)
 
 const codeChars = ref<string[]>(['','','','','',''])
 const codeRefs = ref<HTMLInputElement[]>([])
@@ -374,22 +384,50 @@ const getActionLabel = (cls: any) => {
   return lang.value === 'ru' ? 'Продолжить обучение' : lang.value === 'kk' ? 'Оқуды жалғастыру' : 'Continue learning'
 }
 
-const openEditClass = (cls: any) => {
+const openEditClass = async (cls: any) => {
   editingClass.value = cls
+  coverError.value = null
+  // У предмета, созданного до перехода на генерируемые обложки, цвета и
+  // иконки нет — подставляем значения по умолчанию. Его собственная картинка
+  // при этом остаётся на месте: на новую систему предмет перейдёт только
+  // тогда, когда преподаватель сам нажмёт «Сгенерировать».
+  const defaults = await coverArt.load()
   editForm.value = {
     title: cls.name || '',
     description: cls.description || '',
     teacher: cls.teacher || '',
-    cover_image: cls.cover_image || ''
+    cover_image: cls.cover_image || '',
+    cover_color: cls.cover_color || defaults.default_color,
+    cover_icon: cls.cover_icon || defaults.default_icon,
+    cover_source: cls.cover_source || null,
   }
 }
 
-const onCoverFile = async (e: Event) => {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = (ev) => { editForm.value.cover_image = ev.target?.result as string }
-  reader.readAsDataURL(file)
+const regenerateCover = async () => {
+  if (!editingClass.value || coverGenerating.value) return   // защита от двойного клика
+  coverGenerating.value = true
+  coverError.value = null
+  try {
+    const res = await classesSvc.generateCover(
+      editingClass.value.id, editForm.value.cover_color, editForm.value.cover_icon,
+    )
+    await preloadImage(res.cover_image)
+    editForm.value.cover_image = res.cover_image || ''
+    editForm.value.cover_source = res.cover_source
+    // Карточка в списке должна обновиться сразу, не дожидаясь «Сохранить»:
+    // обложка на сервере уже заменена.
+    classesStore.upsert({ ...editingClass.value, ...res })
+  } catch (e: any) {
+    coverError.value = e?.response?.data?.detail === 'too_many_cover_generations'
+      ? (lang.value === 'ru' ? 'Слишком много генераций подряд — попробуйте позже.'
+        : lang.value === 'kk' ? 'Тым көп жасау әрекеті — кейінірек көріңіз.'
+        : 'Too many generations in a row — try again later.')
+      : (lang.value === 'ru' ? 'Не удалось сгенерировать обложку. Прежняя обложка сохранена.'
+        : lang.value === 'kk' ? 'Мұқаба жасалмады. Алдыңғы мұқаба сақталды.'
+        : 'Could not generate the cover. The previous one is kept.')
+  } finally {
+    coverGenerating.value = false
+  }
 }
 
 // Загруженная обложка приходит с сервера по новому URL (файл только что
@@ -410,11 +448,15 @@ const saveEditClass = async () => {
   if (!editingClass.value) return
   editSaving.value = true
   try {
+    // cover_image не отправляем: картинку меняет только генерация
+    // (POST /classes/{id}/cover/generate). Смена цвета/иконки без генерации
+    // перерисовывается бэкендом локально и бесплатно.
     const updated = await classesSvc.update(editingClass.value.id, {
       name: editForm.value.title,
       description: editForm.value.description,
       teacher: editForm.value.teacher,
-      cover_image: editForm.value.cover_image,
+      cover_color: editForm.value.cover_color,
+      cover_icon: editForm.value.cover_icon,
     })
     await preloadImage(updated.cover_thumbnail || updated.cover_image)
     classesStore.upsert(updated)
@@ -478,14 +520,23 @@ const copyClassCode = (cls: any) => {
   if (!code) return
   navigator.clipboard?.writeText(code).then(() => toast.ok(`Код скопирован: ${code}`)).catch(() => toast.ok(`Код: ${code}`))
 }
+// Модалка НЕ закрывается здесь: предмет создан, но в ней ещё идёт шаг
+// обложки (генерация + «Перегенерировать»). Закрытие — по @close, когда
+// пользователь нажмёт «Готово» или крестик.
 const onCreated = async (cls: any) => {
-  showCreate.value = false
   await preloadImage(cls?.cover_thumbnail || cls?.cover_image)
   await refresh(true)
   if (cls?.id) {
     try { await classesSvc.join(cls.id) } catch {}
     if (!joinedIds.value.includes(cls.id)) { joinedIds.value.push(cls.id); saveJoined() }
   }
+}
+
+// Обложку уже заменили на сервере — обновляем карточку в каталоге, чтобы
+// новая картинка была видна сразу за спиной открытой модалки.
+const onCoverGenerated = async (cls: any) => {
+  await preloadImage(cls?.cover_thumbnail || cls?.cover_image)
+  classesStore.upsert(cls)
 }
 // Спиннер показываем только пока в сторе вообще ничего нет (первый заход
 // за сессию) — если каталог уже закэширован, обновляем его молча в фоне,
@@ -636,10 +687,6 @@ watch(() => auth.user?.id, async (newId) => {
 /* Edit class modal */
 .edit-class-modal{max-width:480px;width:100%}
 .edit-form{padding:4px 0 8px;display:flex;flex-direction:column;gap:16px}
-.edit-cover-preview{height:140px;border-radius:var(--r-lg);overflow:hidden;display:flex;align-items:flex-end;justify-content:flex-start;padding:12px;background:var(--surface2)}
-.edit-cover-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;background:rgba(0,0,0,.45);color:#fff;padding:7px 14px;border-radius:var(--r-md);cursor:pointer;border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(4px);transition:all .15s}
-.edit-cover-btn:hover{background:rgba(var(--teal-rgb),.6)}
-.hidden-file{display:none}
 .edit-field{display:flex;flex-direction:column;gap:6px}
 .field-label{font-size:11px;font-weight:700;color:var(--text4);letter-spacing:.07em}
 .field-input{padding:10px 14px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--surface2);color:var(--text1);font-size:14px;font-family:inherit;transition:border-color .15s}
