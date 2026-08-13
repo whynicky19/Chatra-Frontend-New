@@ -7,19 +7,22 @@
  * выбирает вариант, которого сервер не знает. Здесь набор только
  * кэшируется на время сессии + лежат SVG-глифы для превью и пикера.
  *
- * Сами SVG нужны ТОЛЬКО для интерфейса: в сохранённой обложке иконка уже
- * впечатана бэкендом, поэтому карточки, шапки и списки ничего не
- * дорисовывают — они как и раньше показывают одну картинку по coverUrl.
+ * Иконка НЕ входит в сохранённую картинку: бэкенд генерирует только пастельный
+ * фон и специально оставляет центр кадра чистым. Рисует иконку
+ * components/classes/SubjectCover.vue — он и есть единственное место, где
+ * обложка собирается для показа.
  */
 import { ref } from 'vue'
 import { useApi } from '~/services/api'
 
 export interface CoverColorOption {
   id: string
-  /** Акцент бренда: свотч в пикере и цвет предметной иконки. */
+  /** Акцент бренда: свотч в пикере и подсветка выбора. */
   hex: string
-  /** Заливка фона обложки — из неё строится превью до генерации. */
+  /** Светлая пастельная заливка фона — из неё строится превью до генерации. */
   base: string
+  /** Цвет предметной иконки поверх обложки: в тон, а не белый. */
+  ink: string
 }
 export interface CoverIconOption { id: string; subject: string }
 export interface CoverOptions {
@@ -74,14 +77,14 @@ export const COVER_ICON_LABELS: Record<string, Record<string, string>> = {
  */
 export const FALLBACK_COVER_OPTIONS: CoverOptions = {
   colors: [
-    { id: 'blue',   hex: '#0A84FF', base: '#1C5FC4' },
-    { id: 'purple', hex: '#8B5CF6', base: '#6D45CE' },
-    { id: 'green',  hex: '#22C55E', base: '#1E9B54' },
-    { id: 'orange', hex: '#F97316', base: '#D2600F' },
-    { id: 'red',    hex: '#EF4444', base: '#C93A3A' },
-    { id: 'pink',   hex: '#EC4899', base: '#C43B80' },
-    { id: 'teal',   hex: '#00B1C9', base: '#0891A6' },
-    { id: 'indigo', hex: '#6366F1', base: '#4B4ECC' },
+    { id: 'blue',   hex: '#0A84FF', base: '#E3EDFF', ink: '#1D4ED8' },
+    { id: 'purple', hex: '#8B5CF6', base: '#EDE9FE', ink: '#7C3AED' },
+    { id: 'green',  hex: '#22C55E', base: '#DEF7E9', ink: '#047857' },
+    { id: 'orange', hex: '#F97316', base: '#FFEBD9', ink: '#C2410C' },
+    { id: 'red',    hex: '#EF4444', base: '#FEE4E2', ink: '#B91C1C' },
+    { id: 'pink',   hex: '#EC4899', base: '#FCE7F3', ink: '#BE185D' },
+    { id: 'teal',   hex: '#00B1C9', base: '#D6F1F7', ink: '#0E7490' },
+    { id: 'indigo', hex: '#6366F1', base: '#E6E7FD', ink: '#4F46E5' },
   ],
   icons: Object.keys(COVER_ICON_PATHS).map((id) => ({ id, subject: id })),
   default_color: 'teal',
@@ -122,12 +125,17 @@ export const useCoverArt = () => {
   const colorBase = (id?: string | null): string =>
     (cached.value || FALLBACK_COVER_OPTIONS).colors.find((c) => c.id === id)?.base
     || FALLBACK_COVER_OPTIONS.colors.find((c) => c.id === id)?.base
-    || '#0891A6'
+    || '#D6F1F7'
 
-  /** Подложка превью — ровная заливка того же тона, что и фон обложки
+  /** Цвет предметной иконки: в тон обложки, а не белый. */
+  const colorInk = (id?: string | null): string =>
+    (cached.value || FALLBACK_COVER_OPTIONS).colors.find((c) => c.id === id)?.ink
+    || FALLBACK_COVER_OPTIONS.colors.find((c) => c.id === id)?.ink
+    || '#0E7490'
+
+  /** Подложка превью — та же светлая пастель, что и фон обложки
    *  (render_background() на бэкенде): выбор цвета не должен обманывать
-   *  ожидания. Именно заливка, а не градиент — обложка теперь плоский
-   *  графический баннер. */
+   *  ожидания. */
   const previewBackground = (color?: string | null) => colorBase(color)
 
   const iconPath = (icon?: string | null) =>
@@ -136,5 +144,5 @@ export const useCoverArt = () => {
   const iconLabel = (icon: string, lang: string) =>
     COVER_ICON_LABELS[icon]?.[lang] || COVER_ICON_LABELS[icon]?.en || icon
 
-  return { options: cached, load, colorHex, colorBase, previewBackground, iconPath, iconLabel }
+  return { options: cached, load, colorHex, colorBase, colorInk, previewBackground, iconPath, iconLabel }
 }

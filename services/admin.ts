@@ -43,5 +43,19 @@ export const useAdminSvc = () => {
       const { data } = await api.get('/admin/ai-usage/summary')
       return data as any[]
     },
+
+    // Расход в разрезе видов запросов: чат, генерация обложек, названия чатов,
+    // проверка работ. Сумма по классам не отвечала, на что именно ушли токены.
+    aiUsageByEndpoint: async () => {
+      const { data } = await api.get('/admin/ai-usage/by-endpoint')
+      return data as {
+        endpoint: string
+        label: string
+        total_tokens: number
+        prompt_tokens: number
+        completion_tokens: number
+        request_count: number
+      }[]
+    },
   }
 }

@@ -198,6 +198,25 @@
           </div>
         </div>
 
+        <!-- Разрез по видам расхода: сумма по классам не отвечала на вопрос
+             «на что именно ушли токены» — переписка, обложки и названия чатов
+             падали в одно число. -->
+        <div v-if="aiByEndpoint.length" class="ai-board ai-board-kinds">
+          <div class="ai-board-head">
+            <span class="ai-board-title">На что уходят токены</span>
+          </div>
+          <div class="ai-kinds">
+            <div v-for="k in aiByEndpoint" :key="k.endpoint" class="ai-kind-row">
+              <span class="ai-kind-label">{{ k.label }}</span>
+              <span class="ai-bar-track">
+                <span class="ai-bar-fill" :style="{ width: kindPct(k.total_tokens) + '%' }"></span>
+              </span>
+              <span class="ai-kind-req">{{ k.request_count }} зап.</span>
+              <span class="ai-bar-value">{{ k.total_tokens.toLocaleString() }}</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Controls bar -->
         <div class="ai-controls">
           <div class="ai-filter-row">
@@ -292,7 +311,7 @@
           <div v-for="cl in fClasses" :key="cl.id" class="cl-card" @click="openClass(cl)">
             <div class="cl-cover" :style="(cl.cover_thumbnail || cl.cover_image || cl.cover_color) ? '' : `background:${coverGrad(cl.id)}`">
               <SubjectCover :src="cl.cover_thumbnail || cl.cover_image" :icon="cl.cover_icon"
-                            :color="cl.cover_color" :size="38" class="cl-cover-art"/>
+                            :color="cl.cover_color" :size="52" class="cl-cover-art"/>
               <span v-if="cl.member_count != null" class="cl-member-chip">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                 {{ cl.member_count }}
@@ -337,7 +356,7 @@
         <!-- Cover header -->
         <div class="cl-modal-cover" :style="(selectedClass?.cover_image || selectedClass?.cover_color) ? '' : `background:${coverGrad(selectedClass?.id||0)}`">
           <SubjectCover :src="selectedClass?.cover_image" :icon="selectedClass?.cover_icon"
-                        :color="selectedClass?.cover_color" :size="52" class="cl-cover-art"/>
+                        :color="selectedClass?.cover_color" :size="70" class="cl-cover-art"/>
           <button class="btn btn-icon cl-modal-close" @click="showMembers=false">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -510,6 +529,12 @@ const sortedAiSummary = computed(() => [...aiSummary.value].sort((a: any, b: any
 const topAiSummary = computed(() => sortedAiSummary.value.slice(0, 8))
 const maxSummaryTokens = computed(() => Math.max(1, ...topAiSummary.value.map((s: any) => s.total_tokens || 0)))
 const barPct = (v: number) => Math.max(3, Math.round((v / maxSummaryTokens.value) * 100))
+
+// Расход по видам запросов (чат, обложки, названия чатов, проверка работ).
+const aiByEndpoint = ref<any[]>([])
+const maxKindTokens = computed(() => Math.max(1, ...aiByEndpoint.value.map((k: any) => k.total_tokens || 0)))
+const kindPct = (v: number) => Math.max(3, Math.round((v / maxKindTokens.value) * 100))
+const loadAiByEndpoint = async () => { try { aiByEndpoint.value = await adminSvc.aiUsageByEndpoint() } catch {} }
 const userMap = computed(() => { const m: Record<number, string> = {}; for (const u of users.value) m[u.id] = u.full_name || u.email; return m })
 const getUserEmail = (uid: number | null) => uid ? (userMap.value[uid] || '#' + uid) : '—'
 // Бэкенд шлёт naive-UTC без таймзоны — без 'Z' браузер считал бы время локальным
@@ -519,7 +544,7 @@ const fmtDateShort = (iso: string) => { if (!iso) return '—'; try { const with
 const loadAiUsage = async (page = 1) => { aiLoading.value = true; aiPage.value = page; try { const params: any = { page, page_size: aiPageSize }; if (aiFilterClass.value !== null) params.class_id = aiFilterClass.value; const res = await adminSvc.aiUsage(params); aiLogs.value = res.items; aiTotal.value = res.total } catch { toast.err('Ошибка загрузки данных ИИ') } finally { aiLoading.value = false } }
 const loadAiSummary = async () => { try { aiSummary.value = await adminSvc.aiUsageSummary() } catch {} }
 const setClassFilter = (classId: number | null) => { aiFilterClass.value = aiFilterClass.value === classId ? null : classId; loadAiUsage(1) }
-const switchToAiUsage = () => { tab.value = 'ai-usage'; if (!aiLogs.value.length && !aiLoading.value) loadAiUsage(1) }
+const switchToAiUsage = () => { tab.value = 'ai-usage'; loadAiByEndpoint(); if (!aiLogs.value.length && !aiLoading.value) loadAiUsage(1) }
 
 // ── Classes ───────────────────────────────────────────────────────────────────
 // Apple system-color family (blue/purple/orange/green/pink) — varied like iOS
@@ -769,6 +794,12 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .ai-bar-row.active .ai-bar-fill{background:linear-gradient(90deg,var(--teal),var(--teal-d))}
 .ai-bar-value{font-size:12px;font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums;min-width:58px;text-align:right}
 .ai-board-more{font-size:11.5px;color:var(--text4);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.ai-board-kinds{margin-top:14px}
+.ai-kinds{display:flex;flex-direction:column;gap:2px}
+.ai-kind-row{display:grid;grid-template-columns:minmax(110px,200px) 1fr auto auto;align-items:center;gap:12px;padding:7px 8px}
+.ai-kind-label{font-size:12.5px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-kind-req{font-size:11.5px;color:var(--text4);font-variant-numeric:tabular-nums}
+@media (max-width:768px){.ai-kind-row{grid-template-columns:1fr auto;gap:8px}.ai-kind-row .ai-bar-track,.ai-kind-req{display:none}}
 
 .ai-controls{margin-bottom:12px}
 .ai-filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}

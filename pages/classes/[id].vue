@@ -19,7 +19,7 @@
           <div class="page-header" :class="{ 'header-collapsed': coverCollapsed }">
             <SubjectCover v-if="classMeta.cover_image || classMeta.cover_color"
                           :src="classMeta.cover_image" :icon="classMeta.cover_icon"
-                          :color="classMeta.cover_color" :size="64" class="page-header-art"/>
+                          :color="classMeta.cover_color" :size="92" class="page-header-art"/>
             <div class="page-header-overlay" v-if="classMeta.cover_image"></div>
             <div class="page-header-top">
               <NuxtLink to="/" class="back-link" :class="{'back-link-dark': classMeta.cover_image}">
@@ -1062,7 +1062,9 @@ onMounted(async () => {
 .page-header{padding:20px 24px 16px;flex-shrink:0;position:relative;overflow:hidden;border-radius:0;min-height:272px;max-height:552px;display:flex;flex-direction:column;justify-content:flex-end;transition:min-height .38s cubic-bezier(.4,0,.2,1),max-height .38s cubic-bezier(.4,0,.2,1),padding .38s cubic-bezier(.4,0,.2,1),opacity .25s ease;will-change:min-height,max-height}
 .page-header.header-collapsed{min-height:0!important;max-height:0!important;padding-top:0!important;padding-bottom:0!important;opacity:0!important;pointer-events:none;border-width:0}
 .page-header-art{position:absolute;inset:0;z-index:0}
-.page-header-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,.25) 0%,rgba(0,0,0,.55) 100%);z-index:0}
+/* Затемнение только снизу, где лежит заголовок: равномерная плёнка поверх
+   всего кадра гасила светлую пастельную обложку в грязно-серое. */
+.page-header-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,transparent 45%,rgba(0,0,0,.5) 100%)}
 .page-header .page-header-body{position:relative;z-index:1}
 .back-link-dark{color:rgba(255,255,255,.8)!important}.back-link-dark:hover{color:#fff!important}
 .sep-dark{color:rgba(255,255,255,.5)!important}

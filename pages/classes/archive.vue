@@ -39,7 +39,7 @@
           <div v-for="cls in archivedClasses" :key="cls.id" class="class-card arch-card" @click="goClass(cls.id)">
             <div class="card-cover" :style="(cls.cover_thumbnail || cls.cover_image || cls.cover_color) ? {} : {background: coverGrad(cls.id)}">
               <SubjectCover :src="cls.cover_thumbnail || cls.cover_image" :icon="cls.cover_icon"
-                            :color="cls.cover_color" :size="40" class="card-cover-art"/>
+                            :color="cls.cover_color" :size="58" class="card-cover-art"/>
               <div class="card-cover-dim"></div>
               <div class="card-archive-badge">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/></svg>
@@ -142,7 +142,9 @@ onMounted(() => load())
 .arch-card:hover{opacity:1;filter:grayscale(0)}
 .card-cover{position:relative;height:150px;overflow:hidden;background:linear-gradient(135deg,#3a3a3c,#232326)}
 .card-cover-art{position:absolute;inset:0}
-.card-cover-dim{position:absolute;inset:0;z-index:1;background:rgba(0,0,0,.3)}
+/* Лёгкая вуаль только снизу: сплошная плёнка гасила пастельную обложку
+   в серое, а бейдж «архив» и так лежит на собственной тёмной плашке. */
+.card-cover-dim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,transparent 55%,rgba(0,0,0,.18))}
 .card-archive-badge{position:absolute;top:10px;left:10px;z-index:2;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(0,0,0,.5);color:rgba(255,255,255,.95);padding:4px 10px;border-radius:100px;letter-spacing:.03em;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18)}
 .card-body{padding:16px 18px 14px}
 .card-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:16px;font-weight:700;color:var(--text1);line-height:1.25;margin-bottom:5px}

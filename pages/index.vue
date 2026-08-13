@@ -58,7 +58,7 @@
             <div v-for="cls in activeClasses" :key="cls.id" class="class-card" @click="goClass(cls.id)">
               <div class="card-cover" :style="cardCoverStyle(cls)">
                 <SubjectCover :src="cls.cover_thumbnail || cls.cover_image" :icon="cls.cover_icon"
-                              :color="cls.cover_color" :size="46" class="card-cover-art"/>
+                              :color="cls.cover_color" :size="78" class="card-cover-art"/>
                 <div v-if="(auth.isTeacher || auth.isAdmin) && cls.invite_code" class="card-code-chip" @click.stop="copyClassCode(cls)">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                   {{ cls.invite_code }}
