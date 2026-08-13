@@ -14,7 +14,13 @@
 import { ref } from 'vue'
 import { useApi } from '~/services/api'
 
-export interface CoverColorOption { id: string; hex: string; deep: string }
+export interface CoverColorOption {
+  id: string
+  /** Акцент бренда: свотч в пикере и цвет предметной иконки. */
+  hex: string
+  /** Заливка фона обложки — из неё строится превью до генерации. */
+  base: string
+}
 export interface CoverIconOption { id: string; subject: string }
 export interface CoverOptions {
   colors: CoverColorOption[]
@@ -68,14 +74,14 @@ export const COVER_ICON_LABELS: Record<string, Record<string, string>> = {
  */
 export const FALLBACK_COVER_OPTIONS: CoverOptions = {
   colors: [
-    { id: 'blue',   hex: '#0A84FF', deep: '#0A2A5E' },
-    { id: 'purple', hex: '#8B5CF6', deep: '#2B1857' },
-    { id: 'green',  hex: '#22C55E', deep: '#0B3722' },
-    { id: 'orange', hex: '#F97316', deep: '#54220A' },
-    { id: 'red',    hex: '#EF4444', deep: '#511616' },
-    { id: 'pink',   hex: '#EC4899', deep: '#4F1030' },
-    { id: 'teal',   hex: '#00B1C9', deep: '#00303A' },
-    { id: 'indigo', hex: '#6366F1', deep: '#1C1D52' },
+    { id: 'blue',   hex: '#0A84FF', base: '#1C5FC4' },
+    { id: 'purple', hex: '#8B5CF6', base: '#6D45CE' },
+    { id: 'green',  hex: '#22C55E', base: '#1E9B54' },
+    { id: 'orange', hex: '#F97316', base: '#D2600F' },
+    { id: 'red',    hex: '#EF4444', base: '#C93A3A' },
+    { id: 'pink',   hex: '#EC4899', base: '#C43B80' },
+    { id: 'teal',   hex: '#00B1C9', base: '#0891A6' },
+    { id: 'indigo', hex: '#6366F1', base: '#4B4ECC' },
   ],
   icons: Object.keys(COVER_ICON_PATHS).map((id) => ({ id, subject: id })),
   default_color: 'teal',
@@ -113,15 +119,16 @@ export const useCoverArt = () => {
     || FALLBACK_COVER_OPTIONS.colors.find((c) => c.id === id)?.hex
     || '#00B1C9'
 
-  const colorDeep = (id?: string | null): string =>
-    (cached.value || FALLBACK_COVER_OPTIONS).colors.find((c) => c.id === id)?.deep
-    || FALLBACK_COVER_OPTIONS.colors.find((c) => c.id === id)?.deep
-    || '#00303A'
+  const colorBase = (id?: string | null): string =>
+    (cached.value || FALLBACK_COVER_OPTIONS).colors.find((c) => c.id === id)?.base
+    || FALLBACK_COVER_OPTIONS.colors.find((c) => c.id === id)?.base
+    || '#0891A6'
 
-  /** Градиент превью — тот же диагональный переход deep→hex, что рисует
-   *  render_background() на бэкенде, чтобы выбор не обманывал ожидания. */
-  const previewGradient = (color?: string | null) =>
-    `linear-gradient(135deg, ${colorDeep(color)}, ${colorHex(color)})`
+  /** Подложка превью — ровная заливка того же тона, что и фон обложки
+   *  (render_background() на бэкенде): выбор цвета не должен обманывать
+   *  ожидания. Именно заливка, а не градиент — обложка теперь плоский
+   *  графический баннер. */
+  const previewBackground = (color?: string | null) => colorBase(color)
 
   const iconPath = (icon?: string | null) =>
     COVER_ICON_PATHS[icon || ''] || COVER_ICON_PATHS.book
@@ -129,5 +136,5 @@ export const useCoverArt = () => {
   const iconLabel = (icon: string, lang: string) =>
     COVER_ICON_LABELS[icon]?.[lang] || COVER_ICON_LABELS[icon]?.en || icon
 
-  return { options: cached, load, colorHex, colorDeep, previewGradient, iconPath, iconLabel }
+  return { options: cached, load, colorHex, colorBase, previewBackground, iconPath, iconLabel }
 }

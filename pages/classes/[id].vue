@@ -14,7 +14,12 @@
         <!-- Left content -->
         <div class="cd-main">
           <!-- Page header with cover image — collapses smoothly on scroll to free up room -->
-          <div class="page-header" :class="{ 'header-collapsed': coverCollapsed }" :style="heroStyle">
+          <!-- Картинку, цвет и предметную иконку рисует SubjectCover; без них
+               шапка остаётся с дефолтным фоном из .page-header. -->
+          <div class="page-header" :class="{ 'header-collapsed': coverCollapsed }">
+            <SubjectCover v-if="classMeta.cover_image || classMeta.cover_color"
+                          :src="classMeta.cover_image" :icon="classMeta.cover_icon"
+                          :color="classMeta.cover_color" :size="64" class="page-header-art"/>
             <div class="page-header-overlay" v-if="classMeta.cover_image"></div>
             <div class="page-header-top">
               <NuxtLink to="/" class="back-link" :class="{'back-link-dark': classMeta.cover_image}">
@@ -542,7 +547,6 @@ import { useClassesSvc, type CohortResponse, type RotationMode } from '~/service
 import { useAuthStore } from '~/stores/auth.store'
 import { useClassesStore } from '~/stores/classes.store'
 import { useI18n } from '~/composables/useI18n'
-import { fixFileUrl } from '~/composables/useFileUrl'
 import { extractFilesFromText, stripFilesFromText, withNameFragment, fileNameFromUrl } from '~/composables/useAttachments'
 import { cleanLectureTitle as cleanTitle, fileEntryToLink, getFullBody } from '~/composables/usePostBody'
 import { useUploadSvc } from '~/services/uploads'
@@ -674,11 +678,6 @@ const toggleRotation = async () => {
 }
 const classTitle = computed(() => currentClass.value?.name || `Класс #${classId.value}`)
 
-const heroStyle = computed(() => {
-  const img = classMeta.value.cover_image
-  if (img) return { backgroundImage: `url(${fixFileUrl(img)})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-  return {}
-})
 const classPosts = computed(() => allPosts.value.filter(p => p.title?.includes(`[${classId.value}]`)))
 // Лекции — новые сверху, старые снизу (по запросу пользователя). classPosts
 // (сырой, без сортировки) отдельно уходит в AI-чат, так что нумерация там
@@ -1026,7 +1025,7 @@ onMounted(async () => {
     classesStore.upsert(cls)
     // upsert уже сохранил прежний URL обложки, если файл не поменялся (см.
     // sameFilePath в сторе) — берём результат оттуда, а не «сырой» cls,
-    // чтобы currentClass не переключил heroStyle на заново подписанный URL.
+    // чтобы обложка не перезапрашивалась по заново подписанному URL.
     currentClass.value = classesStore.byId(classId.value) || cls
     allPosts.value = posts
     // Архивному ученику ИИ-чат недоступен — не открываем эту вкладку.
@@ -1062,7 +1061,8 @@ onMounted(async () => {
    занимала та полоса, чтобы обложка визуально "выросла" в её место. */
 .page-header{padding:20px 24px 16px;flex-shrink:0;position:relative;overflow:hidden;border-radius:0;min-height:272px;max-height:552px;display:flex;flex-direction:column;justify-content:flex-end;transition:min-height .38s cubic-bezier(.4,0,.2,1),max-height .38s cubic-bezier(.4,0,.2,1),padding .38s cubic-bezier(.4,0,.2,1),opacity .25s ease;will-change:min-height,max-height}
 .page-header.header-collapsed{min-height:0!important;max-height:0!important;padding-top:0!important;padding-bottom:0!important;opacity:0!important;pointer-events:none;border-width:0}
-.page-header-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.25) 0%,rgba(0,0,0,.55) 100%);z-index:0}
+.page-header-art{position:absolute;inset:0;z-index:0}
+.page-header-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,.25) 0%,rgba(0,0,0,.55) 100%);z-index:0}
 .page-header .page-header-body{position:relative;z-index:1}
 .back-link-dark{color:rgba(255,255,255,.8)!important}.back-link-dark:hover{color:#fff!important}
 .sep-dark{color:rgba(255,255,255,.5)!important}

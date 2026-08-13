@@ -37,8 +37,9 @@
         <!-- Grid -->
         <div v-else class="classes-grid">
           <div v-for="cls in archivedClasses" :key="cls.id" class="class-card arch-card" @click="goClass(cls.id)">
-            <div class="card-cover" :style="(cls.cover_thumbnail || cls.cover_image) ? {} : {background: coverGrad(cls.id)}">
-              <img v-if="cls.cover_thumbnail || cls.cover_image" :src="coverUrl(cls)" class="card-cover-img" loading="lazy" decoding="async" @error="($event.target as HTMLImageElement).style.display='none'"/>
+            <div class="card-cover" :style="(cls.cover_thumbnail || cls.cover_image || cls.cover_color) ? {} : {background: coverGrad(cls.id)}">
+              <SubjectCover :src="cls.cover_thumbnail || cls.cover_image" :icon="cls.cover_icon"
+                            :color="cls.cover_color" :size="40" class="card-cover-art"/>
               <div class="card-cover-dim"></div>
               <div class="card-archive-badge">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/></svg>
@@ -69,7 +70,6 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useClassesSvc, type ClassResponse } from '~/services/classes'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
-import { fixFileUrl } from '~/composables/useFileUrl'
 
 definePageMeta({ layout: 'default' })
 
@@ -96,7 +96,6 @@ const covers = [
   'linear-gradient(135deg,var(--teal-d),var(--teal))',
 ]
 const coverGrad = (id: number) => covers[id % covers.length]
-const coverUrl = (cls: any) => fixFileUrl(cls.cover_thumbnail || cls.cover_image)
 
 const goBack = () => router.push('/')
 const goClass = (id: number) => router.push(`/classes/${id}`)
@@ -142,8 +141,8 @@ onMounted(() => load())
 .arch-card{opacity:.82;filter:grayscale(.28)}
 .arch-card:hover{opacity:1;filter:grayscale(0)}
 .card-cover{position:relative;height:150px;overflow:hidden;background:linear-gradient(135deg,#3a3a3c,#232326)}
-.card-cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.card-cover-dim{position:absolute;inset:0;background:rgba(0,0,0,.3)}
+.card-cover-art{position:absolute;inset:0}
+.card-cover-dim{position:absolute;inset:0;z-index:1;background:rgba(0,0,0,.3)}
 .card-archive-badge{position:absolute;top:10px;left:10px;z-index:2;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(0,0,0,.5);color:rgba(255,255,255,.95);padding:4px 10px;border-radius:100px;letter-spacing:.03em;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18)}
 .card-body{padding:16px 18px 14px}
 .card-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:16px;font-weight:700;color:var(--text1);line-height:1.25;margin-bottom:5px}

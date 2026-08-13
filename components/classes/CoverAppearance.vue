@@ -14,20 +14,16 @@
   <div class="cover-appearance">
     <label class="ca-label">{{ L.appearance }}</label>
 
-    <!-- Превью: сохранённая обложка, если она уже сгенерирована, иначе
-         локальный градиент с иконкой в том же визуальном языке. -->
-    <div class="ca-preview" :style="previewStyle">
-      <img v-if="showSavedCover" :src="fixFileUrl(coverUrl!)" class="ca-preview-img" alt=""
-           @error="imageFailed = true"/>
-      <svg v-if="!showSavedCover" class="ca-preview-icon" viewBox="0 0 24 24" fill="none"
-           stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <path :d="coverArt.iconPath(icon)"/>
-      </svg>
-
-      <div v-if="generating" class="ca-preview-veil">
-        <div class="spinner ca-spinner"></div>
-        <span>{{ L.generating }}</span>
-      </div>
+    <!-- Превью — тот же компонент, что рисует обложку во всём остальном
+         приложении, поэтому здесь видно ровно то, что получит пользователь:
+         фон (сохранённый или ровная заливка цвета) + иконка поверх. -->
+    <div class="ca-preview">
+      <SubjectCover :src="coverUrl" :icon="icon" :color="color" :size="58">
+        <div v-if="generating" class="ca-preview-veil">
+          <div class="spinner ca-spinner"></div>
+          <span>{{ L.generating }}</span>
+        </div>
+      </SubjectCover>
     </div>
 
     <p v-if="error" class="ca-error">{{ error }}</p>
@@ -39,7 +35,7 @@
       <div class="ca-swatches">
         <button v-for="c in options.colors" :key="c.id" type="button" class="ca-swatch"
                 :class="{ 'ca-swatch-on': c.id === color }"
-                :style="{ background: `linear-gradient(135deg, ${c.deep}, ${c.hex})` }"
+                :style="{ background: c.base }"
                 :aria-label="c.id" :aria-pressed="c.id === color"
                 :disabled="generating"
                 @click="$emit('update:color', c.id)">
@@ -84,9 +80,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { FALLBACK_COVER_OPTIONS, useCoverArt } from '~/composables/useCoverArt'
-import { fixFileUrl } from '~/composables/useFileUrl'
 import { useI18n } from '~/composables/useI18n'
 
 const props = defineProps<{
@@ -118,16 +113,9 @@ const { lang } = useI18n()
 const options = ref(coverArt.options.value || FALLBACK_COVER_OPTIONS)
 onMounted(async () => { options.value = await coverArt.load() })
 
-// Сгенерированная обложка приходит по новому URL; если картинка не
-// загрузилась (сеть, битая ссылка), молча показываем локальное превью,
-// а не пустой прямоугольник.
-const imageFailed = ref(false)
-watch(() => props.coverUrl, () => { imageFailed.value = false })
-
-const showSavedCover = computed(() => !!props.coverUrl && !imageFailed.value)
+// Подстановку заливки вместо не загрузившейся картинки берёт на себя
+// SubjectCover — здесь остаётся только подсказка про фолбэк.
 const isFallback = computed(() => props.coverSource === 'fallback' && !!props.coverUrl)
-
-const previewStyle = computed(() => ({ background: coverArt.previewGradient(props.color) }))
 
 const COPY: Record<string, Record<string, string>> = {
   appearance:   { ru: 'ОФОРМЛЕНИЕ',  en: 'APPEARANCE',  kk: 'РӘСІМДЕУ' },
@@ -151,12 +139,7 @@ const L = computed(() => Object.fromEntries(
 .cover-appearance { display: flex; flex-direction: column; gap: 12px; }
 .ca-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--text4); }
 
-.ca-preview {
-  position: relative; height: 140px; border-radius: var(--r-lg); overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-}
-.ca-preview-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.ca-preview-icon { width: 62px; height: 62px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.45)); }
+.ca-preview { height: 140px; border-radius: var(--r-lg); overflow: hidden; }
 .ca-preview-veil {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 10px; background: rgba(0,0,0,.55); backdrop-filter: blur(3px);

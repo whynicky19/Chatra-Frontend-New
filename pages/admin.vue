@@ -290,7 +290,9 @@
         <div v-if="loadingCl" class="center-loading"><div class="spinner"></div></div>
         <div v-else class="cl-grid">
           <div v-for="cl in fClasses" :key="cl.id" class="cl-card" @click="openClass(cl)">
-            <div class="cl-cover" :style="(cl.cover_thumbnail || cl.cover_image) ? `background-image:url(${fixFileUrl(cl.cover_thumbnail || cl.cover_image)})` : `background:${coverGrad(cl.id)}`">
+            <div class="cl-cover" :style="(cl.cover_thumbnail || cl.cover_image || cl.cover_color) ? '' : `background:${coverGrad(cl.id)}`">
+              <SubjectCover :src="cl.cover_thumbnail || cl.cover_image" :icon="cl.cover_icon"
+                            :color="cl.cover_color" :size="38" class="cl-cover-art"/>
               <span v-if="cl.member_count != null" class="cl-member-chip">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                 {{ cl.member_count }}
@@ -333,7 +335,9 @@
     <div v-if="showMembers" class="overlay" @click.self="showMembers=false">
       <div class="modal cl-detail-modal">
         <!-- Cover header -->
-        <div class="cl-modal-cover" :style="selectedClass?.cover_image ? `background-image:url(${fixFileUrl(selectedClass.cover_image)})` : `background:${coverGrad(selectedClass?.id||0)}`">
+        <div class="cl-modal-cover" :style="(selectedClass?.cover_image || selectedClass?.cover_color) ? '' : `background:${coverGrad(selectedClass?.id||0)}`">
+          <SubjectCover :src="selectedClass?.cover_image" :icon="selectedClass?.cover_icon"
+                        :color="selectedClass?.cover_color" :size="52" class="cl-cover-art"/>
           <button class="btn btn-icon cl-modal-close" @click="showMembers=false">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -467,7 +471,6 @@ import { useToast } from '~/composables/useToast'
 import { useAdminSvc } from '~/services/admin'
 import { useClassesSvc } from '~/services/classes'
 import { useI18n } from '~/composables/useI18n'
-import { fixFileUrl } from '~/composables/useFileUrl'
 import { AI_LIMIT } from '~/composables/useAiQuota'
 definePageMeta({ layout: 'default' })
 const auth = useAuthStore(); const toast = useToast(); const adminSvc = useAdminSvc()
@@ -791,8 +794,9 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .cl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
 .cl-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--sh-xs)}
 .cl-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:rgba(var(--teal-rgb),.25)}
-.cl-cover{height:130px;background-size:cover;background-position:center;background-repeat:no-repeat;position:relative}
-.cl-member-chip{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);padding:4px 9px;border-radius:100px}
+.cl-cover{height:130px;position:relative;overflow:hidden}
+.cl-cover-art{position:absolute;inset:0;z-index:0}
+.cl-member-chip{position:absolute;z-index:1;top:10px;right:10px;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);padding:4px 9px;border-radius:100px}
 .cl-body{padding:14px 16px 16px}
 .cl-name{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cl-sub{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text4);min-width:0}
@@ -806,10 +810,10 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
    photo header, quick facts and three scrollable lists into one narrow
    column, so almost nothing was visible without extra scrolling. */
 .cl-detail-modal{max-width:680px;width:100%;padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 64px)}
-.cl-modal-cover{height:180px;flex-shrink:0;background-size:cover;background-position:center;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:18px 22px}
-.cl-modal-close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(4px)}
+.cl-modal-cover{height:180px;flex-shrink:0;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:18px 22px}
+.cl-modal-close{position:absolute;z-index:1;top:12px;right:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(4px)}
 .cl-modal-close:hover{background:rgba(0,0,0,.65)}
-.cl-modal-title{font-size:22px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);margin:0}
+.cl-modal-title{position:relative;z-index:1;font-size:22px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);margin:0}
 .cl-modal-sub{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);text-shadow:0 1px 4px rgba(0,0,0,.5);margin-top:2px}
 
 /* Quick facts strip — glanceable numbers right under the cover, so the

@@ -57,6 +57,8 @@
           <template v-else>
             <div v-for="cls in activeClasses" :key="cls.id" class="class-card" @click="goClass(cls.id)">
               <div class="card-cover" :style="cardCoverStyle(cls)">
+                <SubjectCover :src="cls.cover_thumbnail || cls.cover_image" :icon="cls.cover_icon"
+                              :color="cls.cover_color" :size="46" class="card-cover-art"/>
                 <div v-if="(auth.isTeacher || auth.isAdmin) && cls.invite_code" class="card-code-chip" @click.stop="copyClassCode(cls)">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                   {{ cls.invite_code }}
@@ -333,12 +335,14 @@ const covers = [
 ]
 const coverGrad = (id: number) => covers[id % covers.length]
 
-// Списки/сетки/карточки — всегда миниатюра (≤480px), не полноразмерная
-// обложка. Полный cover_image остаётся только на странице самого класса.
-const cardCoverStyle = (cls: any) => {
-  const img = cls.cover_thumbnail || cls.cover_image
-  return img ? { backgroundImage: `url(${fixFileUrl(img)})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: coverGrad(cls.id) }
-}
+// Картинку, цвет и иконку рисует SubjectCover; здесь остаётся только запасной
+// градиент для предметов, у которых нет вообще ничего — ни обложки, ни цвета
+// (легаси-записи, у которых картинку так и не загрузили).
+const cardCoverStyle = (cls: any) => (
+  (cls.cover_thumbnail || cls.cover_image || cls.cover_color)
+    ? {}
+    : { background: coverGrad(cls.id) }
+)
 
 // Членство — серверная истина: GET /classes/ уже возвращает нужный набор для
 // роли (студенту — его классы, включая архив; преподавателю/админу — все).
@@ -622,10 +626,11 @@ watch(() => auth.user?.id, async (newId) => {
 .class-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--border2)}
 
 .card-cover{position:relative;height:200px;overflow:hidden;background:linear-gradient(135deg,#3a3a3c,#232326);display:flex;align-items:flex-end;padding:0}
-.card-code-chip{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(80,80,80,.75);color:rgba(255,255,255,.92);padding:4px 10px;border-radius:6px;letter-spacing:.08em;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:all .15s;line-height:1}
+.card-cover-art{position:absolute;inset:0}
+.card-code-chip{position:absolute;z-index:1;top:10px;left:10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(80,80,80,.75);color:rgba(255,255,255,.92);padding:4px 10px;border-radius:6px;letter-spacing:.08em;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:all .15s;line-height:1}
 .card-code-chip:hover{background:rgba(60,60,60,.9)}
 .card-code-chip svg{flex-shrink:0;display:block}
-.card-edit-btn{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;backdrop-filter:blur(4px)}
+.card-edit-btn{position:absolute;z-index:1;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;backdrop-filter:blur(4px)}
 .card-edit-btn:hover{background:rgba(var(--teal-rgb),.7);border-color:rgba(var(--teal-rgb),.5)}
 
 .card-body{padding:18px 18px 16px}
