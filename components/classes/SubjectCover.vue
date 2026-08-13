@@ -18,11 +18,13 @@
   <div class="subject-cover" :style="rootStyle">
     <img v-if="showImage" :src="fixFileUrl(src!)" class="sc-img" alt="" loading="lazy"
          decoding="async" @error="failed = true"/>
-    <!-- Иконка сидит в пустом центре кадра — фон под неё специально
-         оставляется чистым (см. _CLEAR_CENTRE_RADIUS на бэкенде) — и красится
-         в тон обложки: белая на светлой пастели просто пропадала бы. -->
+    <!-- Иконка ложится поверх готовой композиции: специальной пустой зоны под
+         неё бэкенд больше не резервирует (см. ICON_ON_ARTWORK в cover_art.py).
+         Поэтому она белая с мягкой тенью — композиция теперь насыщенная, и
+         яркость под иконкой заранее неизвестна. Иконка в тон на таком фоне
+         давала контраст 1.5-2.0 и просто пропадала. -->
     <svg v-if="icon" class="sc-icon" :style="{ width: `${size}px`, height: `${size}px` }"
-         viewBox="0 0 24 24" fill="none" :stroke="coverArt.colorInk(color)"
+         viewBox="0 0 24 24" fill="none" stroke="#fff"
          :stroke-width="strokeWidth"
          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path :d="coverArt.iconPath(icon)"/>
@@ -80,8 +82,10 @@ const rootStyle = computed(() => ({
 .sc-icon {
   position: relative;
   flex: none;
-  /* Ни тени, ни прозрачности: иконка тёмная и насыщенная на светлой пастели,
-     контраст даёт сам цвет (см. ink в палитре). Тень под цветным глифом на
-     светлом фоне выглядела бы грязно. */
+  /* Тень — не украшение, а гарантия читаемости: иконка лежит на произвольной
+     точке композиции, и под ней может оказаться как тёмная, так и светлая
+     форма. Без тени на светлых участках (оранжевый, мятный) белый глиф
+     сливается. */
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, .38));
 }
 </style>

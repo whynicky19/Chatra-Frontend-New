@@ -19,9 +19,9 @@ export interface CoverColorOption {
   id: string
   /** Акцент бренда: свотч в пикере и подсветка выбора. */
   hex: string
-  /** Светлая пастельная заливка фона — из неё строится превью до генерации. */
+  /** Основной насыщенный тон композиции — из него строится превью до генерации. */
   base: string
-  /** Цвет предметной иконки поверх обложки: в тон, а не белый. */
+  /** Тон иконки, когда она рисуется в цвет (подсветка выбора в пикере). */
   ink: string
 }
 export interface CoverIconOption { id: string; subject: string }
@@ -77,14 +77,14 @@ export const COVER_ICON_LABELS: Record<string, Record<string, string>> = {
  */
 export const FALLBACK_COVER_OPTIONS: CoverOptions = {
   colors: [
-    { id: 'blue',   hex: '#0A84FF', base: '#E3EDFF', ink: '#1D4ED8' },
-    { id: 'purple', hex: '#8B5CF6', base: '#EDE9FE', ink: '#7C3AED' },
-    { id: 'green',  hex: '#22C55E', base: '#DEF7E9', ink: '#047857' },
-    { id: 'orange', hex: '#F97316', base: '#FFEBD9', ink: '#C2410C' },
-    { id: 'red',    hex: '#EF4444', base: '#FEE4E2', ink: '#B91C1C' },
-    { id: 'pink',   hex: '#EC4899', base: '#FCE7F3', ink: '#BE185D' },
-    { id: 'teal',   hex: '#00B1C9', base: '#D6F1F7', ink: '#0E7490' },
-    { id: 'indigo', hex: '#6366F1', base: '#E6E7FD', ink: '#4F46E5' },
+    { id: 'blue',   hex: '#0A84FF', base: '#3B82F6', ink: '#1D4ED8' },
+    { id: 'purple', hex: '#8B5CF6', base: '#7C5CE6', ink: '#6D28D9' },
+    { id: 'green',  hex: '#22C55E', base: '#12A970', ink: '#047857' },
+    { id: 'orange', hex: '#F97316', base: '#F4842B', ink: '#C2410C' },
+    { id: 'red',    hex: '#EF4444', base: '#E4534F', ink: '#B91C1C' },
+    { id: 'pink',   hex: '#EC4899', base: '#E8559C', ink: '#BE185D' },
+    { id: 'teal',   hex: '#00B1C9', base: '#12A2B5', ink: '#0E7490' },
+    { id: 'indigo', hex: '#6366F1', base: '#5A5FE0', ink: '#4338CA' },
   ],
   icons: Object.keys(COVER_ICON_PATHS).map((id) => ({ id, subject: id })),
   default_color: 'teal',
@@ -125,9 +125,10 @@ export const useCoverArt = () => {
   const colorBase = (id?: string | null): string =>
     (cached.value || FALLBACK_COVER_OPTIONS).colors.find((c) => c.id === id)?.base
     || FALLBACK_COVER_OPTIONS.colors.find((c) => c.id === id)?.base
-    || '#D6F1F7'
+    || '#12A2B5'
 
-  /** Цвет предметной иконки: в тон обложки, а не белый. */
+  /** Тон иконки, когда она рисуется в цвет. Сейчас на обложке глиф белый
+ *  (композиция насыщенная, см. ICON_ON_ARTWORK) — значение нужно пикеру. */
   const colorInk = (id?: string | null): string =>
     (cached.value || FALLBACK_COVER_OPTIONS).colors.find((c) => c.id === id)?.ink
     || FALLBACK_COVER_OPTIONS.colors.find((c) => c.id === id)?.ink
