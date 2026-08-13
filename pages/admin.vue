@@ -53,7 +53,7 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           Предметы
         </button>
-        <button :class="['tab-btn',{active:tab==='ai-usage'}]" @click="switchToAiUsage">
+        <button :class="['tab-btn',{active:tab==='ai-usage'}]" @click="tab='ai-usage'">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           Запросы к ИИ
         </button>
@@ -171,132 +171,8 @@
         </template>
       </div>
 
-      <!-- AI Usage tab -->
-      <div v-else-if="tab==='ai-usage'">
-        <!-- Token leaderboard — bar chart per class, replaces the old card grid -->
-        <div v-if="aiSummary.length" class="ai-board">
-          <div class="ai-board-head">
-            <span class="ai-board-title">Токены по классам</span>
-            <span class="ai-board-total">Итого <strong>{{ aiGrandTotalTokens.toLocaleString() }}</strong> токенов</span>
-          </div>
-          <div class="ai-bars">
-            <button
-              v-for="s in topAiSummary"
-              :key="s.class_id ?? 'general'"
-              type="button"
-              :class="['ai-bar-row', { active: aiFilterClass === s.class_id }]"
-              :title="`${className(s.class_id)}: ${s.total_tokens.toLocaleString()} токенов, ${s.request_count} запросов`"
-              @click="setClassFilter(s.class_id)"
-            >
-              <span class="ai-bar-label">{{ className(s.class_id) }}</span>
-              <span class="ai-bar-track"><span class="ai-bar-fill" :style="{ width: barPct(s.total_tokens) + '%' }"></span></span>
-              <span class="ai-bar-value">{{ s.total_tokens.toLocaleString() }}</span>
-            </button>
-          </div>
-          <div v-if="sortedAiSummary.length > topAiSummary.length" class="ai-board-more">
-            и ещё {{ sortedAiSummary.length - topAiSummary.length }} — выберите в фильтре ниже
-          </div>
-        </div>
-
-        <!-- Разрез по видам расхода: сумма по классам не отвечала на вопрос
-             «на что именно ушли токены» — переписка, обложки и названия чатов
-             падали в одно число. -->
-        <div v-if="aiByEndpoint.length" class="ai-board ai-board-kinds">
-          <div class="ai-board-head">
-            <span class="ai-board-title">На что уходят токены</span>
-          </div>
-          <div class="ai-kinds">
-            <div v-for="k in aiByEndpoint" :key="k.endpoint" class="ai-kind-row">
-              <span class="ai-kind-label">{{ k.label }}</span>
-              <span class="ai-bar-track">
-                <span class="ai-bar-fill" :style="{ width: kindPct(k.total_tokens) + '%' }"></span>
-              </span>
-              <span class="ai-kind-req">{{ k.request_count }} зап.</span>
-              <span class="ai-bar-value">{{ k.total_tokens.toLocaleString() }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Controls bar -->
-        <div class="ai-controls">
-          <div class="ai-filter-row">
-            <div class="search-wrap ai-filter-wrap">
-              <svg class="u-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <select v-model="aiFilterClass" class="search-inp ai-filter-select" @change="loadAiUsage(1)">
-                <option :value="null">Все классы</option>
-                <option v-for="s in sortedAiSummary" :key="s.class_id ?? 'g'" :value="s.class_id">
-                  {{ className(s.class_id) }}
-                </option>
-              </select>
-            </div>
-            <button class="btn btn-ghost btn-sm" @click="loadAiUsage(aiPage)" :disabled="aiLoading">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" :class="aiLoading?'spin':''"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-              Обновить
-            </button>
-          </div>
-        </div>
-
-        <!-- Table -->
-        <div class="ai-log-heading">Журнал запросов</div>
-        <div v-if="aiLoading" class="center-loading center-loading-lg"><div class="spinner"></div></div>
-        <div v-else class="users-table ai-table">
-          <table>
-            <thead>
-              <tr>
-                <th class="col-num">#</th>
-                <th>Дата</th>
-                <th>Класс</th>
-                <th>Тип</th>
-                <th>Пользователь</th>
-                <th class="col-right">Входящие</th>
-                <th class="col-right">Исходящие</th>
-                <th class="col-right">Всего токенов</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, idx) in aiLogs" :key="item.id">
-                <td class="ai-log-idx">{{ (aiPage - 1) * aiPageSize + idx + 1 }}</td>
-                <td class="ai-log-date">{{ fmtDate(item.created_at) }}</td>
-                <td>
-                  <span :class="['ai-class-chip', { 'ai-class-general': !item.class_id }]">{{ className(item.class_id) }}</span>
-                </td>
-                <td>
-                  <span :class="['ai-type-chip', item.endpoint === 'ai-grade' ? 'ai-type-grade' : 'ai-type-chat']">
-                    {{ item.endpoint === 'ai-grade' ? 'Проверка' : 'Чат' }}
-                  </span>
-                </td>
-                <td class="ai-log-user">{{ getUserEmail(item.user_id) }}</td>
-                <td class="col-right ai-log-num">{{ item.prompt_tokens.toLocaleString() }}</td>
-                <td class="col-right ai-log-num">{{ item.completion_tokens.toLocaleString() }}</td>
-                <td class="col-right">
-                  <span class="token-badge">{{ item.total_tokens.toLocaleString() }}</span>
-                </td>
-              </tr>
-              <tr v-if="!aiLogs.length">
-                <td colspan="8" class="u-empty-cell">
-                  <div class="empty-admin-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-                  Запросов к ИИ пока нет
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        <div v-if="aiTotal > aiPageSize" class="ai-pagination">
-          <button class="btn btn-ghost btn-sm" :disabled="aiPage <= 1" @click="loadAiUsage(aiPage - 1)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-            Назад
-          </button>
-          <span class="ai-page-info">
-            Стр. {{ aiPage }} / {{ Math.ceil(aiTotal / aiPageSize) }} · {{ aiTotal }} записей
-          </span>
-          <button class="btn btn-ghost btn-sm" :disabled="aiPage >= Math.ceil(aiTotal / aiPageSize)" @click="loadAiUsage(aiPage + 1)">
-            Вперёд
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
-      </div>
+      <!-- AI Usage tab — весь дашборд расхода токенов вынесен в компонент -->
+      <AiUsageDashboard v-else-if="tab==='ai-usage'" />
 
       <div v-else-if="tab==='classes'">
         <div class="u-search-row">
@@ -520,31 +396,17 @@ const fUsers = computed(() => users.value.filter(u => {
   return matchesQuery && matchesRole
 }))
 
-// ── AI Usage ──────────────────────────────────────────────────────────────────
-const aiLogs = ref<any[]>([]); const aiSummary = ref<any[]>([]); const aiTotal = ref(0)
-const aiPage = ref(1); const aiPageSize = 50; const aiLoading = ref(false)
-const aiFilterClass = ref<number | null>(null)
+// ── AI Usage ─────────────────────────────────────────────────────────────
+// Сам дашборд расхода живёт в components/admin/AiUsageDashboard.vue; здесь
+// остаётся только сводка по классам — её показывают плитка «Токенов ИИ» и
+// карточка предмета.
+const aiSummary = ref<any[]>([])
 const aiGrandTotalTokens = computed(() => aiSummary.value.reduce((sum: number, s: any) => sum + (s.total_tokens || 0), 0))
-const sortedAiSummary = computed(() => [...aiSummary.value].sort((a: any, b: any) => (b.total_tokens || 0) - (a.total_tokens || 0)))
-const topAiSummary = computed(() => sortedAiSummary.value.slice(0, 8))
-const maxSummaryTokens = computed(() => Math.max(1, ...topAiSummary.value.map((s: any) => s.total_tokens || 0)))
-const barPct = (v: number) => Math.max(3, Math.round((v / maxSummaryTokens.value) * 100))
-
-// Расход по видам запросов (чат, обложки, названия чатов, проверка работ).
-const aiByEndpoint = ref<any[]>([])
-const maxKindTokens = computed(() => Math.max(1, ...aiByEndpoint.value.map((k: any) => k.total_tokens || 0)))
-const kindPct = (v: number) => Math.max(3, Math.round((v / maxKindTokens.value) * 100))
-const loadAiByEndpoint = async () => { try { aiByEndpoint.value = await adminSvc.aiUsageByEndpoint() } catch {} }
-const userMap = computed(() => { const m: Record<number, string> = {}; for (const u of users.value) m[u.id] = u.full_name || u.email; return m })
-const getUserEmail = (uid: number | null) => uid ? (userMap.value[uid] || '#' + uid) : '—'
 // Бэкенд шлёт naive-UTC без таймзоны — без 'Z' браузер считал бы время локальным
 // и показывал бы его со сдвигом на часовой пояс.
 const fmtDate = (iso: string) => { if (!iso) return '—'; try { const withTz = /Z$|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : iso + 'Z'; const d = new Date(withTz); return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) } catch { return iso } }
 const fmtDateShort = (iso: string) => { if (!iso) return '—'; try { const withTz = /Z$|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : iso + 'Z'; return new Date(withTz).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) } catch { return iso } }
-const loadAiUsage = async (page = 1) => { aiLoading.value = true; aiPage.value = page; try { const params: any = { page, page_size: aiPageSize }; if (aiFilterClass.value !== null) params.class_id = aiFilterClass.value; const res = await adminSvc.aiUsage(params); aiLogs.value = res.items; aiTotal.value = res.total } catch { toast.err('Ошибка загрузки данных ИИ') } finally { aiLoading.value = false } }
 const loadAiSummary = async () => { try { aiSummary.value = await adminSvc.aiUsageSummary() } catch {} }
-const setClassFilter = (classId: number | null) => { aiFilterClass.value = aiFilterClass.value === classId ? null : classId; loadAiUsage(1) }
-const switchToAiUsage = () => { tab.value = 'ai-usage'; loadAiByEndpoint(); if (!aiLogs.value.length && !aiLoading.value) loadAiUsage(1) }
 
 // ── Classes ───────────────────────────────────────────────────────────────────
 // Apple system-color family (blue/purple/orange/green/pink) — varied like iOS
@@ -554,8 +416,6 @@ const coverGrad = (id: number) => clCovers[id % clCovers.length]
 
 const classes = ref<any[]>([]); const loadingCl = ref(false); const clq = ref('')
 const fClasses = computed(() => classes.value.filter(cl => cl.name.toLowerCase().includes(clq.value.toLowerCase())))
-const classMap = computed(() => { const m: Record<number, string> = {}; for (const cl of classes.value) m[cl.id] = cl.name; return m })
-const className = (id: number | null) => id ? (classMap.value[id] || `Класс #${id}`) : 'Общий чат'
 const showMembers = ref(false); const membersList = ref<any[]>([]); const loadingMembers = ref(false)
 const selectedClass = ref<any>(null)
 const classCreator = computed(() => selectedClass.value?.created_by ? users.value.find(u => u.id === selectedClass.value.created_by) ?? null : null)
@@ -725,8 +585,6 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .users-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px}
 .users-table tr:last-child td{border-bottom:none}
 .users-table tr:hover td{background:var(--surface2)}
-.users-table .col-num{width:50px}
-.users-table .col-right{text-align:right}
 .u-name{font-size:13px;font-weight:500}
 .u-email{font-size:13px;color:var(--text3)}
 .u-ai-row{display:flex;align-items:center;gap:8px}
@@ -773,54 +631,6 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .item-menu-item.danger{color:var(--red)}
 .item-menu-item.danger:hover{background:var(--red-l)}
 
-/* AI Usage */
-
-/* Token leaderboard — horizontal bar chart, one accent hue for the single
-   "tokens" series (identity already carried by the row label, so no
-   categorical palette needed). Replaces the old card grid. */
-.ai-board{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:16px;box-shadow:var(--sh-xs)}
-.ai-board-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-.ai-board-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4)}
-.ai-board-total{font-size:12px;color:var(--text3)}
-.ai-board-total strong{color:var(--text1);font-weight:700;font-variant-numeric:tabular-nums}
-.ai-bars{display:flex;flex-direction:column;gap:2px}
-.ai-bar-row{display:grid;grid-template-columns:minmax(90px,180px) 1fr auto;align-items:center;gap:12px;padding:7px 8px;border-radius:var(--r-sm);border:1px solid transparent;background:none;cursor:pointer;transition:background .15s,border-color .15s;text-align:left;font-family:inherit;width:100%}
-.ai-bar-row:hover{background:var(--surface2)}
-.ai-bar-row.active{background:rgba(var(--teal-rgb),.08);border-color:rgba(var(--teal-rgb),.25)}
-.ai-bar-label{font-size:12.5px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ai-bar-row.active .ai-bar-label{color:var(--text1)}
-.ai-bar-track{height:8px;border-radius:4px;background:var(--surface2);overflow:hidden}
-.ai-bar-fill{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal-h),var(--teal));transition:width .5s cubic-bezier(.22,1,.36,1)}
-.ai-bar-row.active .ai-bar-fill{background:linear-gradient(90deg,var(--teal),var(--teal-d))}
-.ai-bar-value{font-size:12px;font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums;min-width:58px;text-align:right}
-.ai-board-more{font-size:11.5px;color:var(--text4);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
-.ai-board-kinds{margin-top:14px}
-.ai-kinds{display:flex;flex-direction:column;gap:2px}
-.ai-kind-row{display:grid;grid-template-columns:minmax(110px,200px) 1fr auto auto;align-items:center;gap:12px;padding:7px 8px}
-.ai-kind-label{font-size:12.5px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ai-kind-req{font-size:11.5px;color:var(--text4);font-variant-numeric:tabular-nums}
-@media (max-width:768px){.ai-kind-row{grid-template-columns:1fr auto;gap:8px}.ai-kind-row .ai-bar-track,.ai-kind-req{display:none}}
-
-.ai-controls{margin-bottom:12px}
-.ai-filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.ai-filter-wrap{flex:1;max-width:260px}
-.ai-filter-select{cursor:pointer}
-.ai-log-heading{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin:18px 0 10px}
-/* Class identity chip — neutral by default; blue is reserved for actions
-   and selection, not every table cell. */
-.ai-class-chip{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
-.ai-class-general{color:var(--text4);font-style:italic}
-.ai-type-chip{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
-.ai-type-grade{background:rgba(52,211,153,.08);color:#10b981;border-color:rgba(52,211,153,.2)}
-/* "Чат" — тоже нейтральный, без своего цвета (раньше синий #3b82f6, вне
-   бренда): только "Проверка" получает смысловой зелёный акцент. */
-.token-badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:var(--r-sm);background:var(--surface2);color:var(--text1);font-variant-numeric:tabular-nums}
-.ai-pagination{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:16px}
-.ai-page-info{font-size:13px;color:var(--text3)}
-.ai-log-idx{color:var(--text4);font-size:11px}
-.ai-log-date{font-size:12px;color:var(--text3);white-space:nowrap}
-.ai-log-user{font-size:12px;color:var(--text3)}
-.ai-log-num{font-size:12px;font-variant-numeric:tabular-nums}
 /* Classes grid */
 .cl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
 .cl-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--sh-xs)}
@@ -897,21 +707,13 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
   .stat-icon { width: 30px; height: 30px; }
   .stat-val { font-size: 16px; }
   .stat-lbl { font-size: 10px; }
-  /* Таблица пользователей на мобиле — карточки, не горизонтальный скролл
-     (журнал ИИ-запросов реже открывают и просматривают активно вбок, для
-     таблицы пользователей — основной поверхности управления — это дороже). */
-  .users-table:not(.ai-table) { display: none; }
+  /* Таблица пользователей на мобиле — карточки, а не горизонтальный скролл:
+     это основная поверхность управления, вбок её листать дорого. */
+  .users-table { display: none; }
   .users-cards { display: flex; flex-direction: column; gap: 10px; }
-  .ai-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .ai-table table { min-width: 500px; }
   .pg-title { font-size: 17px; }
-  .ai-board { padding: 12px 10px; }
-  .ai-bar-row { grid-template-columns: minmax(64px,96px) 1fr auto; gap: 8px; }
-  .ai-bar-value { min-width: 44px; font-size: 11px; }
-  .ai-filter-row { flex-wrap: wrap; gap: 8px; }
   .tabs-bar { flex-wrap: nowrap; }
   .tab-btn { white-space: nowrap; min-width: 0; padding: 0 4px; }
-  .ai-pagination { flex-wrap: wrap; gap: 8px; }
   .pg-sub { margin-left: 0; }
   .item-menu-btn { width: 44px; height: 44px; }
   .u-filter-row { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
