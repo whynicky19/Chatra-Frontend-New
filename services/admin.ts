@@ -49,12 +49,97 @@ export type AiDashboard = {
   limits: { daily_token_budget: number; tokens_used_today: number; daily_message_limit: number }
 }
 
+// Строка списка пользователей с агрегатами (GET /admin/users/overview).
+export type AdminUserRow = {
+  id: number
+  email: string
+  full_name: string | null
+  role: string
+  is_active: boolean
+  is_verified: boolean
+  ai_unlimited: boolean
+  created_at: string | null
+  total_tokens: number
+  request_count: number
+  class_count: number
+  last_active: string | null
+}
+
+export type AdminUserDetail = AdminUserRow & {
+  org_type: string
+  ai: AiUsageTotals & {
+    by_endpoint: { endpoint: string; label: string; group: string; group_label: string
+      total_tokens: number; prompt_tokens: number; completion_tokens: number; request_count: number }[]
+    messages_today: number
+    message_limit: number
+    general_tokens: number
+    general_requests: number
+    first_used: string | null
+    last_used: string | null
+  }
+  classes: {
+    id: number; name: string; role: 'creator' | 'member'
+    cover_color: string | null; cover_icon: string | null; cover_thumbnail: string | null
+    total_tokens: number; request_count: number
+  }[]
+  activity: {
+    posts: number; submissions: number; graded: number
+    avg_score: number | null; assignments_created: number
+  }
+}
+
+export type AdminClassDetail = {
+  id: number
+  name: string
+  description: string | null
+  invite_code: string | null
+  created_at: string | null
+  cover_image: string | null
+  cover_thumbnail: string | null
+  cover_color: string | null
+  cover_icon: string | null
+  teacher: string | null
+  creator: { id: number; full_name: string | null; email: string; role: string } | null
+  members: {
+    id: number; full_name: string | null; email: string; role: string; is_active: boolean
+    total_tokens: number; request_count: number; last_active: string | null
+  }[]
+  member_count: number
+  cohorts: { id: number; academic_year: string; status: string; student_count: number; start_date: string | null }[]
+  content: {
+    assignments: number; assignments_active: number; lectures: number
+    submissions: number; graded: number; avg_score: number | null
+  }
+  ai: AiUsageTotals & {
+    by_endpoint: AdminUserDetail['ai']['by_endpoint']
+    first_used: string | null
+    last_used: string | null
+  }
+}
+
 export const useAdminSvc = () => {
   const api = useApi()
   return {
     users: async () => {
       const { data } = await api.get('/admin/users')
       return data as any[]
+    },
+
+    // Список с агрегатами для админки: расход токенов, число классов и
+    // последнее действие приходят сразу, без запроса на каждую строку.
+    usersOverview: async () => {
+      const { data } = await api.get('/admin/users/overview')
+      return data as AdminUserRow[]
+    },
+
+    userDetail: async (id: number) => {
+      const { data } = await api.get(`/admin/users/${id}`)
+      return data as AdminUserDetail
+    },
+
+    classDetail: async (id: number) => {
+      const { data } = await api.get(`/admin/classes/${id}`)
+      return data as AdminClassDetail
     },
 
     create: async (p: { email: string; password: string; role: string }) => {

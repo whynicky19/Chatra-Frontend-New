@@ -6,18 +6,19 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           Админ-панель
         </h1>
-        <p class="pg-sub">Пользователи, классы и активность ИИ</p>
+        <p class="pg-sub">Пользователи, предметы и активность ИИ</p>
       </div>
     </div>
+
     <div class="pg-body">
-      <!-- Stats -->
+      <!-- Общие цифры организации -->
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-icon stat-icon-blue">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
           </div>
           <div>
-            <div class="stat-val">{{users.length}}</div>
+            <div class="stat-val">{{ users.length || '—' }}</div>
             <div class="stat-lbl">Пользователей</div>
           </div>
         </div>
@@ -26,8 +27,8 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           </div>
           <div>
-            <div class="stat-val">{{classesCount}}</div>
-            <div class="stat-lbl">Классов</div>
+            <div class="stat-val">{{ classes.length || '—' }}</div>
+            <div class="stat-lbl">Предметов</div>
           </div>
         </div>
         <div class="stat-card">
@@ -35,7 +36,7 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           </div>
           <div>
-            <div class="stat-val">{{aiGrandTotalTokens.toLocaleString()}}</div>
+            <div class="stat-val">{{ fmt(grandTotalTokens) }}</div>
             <div class="stat-lbl">Токенов ИИ</div>
           </div>
         </div>
@@ -43,479 +44,61 @@
 
       <!-- Tabs — тот же сегмент-контрол в стиле iOS, что и на странице класса:
            плавающая подложка скользит внутри общей "полочки" на всю ширину. -->
-      <div class="tabs-bar" :style="{ '--tab-count': 3, '--tab-index': adminTabIndex }">
+      <div class="tabs-bar" :style="{ '--tab-count': 3, '--tab-index': tabIndex }">
         <div class="tabs-indicator"></div>
-        <button :class="['tab-btn',{active:tab==='users'}]" @click="tab='users'">
+        <button :class="['tab-btn', { active: tab === 'users' }]" @click="tab = 'users'">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
           Пользователи
         </button>
-        <button :class="['tab-btn',{active:tab==='classes'}]" @click="switchToClasses">
+        <button :class="['tab-btn', { active: tab === 'classes' }]" @click="tab = 'classes'">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           Предметы
         </button>
-        <button :class="['tab-btn',{active:tab==='ai-usage'}]" @click="tab='ai-usage'">
+        <button :class="['tab-btn', { active: tab === 'ai-usage' }]" @click="tab = 'ai-usage'">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           Запросы к ИИ
         </button>
       </div>
 
-      <!-- Users tab -->
-      <div v-if="tab==='users'">
-        <div class="u-search-row">
-          <div class="search-wrap u-search-wrap">
-            <svg class="u-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input v-model="sq" class="search-inp" placeholder="Поиск пользователей..."/>
-          </div>
-          <button class="btn btn-teal btn-sm" @click="showCreate=true">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Создать
-          </button>
-        </div>
-        <div class="u-filter-row">
-          <button v-for="f in roleFilters" :key="f.value" :class="['u-role-chip',{active:roleFilter===f.value}]" @click="roleFilter=f.value">
-            {{ f.label }}
-            <span class="u-role-chip-n">{{ roleCounts[f.value] }}</span>
-          </button>
-        </div>
-        <div v-if="loadingU" class="u-loading"><div class="spinner"></div></div>
-        <template v-else>
-          <!-- Desktop: таблица -->
-          <div class="users-table">
-            <table>
-              <thead><tr><th>Имя</th><th>Email</th><th>Роль</th><th>ИИ доступ</th><th>Дата регистрации</th><th></th></tr></thead>
-              <tbody>
-                <tr v-for="u in fUsers" :key="u.id">
-                  <td class="u-name">{{u.full_name || u.email.split('@')[0]}}</td>
-                  <td class="u-email">{{u.email}}</td>
-                  <td>
-                    <span :class="['badge',u.role==='admin'?'badge-teal':'badge-gray']">{{u.role}}</span>
-                  </td>
-                  <td>
-                    <div v-if="u.role==='student'" class="u-ai-row">
-                      <span :class="['ai-quota-badge', u.ai_unlimited ? 'unlimited' : 'limited']">
-                        {{ u.ai_unlimited ? 'Безлимит' : `${AI_LIMIT}/24ч` }}
-                      </span>
-                      <button
-                        type="button"
-                        role="switch"
-                        :aria-checked="u.ai_unlimited"
-                        :class="['ai-switch', { on: u.ai_unlimited, busy: togglingAi[u.id] }]"
-                        :disabled="togglingAi[u.id]"
-                        :title="u.ai_unlimited ? 'Ограничить до дневного лимита' : 'Разрешить безлимитный доступ'"
-                        @click="toggleAiUnlimited(u)"
-                      >
-                        <span class="ai-switch-thumb"></span>
-                      </button>
-                    </div>
-                    <span v-else class="u-ai-none">—</span>
-                  </td>
-                  <td class="u-date">{{fmtDate(u.created_at)}}</td>
-                  <td>
-                    <div class="u-actions-row">
-                      <select :value="u.role" class="role-sel" :disabled="u.id===auth.user?.id" @change="setRole(u.id,($event.target as HTMLSelectElement).value)">
-                        <option value="student">student</option>
-                        <option value="teacher">teacher</option>
-                        <option value="admin">admin</option>
-                      </select>
-                      <button v-if="u.id!==auth.user?.id" class="item-menu-btn" @click.stop="toggleUserMenu($event, u.id)" title="Ещё">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="!fUsers.length"><td colspan="6" class="u-empty-cell">Пользователи не найдены</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Мобиле: карточки вместо таблицы с горизонтальным скроллом -->
-          <div class="users-cards">
-            <div v-for="u in fUsers" :key="u.id" class="u-card">
-              <div class="u-card-top">
-                <div class="u-card-id">
-                  <div class="u-card-name">{{u.full_name || u.email.split('@')[0]}}</div>
-                  <div class="u-card-email">{{u.email}}</div>
-                </div>
-                <span :class="['badge',u.role==='admin'?'badge-teal':'badge-gray']">{{u.role}}</span>
-              </div>
-              <div v-if="u.role==='student'" class="u-card-ai">
-                <span :class="['ai-quota-badge', u.ai_unlimited ? 'unlimited' : 'limited']">
-                  {{ u.ai_unlimited ? 'Безлимит' : `${AI_LIMIT}/24ч` }}
-                </span>
-                <button
-                  type="button"
-                  role="switch"
-                  :aria-checked="u.ai_unlimited"
-                  :class="['ai-switch', { on: u.ai_unlimited, busy: togglingAi[u.id] }]"
-                  :disabled="togglingAi[u.id]"
-                  :title="u.ai_unlimited ? 'Ограничить до дневного лимита' : 'Разрешить безлимитный доступ'"
-                  @click="toggleAiUnlimited(u)"
-                >
-                  <span class="ai-switch-thumb"></span>
-                </button>
-              </div>
-              <div class="u-card-date">Регистрация: {{fmtDate(u.created_at)}}</div>
-              <div class="u-card-actions">
-                <select :value="u.role" class="role-sel" :disabled="u.id===auth.user?.id" @change="setRole(u.id,($event.target as HTMLSelectElement).value)">
-                  <option value="student">student</option>
-                  <option value="teacher">teacher</option>
-                  <option value="admin">admin</option>
-                </select>
-                <button v-if="u.id!==auth.user?.id" class="item-menu-btn" @click.stop="toggleUserMenu($event, u.id)" title="Ещё">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
-                </button>
-              </div>
-            </div>
-            <div v-if="!fUsers.length" class="u-empty-cell">Пользователи не найдены</div>
-          </div>
-        </template>
-      </div>
-
-      <!-- AI Usage tab — весь дашборд расхода токенов вынесен в компонент -->
-      <AiUsageDashboard v-else-if="tab==='ai-usage'" />
-
-      <div v-else-if="tab==='classes'">
-        <div class="u-search-row">
-          <div class="search-wrap u-search-wrap">
-            <svg class="u-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input v-model="clq" class="search-inp" placeholder="Поиск предметов..."/>
-          </div>
-          <span class="cl-count-hint">{{ fClasses.length }} из {{ classes.length }}</span>
-        </div>
-        <div v-if="loadingCl" class="center-loading"><div class="spinner"></div></div>
-        <div v-else class="cl-grid">
-          <div v-for="cl in fClasses" :key="cl.id" class="cl-card" @click="openClass(cl)">
-            <div class="cl-cover" :style="(cl.cover_thumbnail || cl.cover_image || cl.cover_color) ? '' : `background:${coverGrad(cl.id)}`">
-              <SubjectCover :src="cl.cover_thumbnail || cl.cover_image" :icon="cl.cover_icon"
-                            :color="cl.cover_color" :size="52" class="cl-cover-art"/>
-              <span v-if="cl.member_count != null" class="cl-member-chip">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                {{ cl.member_count }}
-              </span>
-            </div>
-            <div class="cl-body">
-              <div class="cl-name">{{ cl.name }}</div>
-              <div class="cl-sub">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span class="truncate">{{ cl.teacher || creatorName(cl.created_by) }}</span>
-                <template v-if="cl.created_at"><span class="cl-sub-dot">·</span><span class="cl-sub-date">{{ fmtDateShort(cl.created_at) }}</span></template>
-              </div>
-            </div>
-          </div>
-          <div v-if="!fClasses.length" class="u-empty-cell">{{ classes.length ? 'Ничего не найдено' : 'Классов нет' }}</div>
-        </div>
-      </div>
+      <AdminUsersTab v-if="tab === 'users'" @loaded="users = $event"/>
+      <AdminClassesTab v-else-if="tab === 'classes'" :classes="classes" :summary="aiSummary"
+                       :users="users" :loading="loadingClasses"/>
+      <AiUsageDashboard v-else-if="tab === 'ai-usage'"/>
     </div>
-
-    <!-- "⋮" menu for a user row — one shared popover instead of separate
-         block/unblock/delete icons cluttering every row (same pattern as
-         the lecture/assignment card menu in classes/[id].vue). -->
-    <div v-if="activeMenuUser" class="item-menu" :style="{ top: userMenuPos.top + 'px', right: userMenuPos.right + 'px' }" @click.stop>
-      <button v-if="activeMenuUser.is_active" class="item-menu-item" @click="onMenuBlock">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-        <span>Заблокировать</span>
-      </button>
-      <button v-else class="item-menu-item" @click="onMenuUnblock">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-        <span>Разблокировать</span>
-      </button>
-      <button class="item-menu-item danger" @click="onMenuDeleteUser">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-        <span>Удалить</span>
-      </button>
-    </div>
-
-    <!-- Class detail modal -->
-    <Transition name="modal">
-    <div v-if="showMembers" class="overlay" @click.self="showMembers=false">
-      <div class="modal cl-detail-modal">
-        <!-- Cover header -->
-        <div class="cl-modal-cover" :style="(selectedClass?.cover_image || selectedClass?.cover_color) ? '' : `background:${coverGrad(selectedClass?.id||0)}`">
-          <SubjectCover :src="selectedClass?.cover_image" :icon="selectedClass?.cover_icon"
-                        :color="selectedClass?.cover_color" :size="70" class="cl-cover-art"/>
-          <button class="btn btn-icon cl-modal-close" @click="showMembers=false">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
-          <div class="cl-modal-title">{{ selectedClass?.name }}</div>
-          <div v-if="selectedClass?.created_at" class="cl-modal-sub">Создан {{ fmtDate(selectedClass.created_at) }}</div>
-        </div>
-
-        <!-- Quick facts — glanceable summary instead of digging through sections
-             for basics like member count, invite code or AI usage. -->
-        <div class="cl-facts">
-          <div class="cl-fact">
-            <span class="cl-fact-lbl">Участников</span>
-            <span class="cl-fact-val">{{ selectedClass?.member_count ?? membersList.length }}</span>
-          </div>
-          <div class="cl-fact">
-            <span class="cl-fact-lbl">Токенов ИИ</span>
-            <span class="cl-fact-val">{{ selectedClassAi ? selectedClassAi.total_tokens.toLocaleString() : '—' }}</span>
-          </div>
-          <div class="cl-fact">
-            <span class="cl-fact-lbl">Создан</span>
-            <span class="cl-fact-val cl-fact-val-sm">{{ selectedClass?.created_at ? fmtDateShort(selectedClass.created_at) : '—' }}</span>
-          </div>
-          <button v-if="selectedClass?.invite_code" class="cl-fact cl-fact-btn" title="Скопировать код приглашения" @click="copyInviteCode">
-            <span class="cl-fact-lbl">Код приглашения</span>
-            <span class="cl-fact-val cl-fact-code">{{ selectedClass.invite_code }}</span>
-          </button>
-        </div>
-
-        <div class="cl-modal-body">
-          <p v-if="selectedClass?.description" class="cl-description">{{ selectedClass.description }}</p>
-
-          <!-- Creator -->
-          <div class="cl-section">
-            <div class="cl-section-label">Создатель</div>
-            <div v-if="classCreator" class="members-list">
-              <div class="member-row">
-                <div class="member-info">
-                  <div class="member-name">{{ classCreator.full_name || classCreator.email.split('@')[0] }}</div>
-                  <div class="member-email">{{ classCreator.email }}</div>
-                </div>
-                <span :class="['badge', classCreator.role==='admin'?'badge-teal':'badge-gray']">{{ classCreator.role }}</span>
-              </div>
-            </div>
-            <div v-else class="cl-unknown">Неизвестно</div>
-          </div>
-
-          <!-- Members -->
-          <div class="cl-section">
-            <div class="cl-section-label">
-              Участники
-              <span v-if="!loadingMembers" class="cl-count-badge">{{ membersList.length }}</span>
-            </div>
-            <div v-if="!loadingMembers && membersList.length > 6" class="search-wrap cl-member-search">
-              <svg class="u-search-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-              <input v-model="memberQuery" class="search-inp" placeholder="Найти участника..."/>
-            </div>
-            <div v-if="loadingMembers" class="center-loading center-loading-sm"><div class="spinner"></div></div>
-            <div v-else-if="!membersList.length" class="cl-empty">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-              <span>Участников нет</span>
-            </div>
-            <div v-else-if="!filteredMembersList.length" class="cl-empty">
-              <span>Никого не найдено</span>
-            </div>
-            <div v-else class="members-list members-list-lg">
-              <div v-for="m in filteredMembersList" :key="m.id" class="member-row">
-                <div class="member-info">
-                  <div class="member-name">{{ m.full_name || m.email.split('@')[0] }}</div>
-                  <div class="member-email">{{ m.email }}</div>
-                </div>
-                <span class="badge badge-gray badge-sm">{{ m.role }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Вернуть студента из архива (доступ даёт админ) -->
-          <div class="cl-section">
-            <div class="cl-section-label">
-              Вернуть студента
-              <span v-if="!loadingRejoin && rejoinable.length" class="cl-count-badge">{{ rejoinable.length }}</span>
-            </div>
-            <div class="cl-subtitle">Состоявшие в классе в прошлые учебные годы</div>
-            <div v-if="loadingRejoin" class="center-loading center-loading-sm"><div class="spinner"></div></div>
-            <div v-else-if="!rejoinable.length" class="cl-empty">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>
-              <span>Нет студентов из прошлых лет для возврата</span>
-            </div>
-            <div v-else class="members-list">
-              <div v-for="u in rejoinable" :key="u.id" class="member-row">
-                <div class="member-info">
-                  <div class="member-name">{{ u.full_name || u.email.split('@')[0] }}</div>
-                  <div class="member-email">{{ u.email }}</div>
-                </div>
-                <button class="btn btn-teal btn-sm" :disabled="addingId===u.id" @click="returnStudent(u)">
-                  <div v-if="addingId===u.id" class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
-                  <span v-else>Вернуть</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    </Transition>
-
-    <!-- Create user modal -->
-    <Transition name="modal">
-    <div v-if="showCreate" class="overlay" @click.self="showCreate=false">
-      <div class="modal">
-        <div class="modal-head"><span class="modal-title">Создать пользователя</span><button class="btn btn-icon btn-ghost" @click="showCreate=false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-        <div class="frow"><label class="flabel">Email</label><input v-model="nu.e" type="email" class="input" placeholder="user@company.com"/></div>
-        <div class="frow"><label class="flabel">Пароль</label><input v-model="nu.p" type="password" class="input" placeholder="Минимум 6 символов"/></div>
-        <div class="frow"><label class="flabel">Роль</label><select v-model="nu.r" class="input"><option value="student">Студент</option><option value="teacher">Учитель</option><option value="admin">Администратор</option></select></div>
-        <div class="modal-foot">
-          <button class="btn btn-white" @click="showCreate=false">Отмена</button>
-          <button class="btn btn-teal" :disabled="!nu.e||!nu.p||crU" @click="createU">
-            <div v-if="crU" class="spinner" style="width:13px;height:13px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div><span v-else>Создать</span>
-          </button>
-        </div>
-      </div>
-    </div>
-    </Transition>
   </div>
 </template>
+
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAuth } from '~/composables/useAuth'
-import { useNotificationsStore } from '~/stores/notifications.store'
-import { useToast } from '~/composables/useToast'
 import { useAdminSvc } from '~/services/admin'
 import { useClassesSvc } from '~/services/classes'
-import { useI18n } from '~/composables/useI18n'
-import { AI_LIMIT } from '~/composables/useAiQuota'
+import { useAdminFormat } from '~/composables/useAdminFormat'
+import type { AdminUserRow } from '~/services/admin'
+
 definePageMeta({ layout: 'default' })
-const auth = useAuthStore(); const toast = useToast(); const adminSvc = useAdminSvc()
+
+const auth = useAuthStore()
 const { fetchMe } = useAuth()
-const { t, lang } = useI18n()
+const adminSvc = useAdminSvc()
 const classesSvc = useClassesSvc()
-const tab = ref('users'); const users = ref<any[]>([]); const loadingU = ref(false); const sq = ref(''); const showCreate = ref(false); const crU = ref(false)
-const adminTabIndex = computed(() => tab.value === 'users' ? 0 : tab.value === 'classes' ? 1 : 2)
-const togglingAi = ref<Record<number, boolean>>({})
-const nu = ref({ e: '', p: '', r: 'student' }); const classesCount = ref(0)
-const roleFilter = ref('all')
-const roleFilters = [
-  { value: 'all', label: 'Все' },
-  { value: 'student', label: 'Ученики' },
-  { value: 'teacher', label: 'Учителя' },
-  { value: 'admin', label: 'Админы' },
-]
-const roleCounts = computed(() => ({
-  all: users.value.length,
-  student: users.value.filter(u => u.role === 'student').length,
-  teacher: users.value.filter(u => u.role === 'teacher').length,
-  admin: users.value.filter(u => u.role === 'admin').length,
-} as Record<string, number>))
-const fUsers = computed(() => users.value.filter(u => {
-  const q = sq.value.toLowerCase()
-  const matchesQuery = u.email.toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q)
-  const matchesRole = roleFilter.value === 'all' || u.role === roleFilter.value
-  return matchesQuery && matchesRole
-}))
+const { fmt } = useAdminFormat()
 
-// ── AI Usage ─────────────────────────────────────────────────────────────
-// Сам дашборд расхода живёт в components/admin/AiUsageDashboard.vue; здесь
-// остаётся только сводка по классам — её показывают плитка «Токенов ИИ» и
-// карточка предмета.
+const tab = ref<'users' | 'classes' | 'ai-usage'>('users')
+const tabIndex = computed(() => (tab.value === 'users' ? 0 : tab.value === 'classes' ? 1 : 2))
+
+// Список пользователей приходит из вкладки (там он и нужен), страница держит
+// его ради плитки сверху и имён создателей предметов.
+const users = ref<AdminUserRow[]>([])
+
+// Предметы и сводку расхода грузит страница: они кормят и плитки, и вкладку
+// «Предметы», которая монтируется позже.
+const classes = ref<any[]>([])
 const aiSummary = ref<any[]>([])
-const aiGrandTotalTokens = computed(() => aiSummary.value.reduce((sum: number, s: any) => sum + (s.total_tokens || 0), 0))
-// Бэкенд шлёт naive-UTC без таймзоны — без 'Z' браузер считал бы время локальным
-// и показывал бы его со сдвигом на часовой пояс.
-const fmtDate = (iso: string) => { if (!iso) return '—'; try { const withTz = /Z$|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : iso + 'Z'; const d = new Date(withTz); return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) } catch { return iso } }
-const fmtDateShort = (iso: string) => { if (!iso) return '—'; try { const withTz = /Z$|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : iso + 'Z'; return new Date(withTz).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) } catch { return iso } }
-const loadAiSummary = async () => { try { aiSummary.value = await adminSvc.aiUsageSummary() } catch {} }
-
-// ── Classes ───────────────────────────────────────────────────────────────────
-// Apple system-color family (blue/purple/orange/green/pink) — varied like iOS
-// folder colors instead of every card defaulting to the brand teal.
-const clCovers = ['linear-gradient(135deg,var(--teal-h),var(--teal-d))','linear-gradient(135deg,#BF5AF2,#8E3FCB)','linear-gradient(135deg,#FF9F0A,#D67D00)','linear-gradient(135deg,#30D158,#1E9E44)','linear-gradient(135deg,#FF375F,#D91C46)']
-const coverGrad = (id: number) => clCovers[id % clCovers.length]
-
-const classes = ref<any[]>([]); const loadingCl = ref(false); const clq = ref('')
-const fClasses = computed(() => classes.value.filter(cl => cl.name.toLowerCase().includes(clq.value.toLowerCase())))
-const showMembers = ref(false); const membersList = ref<any[]>([]); const loadingMembers = ref(false)
-const selectedClass = ref<any>(null)
-const classCreator = computed(() => selectedClass.value?.created_by ? users.value.find(u => u.id === selectedClass.value.created_by) ?? null : null)
-const creatorName = (id: number) => { const u = users.value.find(u => u.id === id); return u ? (u.full_name || u.email) : id ? '#' + id : '—' }
-
-// Ties the class detail modal into the AI-usage numbers already loaded for
-// the "Запросы к ИИ" tab, so opening a class shows its token footprint too.
-const selectedClassAi = computed(() => selectedClass.value ? aiSummary.value.find((s: any) => s.class_id === selectedClass.value.id) ?? null : null)
-
-const memberQuery = ref('')
-const filteredMembersList = computed(() => {
-  const q = memberQuery.value.trim().toLowerCase()
-  if (!q) return membersList.value
-  return membersList.value.filter(m => m.email.toLowerCase().includes(q) || (m.full_name || '').toLowerCase().includes(q))
-})
-
-const copyInviteCode = async () => {
-  const code = selectedClass.value?.invite_code
-  if (!code) return
-  try { await navigator.clipboard.writeText(code); toast.ok('Код скопирован') } catch { toast.err('Не удалось скопировать') }
-}
-
-const rejoinable = ref<any[]>([]); const loadingRejoin = ref(false); const addingId = ref<number|null>(null)
-
-const openClass = async (cl: any) => {
-  selectedClass.value = cl
-  showMembers.value = true
-  memberQuery.value = ''
-  membersList.value = []; loadingMembers.value = true
-  rejoinable.value = []; loadingRejoin.value = true
-  try {
-    const members = await classesSvc.members(cl.id)
-    // Админ мог быстро кликнуть по другому классу, пока запрос летел —
-    // не подставляем ответ по классу A в уже открытую карточку класса B.
-    if (selectedClass.value?.id === cl.id) membersList.value = members
-  } catch {}
-  finally { if (selectedClass.value?.id === cl.id) loadingMembers.value = false }
-  // Кандидаты на возврат — студенты из архивных потоков, не в активном.
-  try {
-    const students = await classesSvc.rejoinableStudents(cl.id)
-    if (selectedClass.value?.id === cl.id) rejoinable.value = students
-  } catch {}
-  finally { if (selectedClass.value?.id === cl.id) loadingRejoin.value = false }
-}
-
-// Вернуть студента в активный поток (доступ даёт админ).
-const returnStudent = async (u: any) => {
-  if (!selectedClass.value) return
-  addingId.value = u.id
-  try {
-    await classesSvc.addMember(selectedClass.value.id, u.id)
-    rejoinable.value = rejoinable.value.filter(x => x.id !== u.id)
-    membersList.value = await classesSvc.members(selectedClass.value.id)
-    toast.ok('Студент возвращён в класс')
-  } catch (e: any) {
-    toast.err(e?.response?.data?.detail || 'Не удалось вернуть студента')
-  } finally { addingId.value = null }
-}
-const switchToClasses = async () => {
-  tab.value = 'classes'
-  if (classes.value.length || loadingCl.value) return
-  loadingCl.value = true
-  try { classes.value = await classesSvc.listAll(); classesCount.value = classes.value.length } catch { toast.err('Ошибка загрузки классов') }
-  finally { loadingCl.value = false }
-}
-
-// ── User actions ──────────────────────────────────────────────────────────────
-const toggleAiUnlimited = async (u: any) => {
-  togglingAi.value = { ...togglingAi.value, [u.id]: true }
-  const newVal = !u.ai_unlimited
-  try {
-    await adminSvc.setAiUnlimited(u.id, newVal)
-    u.ai_unlimited = newVal
-    toast.ok(newVal ? 'ИИ доступ открыт' : 'ИИ доступ ограничен')
-  } catch { toast.err('Ошибка обновления ИИ доступа') }
-  finally { togglingAi.value = { ...togglingAi.value, [u.id]: false } }
-}
-
-const setRole = async (id: number, r: string) => { try { await adminSvc.role(id, r); const u = users.value.find(u => u.id === id); if (u) u.role = r; toast.ok('Роль обновлена') } catch { toast.err('Ошибка') } }
-const doBlock = async (id: number) => { try { await adminSvc.block(id); const u = users.value.find(u => u.id === id); if (u) u.is_active = false; toast.ok('Заблокирован') } catch { toast.err('Ошибка') } }
-const doUnblock = async (id: number) => { try { await adminSvc.unblock(id); const u = users.value.find(u => u.id === id); if (u) u.is_active = true; toast.ok('Разблокирован') } catch { toast.err('Ошибка') } }
-const doDel = async (id: number) => { try { await adminSvc.del(id); users.value = users.value.filter(u => u.id !== id); toast.ok('Удалён') } catch { toast.err('Ошибка') } }
-const createU = async () => { crU.value = true; try { const u = await adminSvc.create({ email: nu.value.e, password: nu.value.p, role: nu.value.r }); users.value.unshift(u); showCreate.value = false; nu.value = { e: '', p: '', r: 'student' }; toast.ok('Создан') } catch (e: any) { toast.err(e?.response?.data?.detail || 'Ошибка') } finally { crU.value = false } }
-
-// ── User row "⋮" menu (block/unblock/delete) — one shared popover ──────────────
-const openUserMenu = ref<number | null>(null)
-const userMenuPos = ref({ top: 0, right: 0 })
-const closeUserMenu = () => { openUserMenu.value = null }
-const toggleUserMenu = (e: MouseEvent, id: number) => {
-  if (openUserMenu.value === id) { closeUserMenu(); return }
-  const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
-  userMenuPos.value = { top: r.bottom + 6, right: window.innerWidth - r.right }
-  openUserMenu.value = id
-}
-const activeMenuUser = computed(() => openUserMenu.value == null ? null : users.value.find(u => u.id === openUserMenu.value) ?? null)
-const onUserMenuDocClick = () => { if (openUserMenu.value != null) closeUserMenu() }
-const onUserMenuScroll = () => { if (openUserMenu.value != null) closeUserMenu() }
-const onMenuBlock = () => { const id = openUserMenu.value; closeUserMenu(); if (id != null) doBlock(id) }
-const onMenuUnblock = () => { const id = openUserMenu.value; closeUserMenu(); if (id != null) doUnblock(id) }
-const onMenuDeleteUser = () => { const id = openUserMenu.value; closeUserMenu(); if (id != null) doDel(id) }
+const loadingClasses = ref(false)
+const grandTotalTokens = computed(() =>
+  aiSummary.value.reduce((sum: number, s: any) => sum + (s.total_tokens || 0), 0))
 
 onMounted(async () => {
   // При жёсткой перезагрузке /admin auth.user ещё не подгружен (профиль
@@ -524,25 +107,21 @@ onMounted(async () => {
   // настоящий админ видел бы пустую панель без единого признака ошибки.
   if (auth.token && !auth.user) await fetchMe()
   if (!auth.isAdmin) return
-  loadingU.value = true
-  try { users.value = await adminSvc.users() } catch {} finally { loadingU.value = false }
-  try { classes.value = await classesSvc.listAll(); classesCount.value = classes.value.length } catch {}
-  loadAiSummary()
-  document.addEventListener('click', onUserMenuDocClick)
-  document.addEventListener('scroll', onUserMenuScroll, true)
-})
-onUnmounted(() => {
-  document.removeEventListener('click', onUserMenuDocClick)
-  document.removeEventListener('scroll', onUserMenuScroll, true)
+  loadingClasses.value = true
+  try { classes.value = await classesSvc.listAll() } catch {}
+  finally { loadingClasses.value = false }
+  try { aiSummary.value = await adminSvc.aiUsageSummary() } catch {}
 })
 </script>
+
 <style scoped>
 .pg{height:100%;overflow-y:auto;background:var(--bg)}
 .pg-head{padding:24px 32px 0;display:flex;align-items:center}
 .pg-title{font-size:20px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
 .pg-sub{font-size:13px;color:var(--text4);margin-top:3px;margin-left:28px}
 .pg-body{padding:20px 32px 32px}
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh-xs)}
 .stat-icon{width:38px;height:38px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 /* Apple Settings-style icon tiles — one hue per category instead of every
@@ -553,9 +132,7 @@ onUnmounted(() => {
 .stat-icon-orange{background:rgba(255,159,10,.14);color:#FF9F0A}
 .stat-val{font-size:22px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .stat-lbl{font-size:12px;color:var(--text3)}
-.search-wrap{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-md);padding:8px 10px}
-.search-inp{flex:1;border:none;background:none;font-size:13px;color:var(--text1)}
-.search-inp::placeholder{color:var(--text4)}
+
 /* Tabs — тот же сегмент-контрол, что на странице класса (pages/classes/[id].vue):
    равные сегменты внутри скруглённой "полочки" с плавающей подложкой активного
    таба, на всю ширину контента вместо трёх кнопок слева. */
@@ -566,175 +143,29 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .tab-btn svg{flex-shrink:0}
 .tab-btn:hover{color:var(--text2)}
 .tab-btn.active{color:var(--text1);font-weight:700}
-.u-search-row{display:flex;gap:8px;margin-bottom:12px;align-items:center}
-.u-search-wrap{flex:1}
-.u-search-icon{color:var(--text4)}
-.u-filter-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
-.u-role-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:100px;font-size:12.5px;font-weight:600;color:var(--text3);background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all .15s}
-.u-role-chip:hover{color:var(--text1);border-color:var(--border2)}
-.u-role-chip.active{color:var(--teal);background:rgba(var(--teal-rgb),.1);border-color:rgba(var(--teal-rgb),.28)}
-.u-role-chip-n{font-size:10.5px;font-weight:700;color:var(--text4);background:var(--surface2);border-radius:100px;padding:1px 6px}
-.u-role-chip.active .u-role-chip-n{color:var(--teal);background:rgba(var(--teal-rgb),.14)}
-.u-loading, .center-loading{display:flex;justify-content:center;padding:24px}
-.center-loading-lg{padding:32px}
-.center-loading-sm{padding:16px}
-.u-empty-cell{text-align:center;padding:24px;color:var(--text4);font-size:13px}
-.users-table{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
-.users-table table{width:100%;border-collapse:collapse}
-.users-table th{padding:10px 14px;text-align:left;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text4);background:var(--surface2);border-bottom:1px solid var(--border)}
-.users-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px}
-.users-table tr:last-child td{border-bottom:none}
-.users-table tr:hover td{background:var(--surface2)}
-.u-name{font-size:13px;font-weight:500}
-.u-email{font-size:13px;color:var(--text3)}
-.u-ai-row{display:flex;align-items:center;gap:8px}
-.u-ai-none{font-size:12px;color:var(--text4)}
-.u-date{font-size:12px;color:var(--text4)}
-.u-actions-row{display:flex;align-items:center;gap:6px}
 
-/* iOS-style switch — replaces the old text "Разрешить/Ограничить" button so
-   the row reads as a single Settings-style toggle instead of badge+button. */
-.ai-switch{width:38px;height:22px;border-radius:100px;background:var(--surface3);border:1px solid var(--border);position:relative;flex-shrink:0;transition:background .2s,border-color .2s}
-.ai-switch:disabled{opacity:.5;cursor:not-allowed}
-.ai-switch.busy{opacity:.6}
-.ai-switch.on{background:var(--teal);border-color:var(--teal)}
-.ai-switch-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.34,1.56,.64,1)}
-.ai-switch.on .ai-switch-thumb{transform:translateX(16px)}
-/* Мобиле: карточки вместо таблицы с горизонтальным скроллом — тот же приём,
-   что уже используется в остальном приложении (notif-card/asgn-card), а не
-   таблица со скроллом в сторону, которая раньше была только у админки. */
-.users-cards{display:none}
-.u-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;box-shadow:var(--sh-xs);display:flex;flex-direction:column;gap:10px}
-.u-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.u-card-id{min-width:0}
-.u-card-name{font-size:14px;font-weight:600;color:var(--text1)}
-.u-card-email{font-size:12px;color:var(--text4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.u-card-ai{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.u-card-date{font-size:12px;color:var(--text4)}
-.u-card-actions{display:flex;align-items:center;gap:6px}
-.u-card-actions .role-sel{flex:1;min-width:0}
-.role-sel{border:1px solid var(--border2);border-radius:var(--r-sm);padding:3px 8px;font-size:12px;cursor:pointer;background:var(--surface);color:var(--text1)}
-/* AI quota badge */
-.ai-quota-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap}
-.ai-quota-badge.unlimited{background:rgba(52,211,153,.1);color:#10b981;border:1px solid rgba(52,211,153,.25)}
-.ai-quota-badge.limited{background:var(--surface2);color:var(--text4);border:1px solid var(--border)}
-
-/* "⋮" row menu — shared popover for block/unblock/delete (same pattern as
-   the lecture/assignment card menu on the class page, kept consistent so a
-   "more actions" affordance always looks and behaves the same way). */
-.item-menu-btn{width:32px;height:32px;border-radius:10px;background:transparent;border:1px solid transparent;color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
-.item-menu-btn:hover{background:var(--surface2);color:var(--text1)}
-.item-menu{position:fixed;z-index:1000;min-width:180px;padding:6px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.16),var(--sh-md);display:flex;flex-direction:column;transform-origin:top right;animation:itemMenuIn .16s cubic-bezier(.16,1,.3,1) both}
-@keyframes itemMenuIn{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
-.item-menu-item{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:10px;background:none;border:none;font-size:13.5px;font-weight:600;color:var(--text2);text-align:left;cursor:pointer;transition:background .12s;font-family:inherit;width:100%}
-.item-menu-item:hover{background:var(--surface2)}
-.item-menu-item.danger{color:var(--red)}
-.item-menu-item.danger:hover{background:var(--red-l)}
-
-/* Classes grid */
-.cl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
-.cl-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--sh-xs)}
-.cl-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:rgba(var(--teal-rgb),.25)}
-.cl-cover{height:130px;position:relative;overflow:hidden}
-.cl-cover-art{position:absolute;inset:0;z-index:0}
-.cl-member-chip{position:absolute;z-index:1;top:10px;right:10px;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);padding:4px 9px;border-radius:100px}
-.cl-body{padding:14px 16px 16px}
-.cl-name{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cl-sub{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text4);min-width:0}
-.cl-sub svg{flex-shrink:0}
-.cl-sub .truncate{min-width:0}
-.cl-sub-dot{flex-shrink:0;opacity:.6}
-.cl-sub-date{flex-shrink:0;white-space:nowrap}
-.cl-count-hint{font-size:12px;color:var(--text4);white-space:nowrap;flex-shrink:0}
-
-/* Class detail modal — widened considerably: the old 460px squeezed a
-   photo header, quick facts and three scrollable lists into one narrow
-   column, so almost nothing was visible without extra scrolling. */
-.cl-detail-modal{max-width:680px;width:100%;padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 64px)}
-.cl-modal-cover{height:180px;flex-shrink:0;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:18px 22px}
-.cl-modal-close{position:absolute;z-index:1;top:12px;right:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(4px)}
-.cl-modal-close:hover{background:rgba(0,0,0,.65)}
-.cl-modal-title{position:relative;z-index:1;font-size:22px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);margin:0}
-.cl-modal-sub{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);text-shadow:0 1px 4px rgba(0,0,0,.5);margin-top:2px}
-
-/* Quick facts strip — glanceable numbers right under the cover, so the
-   basics don't require scrolling into a section. */
-.cl-facts{display:grid;grid-template-columns:repeat(4,1fr);flex-shrink:0;border-bottom:1px solid var(--border)}
-.cl-fact{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-right:1px solid var(--border);background:none;border-top:none;border-bottom:none;border-left:none;text-align:left;cursor:default;font-family:inherit}
-.cl-fact:last-child{border-right:none}
-.cl-fact-btn{cursor:pointer;transition:background .15s}
-.cl-fact-btn:hover{background:var(--surface2)}
-.cl-fact-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cl-fact-val{font-size:16px;font-weight:700;color:var(--text1);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cl-fact-val-sm{font-size:13px;font-weight:600}
-.cl-fact-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;color:var(--teal)}
-
-.cl-modal-body{padding:0 22px 22px;overflow-y:auto;flex:1;min-height:0}
-.cl-description{font-size:13px;line-height:1.5;color:var(--text3);margin:18px 0 0;white-space:pre-wrap}
-.cl-section{margin-top:20px}
-.cl-section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.cl-count-badge{background:var(--text3);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:100px}
-.cl-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px 0;color:var(--text4);font-size:13px}
-.cl-unknown{font-size:13px;color:var(--text4);padding:8px 0}
-.cl-subtitle{font-size:12px;color:var(--text4);margin:-4px 0 10px}
-.cl-member-search{margin-bottom:10px;padding:6px 10px}
-.cl-member-search .search-inp{font-size:12.5px}
-
-/* Members — inset grouped list (iOS Settings style): rows share one
-   rounded surface instead of floating with bare bottom borders, so
-   related items visually read as one group. Taller now the modal is wider,
-   so more of a class roster is visible without an extra nested scroll. */
-.members-list{display:flex;flex-direction:column;max-height:320px;overflow-y:auto;background:var(--surface2);border-radius:var(--r-md);padding:0 12px}
-.members-list-lg{max-height:420px}
-.member-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
-.member-row:last-child{border-bottom:none}
-.member-info{flex:1;min-width:0}
-.member-name{font-size:13px;font-weight:500;color:var(--text1)}
-.member-email{font-size:12px;color:var(--text4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@keyframes spin{to{transform:rotate(360deg)}}
-.spin{animation:spin .7s linear infinite}
-
-.badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap}
-.badge-sm{font-size:10px}
-.badge-teal{background:rgba(var(--teal-rgb),.1);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.2)}
-.badge-gray{background:var(--surface2);color:var(--text4);border:1px solid var(--border)}
-
-@media (max-width:768px) {
-  .pg-head { padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 0; }
-  .pg-body { padding: 14px 16px 28px; }
-  .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-  .stat-card { padding: 12px 8px; flex-direction: column; align-items: flex-start; gap: 6px; }
-  .stat-icon { width: 30px; height: 30px; }
-  .stat-val { font-size: 16px; }
-  .stat-lbl { font-size: 10px; }
-  /* Таблица пользователей на мобиле — карточки, а не горизонтальный скролл:
-     это основная поверхность управления, вбок её листать дорого. */
-  .users-table { display: none; }
-  .users-cards { display: flex; flex-direction: column; gap: 10px; }
-  .pg-title { font-size: 17px; }
-  .tabs-bar { flex-wrap: nowrap; }
-  .tab-btn { white-space: nowrap; min-width: 0; padding: 0 4px; }
-  .pg-sub { margin-left: 0; }
-  .item-menu-btn { width: 44px; height: 44px; }
-  .u-filter-row { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
-  .u-role-chip { flex-shrink: 0; }
-  .cl-facts { grid-template-columns: repeat(2, 1fr); }
-  .cl-fact:nth-child(2) { border-right: none; }
-  .cl-fact { border-bottom: 1px solid var(--border); }
-  .cl-fact:nth-last-child(-n+2) { border-bottom: none; }
-  .cl-modal-cover { height: 150px; }
-  .cl-modal-title { font-size: 19px; }
+@media (max-width:768px){
+  .pg-head{padding:calc(18px + env(safe-area-inset-top,0px)) 16px 0}
+  .pg-body{padding:14px 16px 28px}
+  .pg-title{font-size:17px}
+  .pg-sub{margin-left:0}
+  .stats-row{gap:8px;margin-bottom:16px}
+  .stat-card{padding:12px 8px;flex-direction:column;align-items:flex-start;gap:6px}
+  .stat-icon{width:30px;height:30px}
+  .stat-val{font-size:16px}
+  .stat-lbl{font-size:10px}
+  .tabs-bar{flex-wrap:nowrap}
+  .tab-btn{white-space:nowrap;min-width:0;padding:0 4px}
 }
 /* Иконки табов скрываем только на настоящих телефонных ширинах (как на
    странице класса) — на планшетных места хватает, без иконок таб выглядел бы
    полупустым. */
-@media (max-width:599px) {
-  .tab-btn { gap: 0; }
-  .tab-btn svg { display: none; }
+@media (max-width:599px){
+  .tab-btn{gap:0}
+  .tab-btn svg{display:none}
 }
-@media (max-width:480px) {
-  .stat-card { padding: 10px 6px; }
-  .stat-val { font-size: 16px; }
-  .tab-btn { padding: 0 2px; }
+@media (max-width:480px){
+  .stat-card{padding:10px 6px}
+  .tab-btn{padding:0 2px}
 }
 </style>
