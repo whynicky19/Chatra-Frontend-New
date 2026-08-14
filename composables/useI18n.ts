@@ -442,6 +442,10 @@ export const translations: Record<string, Record<Lang, string>> = {
   'am.sending': { ru: 'Отправка...', en: 'Sending...', kk: 'Жіберілуде...' },
   'am.submit_work_btn': { ru: 'Сдать работу', en: 'Submit work', kk: 'Жұмысты тапсыру' },
 
+  // Сворачивание второй колонки (список заданий / материалов лекции)
+  'panel.collapse': { ru: 'Свернуть список', en: 'Collapse list', kk: 'Тізімді жию' },
+  'panel.expand': { ru: 'Развернуть список', en: 'Expand list', kk: 'Тізімді жаю' },
+
   // AI multi-chat
   'ai.chats': { ru: 'Чаты', en: 'Chats', kk: 'Чаттар' },
   'ai.new_chat': { ru: 'Новый чат', en: 'New chat', kk: 'Жаңа чат' },

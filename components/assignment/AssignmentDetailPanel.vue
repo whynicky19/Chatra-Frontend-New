@@ -1321,16 +1321,16 @@ html.dark .nrb-title { color: #F0A94B; }
 .sub-tag { display: inline-flex; align-items: center; gap: 4px; }
 .sub-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
 
-/* Пилюля балла в списке — нейтральная: колонка из четырёх разных тонов
-   подряд читалась как радуга и перебивала сам список имён. Цвет результата
-   остаётся там, где он один и по делу, — в кольце оценки. */
+/* Пилюля балла — один фирменный голубой на всю колонку. Раньше здесь был
+   тон по результату (зелёный/оранжевый/красный), и список превращался в
+   радугу; цвет результата остался там, где он один и по делу, — в кольце. */
 .grade-pill {
   font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap;
   padding: 2px 9px; border-radius: 100px;
-  color: var(--text1); background: var(--surface2);
+  color: var(--teal); background: rgba(var(--teal-rgb), .12);
 }
 .grade-pill.lg { font-size: 15px; padding: 5px 13px; }
-.gp-of { font-weight: 600; color: var(--text4); }
+.gp-of { font-weight: 600; opacity: .6; }
 .tone-excellent { --tone: var(--green); --tone-rgb: 22,163,74; }
 .tone-good      { --tone: var(--teal);  --tone-rgb: var(--teal-rgb); }
 .tone-ok        { --tone: #E8973A;      --tone-rgb: 232,151,58; }
