@@ -154,7 +154,17 @@ let mq: MediaQueryList | null = null
 const syncPerRow = () => { perRow.value = mq?.matches ? 4 : 6 }
 
 const expanded = ref(false)
-const firstRow = computed(() => options.value.icons.slice(0, perRow.value))
+/** Свёрнутая полоска символов. Выбранный символ обязан быть в ней виден —
+ *  если он не попал в начало списка (например, «Книга» из другой секции),
+ *  подставляем его первым вместо того, чтобы разворачивать весь список:
+ *  восемь рядов иконок иначе выталкивают за экран название предмета. */
+const firstRow = computed(() => {
+  const icons = options.value.icons
+  const head = icons.slice(0, perRow.value)
+  if (head.some((i) => i.id === props.icon)) return head
+  const selected = icons.find((i) => i.id === props.icon)
+  return selected ? [selected, ...head.slice(0, perRow.value - 1)] : head
+})
 
 /** Символы секциями; неизвестная/пустая группа — в конец одним блоком, чтобы
  *  старый ответ бэкенда без groups не потерял ни одного варианта. */
@@ -178,10 +188,9 @@ onMounted(async () => {
   syncPerRow()
   mq.addEventListener('change', syncPerRow)
   options.value = await coverArt.load()
-  // Выбранный символ обязан быть виден. Если он не попал в первую полоску
-  // (например, «Кулинария» из последней секции), открываем список сразу —
-  // иначе пользователь не понимает, что вообще выбрано.
-  if (!firstRow.value.some((i) => i.id === props.icon)) expanded.value = true
+  // Список символов всегда стартует свёрнутым: видимость выбранного символа
+  // обеспечивает firstRow (подставляет его в полоску), разворачивать ради
+  // этого весь каталог не нужно.
 })
 onBeforeUnmount(() => mq?.removeEventListener('change', syncPerRow))
 
