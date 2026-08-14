@@ -22,7 +22,7 @@
       <div class="modal-body">
         <div class="field">
           <label class="field-label">Название задания<span class="req">*</span></label>
-          <input v-model="form.title" class="inp" placeholder="Например: Контрольная работа по теме..." />
+          <AutoTextarea v-model="form.title" class="inp" :max-height="110" placeholder="Например: Контрольная работа по теме..." />
         </div>
 
         <div class="field">
@@ -126,7 +126,9 @@
           <div class="criteria-list">
             <div v-for="(c, i) in form.criteria" :key="i" class="criterion-row">
               <div class="criterion-num">{{ i + 1 }}</div>
-              <input v-model="c.name" class="crit-inp" placeholder="Название критерия" />
+              <!-- Формулировка критерия бывает в несколько строк: поле растёт
+                   вниз, а не уезжает вправо, скрывая начало текста. -->
+              <AutoTextarea v-model="c.name" class="crit-inp" :max-height="150" placeholder="Название критерия" />
               <span class="criterion-pts">{{ c.weight }}</span>
               <button class="crit-del" aria-label="Удалить критерий" @click="removeCriterion(i)">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -399,8 +401,10 @@ const submit = async () => {
 .crit-add:active { transform: scale(.95); }
 .criteria-hint { font-size: 12px; color: var(--text4); padding-left: 3px; margin-top: -3px; }
 .criteria-list { display: flex; flex-direction: column; gap: 8px; }
+/* start, а не center: при многострочном критерии номер и балл остаются на
+   уровне первой строки, а не уползают в вертикальный центр абзаца. */
 .criterion-row {
-  display: grid; grid-template-columns: 22px 1fr auto 26px; gap: 10px; align-items: center;
+  display: grid; grid-template-columns: 22px 1fr auto 26px; gap: 10px; align-items: start;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
   padding: 9px 12px; box-shadow: var(--sh-xs);
   transition: border-color .18s ease-out;
@@ -414,9 +418,11 @@ const submit = async () => {
 }
 .crit-inp {
   background: transparent; border: none; outline: none; width: 100%;
-  font-size: 13.5px; font-weight: 550; color: var(--text1); font-family: inherit;
+  padding: 2px 0; margin: 0;
+  font-size: 13.5px; font-weight: 550; line-height: 1.5; color: var(--text1); font-family: inherit;
 }
 .crit-inp::placeholder { color: var(--text4); font-weight: 400; }
+.criterion-num, .criterion-pts, .crit-del { margin-top: 2px; }
 .criterion-pts {
   font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap;
   color: var(--teal); background: rgba(var(--teal-rgb), .1); padding: 2px 9px; border-radius: 100px;

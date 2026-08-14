@@ -103,13 +103,15 @@
 
       <!-- Input -->
       <div class="chat-inp">
-        <input
+        <AutoTextarea
           ref="inp"
           v-model="txt"
           class="chat-field"
+          :max-height="150"
+          submit-on-enter
           :placeholder="quota.aiLimitReached.value ? 'Лимит исчерпан' : 'Спросите Chatra AI'"
           :disabled="sending || quota.aiLimitReached.value"
-          @keydown.enter="send"
+          @submit="send"
         />
         <button
           :class="['send-btn', {active: txt.trim() && !quota.aiLimitReached.value, locked: quota.aiLimitReached.value}]"
@@ -141,7 +143,7 @@ const msgs = computed(() => store.messages)
 const sending = computed(() => store.sending)
 
 const area = ref<HTMLElement | null>(null)
-const inp = ref<HTMLInputElement | null>(null)
+const inp = ref<{ focus: () => void } | null>(null)
 const sidebarEl = ref<HTMLElement | null>(null)
 const txt = ref('')
 const query = ref('')
@@ -488,8 +490,10 @@ watch(() => store.activeId, () => scroll())
 .typing span:nth-child(2) { animation-delay: .2s }
 .typing span:nth-child(3) { animation-delay: .4s }
 
-.chat-inp { display: flex; align-items: center; gap: 10px; padding: 16px 20px; background: var(--surface); backdrop-filter: blur(12px); border-top: 1px solid var(--border); position: relative; z-index: 2; flex-shrink: 0 }
-.chat-field { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 26px; padding: 12px 20px; font-size: 14px; color: var(--text1); transition: all .2s; font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif }
+/* flex-end: поле растёт вверх при переносе строк, кнопка отправки остаётся
+   прижатой к нижней грани строки ввода. */
+.chat-inp { display: flex; align-items: flex-end; gap: 10px; padding: 16px 20px; background: var(--surface); backdrop-filter: blur(12px); border-top: 1px solid var(--border); position: relative; z-index: 2; flex-shrink: 0 }
+.chat-field { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 22px; padding: 11px 20px; font-size: 14px; line-height: 1.5; color: var(--text1); transition: border-color .2s, box-shadow .2s; font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif }
 .chat-field:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.1) }
 .chat-field::placeholder { color: var(--text4) }
 .chat-field:disabled { opacity: .5 }

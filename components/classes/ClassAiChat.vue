@@ -76,10 +76,9 @@
     <AiLimitNotice v-if="aiLimitReached" :quota="aiQuota.quota.value"/>
 
     <div class="ai-input-bar">
-      <textarea ref="inputEl" v-model="inputTxt" class="ai-textarea"
+      <AutoTextarea ref="inputEl" v-model="inputTxt" class="ai-textarea"
         :placeholder="aiLimitReached ? 'Лимит исчерпан' : 'Спросите Chatra AI'"
-        rows="1" :disabled="aiLimitReached" @keydown.enter.exact.prevent="send" @input="autoResize">
-      </textarea>
+        :max-height="140" submit-on-enter :disabled="aiLimitReached" @submit="send" />
       <button :class="['send-btn', { locked: aiLimitReached }]" :disabled="!inputTxt.trim() || loading || aiLimitReached" @click="send">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
       </button>
@@ -146,7 +145,7 @@ const loading = ref(false)
 const inputTxt = ref('')
 const showSidebar = ref(false)
 const msgsEl = ref<HTMLElement>()
-const inputEl = ref<HTMLTextAreaElement>()
+const inputEl = ref<{ focus: () => void } | null>(null)
 const pendingSubs = ref<Submission[]>([])
 const gradingId = ref<number | null>(null)
 let nextId = 0
@@ -336,12 +335,6 @@ const scrollBottom = () => nextTick(() => {
   if (msgs.value.length > 0) emit('scroll-state', true)
 })
 
-const autoResize = () => {
-  if (!inputEl.value) return
-  inputEl.value.style.height = 'auto'
-  inputEl.value.style.height = Math.min(inputEl.value.scrollHeight, 140) + 'px'
-}
-
 // ── Build system prompt ────────────────────────────────────────────────────────
 const buildSystem = (): string => {
   const className = props.className || 'этого класса'
@@ -440,8 +433,8 @@ const send = async () => {
     return
   }
 
+  // Высоту поля после очистки пересчитывает сама AutoTextarea (watch на value).
   inputTxt.value = ''
-  if (inputEl.value) inputEl.value.style.height = 'auto'
 
   msgs.value.push({ id: ++nextId, role: 'user', text })
   scrollBottom()

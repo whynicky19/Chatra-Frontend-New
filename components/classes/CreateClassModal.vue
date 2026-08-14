@@ -26,8 +26,8 @@
              первый — они идут до обложки: раскрытый выбор иконок иначе
              утаскивает главное поле («Название») ниже видимой части шторки. -->
         <template v-if="!created">
-          <div class="field"><label class="field-label">Название класса<span class="req">*</span></label><input v-model="title" class="inp" placeholder="Например: Математика 10А" autofocus/></div>
-          <div class="field"><label class="field-label">Описание</label><input v-model="description" class="inp" placeholder="Краткое описание курса"/></div>
+          <div class="field"><label class="field-label">Название класса<span class="req">*</span></label><AutoTextarea v-model="title" class="inp" :max-height="110" placeholder="Например: Математика 10А" autofocus/></div>
+          <div class="field"><label class="field-label">Описание</label><AutoTextarea v-model="description" class="inp" :max-height="130" placeholder="Краткое описание курса"/></div>
           <div class="field-row">
             <div class="field"><label class="field-label">Период</label><input v-model="period" class="inp" placeholder="2024-2025"/></div>
             <div class="field"><label class="field-label">Преподаватель</label><input v-model="teacher" class="inp" placeholder="Ваше имя"/></div>

@@ -397,7 +397,7 @@
         <div style="display:flex;flex-direction:column;gap:14px;padding:4px 0 8px">
           <div class="edit-field">
             <label class="field-label">{{ lang==='ru'?'ЗАГОЛОВОК':'TITLE' }}</label>
-            <input v-model="editPostForm.title" class="field-input" :placeholder="lang==='ru'?'Заголовок...':'Title...'"/>
+            <AutoTextarea v-model="editPostForm.title" class="field-input" :max-height="110" :placeholder="lang==='ru'?'Заголовок...':'Title...'"/>
           </div>
           <div class="edit-field">
             <label class="field-label">{{ lang==='ru'?'СОДЕРЖИМОЕ':'CONTENT' }}</label>
@@ -453,7 +453,7 @@
         <div style="display:flex;flex-direction:column;gap:14px;padding:4px 0 8px;max-height:70vh;overflow-y:auto">
           <div class="edit-field">
             <label class="field-label">{{ lang==='ru'?'НАЗВАНИЕ':'TITLE' }}</label>
-            <input v-model="editAsgForm.title" class="field-input" :placeholder="lang==='ru'?'Название задания...':'Assignment title...'"/>
+            <AutoTextarea v-model="editAsgForm.title" class="field-input" :max-height="110" :placeholder="lang==='ru'?'Название задания...':'Assignment title...'"/>
           </div>
           <div class="edit-field">
             <label class="field-label">{{ lang==='ru'?'ОПИСАНИЕ':'DESCRIPTION' }}</label>
@@ -509,7 +509,9 @@
             <div class="criteria-edit-list">
               <div v-for="(c, i) in editAsgForm.criteria" :key="i" class="criterion-edit-row">
                 <div class="criterion-edit-top">
-                  <input v-model="c.name" class="field-input criterion-name-inp" :placeholder="lang==='ru'?'Название критерия...':'Criterion name...'"/>
+                  <!-- Формулировка критерия бывает в несколько строк: поле
+                       растёт вниз, а не уезжает вправо, скрывая начало. -->
+                  <AutoTextarea v-model="c.name" class="field-input criterion-name-inp" :max-height="150" :placeholder="lang==='ru'?'Название критерия...':'Criterion name...'"/>
                   <span class="criterion-pts">{{ c.weight }}</span>
                   <button class="criterion-del-btn" @click="removeCriterion(i)" :disabled="editAsgForm.criteria.length <= 1">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -1227,9 +1229,11 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .btn-add-criterion:hover{background:var(--surface3)}
 .criteria-edit-list{display:flex;flex-direction:column;gap:10px}
 .criterion-edit-row{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md)}
-.criterion-edit-top{display:flex;gap:8px;align-items:center}
-.criterion-name-inp{flex:1;min-width:0}
-.criterion-pts{width:32px;flex-shrink:0;text-align:center;font-size:13px;font-weight:700;color:var(--teal)}
+/* flex-start: у многострочного критерия балл и «удалить» держатся первой
+   строки, а не уползают в вертикальный центр абзаца. */
+.criterion-edit-top{display:flex;gap:8px;align-items:flex-start}
+.criterion-name-inp{flex:1;min-width:0;line-height:1.5}
+.criterion-pts{width:32px;flex-shrink:0;text-align:center;font-size:13px;font-weight:700;color:var(--teal);padding-top:11px}
 .criterion-del-btn{width:30px;height:38px;flex-shrink:0;border-radius:var(--r-sm);background:transparent;border:1px solid transparent;color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
 .criterion-del-btn:hover:not(:disabled){background:var(--red-l);border-color:rgba(220,38,38,.2);color:var(--red)}
 .criterion-del-btn:disabled{opacity:.3;cursor:not-allowed}

@@ -22,7 +22,7 @@
       <div class="modal-body">
         <div class="field">
           <label class="field-label">Тема лекции<span class="req">*</span></label>
-          <input v-model="title" class="inp" placeholder="Например: Введение в тему..." autofocus />
+          <AutoTextarea v-model="title" class="inp" :max-height="110" placeholder="Например: Введение в тему..." autofocus />
         </div>
         <div class="field">
           <label class="field-label">Содержание лекции</label>
