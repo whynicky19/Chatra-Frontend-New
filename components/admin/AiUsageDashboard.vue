@@ -202,9 +202,9 @@
           </div>
           <div class="chart-wrap">
             <div class="chart-axis">
-              <span>{{ fmtShort(chartScale) }}</span>
-              <span>{{ fmtShort(chartScale / 2) }}</span>
-              <span>0</span>
+              <span>{{ fmtShort(logBounds.top) }}</span>
+              <span>{{ fmtShort(logMiddle) }}</span>
+              <span>{{ fmtShort(logBounds.bottom) }}</span>
             </div>
             <div class="chart-plot" @mouseleave="hover = null">
               <span class="grid-line" style="top:0"></span>
@@ -215,10 +215,8 @@
                      :class="{ dim: hover !== null && hover !== i }" @mouseenter="hover = i">
                   <div class="chart-stack">
                     <span v-if="!d.total_tokens" class="chart-empty"></span>
-                    <span v-for="s in colSegments(d)" :key="s.group" class="chart-seg"
-                          :style="{ height: s.h + '%', background: s.color }"></span>
-                    <!-- Классический знак разрыва оси: день выше шкалы «отрезан». -->
-                    <span v-if="isOverflowDay(d)" class="chart-cut"></span>
+                    <span v-else class="chart-seg"
+                          :style="{ height: colHeight(d) + '%', background: dominantKind(d).color }"></span>
                   </div>
                 </div>
               </div>
@@ -237,9 +235,9 @@
           <div class="chart-xaxis">
             <span v-for="t in xTicks" :key="t.i" :style="{ left: t.left + '%' }">{{ t.label }}</span>
           </div>
-          <p v-if="chartCapped" class="chart-note">
-            Шкала обрезана на {{ fmtShort(chartScale) }}: пиковый день ({{ fmt(peakDay) }}) выше неё —
-            иначе обычные дни были бы высотой в пиксель. Такие столбики помечены срезом.
+          <p class="chart-note">
+            Логарифмическая шкала: дневной расход отличается в тысячи раз, на линейной всё, кроме пика,
+            легло бы в пиксель. Цвет столбика — преобладающий вид расхода за день, точные числа — в подсказке.
           </p>
         </section>
       </div>
@@ -614,28 +612,41 @@ const series = computed<Bucket[]>(() => {
   return out
 })
 const peakDay = computed(() => Math.max(1, ...series.value.map(d => d.total_tokens)))
-// Верх шкалы. Один аномальный день (проверка целого класса — сотни тысяч
-// токенов) при шкале «до пика» превращает все остальные дни в плоскую линию:
-// 4 000 из 305 000 — это полтора пикселя. Поэтому шкала строится по 95-му
-// перцентилю обычных дней, а выброс рисуется срезанным и подписывается.
-const chartScale = computed(() => {
-  const values = series.value.map(d => d.total_tokens).filter(v => v > 0).sort((a, b) => a - b)
-  if (values.length < 5) return peakDay.value
-  const p95 = values[Math.round((values.length - 1) * 0.95)]
-  return peakDay.value > p95 * 1.8 ? p95 : peakDay.value
+
+// Логарифмическая шкала — не украшение, а единственный способ показать эти
+// данные: дневной расход отличается в тысячи раз (десятки токенов в тихий
+// день против сотен тысяч в день массовой проверки работ). На линейной шкале
+// всё, кроме пика, ложится в пиксель — что и было видно на графике раньше.
+// Границы — round-числа степеней десяти, поэтому подписи оси читаемые.
+const logBounds = computed(() => {
+  const values = series.value.map(d => d.total_tokens).filter(v => v > 0)
+  if (!values.length) return { bottom: 1, top: 10 }
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const bottom = Math.max(1, Math.pow(10, Math.floor(Math.log10(min))))
+  const top = Math.max(bottom * 10, Math.pow(10, Math.ceil(Math.log10(max))))
+  return { bottom, top }
 })
-const chartCapped = computed(() => chartScale.value < peakDay.value)
-const isOverflowDay = (d: Bucket) => d.total_tokens > chartScale.value
-const colSegments = (d: Bucket) =>
-  segmentsOf(d.kinds, d.total_tokens).map(s => ({
-    ...s,
-    // Столбик выброса упирается в потолок шкалы: пропорции видов внутри него
-    // сохраняются, а сам он помечается срезом.
-    h: (s.tokens / Math.max(d.total_tokens, 1)) * colHeight(d),
-  }))
-/** Высота столбика в процентах от поля графика. */
-const colHeight = (d: Bucket) =>
-  Math.min(100, (d.total_tokens / Math.max(chartScale.value, 1)) * 100)
+/** Высота столбика в процентах поля графика. */
+const colHeight = (d: Bucket) => {
+  if (d.total_tokens <= 0) return 0
+  const { bottom, top } = logBounds.value
+  const span = Math.log10(top) - Math.log10(bottom)
+  if (span <= 0) return 100
+  const frac = (Math.log10(d.total_tokens) - Math.log10(bottom)) / span
+  return Math.min(100, Math.max(4, frac * 100))
+}
+// Середина логарифмической оси — среднее геометрическое, а не арифметическое.
+const logMiddle = computed(() => Math.sqrt(logBounds.value.top * logBounds.value.bottom))
+/** Разбивка дня по видам — для подсказки: сам столбик одноцветный, но точные
+ *  числа по каждому виду должны оставаться доступны. */
+const colSegments = (d: Bucket) => segmentsOf(d.kinds, d.total_tokens)
+/** Преобладающий вид расхода за день — им и красится столбик. */
+const dominantKind = (d: Bucket) => {
+  const segs = segmentsOf(d.kinds, d.total_tokens)
+  if (!segs.length) return { color: 'var(--s-other)', label: '' }
+  return segs.reduce((a, b) => (b.tokens > a.tokens ? b : a))
+}
 const xTicks = computed(() => {
   const n = series.value.length
   if (!n) return []
@@ -975,8 +986,6 @@ html.dark .k-other{--kc-soft:rgba(142,142,147,.2);--kc-line:rgba(142,142,147,.5)
 .chart-seg{display:block;width:100%;min-height:3px;transition:height .5s var(--ease)}
 /* День без запросов — тонкая подложка, а не пустое место. */
 .chart-empty{display:block;width:100%;height:2px;border-radius:1px;background:var(--surface2)}
-/* Срез столбика-выброса: две полоски цвета поверхности поперёк его верха. */
-.chart-cut{position:absolute;top:2px;left:0;right:0;height:6px;background:linear-gradient(var(--surface) 0 2px,transparent 2px 4px,var(--surface) 4px 6px)}
 .chart-note{margin-top:8px;font-size:11.5px;line-height:1.4;color:var(--text4)}
 /* 4px скругление только на верхнем конце столбика — у основания он square. */
 .chart-stack .chart-seg:last-child{border-top-left-radius:4px;border-top-right-radius:4px}
