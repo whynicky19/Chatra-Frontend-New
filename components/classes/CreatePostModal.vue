@@ -1,24 +1,27 @@
 <template>
   <div class="overlay" @click.self="$emit('close')">
     <div class="modal">
+      <div class="sheet-grabber"></div>
+
       <div class="modal-head">
+        <div class="modal-head-wash" aria-hidden="true"></div>
         <div class="modal-head-l">
-          <div class="modal-ico ico-lec">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+          <div class="modal-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
           </div>
-          <div>
+          <div class="modal-head-txt">
             <div class="modal-title">Добавить лекцию</div>
             <div class="modal-sub">Учебный материал для класса</div>
           </div>
         </div>
-        <button class="btn btn-icon btn-ghost" @click="$emit('close')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        <button class="modal-close" aria-label="Закрыть" @click="$emit('close')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
 
       <div class="modal-body">
         <div class="field">
-          <label class="field-label">Тема лекции *</label>
+          <label class="field-label">Тема лекции<span class="req">*</span></label>
           <input v-model="title" class="inp" placeholder="Например: Введение в тему..." autofocus />
         </div>
         <div class="field">
@@ -29,20 +32,22 @@
         <!-- File upload -->
         <div class="field">
           <label class="field-label">Прикрепить файлы</label>
-          <div class="file-drop" :class="{ dragging: drag }" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDrop" @click="fi?.click()">
+          <div class="file-drop" :class="{ dragging: drag, 'has-file': selFiles.length }" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDrop" @click="fi?.click()">
             <input type="file" style="display:none" ref="fi" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.ppt,.pptx" @change="onPick" />
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="drop-icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="drop-ico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
             <span class="drop-text">Перетащите или <strong>нажмите для выбора</strong></span>
             <span class="drop-hint">PDF, DOCX, PPT, изображения и другие</span>
           </div>
 
           <div v-if="selFiles.length" class="files-list">
             <div v-for="(f, i) in selFiles" :key="`${f.name}_${f.size}_${f.lastModified}`" class="file-item">
-              <span class="ftb">{{ fileIcon(f) }}</span>
+              <span class="ftb ftb-sm">{{ fileIcon(f) }}</span>
               <span class="file-name">{{ f.name }}</span>
               <span class="file-size">{{ fileSize(f) }}</span>
               <button class="file-rm" @click.stop="removeFile(i)">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
             </div>
           </div>
@@ -58,7 +63,7 @@
       </div>
 
       <div class="modal-foot">
-        <button class="btn btn-ghost" @click="$emit('close')">Отмена</button>
+        <button class="btn btn-white" @click="$emit('close')">Отмена</button>
         <button class="btn btn-teal" :disabled="!title.trim() || loading" @click="submit">
           <div v-if="loading" class="spinner"></div>
           <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -146,60 +151,139 @@ const submit = async () => {
 </script>
 
 <style scoped>
-.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r-2xl); width: 100%; max-width: 560px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden; }
+/* Та же ступень поверхностей, что и на странице задания: белые «шасси»
+   шапки и подвала, утопленное тело формы и белые карточки полей внутри —
+   как в сгруппированных формах iOS. */
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl);
+  padding: 0; width: 100%; max-width: 560px; max-height: 88vh;
+  display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden;
+}
+.sheet-grabber { display: none; }
 
-.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.modal-head-l { display: flex; align-items: center; gap: 12px; }
-.modal-ico { width: 38px; height: 38px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; }
-.ico-lec { background: rgba(239,68,68,.12); color: #f87171; border: 1px solid rgba(239,68,68,.2); }
-.modal-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 16px; font-weight: 800; color: var(--text1); }
-.modal-sub { font-size: 12px; color: var(--text4); margin-top: 2px; }
+.modal-head {
+  position: relative; flex-shrink: 0; margin: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 20px 22px 18px; background: var(--surface);
+}
+.modal-head-wash {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(var(--teal-rgb), .07), rgba(var(--teal-rgb), 0) 80%);
+}
+.modal-head-l { position: relative; display: flex; align-items: center; gap: 13px; min-width: 0; }
+.modal-head-txt { min-width: 0; }
+.modal-ico {
+  width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(150deg, var(--teal-h), var(--teal-d)); color: #fff;
+  box-shadow: 0 2px 5px rgba(var(--teal-rgb), .26), 0 8px 18px rgba(var(--teal-rgb), .24);
+}
+.modal-title { font-size: 17px; font-weight: 800; letter-spacing: -.022em; color: var(--text1); }
+.modal-sub { font-size: 12.5px; color: var(--text4); margin-top: 2px; }
+/* Закрытие — круглый серый глиф, как в шторках iOS */
+.modal-close {
+  position: relative; flex-shrink: 0;
+  width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); color: var(--text3);
+  transition: background .15s ease-out, color .15s ease-out, transform .12s cubic-bezier(.32,.72,0,1);
+}
+.modal-close:hover { background: var(--surface3); color: var(--text1); }
+.modal-close:active { transform: scale(.9); }
 
-.modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px; }
-.modal-foot { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+.modal-body {
+  padding: 18px 22px 24px; overflow-y: auto; flex: 1;
+  display: flex; flex-direction: column; gap: 16px;
+  background: var(--bg);
+}
+.modal-foot {
+  padding: 14px 22px; flex-shrink: 0; margin: 0;
+  border-top: 1px solid var(--border); background: var(--surface);
+  display: flex; justify-content: flex-end; gap: 10px;
+}
 
-.field { display: flex; flex-direction: column; gap: 7px; }
-.field-label { font-size: 11px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: .06em; }
-.inp { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 13px; color: var(--text1); font-size: 13px; width: 100%; transition: border-color .15s; }
-.inp:focus { border-color: rgba(var(--teal-rgb),.4); }
-.inp-ta { resize: vertical; min-height: 90px; line-height: 1.6; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field-label {
+  padding-left: 3px; font-size: 11.5px; font-weight: 800;
+  color: var(--text4); text-transform: uppercase; letter-spacing: .06em;
+}
+.req { color: var(--teal); margin-left: 3px; }
+.inp {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 12px 14px; color: var(--text1); font-size: 13.5px; width: 100%;
+  box-shadow: var(--sh-xs);
+  transition: border-color .18s ease-out, box-shadow .18s ease-out;
+}
+.inp::placeholder { color: var(--text4); }
+.inp:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.12); }
+.inp-ta { resize: vertical; min-height: 96px; line-height: 1.65; }
 
-.file-drop { border: 2px dashed var(--border2); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all .18s; }
-.file-drop:hover, .file-drop.dragging { border-color: rgba(var(--teal-rgb),.45); background: rgba(var(--teal-rgb),.04); }
-.drop-icon { color: var(--text4); }
-.drop-text { font-size: 13px; color: var(--text3); }
-.drop-text strong { color: var(--teal); }
-.drop-hint { font-size: 11px; color: var(--text4); }
+.file-drop {
+  border: 1.5px dashed var(--border2); border-radius: var(--r-lg); padding: 22px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;
+  background: var(--surface);
+  transition: border-color .18s ease-out, background .18s ease-out, transform .12s cubic-bezier(.32,.72,0,1);
+}
+.file-drop:hover, .file-drop.dragging { border-color: var(--teal); background: rgba(var(--teal-rgb),.05); }
+.file-drop:active { transform: scale(.99); }
+.file-drop.has-file { border-style: solid; border-color: var(--border); }
+.drop-ico {
+  width: 42px; height: 42px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); color: var(--text3);
+  transition: background .18s ease-out, color .18s ease-out;
+}
+.file-drop:hover .drop-ico, .file-drop.dragging .drop-ico { background: rgba(var(--teal-rgb),.12); color: var(--teal); }
+.drop-text { font-size: 13.5px; color: var(--text3); text-align: center; }
+.drop-text strong { color: var(--teal); font-weight: 700; }
+.drop-hint { font-size: 11.5px; color: var(--text4); text-align: center; }
 
-.files-list { display: flex; flex-direction: column; gap: 4px; }
-.file-item { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); }
-.file-emoji { font-size: 15px; flex-shrink: 0; }
-.file-name { font-size: 13px; font-weight: 500; color: var(--text1); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.file-size { font-size: 11px; color: var(--text4); white-space: nowrap; }
-.file-rm { width: 20px; height: 20px; border-radius: 50%; background: var(--surface3); color: var(--text4); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+.files-list {
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); overflow: hidden; box-shadow: var(--sh-xs);
+}
+.file-item { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+.file-item:last-child { border-bottom: none; }
+.file-name { font-size: 13px; font-weight: 550; color: var(--text1); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-size { font-size: 11.5px; color: var(--text4); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.file-rm {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  background: var(--surface2); color: var(--text4); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s, transform .12s;
+}
 .file-rm:hover { background: var(--red-l); color: var(--red); }
+.file-rm:active { transform: scale(.9); }
 
-.upload-progress { display: flex; flex-direction: column; gap: 5px; }
-.upload-bar-wrap { height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
-.upload-bar { width: 100%; height: 100%; background: var(--teal); border-radius: 3px; transform-origin: left; transition: transform .3s; }
-.upload-text { font-size: 12px; color: var(--teal); }
+.upload-progress { display: flex; flex-direction: column; gap: 6px; }
+.upload-bar-wrap { height: 4px; background: var(--surface2); border-radius: 100px; overflow: hidden; }
+.upload-bar { width: 100%; height: 100%; background: linear-gradient(90deg,var(--teal-h),var(--teal)); border-radius: 100px; transform-origin: left; transition: transform .35s cubic-bezier(.22,1,.36,1); }
+.upload-text { font-size: 11.5px; font-weight: 600; color: var(--teal); }
 
 .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width:768px) {
-  .modal { max-width: 100%; max-height: 96dvh; border-radius: var(--r-2xl) var(--r-2xl) 0 0; }
-  .modal-head { padding: 16px 14px 12px; }
-  .modal-body { padding: 14px; }
-  .modal-foot { padding: 12px 14px 24px; flex-direction: column-reverse; gap: 8px; }
-  .modal-foot .btn { width: 100%; min-height: 44px; }
+  .modal { max-width: 100%; max-height: 96dvh; border: none; border-radius: 28px 28px 0 0; padding: 0; }
+  /* Свою «ручку» рисуем внутри шапки — глобальная .modal::before легла бы
+     на самый край шторки, поверх градиента. */
+  .modal::before { display: none; }
+  .sheet-grabber { display: block; width: 36px; height: 5px; border-radius: 3px; background: var(--surface3); margin: 8px auto 0; flex-shrink: 0; }
+  .modal-head { padding: 12px 16px 14px; }
+  .modal-ico { width: 38px; height: 38px; border-radius: 12px; }
+  .modal-title { font-size: 16px; }
+  .modal-body { padding: 14px 16px 20px; }
+  .modal-foot { padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px)); flex-direction: column-reverse; gap: 8px; }
+  .modal-foot .btn { width: 100%; min-height: 46px; }
   .inp { font-size: 16px; }
   .inp-ta { font-size: 16px; }
-  .file-drop { padding: 14px; }
-  .file-rm { width: 32px; height: 32px; }
+  .file-drop { padding: 16px 14px; }
+  .file-rm { width: 30px; height: 30px; }
 }
 @media (max-width:480px) {
-  .modal-body { padding: 12px; }
-  .modal-foot { padding: 10px 12px 20px; }
+  .modal-body { padding: 12px 13px 18px; }
+  .modal-head { padding: 12px 13px; }
+  .modal-foot { padding: 10px 13px calc(18px + env(safe-area-inset-bottom, 0px)); }
 }
 </style>

@@ -1,24 +1,27 @@
 <template>
   <div class="overlay" @click.self="$emit('close')">
     <div class="modal">
+      <div class="sheet-grabber"></div>
+
       <div class="modal-head">
+        <div class="modal-head-wash" aria-hidden="true"></div>
         <div class="modal-head-l">
           <div class="modal-ico">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </div>
-          <div>
+          <div class="modal-head-txt">
             <div class="modal-title">Новое задание</div>
             <div class="modal-sub">Заполните данные задания</div>
           </div>
         </div>
-        <button class="btn btn-icon btn-ghost" @click="$emit('close')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        <button class="modal-close" aria-label="Закрыть" @click="$emit('close')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
 
       <div class="modal-body">
         <div class="field">
-          <label class="field-label">Название задания *</label>
+          <label class="field-label">Название задания<span class="req">*</span></label>
           <input v-model="form.title" class="inp" placeholder="Например: Контрольная работа по теме..." />
         </div>
 
@@ -30,10 +33,12 @@
         <!-- Файлы задания -->
         <div class="field">
           <label class="field-label">Прикрепить файлы к заданию</label>
-          <div class="file-drop" :class="{ dragging: drag }" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDropFiles" @click="taskFileInput?.click()">
+          <div class="file-drop" :class="{ dragging: drag, 'has-file': taskFiles.length }" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDropFiles" @click="taskFileInput?.click()">
             <input type="file" style="display:none" ref="taskFileInput" multiple @change="onPickFiles" />
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text4)"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span style="font-size:13px;color:var(--text3)">Перетащите или <strong style="color:var(--teal)">выберите файлы</strong> задания</span>
+            <div class="drop-ico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <span class="drop-text">Перетащите или <strong>выберите файлы</strong> задания</span>
           </div>
           <div v-if="taskFiles.length" class="attached-files">
             <div v-for="(f, i) in taskFiles" :key="`${f.name}_${f.size}_${f.lastModified}`" class="attached-file">
@@ -44,7 +49,7 @@
             </div>
           </div>
           <div v-if="uploadingTask" class="upload-prog">
-            <div class="upload-bar" :style="{ transform: `scaleX(${uploadPct / 100})` }"></div>
+            <div class="upload-track"><div class="upload-bar" :style="{ transform: `scaleX(${uploadPct / 100})` }"></div></div>
             <span>Загрузка {{ uploadIdx }}/{{ taskFiles.length }}...</span>
           </div>
         </div>
@@ -54,7 +59,7 @@
           <div class="ref-header">
             <div class="ref-header-l">
               <div class="ref-ico">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                   <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                 </svg>
               </div>
@@ -67,11 +72,11 @@
           </div>
 
           <!-- Список прикреплённых эталонов -->
-          <div v-if="refFiles.length" class="attached-files" style="margin-bottom:8px">
-            <div v-for="(rf, i) in refFiles" :key="`${rf.name}_${rf.url || (rf.file ? rf.file.size + '_' + rf.file.lastModified : i)}`" class="attached-file ref-attached ref-done">
+          <div v-if="refFiles.length" class="attached-files">
+            <div v-for="(rf, i) in refFiles" :key="`${rf.name}_${rf.url || (rf.file ? rf.file.size + '_' + rf.file.lastModified : i)}`" class="attached-file">
               <span class="ftb ftb-sm">{{ fileEmoji(rf.file) }}</span>
               <div class="ref-file-info">
-                <span class="af-name" style="color:var(--green)">{{ rf.name }}</span>
+                <span class="af-name">{{ rf.name }}</span>
                 <span class="ref-hint">{{ rf.url ? 'Загружен' : 'Будет загружен' }}</span>
               </div>
               <span class="af-size">{{ rf.file ? fileSz(rf.file) : '' }}</span>
@@ -80,23 +85,24 @@
           </div>
 
           <!-- Зона загрузки (всегда видна — можно добавлять ещё) -->
-          <div class="file-drop file-drop-ref" :class="{ dragging: dragRef }"
+          <div class="file-drop" :class="{ dragging: dragRef, 'has-file': refFiles.length }"
                @dragover.prevent="dragRef=true" @dragleave="dragRef=false"
                @drop.prevent="onDropRef" @click="refFileInput?.click()">
             <input type="file" style="display:none" ref="refFileInput" multiple @change="onPickRef" />
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--green)"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span style="font-size:13px;color:var(--text3)">
-              {{ refFiles.length ? 'Добавить ещё файл' : 'Перетащите или' }}
-              <strong v-if="!refFiles.length" style="color:var(--green)">выберите файлы</strong>
-              <strong v-else style="color:var(--green)">эталонного решения</strong>
+            <div class="drop-ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <span class="drop-text">
+              <template v-if="refFiles.length">Добавить ещё <strong>файл эталона</strong></template>
+              <template v-else>Перетащите или <strong>выберите файлы</strong></template>
             </span>
-            <span class="ref-formats">PDF, DOCX, DOC, PPTX, XLSX, TXT, MD... · Несколько файлов</span>
+            <span class="drop-hint">PDF, DOCX, DOC, PPTX, XLSX, TXT, MD… · Несколько файлов</span>
           </div>
 
           <!-- Прогресс загрузки -->
           <div v-if="uploadingRef" class="upload-prog">
-            <div class="upload-bar upload-bar-green"></div>
-            <span style="color:var(--green)">Загрузка эталонных решений...</span>
+            <div class="upload-track"><div class="upload-bar indeterminate"></div></div>
+            <span>Загрузка эталонных решений...</span>
           </div>
         </div>
         <!-- ─────────────────────────────────────────────────────────────── -->
@@ -110,8 +116,8 @@
         <div class="field">
           <div class="criteria-head">
             <label class="field-label">Критерии оценивания</label>
-            <button class="btn btn-ghost btn-sm" @click="addCriterion">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            <button class="crit-add" @click="addCriterion">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
               Добавить
             </button>
           </div>
@@ -120,10 +126,10 @@
           <div class="criteria-list">
             <div v-for="(c, i) in form.criteria" :key="i" class="criterion-row">
               <div class="criterion-num">{{ i + 1 }}</div>
-              <input v-model="c.name" class="inp inp-sm" placeholder="Название критерия" />
+              <input v-model="c.name" class="crit-inp" placeholder="Название критерия" />
               <span class="criterion-pts">{{ c.weight }}</span>
-              <button class="btn btn-icon btn-ghost btn-sm del-btn" @click="removeCriterion(i)">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              <button class="crit-del" aria-label="Удалить критерий" @click="removeCriterion(i)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
             </div>
 
@@ -137,9 +143,9 @@
       </div>
 
       <div class="modal-foot">
-        <button class="btn btn-ghost" @click="$emit('close')">Отмена</button>
+        <button class="btn btn-white" @click="$emit('close')">Отмена</button>
         <button class="btn btn-teal" :disabled="!canSubmit || saving" @click="submit">
-          <div v-if="saving" class="spinner" style="width:14px;height:14px;border-width:2px"></div>
+          <div v-if="saving" class="spinner"></div>
           <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           Создать задание
         </button>
@@ -313,85 +319,219 @@ const submit = async () => {
 </script>
 
 <style scoped>
-.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r-2xl); padding: 0; width: 100%; max-width: 620px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden; }
+/* Та же ступень поверхностей, что и на странице задания: белые «шасси»
+   шапки и подвала, утопленное тело формы и белые карточки полей внутри —
+   как в сгруппированных формах iOS. */
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl);
+  padding: 0; width: 100%; max-width: 620px; max-height: 88vh;
+  display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden;
+}
+.sheet-grabber { display: none; }
 
-.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.modal-head-l { display: flex; align-items: center; gap: 12px; }
-.modal-ico { width: 38px; height: 38px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; color: var(--text3); }
-.modal-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 16px; font-weight: 800; color: var(--text1); }
-.modal-sub { font-size: 12px; color: var(--text4); }
+.modal-head {
+  position: relative; flex-shrink: 0; margin: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 20px 22px 18px; background: var(--surface);
+}
+.modal-head-wash {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(var(--teal-rgb), .07), rgba(var(--teal-rgb), 0) 80%);
+}
+.modal-head-l { position: relative; display: flex; align-items: center; gap: 13px; min-width: 0; }
+.modal-head-txt { min-width: 0; }
+.modal-ico {
+  width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(150deg, var(--teal-h), var(--teal-d)); color: #fff;
+  box-shadow: 0 2px 5px rgba(var(--teal-rgb), .26), 0 8px 18px rgba(var(--teal-rgb), .24);
+}
+.modal-title { font-size: 17px; font-weight: 800; letter-spacing: -.022em; color: var(--text1); }
+.modal-sub { font-size: 12.5px; color: var(--text4); margin-top: 2px; }
+.modal-close {
+  position: relative; flex-shrink: 0;
+  width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); color: var(--text3);
+  transition: background .15s ease-out, color .15s ease-out, transform .12s cubic-bezier(.32,.72,0,1);
+}
+.modal-close:hover { background: var(--surface3); color: var(--text1); }
+.modal-close:active { transform: scale(.9); }
 
-.modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px; }
-.modal-foot { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+.modal-body {
+  padding: 18px 22px 24px; overflow-y: auto; flex: 1;
+  display: flex; flex-direction: column; gap: 18px;
+  background: var(--bg);
+}
+.modal-foot {
+  padding: 14px 22px; flex-shrink: 0; margin: 0;
+  border-top: 1px solid var(--border); background: var(--surface);
+  display: flex; justify-content: flex-end; gap: 10px;
+}
 
-.field { display: flex; flex-direction: column; gap: 7px; }
-.field-label { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field-label {
+  padding-left: 3px; font-size: 11.5px; font-weight: 800;
+  color: var(--text4); text-transform: uppercase; letter-spacing: .06em;
+}
+.req { color: var(--teal); margin-left: 3px; }
 
-.inp { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 13px; color: var(--text1); font-size: 13px; width: 100%; transition: border-color .15s; }
-.inp:focus { border-color: rgba(var(--teal-rgb),.45); }
-.inp-ta { resize: vertical; min-height: 80px; line-height: 1.6; }
-.inp-sm { padding: 8px 10px; font-size: 13px; }
+.inp {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 12px 14px; color: var(--text1); font-size: 13.5px; width: 100%;
+  box-shadow: var(--sh-xs);
+  transition: border-color .18s ease-out, box-shadow .18s ease-out;
+}
+.inp::placeholder { color: var(--text4); }
+.inp:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.12); }
+.inp-ta { resize: vertical; min-height: 88px; line-height: 1.65; }
 
-.criteria-head { display: flex; align-items: center; justify-content: space-between; }
-.criteria-hint { font-size: 12px; color: var(--text4); margin-top: 2px; }
-.criteria-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-.criterion-row { display: grid; grid-template-columns: 28px 1fr 40px 32px; gap: 8px; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 10px; }
-.criterion-num { font-size: 12px; font-weight: 700; color: var(--text4); text-align: center; }
-.criterion-pts { font-size: 12px; font-weight: 700; color: var(--teal); text-align: center; }
-.del-btn { color: var(--red); opacity: .6; }
-.del-btn:hover { opacity: 1; background: var(--red-l); }
-.no-criteria { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 20px; color: var(--text4); font-size: 13px; }
+/* Критерии */
+.criteria-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.crit-add {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border: none; border-radius: 100px; cursor: pointer;
+  font-size: 12.5px; font-weight: 650; font-family: inherit;
+  color: var(--teal); background: rgba(var(--teal-rgb), .11);
+  transition: background .15s ease-out, transform .12s cubic-bezier(.32,.72,0,1);
+}
+.crit-add:hover { background: rgba(var(--teal-rgb), .18); }
+.crit-add:active { transform: scale(.95); }
+.criteria-hint { font-size: 12px; color: var(--text4); padding-left: 3px; margin-top: -3px; }
+.criteria-list { display: flex; flex-direction: column; gap: 8px; }
+.criterion-row {
+  display: grid; grid-template-columns: 22px 1fr auto 26px; gap: 10px; align-items: center;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 9px 12px; box-shadow: var(--sh-xs);
+  transition: border-color .18s ease-out;
+}
+.criterion-row:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.1); }
+.criterion-num {
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 7px;
+  background: var(--surface2); color: var(--text3);
+  font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.crit-inp {
+  background: transparent; border: none; outline: none; width: 100%;
+  font-size: 13.5px; font-weight: 550; color: var(--text1); font-family: inherit;
+}
+.crit-inp::placeholder { color: var(--text4); font-weight: 400; }
+.criterion-pts {
+  font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap;
+  color: var(--teal); background: rgba(var(--teal-rgb), .1); padding: 2px 9px; border-radius: 100px;
+}
+.crit-del {
+  width: 26px; height: 26px; border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; color: var(--text4);
+  transition: background .15s, color .15s, transform .12s;
+}
+.crit-del:hover { background: var(--red-l); color: var(--red); }
+.crit-del:active { transform: scale(.9); }
+.no-criteria {
+  display: flex; align-items: center; gap: 8px; justify-content: center; padding: 22px;
+  color: var(--text4); font-size: 13px;
+  background: var(--surface); border: 1px dashed var(--border2); border-radius: var(--r-lg);
+}
 
-.file-drop { border: 2px dashed var(--border2); border-radius: var(--r-lg); padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all .18s; }
-.file-drop:hover, .file-drop.dragging { border-color: rgba(var(--teal-rgb),.45); background: rgba(var(--teal-rgb),.04); }
-.file-drop-ref { border-color: rgba(52,211,153,0.3); }
-.file-drop-ref:hover, .file-drop-ref.dragging { border-color: rgba(52,211,153,0.55); background: rgba(52,211,153,0.04); }
-.ref-formats { font-size: 11px; color: var(--text4); margin-top: 2px; }
+/* Загрузка файлов */
+.file-drop {
+  border: 1.5px dashed var(--border2); border-radius: var(--r-lg); padding: 20px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;
+  background: var(--surface);
+  transition: border-color .18s ease-out, background .18s ease-out, transform .12s cubic-bezier(.32,.72,0,1);
+}
+.file-drop:hover, .file-drop.dragging { border-color: var(--teal); background: rgba(var(--teal-rgb),.05); }
+.file-drop:active { transform: scale(.99); }
+.file-drop.has-file { border-style: solid; border-color: var(--border); }
+.drop-ico {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); color: var(--text3);
+  transition: background .18s ease-out, color .18s ease-out;
+}
+.file-drop:hover .drop-ico, .file-drop.dragging .drop-ico { background: rgba(var(--teal-rgb),.12); color: var(--teal); }
+.drop-text { font-size: 13.5px; color: var(--text3); text-align: center; }
+.drop-text strong { color: var(--teal); font-weight: 700; }
+.drop-hint { font-size: 11.5px; color: var(--text4); text-align: center; }
 
-/* Секция эталонного решения */
-.ref-section { background: linear-gradient(135deg, rgba(52,211,153,0.04) 0%, rgba(6,182,212,0.03) 100%); border: 1px solid rgba(52,211,153,0.18); border-radius: var(--r-xl); padding: 16px; gap: 12px; }
+/* Секция эталонного решения — нейтральная карточка с одним акцентом на
+   бейдже «ИИ»: раньше зелёная заливка спорила с остальной формой. */
+.ref-section {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-xl); padding: 15px; gap: 12px;
+}
 .ref-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-.ref-header-l { display: flex; align-items: flex-start; gap: 10px; }
-.ref-ico { width: 30px; height: 30px; background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; color: var(--green); flex-shrink: 0; margin-top: 1px; }
-.ref-title { font-size: 13px; font-weight: 700; color: var(--text1); }
+.ref-header-l { display: flex; align-items: flex-start; gap: 11px; }
+.ref-ico {
+  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text3);
+}
+.ref-title { font-size: 13.5px; font-weight: 750; letter-spacing: -.01em; color: var(--text1); }
 .ref-desc { font-size: 12px; color: var(--text4); margin-top: 2px; line-height: 1.5; }
-.ref-badge { font-size: 10px; font-weight: 800; letter-spacing: .05em; background: rgba(52,211,153,0.12); color: var(--green); border: 1px solid rgba(52,211,153,0.3); border-radius: 6px; padding: 3px 7px; flex-shrink: 0; }
-
-.ref-attached { background: var(--surface2); border: 1px solid rgba(52,211,153,0.2); }
-.ref-done { border-color: rgba(52,211,153,0.35); background: rgba(52,211,153,0.04); }
+.ref-badge {
+  flex-shrink: 0; font-size: 10.5px; font-weight: 800; letter-spacing: .05em;
+  background: rgba(var(--teal-rgb), .12); color: var(--teal);
+  border-radius: 100px; padding: 3px 9px;
+}
 .ref-file-info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
-.ref-hint { font-size: 10px; color: var(--text4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ref-hint { font-size: 10.5px; color: var(--text4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.attached-files { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-.attached-file { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); }
-.af-name { font-size: 12px; font-weight: 500; color: var(--text1); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.af-size { font-size: 11px; color: var(--text4); white-space: nowrap; }
-.af-rm { width: 20px; height: 20px; border-radius: 50%; background: var(--surface3); color: var(--text4); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all .15s; }
+.attached-files {
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); overflow: hidden; box-shadow: var(--sh-xs);
+}
+.attached-file { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+.attached-file:last-child { border-bottom: none; }
+.af-name { font-size: 13px; font-weight: 550; color: var(--text1); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.af-size { font-size: 11.5px; color: var(--text4); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.af-rm {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  background: var(--surface2); color: var(--text4); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1;
+  transition: background .15s, color .15s, transform .12s;
+}
 .af-rm:hover { background: var(--red-l); color: var(--red); }
+.af-rm:active { transform: scale(.9); }
 
-.upload-prog { margin-top: 6px; }
-.upload-bar { width: 100%; height: 3px; background: var(--teal); border-radius: 3px; transform-origin: left; transition: transform .3s; margin-bottom: 4px; animation: prog-pulse .8s ease-in-out infinite; }
-.upload-bar-green { background: var(--green); width: 60%; }
-@keyframes prog-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
-.upload-prog span { font-size: 11px; color: var(--teal); }
-.spinner { border: 2px solid var(--border2); border-top-color: var(--teal); border-radius: 50%; animation: spin .6s linear infinite; }
+.upload-prog { display: flex; flex-direction: column; gap: 6px; }
+.upload-track { width: 100%; height: 4px; background: var(--surface3); border-radius: 100px; overflow: hidden; }
+.upload-bar { width: 100%; height: 100%; background: linear-gradient(90deg,var(--teal-h),var(--teal)); border-radius: 100px; transform-origin: left; transition: transform .35s cubic-bezier(.22,1,.36,1); }
+/* Число эталонов заранее известно, но их аплоад идёт без пошагового прогресса —
+   поэтому здесь бегущая полоса, а не ложные проценты. */
+.upload-bar.indeterminate { width: 40%; animation: slide 1.1s ease-in-out infinite; }
+@keyframes slide { 0% { transform: translateX(-100%) } 100% { transform: translateX(250%) } }
+.upload-prog span { font-size: 11.5px; font-weight: 600; color: var(--teal); }
+
+.spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width:768px) {
-  .modal { max-width: 100%; max-height: 96dvh; border-radius: var(--r-2xl) var(--r-2xl) 0 0; }
-  .modal-head { padding: 16px 14px 12px; }
-  .modal-body { padding: 14px 14px; }
-  .modal-foot { padding: 12px 14px 24px; }
+  .modal { max-width: 100%; max-height: 96dvh; border: none; border-radius: 28px 28px 0 0; padding: 0; }
+  .modal::before { display: none; }
+  .sheet-grabber { display: block; width: 36px; height: 5px; border-radius: 3px; background: var(--surface3); margin: 8px auto 0; flex-shrink: 0; }
+  .modal-head { padding: 12px 16px 14px; }
+  .modal-ico { width: 38px; height: 38px; border-radius: 12px; }
+  .modal-title { font-size: 16px; }
+  .modal-body { padding: 14px 16px 20px; }
+  .modal-foot { padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px)); flex-direction: column-reverse; gap: 8px; }
+  .modal-foot .btn { width: 100%; min-height: 46px; }
   .inp { font-size: 16px; }
   .inp-ta { font-size: 16px; min-height: 80px; }
-  .criterion-row { grid-template-columns: 24px 1fr 36px 28px; gap: 6px; padding: 8px; }
-  .file-drop { padding: 14px; }
+  .crit-inp { font-size: 16px; }
+  .criterion-row { grid-template-columns: 22px 1fr auto 30px; gap: 8px; padding: 8px 10px; }
+  .file-drop { padding: 16px 14px; }
   .ref-section { padding: 12px; }
-  .af-rm { width: 32px; height: 32px; font-size: 15px; }
+  .af-rm { width: 30px; height: 30px; font-size: 15px; }
+  .crit-del { width: 30px; height: 30px; }
 }
 @media (max-width:480px) {
-  .modal-body { padding: 12px 12px; }
-  .modal-foot { padding: 10px 12px 20px; }
-  .criterion-row { grid-template-columns: 20px 1fr 32px 24px; gap: 4px; }
+  .modal-head { padding: 12px 13px; }
+  .modal-body { padding: 12px 13px 18px; }
+  .modal-foot { padding: 10px 13px calc(18px + env(safe-area-inset-bottom, 0px)); }
+  .criterion-row { grid-template-columns: 20px 1fr auto 28px; gap: 6px; }
 }
 </style>

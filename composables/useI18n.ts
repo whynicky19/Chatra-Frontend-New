@@ -415,11 +415,6 @@ export const translations: Record<string, Record<Lang, string>> = {
     kk: 'ЖИ жұмысты жеткілікті сенімділікпен тексере алмады. Жұмыс мұғалімге қолмен тексеруге жіберілді. Түпкілікті баға мұғалім тексергеннен кейін жарияланады.',
   },
   'am.criteria': { ru: 'Критерии оценивания', en: 'Grading criteria', kk: 'Бағалау критерийлері' },
-  // Форма слова для счётчика критериев в шапке: «1 критерий», «2 критерия»,
-  // «5 критериев» — плоское «критериев» ломало согласование на единице.
-  'am.criteria_one': { ru: 'критерий', en: 'criterion', kk: 'критерий' },
-  'am.criteria_few': { ru: 'критерия', en: 'criteria', kk: 'критерий' },
-  'am.criteria_many': { ru: 'критериев', en: 'criteria', kk: 'критерий' },
   'am.submissions_progress': { ru: 'Прогресс проверки', en: 'Grading progress', kk: 'Тексеру барысы' },
   'am.variant': { ru: 'Вариант', en: 'Variant', kk: 'Нұсқа' },
   'am.variant_short': { ru: 'В', en: 'V', kk: 'Н' },
