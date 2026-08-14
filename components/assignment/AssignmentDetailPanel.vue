@@ -2,20 +2,28 @@
   <div class="adp" :class="mode">
 
     <!-- Header -->
-    <div class="am-head">
+    <div class="am-head" :class="{ scrolled }">
+      <div class="am-head-wash" aria-hidden="true"></div>
       <button class="adp-back" @click="$emit('close')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
         {{ t('general.back') }}
       </button>
       <div class="am-head-l">
-        <div class="am-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-        <div>
+        <div class="am-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="am-head-txt">
           <div class="am-title">{{ assignment.title }}</div>
           <div class="am-badges">
-            <span class="badge-score">{{ assignment.max_score }} {{ t('am.points') }}</span>
-            <span v-if="deadlineStr" :class="['badge-due', isOverdue ? 'overdue' : '']">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span class="am-badge accent">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+              {{ assignment.max_score }} {{ t('am.points') }}
+            </span>
+            <span v-if="deadlineStr" :class="['am-badge', isOverdue ? 'overdue' : '']">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               {{ deadlineStr }}
+            </span>
+            <span v-if="parsedCriteria.length" class="am-badge">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              {{ parsedCriteria.length }} {{ criteriaWord }}
             </span>
           </div>
         </div>
@@ -23,15 +31,17 @@
     </div>
 
     <!-- Tabs (teacher/admin only — "Задание"/"Работы"; student gets one unified page, no tabs) -->
-    <div v-if="canSeeSubmissions" class="am-tabs">
-      <button :class="['am-tab', { active: tab === 'info' }]" @click="tab = 'info'">{{ t('am.tab_task') }}</button>
-      <button :class="['am-tab', { active: tab === 'submissions' }]" @click="tab = 'submissions'; loadSubs()">
-        {{ t('am.tab_works') }} <span v-if="submissions.length" class="tab-count">{{ submissions.length }}</span>
-      </button>
+    <div v-if="canSeeSubmissions" class="am-tabs-wrap">
+      <div class="am-tabs">
+        <button :class="['am-tab', { active: tab === 'info' }]" @click="tab = 'info'">{{ t('am.tab_task') }}</button>
+        <button :class="['am-tab', { active: tab === 'submissions' }]" @click="tab = 'submissions'; loadSubs()">
+          {{ t('am.tab_works') }} <span v-if="submissions.length" class="tab-count">{{ submissions.length }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- ═══ INFO TAB (teacher/admin) ═══ -->
-    <div v-if="canSeeSubmissions && tab === 'info'" class="am-body">
+    <div v-if="canSeeSubmissions && tab === 'info'" class="am-body" @scroll.passive="onBodyScroll">
       <div v-if="descriptionText" class="section">
         <div class="section-label">{{ t('general.description') }}</div>
         <div class="desc-block">{{ descriptionText }}</div>
@@ -46,17 +56,23 @@
       <!-- Reference solution files -->
       <div v-if="referenceFiles.length" class="section">
         <div class="section-label">{{ t('am.reference_files') }}<span class="section-count">{{ referenceFiles.length }}</span></div>
-        <div class="section-hint">{{ t('am.reference_files_hint') }}</div>
+        <div class="section-hint">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          {{ t('am.reference_files_hint') }}
+        </div>
         <FileListCard :files="referenceFiles" @open="openPreview" />
       </div>
 
-      <div class="section">
+      <div v-if="parsedCriteria.length" class="section">
         <div class="section-label">{{ t('am.criteria') }}<span class="section-count">{{ parsedCriteria.length }}</span></div>
         <div class="criteria-list">
-          <div v-for="c in parsedCriteria" :key="c.name" class="criterion">
+          <div v-for="(c, i) in parsedCriteria" :key="c.name" class="criterion">
             <div class="criterion-top">
-              <span class="criterion-name">{{ c.name }}</span>
-              <span class="criterion-pts">{{ c.weight }} / {{ assignment.max_score }}</span>
+              <span class="criterion-idx">{{ i + 1 }}</span>
+              <!-- Иногда в «названии» критерия лежит целая инструкция для ИИ —
+                   такой абзац жирным на всю карточку читать невозможно. -->
+              <span class="criterion-name" :class="{ long: (c.name || '').length > 120 }">{{ c.name }}</span>
+              <span class="criterion-pts">{{ c.weight }}<span class="criterion-of">/{{ assignment.max_score }}</span></span>
             </div>
             <div v-if="c.description" class="criterion-desc">{{ c.description }}</div>
             <div class="criterion-bar"><div class="criterion-bar-fill" :style="{ width: (c.weight / assignment.max_score * 100) + '%' }"></div></div>
@@ -66,77 +82,84 @@
     </div>
 
     <!-- ═══ STUDENT: единая страница задания (описание+файлы слева, статус/оценка справа) ═══ -->
-    <div v-if="!canSeeSubmissions" class="am-body">
+    <div v-if="!canSeeSubmissions" class="am-body" @scroll.passive="onBodyScroll">
       <div v-if="descriptionText" class="section">
         <div class="section-label">{{ t('general.description') }}</div>
         <div class="desc-block">{{ descriptionText }}</div>
       </div>
 
       <div v-if="assignmentFiles.length" class="section">
-        <div class="section-label">{{ t('am.task_files') }}</div>
+        <div class="section-label">{{ t('am.task_files') }}<span class="section-count">{{ assignmentFiles.length }}</span></div>
         <FileListCard :files="assignmentFiles" @open="openPreview" />
       </div>
 
       <!-- Read-only notice for archived students (no submission) -->
-      <div v-if="!mySubmission && readonly" class="readonly-panel">
+      <div v-if="!mySubmission && readonly" class="notice-panel">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         {{ t('am.readonly_archive') }}
       </div>
 
       <!-- Not submitted yet: single-column submit form -->
-      <div v-else-if="!mySubmission" class="submit-form">
-        <div v-if="isOverdue" class="overdue-warn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          {{ t('am.overdue_warn') }}
-        </div>
-
-        <div class="field">
-          <label class="field-label">{{ t('am.answer_text') }}</label>
-          <textarea v-model="form.text" class="inp inp-ta" rows="6" :placeholder="t('am.answer_placeholder')"></textarea>
-        </div>
-
-        <div class="field">
-          <label class="field-label">{{ t('am.attach_files') }}</label>
-          <div class="file-drop" :class="{ 'has-file': submittedFiles.length }" @click="fileInputEl?.click()" @dragover.prevent @drop.prevent="onDrop">
-            <input ref="fileInputEl" type="file" style="display:none" multiple @change="onFileSelect" />
-            <template v-if="!submittedFiles.length">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text4)"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span class="drop-text">{{ t('am.drop_or') }} <strong>{{ t('am.click_choose') }}</strong></span>
-              <span class="drop-hint">{{ t('am.file_types') }}</span>
-            </template>
-            <template v-else>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--green)"><polyline points="20 6 9 17 4 12"/></svg>
-              <span style="font-size:13px;font-weight:600;color:var(--text1)">{{ submittedFiles.length }} {{ t('am.files_chosen') }}</span>
-              <button class="btn btn-ghost btn-sm" @click.stop="clearFiles">{{ t('am.clear_all') }}</button>
-            </template>
+      <div v-else-if="!mySubmission" class="section">
+        <div class="section-label">{{ t('am.my_work') }}</div>
+        <div class="submit-form">
+          <div v-if="isOverdue" class="overdue-warn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {{ t('am.overdue_warn') }}
           </div>
-          <div v-if="submittedFiles.length" class="attached-files-list">
-            <div v-for="(f, i) in submittedFiles" :key="`${f.name}_${f.size}_${f.lastModified}`" class="attached-file-row">
-              <span class="ftb ftb-sm">{{ getEmoji(f.name) }}</span>
-              <span class="af-name">{{ f.name }}</span>
-              <span class="af-size">{{ fileSz(f) }}</span>
-              <button class="af-rm" @click="submittedFiles.splice(i,1)">×</button>
+
+          <div class="field">
+            <label class="field-label">{{ t('am.answer_text') }}</label>
+            <textarea v-model="form.text" class="inp inp-ta" rows="6" :placeholder="t('am.answer_placeholder')"></textarea>
+          </div>
+
+          <div class="field">
+            <label class="field-label">{{ t('am.attach_files') }}</label>
+            <div class="file-drop" :class="{ 'has-file': submittedFiles.length }" @click="fileInputEl?.click()" @dragover.prevent @drop.prevent="onDrop">
+              <input ref="fileInputEl" type="file" style="display:none" multiple @change="onFileSelect" />
+              <template v-if="!submittedFiles.length">
+                <div class="drop-ico">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <span class="drop-text">{{ t('am.drop_or') }} <strong>{{ t('am.click_choose') }}</strong></span>
+                <span class="drop-hint">{{ t('am.file_types') }}</span>
+              </template>
+              <template v-else>
+                <div class="drop-ico ok">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span class="drop-text"><strong>{{ submittedFiles.length }}</strong> {{ t('am.files_chosen') }}</span>
+                <button class="btn btn-ghost btn-sm" @click.stop="clearFiles">{{ t('am.clear_all') }}</button>
+              </template>
+            </div>
+            <div v-if="submittedFiles.length" class="attached-files-list">
+              <div v-for="(f, i) in submittedFiles" :key="`${f.name}_${f.size}_${f.lastModified}`" class="attached-file-row">
+                <span class="ftb ftb-sm">{{ getEmoji(f.name) }}</span>
+                <span class="af-name">{{ f.name }}</span>
+                <span class="af-size">{{ fileSz(f) }}</span>
+                <button class="af-rm" @click="submittedFiles.splice(i,1)">×</button>
+              </div>
+            </div>
+            <div v-if="uploading" class="upload-prog-sm">
+              <div class="upload-track"><div class="upload-bar-sm" :style="{ transform: `scaleX(${uploadPctSub / 100})` }"></div></div>
+              <span>{{ t('am.uploading') }} {{ uploadIdxSub }}/{{ submittedFiles.length }}...</span>
             </div>
           </div>
-          <div v-if="uploading" class="upload-prog-sm">
-            <div class="upload-bar-sm" :style="{ transform: `scaleX(${uploadPctSub / 100})` }"></div>
-            <span>{{ t('am.uploading') }} {{ uploadIdxSub }}/{{ submittedFiles.length }}...</span>
-          </div>
-        </div>
 
-        <button class="btn btn-teal btn-full" :disabled="!canSubmit || submitting" @click="doSubmit">
-          <div v-if="submitting" class="spinner"></div>
-          <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-          {{ submitting ? (uploading ? t('am.uploading_file') : t('am.sending')) : t('am.submit_work_btn') }}
-        </button>
+          <button class="btn btn-teal btn-full" :disabled="!canSubmit || submitting" @click="doSubmit">
+            <div v-if="submitting" class="spinner"></div>
+            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+            {{ submitting ? (uploading ? t('am.uploading_file') : t('am.sending')) : t('am.submit_work_btn') }}
+          </button>
+        </div>
       </div>
 
       <!-- Already submitted: two-column layout — answer on the left, status/grade on the right -->
       <div v-else class="ad-grid">
         <div class="ad-col-main">
-          <div v-if="mySubmission.text_content || mySubmission.file_url || parsedSubmittedUrls.length" class="preview-block">
-            <div class="preview-label">{{ t('am.your_answer') }}</div>
-            <div v-if="mySubmission.text_content" class="preview-text">{{ mySubmission.text_content }}</div>
+          <div v-if="mySubmission.text_content || mySubmission.file_url || parsedSubmittedUrls.length" class="section">
+            <div class="section-label">{{ t('am.your_answer') }}</div>
+            <div v-if="mySubmission.text_content" class="answer-text">{{ mySubmission.text_content }}</div>
             <div v-if="mySubmission.file_url || parsedSubmittedUrls.length" class="sub-file">
               <FileThumbGrid :files="parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url]" @open="openPreview" />
             </div>
@@ -156,23 +179,25 @@
                статусов (проверяется/на ручной проверке/просрочено). -->
           <div class="sub-status-bar">
             <div v-if="!['submitted','graded'].includes(mySubmission.status)" :class="['sub-status-chip', mySubmission.status]">
-              <svg v-if="mySubmission.status === 'grading'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <svg v-else-if="mySubmission.status === 'needs_review'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <svg v-if="mySubmission.status === 'grading'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <svg v-else-if="mySubmission.status === 'needs_review'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               {{ statusLabel(mySubmission.status) }}
             </div>
             <span v-if="mySubmission.variant_number" class="variant-badge">{{ t('am.variant') }} {{mySubmission.variant_number }}</span>
-            <span class="sub-date">{{ fmtDate(mySubmission.submitted_at) }}</span>
+            <span class="sub-date">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {{ fmtDate(mySubmission.submitted_at) }}
+            </span>
           </div>
 
           <!-- Grade card — тот же компонент, что и у преподавателя -->
-          <div v-if="mySubmission.grade" class="grade-result-wrap">
-            <GradeResultCard
-              :grade="mySubmission.grade"
-              :max-score="assignment.max_score"
-              :criteria="parsedCriteriaScores || []"
-            />
-          </div>
+          <GradeResultCard
+            v-if="mySubmission.grade"
+            :grade="mySubmission.grade"
+            :max-score="assignment.max_score"
+            :criteria="parsedCriteriaScores || []"
+          />
 
           <div v-else-if="mySubmission.status === 'grading'" class="grading-pending">
             <div class="grading-dots"><span></span><span></span><span></span></div>
@@ -182,6 +207,16 @@
           <div v-else-if="mySubmission.status === 'needs_review'" class="needs-review-student">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             {{ t('am.needs_review_student_msg') }}
+          </div>
+
+          <div v-else class="awaiting-card">
+            <div class="awaiting-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <div class="awaiting-title">{{ statusLabel(mySubmission.status) }}</div>
+              <div class="awaiting-sub">{{ fmtDate(mySubmission.submitted_at) }}</div>
+            </div>
           </div>
 
           <!-- Retract button (only if not graded, not archived) -->
@@ -195,32 +230,36 @@
     </div>
 
     <!-- ═══ SUBMISSIONS TAB (teacher) ═══ -->
-    <div v-if="tab === 'submissions' && canSeeSubmissions" class="am-body">
+    <div v-if="tab === 'submissions' && canSeeSubmissions" class="am-body" @scroll.passive="onBodyScroll">
       <div v-if="loadingSubs" class="load-center"><div class="spinner" style="width:24px;height:24px;border-width:3px;border-color:var(--border2);border-top-color:var(--teal)"></div></div>
 
       <!-- Detail view -->
       <div v-else-if="activeSub" class="sub-detail">
         <button class="back-sub-btn" @click="activeSub = null">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           {{ t('am.back_to_list') }}
         </button>
+
         <div class="sub-detail-header">
-          <div>
+          <div class="sub-detail-id">
             <div class="sub-student-name">{{ getStudentName(activeSub.student_id) }}</div>
-            <div class="sub-student-date" style="display:flex;align-items:center;gap:8px">
-              {{ fmtDate(activeSub.submitted_at) }}
+            <div class="sub-student-date">
+              <span>{{ fmtDate(activeSub.submitted_at) }}</span>
               <span v-if="activeSub.variant_number" class="variant-badge">{{ t('am.variant') }} {{activeSub.variant_number }}</span>
             </div>
           </div>
+          <span v-if="activeSub.grade" class="grade-pill lg">
+            {{ activeSub.grade.score }}<span class="gp-of">/{{ assignment.max_score }}</span>
+          </span>
         </div>
 
         <!-- Needs review: pending human decision, kept as its own single-column card (unchanged) -->
         <template v-if="activeSub.status === 'needs_review'">
-          <div v-if="activeSub.text_content" class="sub-text-section">
+          <div v-if="activeSub.text_content" class="section">
             <div class="section-label">{{ t('am.student_answer') }}</div>
-            <div class="sub-text">{{ activeSub.text_content }}</div>
+            <div class="answer-text">{{ activeSub.text_content }}</div>
           </div>
-          <div v-if="activeSub.file_url || parsedActiveUrls.length" class="sub-file-section">
+          <div v-if="activeSub.file_url || parsedActiveUrls.length" class="section">
             <div class="section-label">{{ t('am.attached_files') }}</div>
             <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openPreview" />
           </div>
@@ -283,11 +322,11 @@
              student sees + grading actions on the right (parity with app) -->
         <div v-else class="ad-grid">
           <div class="ad-col-main">
-            <div v-if="activeSub.text_content" class="sub-text-section">
+            <div v-if="activeSub.text_content" class="section">
               <div class="section-label">{{ t('am.student_answer') }}</div>
-              <div class="sub-text">{{ activeSub.text_content }}</div>
+              <div class="answer-text">{{ activeSub.text_content }}</div>
             </div>
-            <div v-if="activeSub.file_url || parsedActiveUrls.length" class="sub-file-section">
+            <div v-if="activeSub.file_url || parsedActiveUrls.length" class="section">
               <div class="section-label">{{ t('am.attached_files') }}</div>
               <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openPreview" />
             </div>
@@ -301,14 +340,20 @@
           </div>
 
           <div class="ad-col-side">
-            <div v-if="activeSub.grade" class="grade-result-wrap">
-              <GradeResultCard
-                :grade="activeSub.grade"
-                :max-score="assignment.max_score"
-                :criteria="parsedActiveScores || []"
-                :ai-confidence="activeSub.ai_confidence"
-                :show-confidence="true"
-              />
+            <GradeResultCard
+              v-if="activeSub.grade"
+              :grade="activeSub.grade"
+              :max-score="assignment.max_score"
+              :criteria="parsedActiveScores || []"
+              :ai-confidence="activeSub.ai_confidence"
+              :show-confidence="true"
+            />
+            <div v-else class="ungraded-card">
+              <div class="ungraded-ico">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              </div>
+              <div class="ungraded-title">{{ statusLabel(activeSub.status) }}</div>
+              <div class="ungraded-sub">{{ t('am.check_ai') }} · {{ t('am.grade_manual') }}</div>
             </div>
           </div>
         </div>
@@ -329,11 +374,23 @@
 
         <!-- Manual grade form -->
         <div v-if="showManualGrade" ref="manualGradeFormEl" class="manual-grade-form">
-          <div class="mgf-title">{{ t('am.manual_grade') }}</div>
+          <div class="mgf-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            {{ t('am.manual_grade') }}
+          </div>
           <div class="mgf-score-row">
-            <label class="mgf-label">{{ t('am.score') }} (0 – {{ assignment.max_score }})</label>
             <input v-model.number="manualScore" type="number" :min="0" :max="assignment.max_score" class="mgf-input" />
-            <div class="mgf-pct">{{ manualScore > 0 ? Math.round(manualScore / assignment.max_score * 100) + '%' : '0%' }}</div>
+            <div class="mgf-score-meta">
+              <div class="mgf-label">{{ t('am.score') }} · 0 – {{ assignment.max_score }}</div>
+              <input
+                v-model.number="manualScore" type="range" class="mgf-range"
+                :style="{ '--fill': manualPct + '%' }"
+                :min="0" :max="assignment.max_score" :step="assignment.max_score > 20 ? 1 : 0.5"
+              />
+            </div>
+            <div class="mgf-pct" :class="`tone-${scoreTone(manualScore || 0, assignment.max_score)}`">
+              {{ manualScore > 0 ? Math.round(manualScore / assignment.max_score * 100) + '%' : '0%' }}
+            </div>
           </div>
           <div class="mgf-field">
             <label class="mgf-label">{{ t('am.comment_optional') }}</label>
@@ -352,34 +409,48 @@
       <!-- List view -->
       <div v-else>
         <div v-if="!submissions.length" class="empty-block">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.25"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <div class="empty-ico">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
           {{ t('am.no_submissions') }}
         </div>
-        <div v-else>
+        <div v-else class="subs-wrap">
+          <!-- Сводка: числа + одна полоса прогресса проверки вместо трёх
+               одинаковых чипов — сразу видно, сколько осталось. -->
           <div class="subs-stats">
-            <div class="stat-chip"><span class="stat-n">{{ submissions.length }}</span><span class="stat-l">{{ t('am.total') }}</span></div>
-            <div class="stat-chip ok"><span class="stat-n">{{ submissions.filter(s=>s.status==='graded').length }}</span><span class="stat-l">{{ t('am.checked') }}</span></div>
-            <div class="stat-chip wait"><span class="stat-n">{{ submissions.filter(s=>s.status==='submitted' || s.status==='late' || s.status==='needs_review').length }}</span><span class="stat-l">{{ t('am.pending') }}</span></div>
+            <div class="subs-stats-row">
+              <div class="stat-chip"><span class="stat-n">{{ submissions.length }}</span><span class="stat-l">{{ t('am.total') }}</span></div>
+              <div class="stat-chip ok"><span class="stat-n">{{ gradedCount }}</span><span class="stat-l">{{ t('am.checked') }}</span></div>
+              <div class="stat-chip wait"><span class="stat-n">{{ pendingCount }}</span><span class="stat-l">{{ t('am.pending') }}</span></div>
+            </div>
+            <div class="subs-progress">
+              <div class="subs-progress-track">
+                <div class="subs-progress-fill" :style="{ width: gradedPct + '%' }"></div>
+              </div>
+              <span class="subs-progress-label">{{ t('am.submissions_progress') }} · {{ gradedPct }}%</span>
+            </div>
           </div>
+
           <button
-            v-if="submissions.filter(s=>s.status==='submitted'||s.status==='late'||s.status==='needs_review').length > 0"
+            v-if="pendingCount > 0"
             class="btn-bulk-grade"
             :disabled="bulkGrading"
             @click="runBulkAiGrade"
           >
             <svg v-if="!bulkGrading" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             <div v-else class="spinner" style="width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
-            {{ bulkGrading ? `${t('am.grading_progress')} ${bulkDone}/${bulkTotal}...` : `${t('am.grade_all_pending')} (${submissions.filter(s=>s.status==='submitted'||s.status==='late'||s.status==='needs_review').length})` }}
+            {{ bulkGrading ? `${t('am.grading_progress')} ${bulkDone}/${bulkTotal}...` : `${t('am.grade_all_pending')} (${pendingCount})` }}
           </button>
+
           <div class="subs-search">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input v-model="searchQuery" class="subs-search-inp" type="text" :placeholder="t('am.search_student')" />
             <button v-if="searchQuery" class="subs-search-clear" @click="searchQuery = ''">×</button>
           </div>
-          <div v-if="filteredSubmissions.length === 0 && searchQuery" class="empty-block" style="padding:20px">
+          <div v-if="filteredSubmissions.length === 0 && searchQuery" class="empty-block" style="padding:28px">
             {{ t('am.student_not_found') }}
           </div>
-          <div class="subs-list">
+          <div v-else class="subs-list">
             <div v-for="s in filteredSubmissions" :key="s.id" class="sub-row" @click="activeSub = s">
               <div class="sub-info">
                 <div class="sub-student">{{ getStudentName(s.student_id) }}</div>
@@ -393,10 +464,14 @@
                 </div>
               </div>
               <div class="sub-right">
-                <span v-if="s.grade" class="grade-pill">{{ s.grade.score }}/{{ assignment.max_score }}</span>
-                <span :class="['status-mini', s.status]">{{ statusLabel(s.status) }}</span>
+                <span v-if="s.grade" class="grade-pill">
+                  {{ s.grade.score }}<span class="gp-of">/{{ assignment.max_score }}</span>
+                </span>
+                <!-- Статус подписью показываем только там, где он что-то
+                     добавляет: рядом с баллом «ОЦЕНЕНО» — уже избыточно. -->
+                <span v-if="!s.grade || attentionStatus(s.status)" :class="['status-mini', s.status]">{{ statusLabel(s.status) }}</span>
               </div>
-              <svg class="sub-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              <svg class="sub-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
           </div>
         </div>
@@ -417,6 +492,7 @@ import { useI18n } from '~/composables/useI18n'
 import { useCohortErrors } from '~/composables/useCohortErrors'
 import { useAuthStore } from '~/stores/auth.store'
 import { useFilePreview } from '~/composables/useFilePreview'
+import { scoreTone } from '~/composables/useScoreTone'
 import { extractFilesFromText, stripFilesFromText, fileNameFromUrl, withNameFragment } from '~/composables/useAttachments'
 import type { Assignment, Submission } from '~/services/assignments'
 
@@ -445,6 +521,12 @@ const submissions = ref<Submission[]>([])
 const activeSub = ref<Submission|null>(null)
 const loadingSubs = ref(false)
 const grading = ref(false)
+
+// Шапка «поднимается» тенью, как только контент уходит под неё — граница
+// появляется только там, где плавающая панель реально перекрывает контент
+// (scroll edge effect), вместо постоянной 1px-линии.
+const scrolled = ref(false)
+const onBodyScroll = (e: Event) => { scrolled.value = (e.target as HTMLElement).scrollTop > 4 }
 
 // Проверка ИИ — единственный блокирующий HTTP-запрос без стадий на бэкенде,
 // поэтому прогресс симулируем на клиенте (одинаковый текст на Web и Flutter).
@@ -490,6 +572,23 @@ const filteredSubmissions = computed(() => {
   })
 })
 
+// Русский счётный падеж: 1 критерий / 2 критерия / 5 критериев. В en/kk форма
+// одна (кроме единственного числа в en), поэтому ветвление только для ru.
+const criteriaWord = computed(() => {
+  const n = parsedCriteria.value.length
+  if (lang.value === 'ru') {
+    const m10 = n % 10, m100 = n % 100
+    if (m10 === 1 && m100 !== 11) return t('am.criteria_one')
+    if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return t('am.criteria_few')
+    return t('am.criteria_many')
+  }
+  return n === 1 ? t('am.criteria_one') : t('am.criteria_many')
+})
+
+const gradedCount = computed(() => submissions.value.filter(s => s.status === 'graded').length)
+const pendingCount = computed(() => submissions.value.filter(s => s.status === 'submitted' || s.status === 'late' || s.status === 'needs_review').length)
+const gradedPct = computed(() => submissions.value.length ? Math.round(gradedCount.value / submissions.value.length * 100) : 0)
+
 const parsedCriteria = computed(() => { try { return JSON.parse(props.assignment.criteria) } catch { return [] } })
 const parsedCriteriaScores = computed(() => { if (!mySubmission.value?.grade?.criteria_scores) return null; try { return JSON.parse(mySubmission.value.grade.criteria_scores) } catch { return null } })
 const parsedActiveScores = computed(() => { if (!activeSub.value?.grade?.criteria_scores) return null; try { return JSON.parse(activeSub.value.grade.criteria_scores) } catch { return null } })
@@ -533,6 +632,9 @@ const canSubmit = computed(() =>
 )
 
 const getStudentName = (id: number) => studentMap.value[id] || `${t('am.student_hash')} #${id}`
+// Цвет в списке работ оставлен только за статусами, которые требуют действия
+// учителя, — остальное нейтральное, иначе колонка превращается в радугу.
+const attentionStatus = (s: string) => s === 'needs_review' || s === 'late'
 // Единая терминология с приложением и карточкой задания: submitted → СДАНО,
 // graded → ОЦЕНЕНО, late → ПРОСРОЧЕНО, grading → ПРОВЕРЯЕТСЯ.
 const statusLabel = (s: string) => ({
@@ -630,6 +732,13 @@ const manualScore = ref(0)
 const manualFeedback = ref('')
 const savingGrade = ref(false)
 const manualGradeFormEl = ref<HTMLElement>()
+// Заливка дорожки ползунка (нативный ::-webkit-slider-runnable-track не умеет
+// «progress», поэтому рисуем градиентом по текущей доле балла).
+const manualPct = computed(() => {
+  const max = props.assignment.max_score
+  if (!max) return 0
+  return Math.min(100, Math.max(0, ((manualScore.value || 0) / max) * 100))
+})
 
 // Форма разворачивается снизу и не всегда влезает в текущую высоту окна —
 // без автоскролла учитель не сразу замечает, что нужно прокрутить вниз.
@@ -802,308 +911,600 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.adp { background: var(--surface); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+/* ── Ступень поверхностей ────────────────────────────────────────────────
+   Шапка и таб-бар — «шасси» на --surface, тело страницы — утопленный фон
+   --bg, а контент внутри лежит белыми карточками. Это та же иерархия, что в
+   сгруппированных таблицах iOS: раньше всё было одного тона и страница
+   читалась как один длинный лист без структуры. */
+.adp { background: var(--bg); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 .adp.panel { border-radius: var(--r-xl); border: 1px solid var(--border); box-shadow: var(--sh-md); }
 .adp.fullpage { border-radius: 0; }
 
 .adp-back {
-  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
-  padding: 0; margin-bottom: 12px; background: none; border: none;
+  display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
+  padding: 4px 10px 4px 6px; margin: 0 0 12px -6px; background: none; border: none;
+  border-radius: 100px;
   color: var(--text4); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
-  transition: color .15s;
+  transition: color .15s ease-out, background .15s ease-out, transform .12s ease-out;
 }
-.adp-back:hover { color: var(--teal); }
+.adp-back:hover { color: var(--teal); background: rgba(var(--teal-rgb), .08); }
+.adp-back:active { transform: scale(.96); }
 
-/* Двухколоночная раскладка: слева описание/ответ, справа статус/оценка — как
-   на референсе и на странице задания в приложении (кольцо результата сбоку,
-   а не под ответом). На мобильных схлопывается в одну колонку (см. media). */
-.ad-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; align-items: start; }
-.ad-col-main { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-.ad-col-side { display: flex; flex-direction: column; gap: 18px; min-width: 0; position: sticky; top: 0; }
-.am-head { display: flex; flex-direction: column; padding: 22px 24px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.am-head-l { display: flex; gap: 14px; }
-.am-ico { width: 44px; height: 44px; background: var(--teal-l); border: 1px solid rgba(var(--teal-rgb),.18); color: var(--teal); border-radius: var(--r-lg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.am-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 19px; font-weight: 900; color: var(--text1); margin-bottom: 8px; }
-.am-badges { display: flex; gap: 8px; flex-wrap: wrap; }
-.badge-score { background: var(--surface2); color: var(--text2); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
-.badge-due { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text4); background: var(--surface2); padding: 3px 10px; border-radius: 100px; }
-.badge-due.overdue { background: var(--red-l); color: var(--red); }
-/* Segmented control (Apple/iOS style): pill container + a sliding "selected"
-   pill that gets a real surface + shadow, so the active tab reads as raised
-   rather than a thin underline that got lost next to the rest of the cards. */
-.am-tabs {
-  display: flex; gap: 3px;
-  margin: 16px 24px 2px;
-  padding: 3px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+/* ── Шапка ─────────────────────────────────────────────────────────────── */
+.am-head {
+  position: relative; z-index: 3;
+  display: flex; flex-direction: column; padding: 20px 26px 18px;
+  background: var(--surface);
   flex-shrink: 0;
+  transition: box-shadow .25s ease-out;
+}
+.adp.panel .am-head { border-radius: var(--r-xl) var(--r-xl) 0 0; }
+/* Scroll edge: тень появляется, только когда контент реально уехал под шапку. */
+.am-head.scrolled { box-shadow: 0 1px 0 var(--border), 0 8px 20px rgba(17,24,28,.06); }
+html.dark .am-head.scrolled { box-shadow: 0 1px 0 var(--border), 0 10px 24px rgba(0,0,0,.5); }
+.am-head-wash {
+  position: absolute; inset: 0 0 auto 0; height: 100%;
+  background: linear-gradient(180deg, rgba(var(--teal-rgb), .07), rgba(var(--teal-rgb), 0) 78%);
+  pointer-events: none;
+}
+.adp.panel .am-head-wash { border-radius: var(--r-xl) var(--r-xl) 0 0; }
+.am-head > *:not(.am-head-wash) { position: relative; }
+.am-head-l { display: flex; gap: 14px; align-items: flex-start; }
+.am-head-txt { min-width: 0; }
+.am-ico {
+  width: 46px; height: 46px; flex-shrink: 0;
+  background: linear-gradient(150deg, var(--teal-h), var(--teal-d)); color: #fff;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 5px rgba(var(--teal-rgb), .28), 0 8px 20px rgba(var(--teal-rgb), .26);
+}
+.am-title {
+  font-size: 21px; font-weight: 800; letter-spacing: -.025em; line-height: 1.2;
+  color: var(--text1); margin-bottom: 9px; word-break: break-word;
+}
+.am-badges { display: flex; gap: 7px; flex-wrap: wrap; }
+.am-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 650; letter-spacing: -.005em; white-space: nowrap;
+  color: var(--text3); background: var(--surface2);
+  padding: 4px 11px; border-radius: 100px;
+}
+.am-badge svg { opacity: .7; flex-shrink: 0; }
+.am-badge.accent { color: var(--teal); background: rgba(var(--teal-rgb), .11); }
+.am-badge.accent svg { opacity: 1; }
+.am-badge.overdue { background: var(--red-l); color: var(--red); }
+.am-badge.overdue svg { opacity: 1; }
+
+/* ── Segmented control (Apple/iOS) ─────────────────────────────────────── */
+.am-tabs-wrap { position: relative; z-index: 2; background: var(--surface); padding: 0 26px 14px; flex-shrink: 0; }
+.am-tabs {
+  display: flex; gap: 3px; padding: 3px;
+  background: var(--surface2);
+  border-radius: 12px;
 }
 .am-tab {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
-  padding: 9px 16px;
-  font-size: 13px; font-weight: 600; color: var(--text3);
-  background: transparent; border: none; border-radius: var(--r-md);
+  padding: 8px 16px;
+  font-size: 13px; font-weight: 650; letter-spacing: -.01em; color: var(--text3);
+  background: transparent; border: none; border-radius: 9px;
   cursor: pointer; font-family: inherit;
-  transition: color .2s ease-out, background .2s ease-out, box-shadow .2s ease-out, transform .12s ease-out;
+  transition: color .2s ease-out, background .2s ease-out, box-shadow .2s ease-out, transform .12s cubic-bezier(.32,.72,0,1);
 }
 .am-tab:hover { color: var(--text1); }
 .am-tab:active { transform: scale(.97); }
 .am-tab.active {
   color: var(--text1);
   background: var(--surface);
-  box-shadow: 0 1px 2px rgba(17,24,28,.06), 0 3px 10px rgba(17,24,28,.09);
+  box-shadow: 0 1px 2px rgba(17,24,28,.05), 0 3px 8px rgba(17,24,28,.08);
 }
+html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rgba(0,0,0,.4); }
 .tab-count {
-  font-size: 11px; font-weight: 700; min-width: 17px; text-align: center;
+  font-size: 11px; font-weight: 700; min-width: 18px; text-align: center;
   padding: 1px 7px; border-radius: 100px;
   background: var(--surface3); color: var(--text3);
   transition: background .2s ease-out, color .2s ease-out;
 }
 .am-tab.active .tab-count { background: var(--teal); color: #fff; }
-.am-body { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; }
 
-.desc-block { font-size: 14px; color: var(--text2); line-height: 1.7; padding: 14px; background: var(--surface2); border-radius: var(--r-lg); border: 1px solid var(--border); white-space: pre-wrap; }
-.section { display: flex; flex-direction: column; gap: 10px; }
-.section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); }
-.section-count { margin-left: 6px; color: var(--text4); font-weight: 700; letter-spacing: 0; text-transform: none; }
-.section-hint { font-size: 12px; color: var(--text4); margin-top: -6px; }
+/* ── Тело ──────────────────────────────────────────────────────────────── */
+.am-body {
+  flex: 1; overflow-y: auto; padding: 20px 26px 32px;
+  display: flex; flex-direction: column; gap: 20px;
+  background: var(--bg);
+}
+.adp.panel .am-body { border-radius: 0 0 var(--r-xl) var(--r-xl); }
+
+/* Двухколоночная раскладка: слева описание/ответ, справа статус/оценка. */
+.ad-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 22px; align-items: start; }
+.ad-col-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.ad-col-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; position: sticky; top: 0; }
+
+/* ── Секции: заголовок «врезкой» над карточкой (iOS grouped list) ──────── */
+.section { display: flex; flex-direction: column; gap: 9px; }
+.section-label {
+  display: flex; align-items: center; gap: 7px; padding-left: 3px;
+  font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text4);
+}
+.section-count {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0; text-transform: none;
+  min-width: 18px; text-align: center; padding: 1px 6px; border-radius: 100px;
+  background: var(--surface2); color: var(--text3);
+}
+.section-hint {
+  display: flex; align-items: center; gap: 6px; padding-left: 3px;
+  font-size: 12px; color: var(--text4); margin-top: -4px;
+}
+.section-hint svg { flex-shrink: 0; }
+
+.desc-block, .answer-text {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); box-shadow: var(--sh-xs);
+}
+.desc-block {
+  font-size: 14px; color: var(--text2); line-height: 1.7;
+  padding: 15px 17px; white-space: pre-wrap; word-break: break-word;
+}
+.answer-text {
+  font-size: 13.5px; color: var(--text2); line-height: 1.7;
+  padding: 14px 16px; white-space: pre-wrap; word-break: break-word;
+  max-height: 320px; overflow-y: auto;
+}
+
+/* ── Критерии задания (рубрика) ────────────────────────────────────────── */
 .criteria-list { display: flex; flex-direction: column; gap: 8px; }
-.criterion { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 13px 14px; transition: background .15s ease-out, border-color .15s ease-out; }
-.criterion:hover { background: var(--surface3); border-color: var(--border2); }
-.criterion-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
-.criterion-name { font-size: 13px; font-weight: 700; color: var(--text1); flex: 1; min-width: 0; word-break: break-word; }
-.criterion-pts { font-size: 12px; font-weight: 700; color: var(--teal); flex-shrink: 0; white-space: nowrap; background: var(--teal-l); padding: 2px 8px; border-radius: 100px; }
-.criterion-desc { font-size: 12px; color: var(--text4); line-height: 1.5; margin-bottom: 9px; }
-.criterion-bar { height: 5px; background: var(--surface3); border-radius: 4px; overflow: hidden; }
-.criterion-bar-fill { height: 100%; background: linear-gradient(90deg,var(--teal-h),var(--teal)); border-radius: 4px; transition: width .3s ease-out; }
+.criterion {
+  position: relative; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 13px 15px 14px 17px;
+  box-shadow: var(--sh-xs);
+  transition: border-color .18s ease-out, box-shadow .18s ease-out, transform .18s cubic-bezier(.22,1,.36,1);
+}
+.criterion::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--teal); opacity: .8;
+}
+@media (hover:hover) {
+  .criterion:hover { border-color: var(--border2); box-shadow: var(--sh-sm); transform: translateY(-1px); }
+}
+/* flex-start, а не center: у длинных формулировок критерия номер и балл иначе
+   уезжают в вертикальный центр абзаца и теряются. */
+.criterion-top { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 3px; }
+.criterion-idx {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  margin-top: 1px;
+  width: 19px; height: 19px; border-radius: 6px;
+  background: var(--surface2); color: var(--text3);
+  font-size: 10.5px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.criterion-name { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; letter-spacing: -.01em; color: var(--text1); word-break: break-word; }
+.criterion-name.long { font-size: 13px; font-weight: 500; line-height: 1.55; letter-spacing: 0; color: var(--text2); }
+.criterion-pts {
+  flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums;
+  font-size: 13px; font-weight: 800; color: var(--teal);
+  background: rgba(var(--teal-rgb), .1); padding: 2px 9px; border-radius: 100px;
+}
+.criterion-of { font-weight: 600; opacity: .6; }
+.criterion-desc { font-size: 12.5px; color: var(--text4); line-height: 1.45; margin: 4px 0 0 28px; }
+.criterion-bar { height: 6px; background: var(--surface2); border-radius: 100px; overflow: hidden; margin: 10px 0 0 28px; }
+.criterion-bar-fill {
+  height: 100%; border-radius: 100px;
+  background: linear-gradient(90deg, var(--teal-h), var(--teal));
+  transition: width .9s cubic-bezier(.22,1,.36,1);
+}
 
-/* Submit form */
-.field { display: flex; flex-direction: column; gap: 7px; }
-.field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); }
-.inp { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 13px; color: var(--text1); font-size: 13px; width: 100%; transition: border-color .15s; font-family: inherit; }
-.inp:focus { border-color: var(--teal); outline: none; }
-.inp-ta { resize: vertical; min-height: 130px; line-height: 1.6; }
-.btn-full { width: 100%; justify-content: center; margin-top: 4px; }
-.file-drop { border: 2px dashed var(--border2); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; transition: all .18s; }
-.file-drop:hover, .file-drop.has-file { border-color: var(--teal); background: var(--glass); }
+/* ── Форма сдачи ───────────────────────────────────────────────────────── */
+.submit-form {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); box-shadow: var(--sh-xs);
+  padding: 18px; display: flex; flex-direction: column; gap: 16px;
+}
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field-label { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--text4); }
+.inp {
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 12px 14px; color: var(--text1); font-size: 13.5px; width: 100%;
+  transition: border-color .18s ease-out, box-shadow .18s ease-out, background .18s ease-out; font-family: inherit;
+}
+.inp:focus { border-color: var(--teal); background: var(--surface); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.12); outline: none; }
+.inp-ta { resize: vertical; min-height: 130px; line-height: 1.65; }
+.btn-full { width: 100%; justify-content: center; padding: 12px 18px; font-size: 14px; }
+.file-drop {
+  border: 1.5px dashed var(--border2); border-radius: var(--r-lg); padding: 22px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;
+  background: var(--bg);
+  transition: border-color .18s ease-out, background .18s ease-out, transform .12s cubic-bezier(.32,.72,0,1);
+}
+.file-drop:hover { border-color: var(--teal); background: rgba(var(--teal-rgb), .05); }
+.file-drop:active { transform: scale(.99); }
+.file-drop.has-file { border-style: solid; border-color: rgba(52,199,89,.4); background: rgba(52,199,89,.06); }
+.drop-ico {
+  width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); color: var(--text3);
+  transition: background .18s ease-out, color .18s ease-out;
+}
+.file-drop:hover .drop-ico { background: rgba(var(--teal-rgb), .12); color: var(--teal); }
+.drop-ico.ok { background: rgba(52,199,89,.14); color: var(--green); }
+.drop-text { font-size: 13.5px; color: var(--text3); text-align: center; }
+.drop-text strong { color: var(--teal); font-weight: 700; }
+.file-drop.has-file .drop-text strong { color: var(--text1); }
+.drop-hint { font-size: 11.5px; color: var(--text4); text-align: center; }
 .attached-files-list {
-  display: flex; flex-direction: column; margin-top: 6px;
-  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; flex-direction: column; margin-top: 2px;
+  background: var(--bg); border: 1px solid var(--border);
   border-radius: var(--r-md); overflow: hidden;
 }
-.attached-file-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
+.attached-file-row { display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
 .attached-file-row:last-child { border-bottom: none; }
-.attached-file-row .af-name { flex: 1; min-width: 0; font-weight: 500; color: var(--text1); word-break: break-word; overflow-wrap: anywhere; }
-.attached-file-row .af-size { color: var(--text4); white-space: nowrap; }
-.attached-file-row .af-rm { width: 20px; height: 20px; border-radius: 50%; background: var(--surface3); color: var(--text4); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all .15s; }
-.attached-file-row .af-rm:hover { background: var(--red-l); color: var(--red); }
-.upload-prog-sm { margin-top: 6px; }
-.upload-bar-sm { width: 100%; height: 3px; background: var(--teal); border-radius: 3px; transform-origin: left; transition: transform .3s; margin-bottom: 4px; }
-.upload-prog-sm span { font-size: 11px; color: var(--teal); }
-.drop-text { font-size: 13px; color: var(--text3); }
-.drop-text strong { color: var(--teal); }
-.drop-hint { font-size: 11px; color: var(--text4); }
-.overdue-warn { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--red-l); border: 1px solid rgba(248,113,113,.25); border-radius: var(--r-md); font-size: 13px; color: var(--red); }
-.task-files-hint { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text4); flex-wrap: wrap; padding: 10px 12px; background: var(--surface2); border-radius: var(--r-md); border: 1px solid var(--border); }
-
-/* Submitted state */
-.readonly-panel { display: flex; align-items: center; gap: 8px; padding: 14px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); font-size: 13px; color: var(--text3); line-height: 1.5; }
-.submitted-panel { display: flex; flex-direction: column; gap: 16px; }
-.sub-status-bar { display: flex; align-items: center; gap: 12px; }
-.sub-status-chip { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 700; }
-.sub-status-chip.submitted, .sub-status-chip.graded { background: rgba(74,222,128,.1); color: var(--green); }
-.sub-status-chip.grading { background: rgba(251,191,36,.12); color: var(--yellow); }
-.sub-status-chip.late { background: var(--red-l); color: var(--red); }
-.sub-status-chip.needs_review { background: rgba(230,162,60,.12); color: #e6a23c; }
-.sub-date { font-size: 12px; color: var(--text4); }
-.preview-block { display: flex; flex-direction: column; gap: 10px; }
-.preview-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); }
-.preview-text { font-size: 13px; color: var(--text2); line-height: 1.7; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; white-space: pre-wrap; max-height: 160px; overflow-y: auto; }
-.sub-file { }
-.retract-btn { margin-top: 4px; align-self: flex-start; color: var(--text4); font-size: 12px; }
-.retract-btn:hover { color: var(--red); }
-
-/* Grade card */
-.grade-card { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--r-xl); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-.grade-result-wrap { padding: 4px 0 8px; }
-.grade-card-top { display: flex; align-items: center; justify-content: space-between; }
-.grade-score { display: flex; align-items: baseline; gap: 3px; }
-.grade-num { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 42px; font-weight: 900; color: var(--text1); line-height: 1; }
-.grade-denom { font-size: 18px; color: var(--text4); font-weight: 600; }
-.grade-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-.grade-pct { font-size: 22px; font-weight: 800; color: var(--text2); font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; }
-.grading-pending { display: flex; align-items: center; gap: 10px; padding: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); font-size: 13px; color: var(--text3); }
-.grading-dots { display: flex; gap: 4px; }
-.grading-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); animation: pulse 1.2s infinite; }
-.grading-dots span:nth-child(2) { animation-delay: .2s; }
-.grading-dots span:nth-child(3) { animation-delay: .4s; }
-
-/* Needs-review banner (teacher only) — low-confidence handwriting recognition.
-   Нейтральная карточка + компактный цветной статус-бейдж сверху вместо
-   сплошной заливки на весь блок — цвет остаётся акцентом, а не фоном для
-   разнородного контента (баллы, причины, разбор ИИ, кнопки). */
-.needs-review-banner { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
-.needs-review-student { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; background: rgba(230, 162, 60, 0.1); border: 1px solid rgba(230, 162, 60, 0.35); border-radius: var(--r-lg); font-size: 13px; line-height: 1.5; color: var(--text2); }
-.needs-review-student svg { flex-shrink: 0; margin-top: 1px; color: #e6a23c; }
-.nrb-title {
-  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
-  font-size: 11.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
-  color: #b45309; background: rgba(230, 162, 60, .14); padding: 5px 12px; border-radius: 100px;
+.attached-file-row .af-name { flex: 1; min-width: 0; font-weight: 550; color: var(--text1); word-break: break-word; overflow-wrap: anywhere; }
+.attached-file-row .af-size { color: var(--text4); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.attached-file-row .af-rm {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--surface2); color: var(--text4);
+  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; line-height: 1; transition: background .15s, color .15s, transform .12s;
 }
-html.dark .nrb-title { color: #fbbf24; }
-.nrb-stats { display: flex; flex-direction: column; gap: 6px; }
-.nrb-reasons { display: flex; flex-direction: column; gap: 7px; }
-.nrb-reason-row { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.5; color: var(--text2); }
-.nrb-reason-row svg { color: #d97706; flex-shrink: 0; margin-top: 2px; }
-.nrb-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
-.nrb-row-label { color: var(--text3); }
-.nrb-row-value { font-weight: 700; color: var(--text1); }
-.nrb-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text4); margin-top: 4px; }
-.confidence-pill { align-self: flex-start; font-size: 12px; font-weight: 600; color: var(--text3); background: var(--surface3, rgba(0,0,0,0.04)); border-radius: var(--r-md, 8px); padding: 3px 10px; }
-.grade-by-tag { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text4); background: var(--surface3); padding: 4px 10px; border-radius: 100px; }
-.grade-feedback { display: flex; flex-direction: column; gap: 6px; }
-.feedback-text { font-size: 13px; color: var(--text2); line-height: 1.7; }
-.grade-criteria { display: flex; flex-direction: column; gap: 8px; }
-.cs-item { background: var(--surface3); border-radius: var(--r-md); padding: 10px 12px; }
-.cs-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 3px; }
-.cs-name { font-size: 13px; font-weight: 600; color: var(--text1); flex: 1; min-width: 0; word-break: break-word; }
-.cs-pts { font-size: 12px; font-weight: 700; color: var(--text2); flex-shrink: 0; white-space: nowrap; }
-.cs-comment { font-size: 12px; color: var(--text4); margin-bottom: 7px; }
-.cs-bar { height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
-.cs-bar-fill { height: 100%; background: var(--text3); border-radius: 3px; }
+.attached-file-row .af-rm:hover { background: var(--red-l); color: var(--red); }
+.attached-file-row .af-rm:active { transform: scale(.9); }
+.upload-prog-sm { margin-top: 4px; display: flex; flex-direction: column; gap: 5px; }
+.upload-track { width: 100%; height: 4px; background: var(--surface2); border-radius: 100px; overflow: hidden; }
+.upload-bar-sm { width: 100%; height: 100%; background: linear-gradient(90deg,var(--teal-h),var(--teal)); border-radius: 100px; transform-origin: left; transition: transform .35s cubic-bezier(.22,1,.36,1); }
+.upload-prog-sm span { font-size: 11.5px; color: var(--teal); font-weight: 600; }
+.overdue-warn {
+  display: flex; align-items: center; gap: 9px; padding: 11px 14px;
+  background: var(--red-l); border: 1px solid rgba(220,38,38,.2); border-radius: var(--r-md);
+  font-size: 13px; line-height: 1.45; color: var(--red);
+}
+.overdue-warn svg { flex-shrink: 0; }
 
-.grading-pending { display: flex; align-items: center; gap: 12px; padding: 14px; background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.2); border-radius: var(--r-lg); font-size: 13px; color: var(--yellow); }
-.grading-dots { display: flex; gap: 4px; }
-.grading-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); animation: bounce .8s ease infinite; }
+/* ── Состояние «сдано» ─────────────────────────────────────────────────── */
+.notice-panel {
+  display: flex; align-items: center; gap: 10px; padding: 15px 17px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl);
+  box-shadow: var(--sh-xs);
+  font-size: 13.5px; color: var(--text3); line-height: 1.5;
+}
+.notice-panel svg { flex-shrink: 0; color: var(--text4); }
+.sub-status-bar { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.sub-status-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 13px;
+  border-radius: 100px; font-size: 11.5px; font-weight: 800; letter-spacing: .03em;
+}
+.sub-status-chip.submitted, .sub-status-chip.graded { background: rgba(52,199,89,.12); color: var(--green); }
+.sub-status-chip.grading { background: rgba(232,151,58,.14); color: #B45309; }
+html.dark .sub-status-chip.grading { color: #F0A94B; }
+.sub-status-chip.late { background: var(--red-l); color: var(--red); }
+.sub-status-chip.needs_review { background: rgba(232,151,58,.14); color: #B45309; }
+html.dark .sub-status-chip.needs_review { color: #F0A94B; }
+.sub-date { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text4); }
+.sub-date svg { opacity: .8; }
+.sub-file { margin-top: 2px; }
+.retract-btn { margin-top: 2px; align-self: flex-start; color: var(--text4); font-size: 12.5px; }
+.retract-btn:hover { color: var(--red); background: var(--red-l); }
+
+/* Сдано, но ещё не проверено */
+.awaiting-card {
+  display: flex; align-items: center; gap: 12px; padding: 15px 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); box-shadow: var(--sh-xs);
+}
+.awaiting-ico {
+  width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(52,199,89,.13); color: var(--green);
+}
+.awaiting-title { font-size: 14px; font-weight: 750; letter-spacing: -.015em; color: var(--text1); }
+.awaiting-sub { font-size: 12px; color: var(--text4); margin-top: 2px; }
+
+.grading-pending {
+  display: flex; align-items: center; gap: 11px; padding: 15px 16px;
+  background: var(--surface); border: 1px solid rgba(232,151,58,.3);
+  border-radius: var(--r-xl); box-shadow: var(--sh-xs);
+  font-size: 13.5px; line-height: 1.45; color: var(--text2);
+}
+.grading-dots { display: flex; gap: 4px; flex-shrink: 0; }
+.grading-dots span { width: 6px; height: 6px; border-radius: 50%; background: #E8973A; animation: bounce .9s ease infinite; }
 .grading-dots span:nth-child(2) { animation-delay: .15s; }
 .grading-dots span:nth-child(3) { animation-delay: .3s; }
 @keyframes bounce { 0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)} }
 
-/* Submissions tab — one grouped summary card (dividers, not 3 separate boxes)
-   in the spirit of iOS Health/Screen Time widgets, rather than three repeated
-   bordered chips competing for attention. */
-.subs-stats {
-  display: flex; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r-lg); margin-bottom: 14px; overflow: hidden;
+.needs-review-student {
+  display: flex; align-items: flex-start; gap: 10px; padding: 15px 16px;
+  background: rgba(232,151,58,.09); border: 1px solid rgba(232,151,58,.3);
+  border-radius: var(--r-xl); font-size: 13.5px; line-height: 1.55; color: var(--text2);
 }
+.needs-review-student svg { flex-shrink: 0; margin-top: 1px; color: #E8973A; }
+
+/* ── Needs-review (учитель) ────────────────────────────────────────────── */
+.needs-review-banner {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl);
+  box-shadow: var(--sh-xs);
+  padding: 17px 18px; display: flex; flex-direction: column; gap: 12px;
+}
+.nrb-title {
+  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+  font-size: 11.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+  color: #B45309; background: rgba(232,151,58,.14); padding: 5px 12px; border-radius: 100px;
+}
+html.dark .nrb-title { color: #F0A94B; }
+.nrb-stats { display: flex; flex-direction: column; gap: 1px; background: var(--bg); border-radius: var(--r-md); overflow: hidden; }
+.nrb-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; padding: 10px 12px; background: var(--surface); }
+.nrb-row-label { color: var(--text3); }
+.nrb-row-value { font-weight: 750; color: var(--text1); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nrb-reasons { display: flex; flex-direction: column; gap: 8px; }
+.nrb-reason-row { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.5; color: var(--text2); }
+.nrb-reason-row svg { color: #E8973A; flex-shrink: 0; margin-top: 2px; }
+.nrb-section-label { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--text4); margin-top: 4px; }
+.feedback-text { font-size: 13.5px; color: var(--text2); line-height: 1.65; }
+.grade-criteria { display: flex; flex-direction: column; gap: 8px; }
+.cs-item { background: var(--bg); border-radius: var(--r-md); padding: 11px 13px; }
+.cs-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 3px; }
+.cs-name { font-size: 13px; font-weight: 650; color: var(--text1); flex: 1; min-width: 0; word-break: break-word; }
+.cs-pts { font-size: 12.5px; font-weight: 750; color: var(--text2); flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cs-comment { font-size: 12.5px; color: var(--text4); margin-bottom: 8px; line-height: 1.5; }
+.cs-bar { height: 4px; background: var(--surface2); border-radius: 100px; overflow: hidden; }
+.cs-bar-fill { height: 100%; background: var(--text3); border-radius: 100px; }
+
+/* ── Работы: сводка ────────────────────────────────────────────────────── */
+.subs-wrap { display: flex; flex-direction: column; gap: 14px; }
+.subs-stats {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); box-shadow: var(--sh-xs); overflow: hidden;
+}
+.subs-stats-row { display: flex; }
 .stat-chip {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px; padding: 13px 8px; position: relative; min-width: 0;
+  gap: 2px; padding: 15px 8px 13px; position: relative; min-width: 0;
 }
 .stat-chip:not(:last-child)::after {
-  content: ''; position: absolute; right: 0; top: 22%; bottom: 22%; width: 1px; background: var(--border);
+  content: ''; position: absolute; right: 0; top: 24%; bottom: 24%; width: 1px; background: var(--border);
 }
+/* Цифры сводки нейтральные: долю проверенного показывает полоса под ними,
+   красить ещё и числа — дублировать одно и то же двумя способами. */
+.stat-n { font-size: 26px; font-weight: 800; color: var(--text1); letter-spacing: -.03em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.stat-l { font-size: 11.5px; color: var(--text4); font-weight: 600; }
+.subs-progress { padding: 0 16px 15px; display: flex; flex-direction: column; gap: 7px; }
+.subs-progress-track { height: 7px; background: var(--surface2); border-radius: 100px; overflow: hidden; }
+.subs-progress-fill {
+  height: 100%; border-radius: 100px;
+  background: linear-gradient(90deg, var(--teal-h), var(--teal));
+  transition: width .8s cubic-bezier(.22,1,.36,1);
+}
+.subs-progress-label { font-size: 11.5px; font-weight: 600; color: var(--text4); font-variant-numeric: tabular-nums; }
+
 .btn-bulk-grade {
   display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
-  margin-bottom: 14px; padding: 12px 16px;
+  padding: 13px 16px;
   background: linear-gradient(180deg,var(--teal-h),var(--teal-d)); color: #fff; border: none;
-  border-radius: var(--r-lg); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
-  box-shadow: 0 1px 2px rgba(var(--teal-rgb),.25), 0 4px 14px rgba(var(--teal-rgb),.22);
+  border-radius: var(--r-lg); font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: inherit;
+  box-shadow: 0 1px 2px rgba(var(--teal-rgb),.25), 0 6px 18px rgba(var(--teal-rgb),.24);
   transition: box-shadow .22s cubic-bezier(.32,.72,0,1), transform .15s cubic-bezier(.32,.72,0,1), opacity .15s;
 }
-.btn-bulk-grade:hover { box-shadow: 0 2px 4px rgba(var(--teal-rgb),.28), 0 8px 22px rgba(var(--teal-rgb),.3); transform: translateY(-1px); }
+.btn-bulk-grade:hover { box-shadow: 0 2px 4px rgba(var(--teal-rgb),.28), 0 10px 26px rgba(var(--teal-rgb),.3); transform: translateY(-1px); }
 .btn-bulk-grade:active { transform: scale(.98); }
 .btn-bulk-grade:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
-.stat-n { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 24px; font-weight: 900; color: var(--text1); letter-spacing: -.01em; }
-.stat-l { font-size: 11px; color: var(--text4); font-weight: 600; }
-.stat-chip.ok .stat-n { color: var(--green); }
-.stat-chip.wait .stat-n { color: var(--yellow); }
+
 .subs-search {
-  display: flex; align-items: center; gap: 8px; padding: 9px 13px;
-  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md);
-  margin-bottom: 10px; transition: border-color .15s ease-out, box-shadow .15s ease-out, background .15s ease-out;
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md);
+  transition: border-color .18s ease-out, box-shadow .18s ease-out;
 }
-.subs-search:focus-within { border-color: var(--teal); background: var(--surface); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.12); }
+.subs-search:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.12); }
 .subs-search svg { color: var(--text4); flex-shrink: 0; }
-.subs-search-inp { flex: 1; background: transparent; border: none; outline: none; font-size: 13px; color: var(--text1); font-family: inherit; }
+.subs-search-inp { flex: 1; background: transparent; border: none; outline: none; font-size: 13.5px; color: var(--text1); font-family: inherit; min-width: 0; }
 .subs-search-inp::placeholder { color: var(--text4); }
-.subs-search-clear { background: none; border: none; color: var(--text4); font-size: 16px; cursor: pointer; line-height: 1; padding: 0 2px; transition: color .15s; min-width: 32px; min-height: 32px; display: flex; align-items: center; justify-content: center; }
+.subs-search-clear {
+  background: none; border: none; color: var(--text4); font-size: 17px; cursor: pointer; line-height: 1;
+  transition: color .15s; min-width: 30px; min-height: 30px; display: flex; align-items: center; justify-content: center;
+}
 .subs-search-clear:hover { color: var(--text1); }
-.subs-list { display: flex; flex-direction: column; gap: 6px; }
-.sub-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); cursor: pointer; transition: background .12s ease-out, border-color .12s ease-out, transform .1s ease-out; }
-.sub-row:hover { background: var(--surface3); border-color: var(--border2); }
-.sub-row:active { transform: scale(.99); }
+
+/* ── Работы: список (сгруппированная таблица, а не россыпь карточек) ───── */
+.subs-list {
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); box-shadow: var(--sh-xs); overflow: hidden;
+}
+.sub-row {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .12s ease-out;
+}
+.sub-row:last-child { border-bottom: none; }
+.sub-row:hover { background: var(--glass); }
+.sub-row:active { background: var(--glass2); }
 .sub-info { flex: 1; min-width: 0; }
-.sub-chevron { color: var(--text4); flex-shrink: 0; transition: transform .15s ease-out; }
-.sub-row:hover .sub-chevron { transform: translateX(2px); color: var(--text3); }
-.sub-student { font-size: 13px; font-weight: 700; color: var(--text1); margin-bottom: 3px; }
+.sub-chevron { color: var(--text4); flex-shrink: 0; opacity: .55; transition: transform .18s cubic-bezier(.22,1,.36,1), opacity .15s; }
+.sub-row:hover .sub-chevron { transform: translateX(2px); opacity: 1; }
+.sub-student { font-size: 13.5px; font-weight: 700; letter-spacing: -.01em; color: var(--text1); margin-bottom: 3px; }
 .sub-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text4); }
-.sub-tag { font-size: 14px; }
-.sub-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.grade-pill { font-size: 12.5px; font-weight: 700; color: var(--text1); background: var(--surface3); padding: 2px 9px; border-radius: 100px; }
-.status-mini { font-size: 11px; padding: 2px 8px; border-radius: 100px; background: var(--surface3); color: var(--text4); }
-.status-mini.graded { background: rgba(74,222,128,.1); color: var(--green); }
-.status-mini.grading { background: rgba(251,191,36,.12); color: var(--yellow); }
-.status-mini.needs_review { background: rgba(230,162,60,.12); color: #e6a23c; }
+.sub-tag { display: inline-flex; align-items: center; gap: 4px; }
+.sub-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
 
-/* Sub detail */
-.sub-detail { display: flex; flex-direction: column; gap: 16px; }
-.back-sub-btn { display: flex; align-items: center; gap: 7px; padding: 7px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); font-size: 13px; color: var(--text3); cursor: pointer; transition: all .15s; align-self: flex-start; font-family: inherit; }
-.back-sub-btn:hover { color: var(--text1); }
-.sub-detail-header { display: flex; align-items: center; }
-.sub-student-name { font-size: 15px; font-weight: 700; color: var(--text1); }
-.sub-student-date { font-size: 12px; color: var(--text4); }
-.sub-text-section, .sub-file-section { display: flex; flex-direction: column; gap: 7px; }
-.sub-text { font-size: 13px; color: var(--text2); line-height: 1.7; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; white-space: pre-wrap; max-height: 180px; overflow-y: auto; }
-.grade-actions { display: flex; gap: 10px; }
+/* Пилюля балла в списке — нейтральная: колонка из четырёх разных тонов
+   подряд читалась как радуга и перебивала сам список имён. Цвет результата
+   остаётся там, где он один и по делу, — в кольце оценки. */
+.grade-pill {
+  font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap;
+  padding: 2px 9px; border-radius: 100px;
+  color: var(--text1); background: var(--surface2);
+}
+.grade-pill.lg { font-size: 15px; padding: 5px 13px; }
+.gp-of { font-weight: 600; color: var(--text4); }
+.tone-excellent { --tone: var(--green); --tone-rgb: 22,163,74; }
+.tone-good      { --tone: var(--teal);  --tone-rgb: var(--teal-rgb); }
+.tone-ok        { --tone: #E8973A;      --tone-rgb: 232,151,58; }
+.tone-poor      { --tone: var(--red);   --tone-rgb: 220,38,38; }
+html.dark .tone-excellent { --tone-rgb: 74,222,128; }
+html.dark .tone-poor { --tone-rgb: 248,113,113; }
+html.dark .tone-ok { --tone: #F0A94B; --tone-rgb: 240,169,75; }
 
-.load-center { display: flex; justify-content: center; padding: 40px; }
-.empty-block { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 48px; color: var(--text4); font-size: 13px; }
+/* Нейтрально по умолчанию; цветом выделяются только те статусы, которые
+   требуют реакции учителя. */
+.status-mini {
+  font-size: 10px; font-weight: 750; letter-spacing: .03em; white-space: nowrap;
+  padding: 2px 8px; border-radius: 100px; background: var(--surface2); color: var(--text3);
+}
+.status-mini.needs_review { background: rgba(232,151,58,.14); color: #B45309; }
+.status-mini.late { background: var(--red-l); color: var(--red); }
+html.dark .status-mini.needs_review { color: #F0A94B; }
 
+/* ── Работы: карточка одной сдачи ──────────────────────────────────────── */
+.sub-detail { display: flex; flex-direction: column; gap: 18px; }
+.back-sub-btn {
+  display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 100px;
+  font-size: 13px; font-weight: 600; color: var(--text3); cursor: pointer;
+  transition: color .15s, border-color .15s, transform .12s cubic-bezier(.32,.72,0,1);
+  align-self: flex-start; font-family: inherit; box-shadow: var(--sh-xs);
+}
+.back-sub-btn:hover { color: var(--text1); border-color: var(--border2); }
+.back-sub-btn:active { transform: scale(.97); }
+.sub-detail-header {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); box-shadow: var(--sh-xs);
+}
+.sub-detail-id { flex: 1; min-width: 0; }
+.sub-student-name { font-size: 16px; font-weight: 750; letter-spacing: -.02em; color: var(--text1); word-break: break-word; }
+.sub-student-date { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--text4); margin-top: 3px; }
+
+/* Сдача без оценки — вместо пустой колонки объясняем, что делать */
+.ungraded-card {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 24px 18px; text-align: center;
+  background: var(--surface); border: 1px dashed var(--border2);
+  border-radius: var(--r-xl);
+}
+.ungraded-ico {
+  width: 44px; height: 44px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); color: var(--text4);
+}
+.ungraded-title { font-size: 14px; font-weight: 750; letter-spacing: -.015em; color: var(--text2); }
+.ungraded-sub { font-size: 12px; color: var(--text4); }
+
+.grade-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.grade-actions .btn { flex: 1; min-width: 190px; justify-content: center; padding: 11px 18px; }
+
+/* ── Ручная оценка ─────────────────────────────────────────────────────── */
+.manual-grade-form {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl);
+  box-shadow: var(--sh-sm);
+  padding: 18px; display: flex; flex-direction: column; gap: 16px;
+}
+.mgf-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 750; letter-spacing: -.015em; color: var(--text1);
+}
+.mgf-title svg { color: var(--teal); }
+.mgf-label { font-size: 11.5px; font-weight: 800; color: var(--text4); letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 7px; }
+.mgf-score-row { display: flex; align-items: center; gap: 14px; }
+.mgf-input {
+  width: 84px; flex-shrink: 0; padding: 10px 8px;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--bg); color: var(--text1);
+  font-size: 22px; font-weight: 800; letter-spacing: -.02em; text-align: center;
+  font-variant-numeric: tabular-nums; font-family: inherit;
+  transition: border-color .18s, box-shadow .18s, background .18s;
+}
+.mgf-input:focus { border-color: var(--teal); background: var(--surface); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.12); outline: none; }
+.mgf-score-meta { flex: 1; min-width: 0; }
+/* Ползунок — крупная цель и мгновенная обратная связь: балл ставится
+   движением, а не только набором цифр. Дорожку рисуем сами (нативная с
+   accent-color даёт почти чёрный «остаток» в светлой теме). */
+.mgf-range {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 22px; background: transparent; cursor: pointer;
+}
+.mgf-range::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 100px;
+  background: linear-gradient(90deg, var(--teal) var(--fill, 0%), var(--surface2) var(--fill, 0%));
+}
+.mgf-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 20px; height: 20px; margin-top: -7px; border-radius: 50%;
+  background: #fff; border: .5px solid rgba(0,0,0,.08);
+  box-shadow: 0 1px 3px rgba(0,0,0,.22), 0 4px 10px rgba(0,0,0,.12);
+  transition: transform .12s cubic-bezier(.32,.72,0,1);
+}
+.mgf-range:active::-webkit-slider-thumb { transform: scale(1.14); }
+.mgf-range::-moz-range-track { height: 6px; border-radius: 100px; background: var(--surface2); }
+.mgf-range::-moz-range-progress { height: 6px; border-radius: 100px; background: var(--teal); }
+.mgf-range::-moz-range-thumb {
+  width: 19px; height: 19px; border-radius: 50%; border: none; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.22), 0 4px 10px rgba(0,0,0,.12);
+}
+.mgf-pct {
+  flex-shrink: 0; min-width: 56px; text-align: center;
+  font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums;
+  color: var(--tone); background: rgba(var(--tone-rgb), .12);
+  padding: 6px 10px; border-radius: 100px;
+}
+.mgf-textarea {
+  width: 100%; padding: 11px 13px; border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--bg); color: var(--text1); font-size: 13.5px; line-height: 1.6;
+  font-family: inherit; resize: vertical; transition: border-color .18s, box-shadow .18s, background .18s; box-sizing: border-box;
+}
+.mgf-textarea:focus { border-color: var(--teal); background: var(--surface); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.12); outline: none; }
+.mgf-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ── Служебное ─────────────────────────────────────────────────────────── */
+.load-center { display: flex; justify-content: center; padding: 48px; }
+.empty-block {
+  display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 52px 24px;
+  color: var(--text4); font-size: 13.5px; text-align: center;
+}
+.empty-ico {
+  width: 56px; height: 56px; border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text4);
+  box-shadow: var(--sh-xs);
+}
 .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.variant-badge { display: inline-flex; align-items: center; padding: 2px 10px; background: var(--surface3); border: 1px solid var(--border2); border-radius: 100px; font-size: 11px; font-weight: 700; color: var(--text2); white-space: nowrap; }
+.variant-badge {
+  display: inline-flex; align-items: center; padding: 2px 9px;
+  background: var(--surface2); border-radius: 100px;
+  font-size: 10.5px; font-weight: 750; color: var(--text3); white-space: nowrap;
+}
 
+@media (max-width:900px) {
+  .ad-grid { grid-template-columns: 1fr; gap: 18px; }
+  .ad-col-side { position: static; }
+}
 @media (max-width:768px) {
-  .am-head { padding: 16px 14px 12px; }
-  .am-ico { width: 36px; height: 36px; flex-shrink: 0; }
-  .am-title { font-size: 16px; margin-bottom: 6px; word-break: break-word; }
-  .am-badges { flex-wrap: wrap; gap: 6px; }
-  .am-tabs { margin: 12px 10px 2px; }
+  .am-head { padding: 14px 16px 14px; }
+  .am-ico { width: 38px; height: 38px; border-radius: 12px; }
+  .am-title { font-size: 18px; margin-bottom: 7px; }
+  .am-tabs-wrap { padding: 0 16px 12px; }
   .am-tab { padding: 10px 12px; font-size: 12.5px; white-space: nowrap; min-height: 44px; }
-  .am-body { padding: 14px 14px 80px; gap: 14px; }
+  .am-body { padding: 16px 16px 90px; gap: 16px; }
   .inp { font-size: 16px; }
-  .inp-ta { font-size: 16px; min-height: 100px; }
-  .grade-num { font-size: 32px; }
-  .grade-pct { font-size: 18px; }
-  .sub-row { padding: 10px 12px; gap: 10px; flex-wrap: nowrap; }
-  .sub-info { min-width: 0; }
+  .inp-ta { font-size: 16px; min-height: 110px; }
+  .submit-form { padding: 14px; }
+  .sub-row { padding: 11px 12px; gap: 10px; }
   .sub-student { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .sub-meta { flex-wrap: wrap; gap: 4px; }
-  .sub-status-bar { flex-wrap: wrap; gap: 8px; }
+  .sub-meta { flex-wrap: wrap; gap: 5px; }
   .grade-actions { flex-direction: column; gap: 8px; }
-  .grade-actions .btn { width: 100%; justify-content: center; }
+  .grade-actions .btn { width: 100%; min-width: 0; }
   .af-rm { width: 32px; height: 32px; font-size: 15px; }
   .subs-search-clear { min-width: 44px; min-height: 44px; }
   .back-sub-btn { min-height: 44px; }
-  .stat-chip { padding: 10px 6px; }
-  .stat-n { font-size: 21px; }
-  .btn-bulk-grade { font-size: 12px; padding: 10px 12px; }
-  .desc-block { font-size: 13px; word-break: break-word; }
-  .grade-card { padding: 14px; }
-  .grade-card-top { flex-wrap: wrap; gap: 8px; }
-  .ad-grid { grid-template-columns: 1fr; gap: 16px; }
-  .ad-col-side { position: static; }
+  .stat-chip { padding: 12px 6px 10px; }
+  .stat-n { font-size: 22px; }
+  .btn-bulk-grade { font-size: 12.5px; padding: 12px; }
+  .desc-block { font-size: 13.5px; padding: 13px 14px; }
+  .mgf-score-row { gap: 10px; }
+  .mgf-input { width: 72px; font-size: 19px; }
+  .mgf-pct { min-width: 48px; font-size: 13px; }
 }
 @media (max-width:480px) {
-  .am-head-l { flex-direction: column; gap: 8px; }
-  .am-head { padding: 14px 12px 10px; }
-  .am-body { padding: 12px 12px 80px; }
+  .am-head { padding: 12px 14px; }
+  .am-head-l { gap: 11px; }
+  .am-body { padding: 14px 14px 90px; }
+  .am-tabs-wrap { padding: 0 14px 12px; }
+  .sub-detail-header { padding: 12px 13px; gap: 11px; }
 }
-
-/* Manual grade form */
-.manual-grade-form { margin-top: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-.mgf-title { font-size: 13px; font-weight: 700; color: var(--text2); letter-spacing: .05em; }
-.mgf-label { font-size: 11px; font-weight: 700; color: var(--text4); letter-spacing: .06em; display: block; margin-bottom: 6px; }
-.mgf-score-row { display: flex; align-items: center; gap: 10px; }
-.mgf-input { width: 80px; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text1); font-size: 18px; font-weight: 700; text-align: center; font-family: inherit; transition: border-color .15s; }
-.mgf-input:focus { border-color: var(--teal); outline: none; }
-.mgf-pct { font-size: 14px; font-weight: 600; color: var(--text4); }
-.mgf-textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text1); font-size: 13px; font-family: inherit; resize: vertical; transition: border-color .15s; box-sizing: border-box; }
-.mgf-textarea:focus { border-color: var(--teal); outline: none; }
-.mgf-actions { display: flex; justify-content: flex-end; gap: 8px; }
-.grade-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 </style>

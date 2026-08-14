@@ -20,10 +20,12 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
 </script>
 
 <style scoped>
+/* Сгруппированная таблица iOS: одна карточка, строки разделены волосяной
+   линией — вместо плашки-фона, сливавшейся с утопленным телом страницы. */
 .flc-list {
   display: flex; flex-direction: column;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r-lg); overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--sh-xs);
 }
 .flc-row {
   display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px;
@@ -31,15 +33,15 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
   text-decoration: none; transition: background .12s ease-out;
 }
 .flc-row:last-child { border-bottom: none; }
-.flc-row:hover { background: var(--surface3); }
-.flc-row:hover .flc-chevron { color: var(--teal); transform: translateX(2px); }
-.flc-row:active { background: var(--surface3); }
+.flc-row:hover { background: var(--glass); }
+.flc-row:hover .flc-chevron { color: var(--teal); transform: translateX(2px); opacity: 1; }
+.flc-row:active { background: var(--glass2); }
 .flc-row:active .flc-icon, .flc-row:active .flc-thumb { transform: scale(.96); }
-.flc-icon, .flc-thumb { width: 40px; height: 40px; border-radius: var(--r-md); flex-shrink: 0; transition: transform .1s ease-out; }
+.flc-icon, .flc-thumb { width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0; transition: transform .1s ease-out; }
 .flc-icon { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; letter-spacing: .02em; }
 .flc-thumb { object-fit: cover; }
 .flc-info { flex: 1; min-width: 0; }
-.flc-name { font-size: 14px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.flc-type { font-size: 12px; color: var(--text4); letter-spacing: .02em; margin-top: 1px; }
-.flc-chevron { color: var(--text4); flex-shrink: 0; transition: color .15s ease-out, transform .15s ease-out; }
+.flc-name { font-size: 13.5px; font-weight: 650; letter-spacing: -.01em; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.flc-type { font-size: 11.5px; color: var(--text4); letter-spacing: .02em; margin-top: 1px; }
+.flc-chevron { color: var(--text4); flex-shrink: 0; opacity: .55; transition: color .15s ease-out, transform .18s cubic-bezier(.22,1,.36,1), opacity .15s; }
 </style>
