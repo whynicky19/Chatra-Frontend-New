@@ -14,13 +14,12 @@
     <div class="pg-body">
       <!-- Личность: кто я в системе -->
       <section class="group g-1">
-        <div class="group-body ident">
-          <div class="ident-ava" aria-hidden="true">{{ initials }}</div>
-          <div class="ident-text">
-            <div class="ident-name">{{ displayName }}</div>
-            <div class="ident-mail">{{ auth.user?.email }}</div>
+        <div class="group-body acct">
+          <div class="acct-text">
+            <div class="acct-name">{{ displayName }}</div>
+            <div class="acct-mail">{{ auth.user?.email }}</div>
           </div>
-          <div class="ident-badge">{{ auth.isTeacher || auth.isAdmin ? roleLabel : institutionLabel }}</div>
+          <div class="acct-badge">{{ auth.isTeacher || auth.isAdmin ? roleLabel : institutionLabel }}</div>
         </div>
       </section>
 
@@ -57,9 +56,9 @@
         </p>
       </section>
 
-      <!-- Предпочтения -->
+      <!-- Оформление -->
       <section class="group g-3">
-        <h2 class="group-label">{{ t('settings.preferences') }}</h2>
+        <h2 class="group-label">{{ lang==='ru'?'Оформление':lang==='kk'?'Безендіру':'Appearance' }}</h2>
         <div class="group-body">
           <div class="row">
             <div class="ic" style="--ic:#5E5CE6">
@@ -75,25 +74,28 @@
               <span class="sw-thumb"></span>
             </button>
           </div>
-          <div class="row">
-            <div class="ic" style="--ic:#007AFF">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 010 18 15 15 0 010-18z"/></svg>
-            </div>
+        </div>
+      </section>
+
+      <!-- Язык: список с галочкой, как в iOS «Язык и регион». Сегментный
+           переключатель на три кода (RU/EN/KZ) требовал догадаться, что «KZ»
+           — это қазақша; здесь язык назван на самом себе. -->
+      <section class="group g-4">
+        <h2 class="group-label">{{ lang==='ru'?'Язык':lang==='kk'?'Тіл':'Language' }}</h2>
+        <div class="group-body" role="radiogroup"
+             :aria-label="lang==='ru'?'Язык интерфейса':lang==='kk'?'Интерфейс тілі':'Interface language'">
+          <button v-for="l in langs" :key="l.code" type="button" class="row row-check"
+                  role="radio" :aria-checked="lang === l.code" @click="setLang(l.code as any)">
             <div class="row-main">
-              <div class="row-title">{{ lang==='ru'?'Язык':lang==='kk'?'Тіл':'Language' }}</div>
-              <div class="row-sub">{{ lang==='ru'?'Язык интерфейса':lang==='kk'?'Интерфейс тілі':'Interface language' }}</div>
+              <div class="row-title">{{ l.name }}</div>
             </div>
-            <div class="seg" :style="{ '--i': langIndex }">
-              <span class="seg-thumb" aria-hidden="true"></span>
-              <button v-for="l in langs" :key="l.code" type="button"
-                :class="['seg-btn', { active: lang === l.code }]" @click="setLang(l.code as any)">{{ l.label }}</button>
-            </div>
-          </div>
+            <svg v-if="lang === l.code" class="check" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
         </div>
       </section>
 
       <!-- Разделы -->
-      <section class="group g-4">
+      <section class="group g-5">
         <div class="group-body">
           <!-- Новый учебный год (rollover) — только преподаватель/админ -->
           <NuxtLink v-if="auth.isTeacher || auth.isAdmin" to="/rollover" class="row row-nav">
@@ -143,7 +145,7 @@
       </section>
 
       <!-- Выход — отдельной группой, как деструктивное действие в iOS -->
-      <section class="group g-5">
+      <section class="group g-6">
         <div class="group-body">
           <button class="row row-danger" @click="doLogout">{{ t('nav.logout') }}</button>
         </div>
@@ -167,15 +169,16 @@ const fullnameInput = ref('')
 const isDark = ref(false)
 const scrolled = ref(false)
 
-const langs = [{ code: 'ru', label: 'RU' }, { code: 'en', label: 'EN' }, { code: 'kk', label: 'KZ' }]
-const langIndex = computed(() => Math.max(0, langs.findIndex(l => l.code === lang.value)))
+// Язык подписан на самом себе — так его узнают и те, кто не читает текущий
+// язык интерфейса.
+const langs = [
+  { code: 'ru', name: 'Русский' },
+  { code: 'en', name: 'English' },
+  { code: 'kk', name: 'Қазақша' },
+]
 
 const savedName = computed(() => (auth.fullname || auth.nickname || '').trim())
 const displayName = computed(() => savedName.value || auth.user?.email?.split('@')[0] || '—')
-const initials = computed(() => {
-  const parts = displayName.value.trim().split(/\s+/).filter(Boolean)
-  return (parts.slice(0, 2).map(p => p[0]).join('') || '?').toUpperCase()
-})
 // Имя считается неполным, только когда его начали вводить: пустое поле —
 // это «ещё не трогал», а не ошибка, и краснеть на пустом экране незачем.
 const nameInvalid = computed(() => {
@@ -277,7 +280,7 @@ html.dark .pg-head.scrolled{background:rgba(11,11,13,.72)}
 }
 .group{animation:fadeIn .34s cubic-bezier(.16,1,.3,1) both}
 .g-1{animation-delay:0s}.g-2{animation-delay:.04s}.g-3{animation-delay:.08s}
-.g-4{animation-delay:.12s}.g-5{animation-delay:.16s}
+.g-4{animation-delay:.12s}.g-5{animation-delay:.16s}.g-6{animation-delay:.2s}
 .group-label{
   font-size:12px;font-weight:600;color:var(--text4);
   letter-spacing:.06em;text-transform:uppercase;
@@ -330,44 +333,33 @@ html.dark .pg-head.scrolled{background:rgba(11,11,13,.72)}
 .row-nav:active{background:var(--glass2);transition:none}
 
 /* ---------- Поля профиля ---------- */
-/* Значения выровнены влево, сразу за подписью: на карточке во всю ширину
-   правое выравнивание уносило курсор ввода на другой конец экрана — набирать
-   ФИО там неудобно, да и пара «подпись — значение» переставала читаться
-   как одно целое. */
 .row-field{gap:16px}
-.row-label{font-size:15px;font-weight:400;color:var(--text4);flex-shrink:0;min-width:132px}
+.row-label{font-size:15px;font-weight:400;color:var(--text1);flex-shrink:0;min-width:132px}
 .row-input{
   flex:1;min-width:0;border:none;background:transparent;
-  font-size:15px;color:var(--text1);padding:0;
+  font-size:15px;color:var(--text1);text-align:right;padding:0;
   text-overflow:ellipsis;
 }
 .row-input::placeholder{color:var(--text4)}
 .row-value{
-  flex:1;min-width:0;display:flex;align-items:center;gap:6px;
-  font-size:15px;color:var(--text2);
+  flex:1;min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:6px;
+  font-size:15px;color:var(--text4);text-align:right;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .lock{flex-shrink:0;opacity:.6}
 
-/* ---------- Карточка личности ---------- */
-.ident{display:flex;align-items:center;gap:16px;padding:20px}
-.ident-ava{
-  flex-shrink:0;width:60px;height:60px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(140deg,var(--teal),var(--teal-d));
-  color:#fff;font-size:21px;font-weight:600;letter-spacing:.01em;
-  box-shadow:0 6px 18px rgba(var(--teal-rgb),.32);
-}
-.ident-text{flex:1;min-width:0}
-.ident-name{
-  font-size:19px;font-weight:600;letter-spacing:-.018em;color:var(--text1);
+/* ---------- Карточка аккаунта ---------- */
+.acct{display:flex;align-items:center;gap:16px;padding:20px}
+.acct-text{flex:1;min-width:0}
+.acct-name{
+  font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--text1);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.ident-mail{
+.acct-mail{
   font-size:13px;color:var(--text4);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.ident-badge{
+.acct-badge{
   flex-shrink:0;padding:5px 11px;border-radius:100px;
   background:var(--teal-l);color:var(--teal);
   font-size:11.5px;font-weight:600;letter-spacing:.01em;white-space:nowrap;
@@ -389,26 +381,17 @@ html.dark .pg-head.scrolled{background:rgba(11,11,13,.72)}
 .sw.on .sw-thumb{transform:translateX(20px)}
 .sw:active .sw-thumb{box-shadow:0 3px 10px rgba(0,0,0,.2)}
 
-/* ---------- Сегментированный переключатель языка ---------- */
-.seg{
-  flex-shrink:0;position:relative;display:flex;
-  background:var(--bg2);border-radius:9px;padding:2px;
+/* ---------- Выбор языка ---------- */
+.row-check{cursor:pointer}
+@media (hover:hover){ .row-check:hover{background:var(--glass)} }
+.row-check:active{background:var(--glass2);transition:none}
+/* Галочка не переезжает между строками, а появляется на месте — поэтому
+   короткое проявление с лёгким масштабом, без перемещения по экрану. */
+@keyframes check-in{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.check{
+  color:var(--teal);flex-shrink:0;
+  animation:check-in .2s cubic-bezier(.16,1,.3,1) both;
 }
-html.dark .seg{background:var(--surface2)}
-.seg-thumb{
-  position:absolute;top:2px;left:2px;bottom:2px;width:calc((100% - 4px) / 3);
-  border-radius:7px;background:var(--surface);box-shadow:var(--sh-xs);
-  transform:translateX(calc(var(--i) * 100%));
-  transition:transform .34s cubic-bezier(.32,.72,0,1);
-}
-html.dark .seg-thumb{background:var(--surface3)}
-.seg-btn{
-  position:relative;z-index:1;width:40px;padding:6px 0;
-  font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--text3);
-  background:none;transition:color .2s ease,transform .18s cubic-bezier(.32,.72,0,1);
-}
-.seg-btn.active{color:var(--text1)}
-.seg-btn:active{transform:scale(.93)}
 
 /* ---------- Выход ---------- */
 .row-danger{
@@ -433,14 +416,16 @@ html.dark .seg-thumb{background:var(--surface3)}
   /* iOS зумит страницу на фокусе поля с кеглем < 16px. */
   .row-input{font-size:16px}
   .row-field{flex-direction:column;align-items:stretch;gap:4px}
-  .row-label{min-width:0;font-size:12.5px}
-  .ident{padding:18px 16px;flex-wrap:wrap}
-  .ident-ava{width:52px;height:52px;font-size:18px}
-  /* Текст занимает всю оставшуюся ширину — бейдж гарантированно переносится
-     на вторую строку и выравнивается по имени, а не липнет к нему сбоку. */
-  .ident-text{min-width:calc(100% - 68px)}
-  .ident-badge{margin:8px 0 0 68px}
-  .seg-btn{width:44px;padding:9px 0}
+  .row-label{min-width:0;font-size:12.5px;color:var(--text4)}
+  /* В столбик подпись уже серая, поэтому значение поднимаем по контрасту —
+     иначе вся строка получается одним серым пятном. */
+  .row-input,.row-value{text-align:left;justify-content:flex-start}
+  .row-value{color:var(--text2)}
+  .acct{padding:18px 16px;flex-wrap:wrap}
+  /* Текст занимает всю ширину — бейдж переносится на вторую строку и
+     выравнивается по имени, а не липнет к нему сбоку. */
+  .acct-text{min-width:100%}
+  .acct-badge{margin-top:10px}
   .sw{width:51px;height:31px}
 }
 @media (max-width:480px){
