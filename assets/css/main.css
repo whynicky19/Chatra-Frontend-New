@@ -152,8 +152,13 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(142,142,147,.5)}
 .btn:hover::after{background:rgba(255,255,255,.08)}
 .btn:active{transform:scale(.96)!important;transition:transform .1s}
 .btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
-.btn-blue,.btn-purple,.btn-teal{background:linear-gradient(180deg,var(--teal-h),var(--teal-d));color:#fff;box-shadow:0 1px 2px rgba(var(--teal-rgb),.25),0 4px 14px rgba(var(--teal-rgb),.22)}
-.btn-blue:hover,.btn-purple:hover,.btn-teal:hover{box-shadow:0 2px 4px rgba(var(--teal-rgb),.28),0 8px 22px rgba(var(--teal-rgb),.3);transform:translateY(-1px)}
+/* Плоская заливка акцентом: у Apple залитая кнопка — это ровный цвет.
+   Раньше здесь был вертикальный градиент плюс цветной ореол тени и подъём
+   на -1px при наведении. Login и register уже перебивали это через
+   !important («плоская заливка акцентом, без цветного ореола тени») — то
+   есть страницы боролись с фундаментом. Теперь фундамент такой сам. */
+.btn-blue,.btn-purple,.btn-teal{background:var(--teal);color:#fff}
+.btn-blue:hover,.btn-purple:hover,.btn-teal:hover{background:var(--teal-h)}
 .btn-white{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 .btn-white:hover{background:var(--surface3);color:var(--text1);border-color:var(--border2)}
 .btn-ghost{background:transparent;color:var(--text3)}
@@ -166,8 +171,11 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(142,142,147,.5)}
 .btn-icon-round{padding:8px;border-radius:50%}
 
 /* ====== INPUTS ====== */
-.input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--input-bg);color:var(--text1);font-size:14px;transition:all .2s}
-.input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(var(--teal-rgb),.12),0 0 20px rgba(var(--teal-rgb),.08)}
+.input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--input-bg);color:var(--text1);font-size:14px;transition:border-color .18s ease,box-shadow .18s ease}
+/* Кольцо фокуса без свечения: второй тенью здесь шло размытое цветное
+   гало на 20px — эффект из словаря «неоновых» веб-интерфейсов, в iOS поле
+   ввода при фокусе просто получает акцентный кант. */
+.input:focus{border-color:var(--teal);box-shadow:0 0 0 3.5px rgba(var(--teal-rgb),.16)}
 .input::placeholder{color:var(--text4)}
 .input-sm{padding:7px 10px;font-size:13px}
 
@@ -182,6 +190,24 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(142,142,147,.5)}
 /* ====== FORM ====== */
 .frow{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .flabel{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.04em}
+
+/* ====== GROUPED INSET LIST ======
+   Подпись раздела + один контейнер со строками через волосяные разделители —
+   базовый способ показать список в iOS (Настройки, Почта, Здоровье). Отличие
+   от стопки отдельных карточек: связанные пункты читаются как ОДИН объект,
+   а не как несколько конкурирующих за внимание. Разделитель начинается не от
+   края, а от текста — так взгляд видит колонку подписей, а не лесенку. */
+.a-group-label{font-size:13px;font-weight:600;color:var(--text4);letter-spacing:.01em;padding:0 16px 7px;text-transform:uppercase}
+.a-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden}
+.a-row{position:relative;display:flex;align-items:center;gap:12px;padding:14px 16px;color:var(--text1);text-decoration:none;font-size:16px;letter-spacing:-.01em;transition:background .12s ease}
+/* Отклик на НАЖАТИИ, а не на отпускании: иначе строка ощущается мёртвой. */
+.a-row:active{background:var(--glass2)}
+@media (hover:hover){.a-row:hover{background:var(--glass)}}
+.a-row + .a-row::before{content:'';position:absolute;top:0;left:var(--a-row-inset,16px);right:0;height:1px;background:var(--border)}
+/* Строка со значком слева — разделитель сдвигается под текст. */
+.a-group--icons{--a-row-inset:46px}
+.a-row-chevron{color:var(--text4);flex-shrink:0}
+@media (max-width:768px){.a-row{min-height:44px}}
 
 /* ====== SPINNER ====== */
 .spinner{width:22px;height:22px;border:2.5px solid var(--border2);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
@@ -223,14 +249,25 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(142,142,147,.5)}
 .tab-btn.active{color:var(--teal);background:var(--surface);border-color:var(--border);border-bottom-color:var(--surface)}
 
 /* ====== GLOBAL FONT & ALIGNMENT ====== */
-* { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; }
-h1,h2,h3,h4,h5,h6 { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; }
-.pg-title,.modal-title,.card-name,.clp-title,.page-title,.am-title,.chat-title,.welcome-title,.es-title,.scard-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif !important; }
+/* 'SF Pro Display' из стека убран намеренно. Display — это КРУПНЫЙ оптический
+   размер семейства; когда его назначают всему тексту подряд, мелкий текст
+   получает межбуквенные расстояния, рассчитанные на заголовок. Ключевое слово
+   -apple-system само подставляет нужный оптический вариант (Text для мелкого,
+   Display для крупного), поэтому пиннить конкретное начертание не нужно —
+   достаточно не мешать. font-optical-sizing делает то же для переменных
+   шрифтов в остальных браузерах. */
+* { font-family: -apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',Roboto,sans-serif; font-optical-sizing: auto; }
 
-/* Apple SF Pro Display optical tracking — крупный текст жмётся плотнее */
-h1,.pg-title,.page-title,.welcome-title,.sheet-title,.clp-title{letter-spacing:-.022em}
-h2,.modal-title,.am-title,.chat-title,.es-title,.scard-title,.card-name{letter-spacing:-.017em}
+/* Трекинг задаётся ПО РАЗМЕРУ, а не один на всё: по мере роста кегля буквы
+   читаются слишком раскинутыми и их нужно поджимать, а мелкий текст,
+   наоборот, разборчивее с трекингом около нуля или чуть положительным.
+   Одно значение letter-spacing на все размеры всегда где-то неверно. */
+h1,.pg-title,.page-title,.welcome-title,.sheet-title,.clp-title{letter-spacing:-.024em}
+h2,.modal-title,.am-title,.chat-title,.es-title,.scard-title,.card-name{letter-spacing:-.018em}
 h3,h4{letter-spacing:-.012em}
+h5,h6{letter-spacing:-.006em}
+/* Мелкие подписи (.flabel, .ftb) — единственное место, где трекинг
+   положительный; он уже задан в их собственных правилах выше. */
 
 /* ====== MOBILE ====== */
 @media (max-width: 768px) {
@@ -520,11 +557,21 @@ html {
 }
 
 /* ====== REDUCED MOTION ====== */
+/* «Меньше движения» не значит «без обратной связи»: укачивает перемещение в
+   пространстве, а не смена прозрачности или цвета. Раньше здесь глушились
+   ВСЕ переходы разом, включая opacity, — интерфейс переставал подтверждать
+   нажатия и наведения, то есть терял отклик, а не только тряску.
+   Поэтому: движение и масштаб убираем, проявление оставляем. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    /* Гасим ПЕРЕХОД по transform, а не сам transform: в разметке он сплошь
+       используется для статичного позиционирования (центрирование иконки
+       глаза в поле пароля, ползунок переключателя языка), и `transform:none`
+       поехал бы по вёрстке вместо того, чтобы успокоить анимацию. */
+    transition-property: opacity, color, background-color, border-color, box-shadow !important;
+    transition-duration: 120ms !important;
   }
 }
 

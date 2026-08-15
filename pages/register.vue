@@ -119,8 +119,9 @@ const sub = async () => {
 .input::placeholder{color:var(--text4)!important}
 
 /* Кнопка регистрации: плоская заливка акцентом, без цветного ореола тени */
-.auth-submit{height:50px;border-radius:14px;font-size:15px;font-weight:600;margin-top:6px;background:var(--teal)!important;box-shadow:none!important}
-.auth-submit:hover{background:var(--teal-h)!important;box-shadow:none!important;transform:none!important}
+/* Плоская заливка и отсутствие цветного ореола теперь заданы в самом .btn-teal
+   (assets/css/main.css) — здесь остаются только метрики кнопки. */
+.auth-submit{height:50px;border-radius:14px;font-size:15px;font-weight:600;margin-top:6px}
 .org-badge-row{display:flex;align-items:center;margin-bottom:18px}
 .org-pill{position:relative;display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 5px;border-radius:100px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;transition:transform .12s ease-out,background .15s}
 .org-pill:hover{background:var(--surface3,var(--surface2))}

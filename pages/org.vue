@@ -64,7 +64,7 @@
       <!-- Продолжить -->
       <div class="org-footer r5">
         <button class="continue-btn" :disabled="!picked"
-          :style="picked ? { background: accent, boxShadow: `0 7px 22px -4px ${accent}55` } : {}"
+          :style="picked ? { background: accent } : {}"
           @click="proceed">
           {{ tt('Продолжить', 'Жалғастыру', 'Continue') }}
         </button>
@@ -104,10 +104,9 @@ const logoGradient = computed(() => picked.value === 'school'
 const tt = (ru: string, kk: string, en: string) =>
   lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
 
-const selStyle = (c: string) => ({
-  borderColor: c,
-  boxShadow: `0 7px 22px -4px ${c}44`,
-})
+// Выбранная карточка обозначается кантом и галочкой, без цветного ореола тени:
+// в iOS акцентный цвет показывает состояние, а не подсвечивает объект снизу.
+const selStyle = (c: string) => ({ borderColor: c })
 
 const pick = (type: 'university' | 'school') => { picked.value = type }
 
@@ -175,9 +174,12 @@ const proceed = () => {
 
 /* Заголовок */
 .org-head { text-align: center; margin-bottom: 32px; }
+/* Вес 700, а не 800: у Apple крупный заголовок набирается bold, heavy
+   приберегается для очень коротких акцентных надписей. Трекинг плотнее —
+   по мере роста кегля буквы читаются слишком раскинутыми. */
 .org-title {
-  font-size: 30px; font-weight: 800;
-  letter-spacing: -.02em; line-height: 1.12;
+  font-size: 32px; font-weight: 700;
+  letter-spacing: -.026em; line-height: 1.08;
   color: var(--text1);
 }
 .org-title.accent { transition: color .45s ease; }
@@ -197,9 +199,12 @@ const proceed = () => {
   background: var(--surface);
   box-shadow: var(--sh-sm);
   text-align: left;
-  transition: transform .16s ease, border-color .22s ease, box-shadow .22s ease, background .22s ease;
+  transition: border-color .22s ease, background .18s ease, transform .1s ease;
 }
-.org-option:hover { transform: translateY(-1px); }
+/* Подъём при наведении убран: физические объекты в iOS не левитируют под
+   курсором — реакция идёт на НАЖАТИЕ, и это единственный отклик, который
+   действительно нужен на сенсорном экране. */
+@media (hover:hover){ .org-option:hover { background: var(--bg2); } }
 .org-option:active { transform: scale(.978); }
 
 .org-option-icon {
@@ -236,11 +241,12 @@ const proceed = () => {
   border-radius: 16px;
   background: var(--surface2);
   color: var(--text4);
-  font-size: 16px; font-weight: 700;
-  transition: all .3s ease;
+  font-size: 16px; font-weight: 600; letter-spacing: -.01em;
+  /* Перечисляем свойства вместо all: браузеру не нужно следить за всем
+     подряд, а 300ms для кнопки — заметно вяло. */
+  transition: background .22s ease, color .22s ease, transform .1s ease;
 }
 .continue-btn:not(:disabled) { color: #fff; }
-.continue-btn:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.05); }
 .continue-btn:not(:disabled):active { transform: scale(.98); }
 .continue-btn:disabled { cursor: not-allowed; }
 .org-note { margin-top: 12px; font-size: 12px; color: var(--text4); text-align: center; }

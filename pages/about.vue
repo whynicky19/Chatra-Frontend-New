@@ -10,23 +10,26 @@
     </div>
 
     <div class="pg-body">
-      <NuxtLink to="/terms" class="scard link-card">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
-        <span style="flex:1">{{ t('common.terms') }}</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </NuxtLink>
-
-      <NuxtLink to="/privacy" class="scard link-card">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-        <span style="flex:1">{{ t('common.privacy') }}</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </NuxtLink>
-
-      <NuxtLink to="/rules" class="scard link-card">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span style="flex:1">{{ t('common.rules') }}</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </NuxtLink>
+      <!-- Один сгруппированный список вместо трёх отдельных карточек с тенями:
+           это три пункта одного раздела, а не три самостоятельных объекта. -->
+      <p class="a-group-label">{{ lang==='ru'?'Документы':lang==='kk'?'Құжаттар':'Documents' }}</p>
+      <nav class="a-group a-group--icons">
+        <NuxtLink to="/terms" class="a-row">
+          <svg class="doc-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
+          <span style="flex:1">{{ t('common.terms') }}</span>
+          <svg class="a-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </NuxtLink>
+        <NuxtLink to="/privacy" class="a-row">
+          <svg class="doc-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+          <span style="flex:1">{{ t('common.privacy') }}</span>
+          <svg class="a-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </NuxtLink>
+        <NuxtLink to="/rules" class="a-row">
+          <svg class="doc-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span style="flex:1">{{ t('common.rules') }}</span>
+          <svg class="a-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </NuxtLink>
+      </nav>
 
       <div class="brand">Chatra</div>
     </div>
@@ -45,13 +48,14 @@ const { t, lang } = useI18n()
 .pg-head{padding:28px 32px 0;flex-shrink:0}
 .back-link{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--text4);text-decoration:none;margin-bottom:10px;transition:color .15s}
 .back-link:hover{color:var(--teal)}
-.pg-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:26px;font-weight:800;color:var(--text1);margin-bottom:4px}
-.pg-sub{font-size:14px;color:var(--text4)}
-.pg-body{padding:20px 32px 40px;display:flex;flex-direction:column;gap:16px}
-.scard{background:var(--surface);border-radius:20px;box-shadow:var(--sh-sm)}
-.link-card{display:flex;align-items:center;gap:12px;padding:16px 24px;color:var(--text1);text-decoration:none;font-size:15px;font-weight:600;transition:background .15s}
-.link-card:hover{background:var(--hover,rgba(0,0,0,.03))}
-.brand{text-align:center;font-size:12.5px;color:var(--text4);margin-top:8px}
+/* Шрифт и трекинг заголовка приходят из .pg-title в main.css: пиннить здесь
+   'SF Pro Display' значит навязать мелкому тексту крупный оптический размер.
+   Вес 700, а не 800: у Apple заголовок набирается bold, а не heavy. */
+.pg-title{font-size:28px;font-weight:700;color:var(--text1);margin-bottom:4px}
+.pg-sub{font-size:15px;color:var(--text4)}
+.pg-body{padding:20px 32px 40px;display:flex;flex-direction:column}
+.doc-icon{color:var(--text3);flex-shrink:0}
+.brand{text-align:center;font-size:12.5px;color:var(--text4);margin-top:24px}
 
 @media(max-width:768px){
   .pg-head{padding:20px 18px 0}
