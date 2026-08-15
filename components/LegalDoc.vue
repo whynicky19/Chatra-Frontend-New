@@ -6,9 +6,10 @@
   ~110 строк одинакового CSS — правка стиля требовала трёх синхронных правок,
   и они уже начали расходиться. Здесь один источник правды.
 
-  Оформление повторяет экран документа в приложении (lib/screens/legal/
-  legal_doc_screen.dart): крупный заголовок, сворачивающийся в строку
-  навигации, лид на тихой подложке и разделы карточками с волосяной рамкой.
+  Документ занимает всю ширину экрана, но текст внутри не растягивается в
+  строки по 150 символов: разделы раскладываются в колонки по ~480px, то есть
+  ширина используется под БОЛЬШЕ разделов на экране, а не под более длинные
+  строки. Порядок чтения задаётся номером у каждого раздела.
 -->
 <template>
   <div ref="pageEl" class="ld-page" @scroll.passive="onScroll">
@@ -27,8 +28,11 @@
 
         <span class="ld-nav-title" :class="{ 'is-visible': collapsed }">{{ title }}</span>
 
-        <div class="ld-langs">
-          <button v-for="l in langs" :key="l.code" class="ld-lang"
+        <!-- Тот же сегментный переключатель, что в настройках: один элемент
+             управления не должен выглядеть на двух экранах по-разному. -->
+        <div class="ld-seg" :style="{ '--i': langIndex }">
+          <span class="ld-seg-thumb" aria-hidden="true"></span>
+          <button v-for="l in langs" :key="l.code" type="button" class="ld-seg-btn"
                   :class="{ active: lang === l.code }" @click="setLang(l.code)">{{ l.label }}</button>
         </div>
       </div>
@@ -36,29 +40,37 @@
 
     <div class="ld-container">
       <!-- Обложка -->
-      <div class="ld-icon" aria-hidden="true"><slot name="icon" /></div>
-      <h1 class="ld-title">{{ title }}</h1>
-
-      <p v-if="updated" class="ld-updated">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-        </svg>
-        {{ updatedLabel }}: {{ updated }}
-      </p>
+      <div class="ld-hero">
+        <div class="ld-icon" aria-hidden="true"><slot name="icon" /></div>
+        <div class="ld-hero-text">
+          <h1 class="ld-title">{{ title }}</h1>
+          <p v-if="updated" class="ld-updated">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+            </svg>
+            {{ updatedLabel }}: {{ updated }}
+          </p>
+        </div>
+      </div>
 
       <!-- Лид: своя тихая подложка — это явно не один из разделов ниже, но и
            не потерявшийся кусок текста, каким он выглядел раньше. -->
       <p v-if="intro" class="ld-lead">{{ intro }}</p>
 
-      <!-- Разделы -->
-      <section v-for="(s, i) in sections" :key="i" class="ld-card">
-        <h2 class="ld-card-title">{{ s.t }}</h2>
-        <p class="ld-card-body">{{ s.b }}</p>
-      </section>
+      <!-- Разделы: колонками по ширине экрана, с номерами — иначе при двух-трёх
+           колонках непонятно, что за чем читать. -->
+      <div v-if="sections?.length" class="ld-grid">
+        <section v-for="(s, i) in sections" :key="i" class="ld-card">
+          <h2 class="ld-card-title">
+            <span class="ld-num">{{ i + 1 }}</span>{{ s.t }}
+          </h2>
+          <p class="ld-card-body">{{ s.b }}</p>
+        </section>
+      </div>
 
       <!-- Документ без разделов (правила сообщества) — сплошным текстом. -->
-      <section v-if="body" class="ld-card">
+      <section v-if="body" class="ld-card ld-card--solo">
         <p class="ld-card-body">{{ body }}</p>
       </section>
 
@@ -89,6 +101,7 @@ const langs = [
   { code: 'en' as const, label: 'EN' },
   { code: 'kk' as const, label: 'KZ' },
 ]
+const langIndex = computed(() => Math.max(0, langs.findIndex(l => l.code === lang.value)))
 
 const year = new Date().getFullYear()
 const backLabel = computed(() =>
@@ -118,6 +131,9 @@ const onScroll = () => {
 /* #__nuxt фиксирован по высоте с overflow:hidden — страница должна быть
    собственным скролл-контейнером, иначе контент обрезается и не скроллится. */
 .ld-page {
+  /* Один просвет на все карточки — и между колонками, и между рядами, и между
+     лидом и разделами. */
+  --ld-gap: 16px;
   height: 100vh;
   height: 100dvh;
   overflow-y: auto;
@@ -139,19 +155,17 @@ const onScroll = () => {
   transition: background .22s ease, border-color .22s ease, backdrop-filter .22s ease;
 }
 .ld-nav.is-solid {
-  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom-color: var(--border);
 }
 .ld-nav-inner {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 10px 20px;
+  padding: 10px 32px;
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 52px;
+  min-height: 54px;
 }
 
 .ld-back {
@@ -188,42 +202,69 @@ const onScroll = () => {
 }
 .ld-nav-title.is-visible { opacity: 1; }
 
-.ld-langs { display: flex; gap: 2px; flex: none; }
-.ld-lang {
-  border: none;
-  background: transparent;
-  color: var(--text4);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 6px 9px;
-  border-radius: 100px;
-  cursor: pointer;
-  transition: background .15s ease, color .15s ease;
+/* ── Переключатель языка ─────────────────────────────────────────────── */
+.ld-seg {
+  position: relative;
+  display: flex;
+  flex: none;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--bg2);
 }
-.ld-lang.active { background: var(--teal); color: #fff; }
+html.dark .ld-seg { background: var(--surface2); }
+.ld-seg-thumb {
+  position: absolute;
+  top: 2px; bottom: 2px; left: 2px;
+  width: calc((100% - 4px) / 3);
+  border-radius: 7px;
+  background: var(--surface);
+  box-shadow: var(--sh-xs);
+  transform: translateX(calc(var(--i) * 100%));
+  transition: transform .34s cubic-bezier(.32,.72,0,1);
+}
+html.dark .ld-seg-thumb { background: var(--surface3); }
+.ld-seg-btn {
+  position: relative;
+  z-index: 1;
+  width: 40px;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: var(--text3);
+  cursor: pointer;
+  transition: color .2s ease, transform .18s cubic-bezier(.32,.72,0,1);
+}
+.ld-seg-btn.active { color: var(--text1); }
+.ld-seg-btn:active { transform: scale(.93); }
 
 /* ── Содержимое ──────────────────────────────────────────────────────── */
-.ld-container {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 8px 20px 72px;
-}
+.ld-container { padding: 8px 32px 72px; }
 
+.ld-hero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 12px 0 22px;
+}
 .ld-icon {
-  width: 52px; height: 52px;
-  margin: 12px 0 16px;
-  border-radius: 14px;
+  width: 56px; height: 56px;
+  flex: none;
+  border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
   background: color-mix(in srgb, var(--teal) 12%, transparent);
   color: var(--teal);
 }
+.ld-hero-text { min-width: 0; }
 
 /* Крупный текст: отрицательный трекинг и плотная интерлиньяж — по мере роста
    кегля буквы читаются слишком раскинутыми, а строки разъезжаются. */
 .ld-title {
   margin: 0;
-  font-size: clamp(30px, 6vw, 38px);
+  font-size: clamp(30px, 5vw, 40px);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.03em;
@@ -235,7 +276,7 @@ const onScroll = () => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin: 12px 0 0;
+  margin: 10px 0 0;
   padding: 5px 11px;
   border-radius: 100px;
   background: var(--surface2);
@@ -245,8 +286,8 @@ const onScroll = () => {
 }
 
 .ld-lead {
-  margin: 22px 0 0;
-  padding: 16px 18px 18px;
+  margin: 0 0 var(--ld-gap);
+  padding: 18px 22px 20px;
   border-radius: 20px;
   background: color-mix(in srgb, var(--teal) 7%, transparent);
   color: var(--text2);
@@ -256,23 +297,48 @@ const onScroll = () => {
   white-space: pre-line;
 }
 
+/* Колонка ~480px — компромисс между «занять весь экран» и строкой длиннее
+   75 символов, которую глаз теряет при переносе. На 1440 выходит 2 колонки,
+   на 1920 — 3, на планшете — одна.
+   align-items оставлен по умолчанию (stretch): при align-items:start карточки
+   в ряду сохраняли собственную высоту, и от короткой карточки до следующего
+   ряда оставался отступ втрое больше, чем от длинной — сетка выглядела
+   рваной. Теперь ряд выравнивается по высоте и все просветы равны --ld-gap. */
+.ld-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 480px), 1fr));
+  gap: var(--ld-gap);
+}
+
 .ld-card {
-  margin-top: 12px;
-  padding: 16px 18px 18px;
+  padding: 18px 22px 20px;
   border-radius: 20px;
   background: var(--surface);
   /* Волосяная рамка вместо тени: сгруппированные списки iOS отделяются краем
      на общем фоне, а не «приподнятостью» материала. */
   border: 1px solid var(--border);
 }
-.ld-lead + .ld-card { margin-top: 22px; }
+/* Документ без разделов идёт одной карточкой во всю ширину. */
+.ld-grid + .ld-card--solo { margin-top: var(--ld-gap); }
 
 .ld-card-title {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
   margin: 0 0 10px;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.4px;
   color: var(--text1);
+}
+/* Номер задаёт порядок чтения, когда разделы стоят в несколько колонок. */
+.ld-num {
+  flex: none;
+  min-width: 22px;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--teal);
 }
 /* pre-line — в тексте разделов есть абзацы и списки, разделённые \n. */
 .ld-card-body {
@@ -312,12 +378,19 @@ const onScroll = () => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ld-nav, .ld-nav-title, .ld-lang, .ld-back { transition: none; }
+  .ld-nav, .ld-nav-title, .ld-seg-btn, .ld-back { transition: none; }
 }
 
 @media (max-width: 768px) {
-  .ld-nav-inner, .ld-container { padding-left: 16px; padding-right: 16px; }
+  .ld-nav-inner { padding-left: 16px; padding-right: 16px; }
+  .ld-container { padding-left: 16px; padding-right: 16px; }
+  /* На узком экране заголовок переносится, и иконка, выровненная по центру
+     двух строк, повисает сбоку буквой «Г» — поэтому здесь она встаёт над
+     заголовком. */
+  .ld-hero { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+  .ld-icon { width: 48px; height: 48px; border-radius: 14px; }
+  .ld-lead, .ld-card { padding: 16px 18px 18px; }
   /* Минимум 44px по HIG на любой тап-цели. */
-  .ld-lang { padding: 12px 10px; }
+  .ld-seg-btn { width: 42px; padding: 11px 0; }
 }
 </style>

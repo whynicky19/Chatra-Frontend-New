@@ -1,126 +1,153 @@
 <template>
-  <div class="pg anim-in">
-    <div class="pg-head">
-      <h1 class="pg-title">{{ t('settings.title') }}</h1>
-    </div>
+  <div class="pg" ref="scroller" @scroll.passive="onScroll">
+    <!-- Плавающая шапка: контент проезжает ПОД ней (см. apple-design §12),
+         поэтому она полупрозрачная с backdrop-filter, а разделитель —
+         не жёсткая линия, а мягкое затухание, появляющееся только когда
+         под шапкой реально что-то есть (scroll edge effect). -->
+    <header class="pg-head" :class="{ scrolled }">
+      <div class="head-inner">
+        <h1 class="pg-title">{{ t('settings.title') }}</h1>
+        <button class="save-pill" :disabled="!canSave" @click="saveProfile">{{ t('settings.save') }}</button>
+      </div>
+    </header>
 
     <div class="pg-body">
-      <!-- Profile Details -->
-      <div class="scard">
-        <div class="scard-head">
-          <div>
-            <h2 class="scard-title">{{ t('settings.profile_details') }}</h2>
+      <!-- Личность: кто я в системе -->
+      <section class="group g-1">
+        <div class="group-body ident">
+          <div class="ident-ava" aria-hidden="true">{{ initials }}</div>
+          <div class="ident-text">
+            <div class="ident-name">{{ displayName }}</div>
+            <div class="ident-mail">{{ auth.user?.email }}</div>
           </div>
-          <button class="btn btn-teal btn-lg save-btn-desktop" @click="saveProfile">{{ t('settings.save') }}</button>
+          <div class="ident-badge">{{ auth.isTeacher || auth.isAdmin ? roleLabel : institutionLabel }}</div>
         </div>
-        <div class="profile-form">
-          <div class="fields-grid">
-            <div class="field-group">
-              <label class="field-label">{{ t('settings.full_name') }}</label>
-              <input v-model="fullnameInput" class="input field-input" placeholder="Иванов Иван Иванович" maxlength="80"/>
-              <div v-if="fullnameInput && fullnameInput.trim().split(' ').filter(Boolean).length < 2" class="nick-hint err">Введите фамилию и имя</div>
-            </div>
-            <div class="field-group">
-              <label class="field-label">{{ t('settings.email') }}</label>
-              <input :value="auth.user?.email" class="input field-input" readonly style="opacity:.7;cursor:default"/>
-            </div>
-            <!-- Роль скрыта для студентов — не несёт полезной информации в их
-                 профиле; преподаватели/админы её по-прежнему видят. -->
-            <div class="field-group" v-if="auth.isTeacher">
-              <label class="field-label">{{ t('settings.role') }}</label>
-              <div class="input field-input field-locked">
-                {{ roleLabel }}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto;opacity:.4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-              </div>
-            </div>
-            <div class="field-group">
-              <label class="field-label">{{ t('settings.institution') }}</label>
-              <input :value="institutionLabel" class="input field-input" readonly style="opacity:.7;cursor:default"/>
-            </div>
-          </div>
-        </div>
-        <button class="btn btn-teal btn-lg save-btn-mobile" @click="saveProfile">{{ t('settings.save') }}</button>
-      </div>
+      </section>
 
-      <!-- Preferences row (no appearance) -->
-      <div class="scard">
-        <div class="scard-head-sm">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-          <h3 class="scard-h3">{{ t('settings.preferences') }}</h3>
-        </div>
-        <div class="pref-list">
-          <div class="pref-row">
-            <div class="pref-info">
-              <div class="pref-title">{{ lang==='ru'?'Тёмная тема':lang==='kk'?'Қараңғы тақырып':'Dark mode' }}</div>
-              <div class="pref-sub">{{ lang==='ru'?'Тёмное оформление интерфейса':lang==='kk'?'Интерфейстің қараңғы безендірілуі':'Dark interface appearance' }}</div>
+      <!-- Профиль -->
+      <section class="group g-2">
+        <h2 class="group-label">{{ t('settings.profile_details') }}</h2>
+        <div class="group-body">
+          <div class="row row-field">
+            <label class="row-label" for="set-fullname">{{ t('settings.full_name') }}</label>
+            <input id="set-fullname" v-model="fullnameInput" class="row-input" placeholder="Иванов Иван Иванович" maxlength="80"/>
+          </div>
+          <div class="row row-field">
+            <div class="row-label">{{ t('settings.email') }}</div>
+            <div class="row-value">{{ auth.user?.email }}</div>
+          </div>
+          <!-- Роль скрыта для студентов — не несёт полезной информации в их
+               профиле; преподаватели/админы её по-прежнему видят. -->
+          <div class="row row-field" v-if="auth.isTeacher">
+            <div class="row-label">{{ t('settings.role') }}</div>
+            <div class="row-value">
+              {{ roleLabel }}
+              <svg class="lock" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
             </div>
-            <button class="theme-toggle" @click="setTheme(!isDark)" :title="isDark ? 'Светлая тема' : 'Тёмная тема'">
-              <div class="toggle-track" :class="{dark: isDark}">
-                <div class="toggle-thumb">
-                  <svg v-if="isDark" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-                  <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                </div>
-              </div>
+          </div>
+          <div class="row row-field">
+            <div class="row-label">{{ t('settings.institution') }}</div>
+            <div class="row-value">{{ institutionLabel }}</div>
+          </div>
+        </div>
+        <p class="group-foot" :class="{ err: nameInvalid }">
+          {{ nameInvalid
+            ? (lang==='ru'?'Введите фамилию и имя':lang==='kk'?'Тегі мен атыңызды енгізіңіз':'Enter last name and first name')
+            : (lang==='ru'?'Это имя видят преподаватели и одногруппники.':lang==='kk'?'Бұл атыңызды оқытушылар мен курстастар көреді.':'Teachers and classmates see this name.') }}
+        </p>
+      </section>
+
+      <!-- Предпочтения -->
+      <section class="group g-3">
+        <h2 class="group-label">{{ t('settings.preferences') }}</h2>
+        <div class="group-body">
+          <div class="row">
+            <div class="ic" style="--ic:#5E5CE6">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+            </div>
+            <div class="row-main">
+              <div class="row-title">{{ lang==='ru'?'Тёмная тема':lang==='kk'?'Қараңғы тақырып':'Dark mode' }}</div>
+              <div class="row-sub">{{ lang==='ru'?'Тёмное оформление интерфейса':lang==='kk'?'Интерфейстің қараңғы безендірілуі':'Dark interface appearance' }}</div>
+            </div>
+            <button class="sw" :class="{ on: isDark }" role="switch" :aria-checked="isDark"
+              :aria-label="lang==='ru'?'Тёмная тема':lang==='kk'?'Қараңғы тақырып':'Dark mode'"
+              @click="setTheme(!isDark)">
+              <span class="sw-thumb"></span>
             </button>
           </div>
-          <div class="pref-row">
-            <div class="pref-info">
-              <div class="pref-title">{{ lang==='ru'?'Язык':lang==='kk'?'Тіл':'Language' }}</div>
-              <div class="pref-sub">{{ lang==='ru'?'Язык интерфейса':lang==='kk'?'Интерфейс тілі':'Interface language' }}</div>
+          <div class="row">
+            <div class="ic" style="--ic:#007AFF">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 010 18 15 15 0 010-18z"/></svg>
             </div>
-            <div class="lang-seg">
-              <button v-for="l in [{code:'ru',label:'RU'},{code:'en',label:'EN'},{code:'kk',label:'KZ'}]" :key="l.code"
-                :class="['lang-seg-btn',{active:lang===l.code}]" @click="setLang(l.code as any)">{{ l.label }}</button>
+            <div class="row-main">
+              <div class="row-title">{{ lang==='ru'?'Язык':lang==='kk'?'Тіл':'Language' }}</div>
+              <div class="row-sub">{{ lang==='ru'?'Язык интерфейса':lang==='kk'?'Интерфейс тілі':'Interface language' }}</div>
+            </div>
+            <div class="seg" :style="{ '--i': langIndex }">
+              <span class="seg-thumb" aria-hidden="true"></span>
+              <button v-for="l in langs" :key="l.code" type="button"
+                :class="['seg-btn', { active: lang === l.code }]" @click="setLang(l.code as any)">{{ l.label }}</button>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Новый учебный год (rollover) — только преподаватель/админ -->
-      <NuxtLink v-if="auth.isTeacher || auth.isAdmin" to="/rollover" class="scard nav-card">
-        <div class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg></div>
-        <div style="flex:1">
-          <div class="nav-title">{{ t('rollover.nav') }}</div>
-          <div class="nav-sub">{{ lang==='ru'?'Перевод предметов на новый учебный год':lang==='kk'?'Пәндерді жаңа оқу жылына ауыстыру':'Move subjects to a new academic year' }}</div>
+      <!-- Разделы -->
+      <section class="group g-4">
+        <div class="group-body">
+          <!-- Новый учебный год (rollover) — только преподаватель/админ -->
+          <NuxtLink v-if="auth.isTeacher || auth.isAdmin" to="/rollover" class="row row-nav">
+            <div class="ic" style="--ic:#FF9500">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            </div>
+            <div class="row-main">
+              <div class="row-title">{{ t('rollover.nav') }}</div>
+              <div class="row-sub">{{ lang==='ru'?'Перевод предметов на новый учебный год':lang==='kk'?'Пәндерді жаңа оқу жылына ауыстыру':'Move subjects to a new academic year' }}</div>
+            </div>
+            <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </NuxtLink>
+
+          <NuxtLink to="/ai-limit" class="row row-nav">
+            <div class="ic" style="--ic:#AF52DE">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 17l.7 1.8L20.5 19.5l-1.8.7L18 22l-.7-1.8L15.5 19.5l1.8-.7z"/></svg>
+            </div>
+            <div class="row-main">
+              <div class="row-title">{{ lang==='ru'?'AI лимит':lang==='kk'?'AI лимиті':'AI limit' }}</div>
+              <div class="row-sub">{{ lang==='ru'?'Дневной лимит запросов к ИИ':lang==='kk'?'ЖИ сұрауларының күндік лимиті':'Daily AI request limit' }}</div>
+            </div>
+            <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </NuxtLink>
+
+          <NuxtLink to="/security" class="row row-nav">
+            <div class="ic" style="--ic:#34C759">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="row-main">
+              <div class="row-title">{{ lang==='ru'?'Аккаунт и безопасность':lang==='kk'?'Аккаунт және қауіпсіздік':'Account & security' }}</div>
+              <div class="row-sub">{{ lang==='ru'?'Пароль и удаление аккаунта':lang==='kk'?'Құпия сөз және аккаунтты жою':'Password and account deletion' }}</div>
+            </div>
+            <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </NuxtLink>
+
+          <NuxtLink to="/about" class="row row-nav">
+            <div class="ic" style="--ic:#8E8E93">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <div class="row-main">
+              <div class="row-title">{{ lang==='ru'?'О приложении':lang==='kk'?'Қосымша туралы':'About' }}</div>
+              <div class="row-sub">{{ lang==='ru'?'Условия и политика конфиденциальности':lang==='kk'?'Шарттар және құпиялылық саясаты':'Terms and privacy policy' }}</div>
+            </div>
+            <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </NuxtLink>
         </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </NuxtLink>
+      </section>
 
-      <!-- AI limit -->
-      <NuxtLink to="/ai-limit" class="scard nav-card">
-        <div class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 17l.7 1.8L20.5 19.5l-1.8.7L18 22l-.7-1.8L15.5 19.5l1.8-.7z"/></svg></div>
-        <div style="flex:1">
-          <div class="nav-title">{{ lang==='ru'?'AI лимит':lang==='kk'?'AI лимиті':'AI limit' }}</div>
-          <div class="nav-sub">{{ lang==='ru'?'Дневной лимит запросов к ИИ':lang==='kk'?'ЖИ сұрауларының күндік лимиті':'Daily AI request limit' }}</div>
+      <!-- Выход — отдельной группой, как деструктивное действие в iOS -->
+      <section class="group g-5">
+        <div class="group-body">
+          <button class="row row-danger" @click="doLogout">{{ t('nav.logout') }}</button>
         </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </NuxtLink>
-
-      <!-- Аккаунт и безопасность -->
-      <NuxtLink to="/security" class="scard nav-card">
-        <div class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <div style="flex:1">
-          <div class="nav-title">{{ lang==='ru'?'Аккаунт и безопасность':lang==='kk'?'Аккаунт және қауіпсіздік':'Account & security' }}</div>
-          <div class="nav-sub">{{ lang==='ru'?'Пароль и удаление аккаунта':lang==='kk'?'Құпия сөз және аккаунтты жою':'Password and account deletion' }}</div>
-        </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </NuxtLink>
-
-      <!-- О приложении -->
-      <NuxtLink to="/about" class="scard nav-card">
-        <div class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>
-        <div style="flex:1">
-          <div class="nav-title">{{ lang==='ru'?'О приложении':lang==='kk'?'Қосымша туралы':'About' }}</div>
-          <div class="nav-sub">{{ lang==='ru'?'Условия и политика конфиденциальности':lang==='kk'?'Шарттар және құпиялылық саясаты':'Terms and privacy policy' }}</div>
-        </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </NuxtLink>
-
-      <!-- Logout -->
-      <button class="scard logout-card" @click="doLogout">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        {{ t('nav.logout') }}
-      </button>
+      </section>
     </div>
   </div>
 </template>
@@ -136,8 +163,26 @@ const auth = useAuthStore(); const authSvc = useAuthSvc(); const toast = useToas
 const { logout } = useAuth()
 const doLogout = () => { logout() }
 
-const fullnameInput = ref(''); const nickOk = ref<boolean|null>(null); const nickChecking = ref(false)
-const isDark = ref(false); const followSystem = ref(false)
+const fullnameInput = ref('')
+const isDark = ref(false)
+const scrolled = ref(false)
+
+const langs = [{ code: 'ru', label: 'RU' }, { code: 'en', label: 'EN' }, { code: 'kk', label: 'KZ' }]
+const langIndex = computed(() => Math.max(0, langs.findIndex(l => l.code === lang.value)))
+
+const savedName = computed(() => (auth.fullname || auth.nickname || '').trim())
+const displayName = computed(() => savedName.value || auth.user?.email?.split('@')[0] || '—')
+const initials = computed(() => {
+  const parts = displayName.value.trim().split(/\s+/).filter(Boolean)
+  return (parts.slice(0, 2).map(p => p[0]).join('') || '?').toUpperCase()
+})
+// Имя считается неполным, только когда его начали вводить: пустое поле —
+// это «ещё не трогал», а не ошибка, и краснеть на пустом экране незачем.
+const nameInvalid = computed(() => {
+  const v = fullnameInput.value.trim()
+  return !!v && v.split(/\s+/).filter(Boolean).length < 2
+})
+const canSave = computed(() => fullnameInput.value.trim() !== savedName.value && !nameInvalid.value)
 
 const roleLabel = computed(() => {
   const role = auth.user?.role
@@ -151,6 +196,8 @@ const institutionLabel = computed(() => {
     ? (lang.value === 'ru' ? 'Школа' : lang.value === 'kk' ? 'Мектеп' : 'School')
     : (lang.value === 'ru' ? 'Университет' : lang.value === 'kk' ? 'Университет' : 'University')
 })
+
+const onScroll = (e: Event) => { scrolled.value = (e.target as HTMLElement).scrollTop > 4 }
 
 const saveProfile = async () => {
   const fn = fullnameInput.value.trim()
@@ -181,90 +228,229 @@ onMounted(() => {
 })
 </script>
 <style scoped>
-.pg{height:100%;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column}
-.pg-head{padding:28px 32px 0;flex-shrink:0}
-.pg-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:26px;font-weight:800;color:var(--text1);margin-bottom:4px}
-.pg-sub{font-size:14px;color:var(--text4)}
-.pg-body{padding:20px 32px 40px;display:flex;flex-direction:column;gap:20px}
-.scard{background:var(--surface);border-radius:20px;padding:24px;box-shadow:var(--sh-sm)}
-.scard-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px}
-.scard-head-sm{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-.scard-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:20px;font-weight:800;color:var(--text1);margin-bottom:4px}
-.scard-sub{font-size:13px;color:var(--text4)}
-.scard-h3{font-size:16px;font-weight:700;color:var(--text1)}
-.profile-form{display:flex;gap:28px;align-items:flex-start}
-.fields-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.field-group{display:flex;flex-direction:column;gap:6px}
-.field-label{font-size:11px;font-weight:700;color:var(--text4);letter-spacing:.08em;text-transform:uppercase}
-/* text-overflow вместо жёсткого обрезания без "…" — на узких экранах длинный
-   email/ФИО раньше просто пропадал за краем поля без какого-либо намёка,
-   что там ещё есть текст. */
-.field-input{background:var(--bg2)!important;border:none!important;border-radius:14px!important;padding:12px 16px!important;text-overflow:ellipsis}
-html.dark .field-input{background:var(--surface2)!important}
-.field-input:focus{box-shadow:0 0 0 2px var(--teal)!important}
-.field-locked{display:flex;align-items:center;color:var(--text2)}
-.nick-hint{font-size:11px;font-weight:500}.nick-hint.ok{color:var(--green)}.nick-hint.err{color:var(--red)}
-.two-col-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.nav-card{display:flex;align-items:center;gap:14px;padding:16px 24px;color:var(--text1);text-decoration:none;transition:background .15s}
-.nav-card:hover{background:var(--hover,rgba(0,0,0,.03))}
-.nav-icon{width:34px;height:34px;border-radius:10px;background:var(--surface2);color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.nav-title{font-size:15px;font-weight:600;color:var(--text1)}
-.nav-sub{font-size:12.5px;color:var(--text4);margin-top:1px}
-.pref-list{display:flex;flex-direction:column}
-.pref-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
-.pref-row:last-child{border-bottom:none;padding-bottom:0}
-.pref-title{font-size:14px;font-weight:600;color:var(--text1);margin-bottom:2px}
-.pref-sub{font-size:12px;color:var(--text4)}
-/* Переключатель темы — тот же, что был на главной */
-.theme-toggle{background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center}
-.toggle-track{width:46px;height:26px;border-radius:100px;background:var(--surface3);border:1.5px solid var(--border2);position:relative;transition:all .25s;display:flex;align-items:center}
-.toggle-track.dark{background:var(--teal-d,#1a3a44);border-color:var(--teal)}
-.toggle-thumb{width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);position:absolute;left:2px;display:flex;align-items:center;justify-content:center;transition:transform .25s cubic-bezier(.34,1.56,.64,1);color:#888}
-.toggle-track.dark .toggle-thumb{transform:translateX(20px);color:var(--teal)}
-.theme-btns{display:flex;gap:12px;margin-bottom:16px}
-.theme-choice{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 12px;border-radius:var(--r-lg);border:2px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .18s;font-size:13px;font-weight:600;color:var(--text2)}
-.theme-choice:hover{border-color:var(--border2);color:var(--text1)}
-.theme-choice.sel{border-color:var(--teal);background:var(--teal-l);color:var(--teal)}
-.theme-icon{width:44px;height:44px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center}
-.light-icon{background:#f0f4f5;color:#0d2d33;border:1px solid var(--border)}
-.dark-icon{background:#111b1e;color:#e8f4f6;border:1px solid var(--border)}
-.follow-sys{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border)}
-.follow-info{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3)}
-/* Смена пароля */
-/* Модалка удаления */
-.save-btn-mobile { display: none; }
-.lang-seg{display:flex;gap:2px;background:var(--bg2);border-radius:10px;padding:3px;flex-shrink:0}
-.lang-seg-btn{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.03em;transition:all .15s;border:none;background:none;cursor:pointer}
-.lang-seg-btn.active{background:var(--surface);color:var(--teal);box-shadow:var(--sh-xs)}
-.logout-card{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--red);font-size:15px;font-weight:600;cursor:pointer;padding:16px 24px;border:none;width:100%;transition:background .15s,transform .12s}
-.logout-card:hover{background:var(--red-l)}
-.logout-card:active{transform:scale(.98)}
+.pg{height:100%;overflow-y:auto;background:var(--bg)}
+
+/* ---------- Шапка ---------- */
+.pg-head{
+  position:sticky;top:0;z-index:10;
+  padding:26px 32px 14px;
+  background:transparent;
+  transition:background .3s ease,backdrop-filter .3s ease,box-shadow .3s ease;
+}
+/* Стекло шапки тянется во всю ширину, а её содержимое живёт в той же
+   колонке, что и карточки, — иначе «Сохранить» уезжает к краю экрана. */
+.head-inner{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
+}
+.pg-head::after{
+  /* Мягкое затухание вместо hairline-разделителя: край проявляется только
+     тогда, когда под плавающей шапкой действительно проезжает контент. */
+  content:'';position:absolute;left:0;right:0;top:100%;height:18px;pointer-events:none;
+  background:linear-gradient(to bottom,var(--bg),transparent);
+  opacity:0;transition:opacity .3s ease;
+}
+.pg-head.scrolled{
+  background:rgba(242,242,247,.72);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  backdrop-filter:blur(20px) saturate(180%);
+}
+html.dark .pg-head.scrolled{background:rgba(11,11,13,.72)}
+.pg-head.scrolled::after{opacity:1}
+/* Крупный заголовок: чем больше кегль, тем плотнее трекинг и интерлиньяж. */
+.pg-title{
+  font-size:28px;font-weight:700;line-height:1.1;letter-spacing:-.024em;color:var(--text1);
+}
+.save-pill{
+  flex-shrink:0;padding:8px 18px;border-radius:100px;
+  background:var(--teal);color:#fff;font-size:14px;font-weight:600;letter-spacing:-.01em;
+  transition:transform .22s cubic-bezier(.32,.72,0,1),opacity .22s ease,background .18s ease;
+}
+.save-pill:hover:not(:disabled){background:var(--teal-h)}
+.save-pill:active:not(:disabled){transform:scale(.94);transition:transform .08s}
+.save-pill:disabled{
+  background:var(--surface2);color:var(--text4);cursor:default;
+}
+
+/* ---------- Группы ---------- */
+.pg-body{
+  padding:6px 32px 48px;display:flex;flex-direction:column;gap:26px;width:100%;
+}
+.group{animation:fadeIn .34s cubic-bezier(.16,1,.3,1) both}
+.g-1{animation-delay:0s}.g-2{animation-delay:.04s}.g-3{animation-delay:.08s}
+.g-4{animation-delay:.12s}.g-5{animation-delay:.16s}
+.group-label{
+  font-size:12px;font-weight:600;color:var(--text4);
+  letter-spacing:.06em;text-transform:uppercase;
+  padding:0 4px 8px;
+}
+.group-body{
+  background:var(--surface);border-radius:var(--r-2xl);
+  box-shadow:var(--sh-sm);overflow:hidden;
+}
+.group-foot{
+  font-size:12.5px;line-height:1.45;color:var(--text4);
+  padding:8px 4px 0;transition:color .18s ease;
+}
+.group-foot.err{color:var(--red)}
+
+/* ---------- Строка списка ---------- */
+.row{
+  position:relative;display:flex;align-items:center;gap:12px;
+  padding:12px 16px;min-height:52px;width:100%;
+  color:var(--text1);text-align:left;text-decoration:none;
+  background:transparent;
+  /* Отклик появляется мгновенно (см. :active ниже), а гаснет плавно —
+     так нажатие читается сразу, а отпускание не мигает. */
+  transition:background .32s ease;
+}
+/* Разделители подрезаны под текст, а не тянутся во всю ширину карточки. */
+.row + .row::before{
+  content:'';position:absolute;left:16px;right:0;top:0;height:1px;
+  background:var(--border);
+}
+/* Отступ разделителя равняется по тексту той строки, которой он принадлежит:
+   у строк с иконкой текст начинается за ней. */
+.row + .row:has(.ic)::before{left:58px}
+
+.ic{
+  flex-shrink:0;width:30px;height:30px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--ic);color:#fff;
+}
+.row-main{flex:1;min-width:0}
+.row-title{font-size:15px;font-weight:500;letter-spacing:-.01em;color:var(--text1)}
+.row-sub{font-size:12.5px;line-height:1.35;color:var(--text4);margin-top:1px}
+.chev{color:var(--text4);flex-shrink:0;transition:transform .22s cubic-bezier(.32,.72,0,1)}
+
+.row-nav{cursor:pointer}
+@media (hover:hover){
+  .row-nav:hover{background:var(--glass)}
+  .row-nav:hover .chev{transform:translateX(2px)}
+}
+.row-nav:active{background:var(--glass2);transition:none}
+
+/* ---------- Поля профиля ---------- */
+/* Значения выровнены влево, сразу за подписью: на карточке во всю ширину
+   правое выравнивание уносило курсор ввода на другой конец экрана — набирать
+   ФИО там неудобно, да и пара «подпись — значение» переставала читаться
+   как одно целое. */
+.row-field{gap:16px}
+.row-label{font-size:15px;font-weight:400;color:var(--text4);flex-shrink:0;min-width:132px}
+.row-input{
+  flex:1;min-width:0;border:none;background:transparent;
+  font-size:15px;color:var(--text1);padding:0;
+  text-overflow:ellipsis;
+}
+.row-input::placeholder{color:var(--text4)}
+.row-value{
+  flex:1;min-width:0;display:flex;align-items:center;gap:6px;
+  font-size:15px;color:var(--text2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.lock{flex-shrink:0;opacity:.6}
+
+/* ---------- Карточка личности ---------- */
+.ident{display:flex;align-items:center;gap:16px;padding:20px}
+.ident-ava{
+  flex-shrink:0;width:60px;height:60px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(140deg,var(--teal),var(--teal-d));
+  color:#fff;font-size:21px;font-weight:600;letter-spacing:.01em;
+  box-shadow:0 6px 18px rgba(var(--teal-rgb),.32);
+}
+.ident-text{flex:1;min-width:0}
+.ident-name{
+  font-size:19px;font-weight:600;letter-spacing:-.018em;color:var(--text1);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.ident-mail{
+  font-size:13px;color:var(--text4);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.ident-badge{
+  flex-shrink:0;padding:5px 11px;border-radius:100px;
+  background:var(--teal-l);color:var(--teal);
+  font-size:11.5px;font-weight:600;letter-spacing:.01em;white-space:nowrap;
+}
+
+/* ---------- Переключатель ---------- */
+.sw{
+  flex-shrink:0;position:relative;width:51px;height:31px;border-radius:100px;
+  background:var(--surface3);
+  transition:background .28s cubic-bezier(.32,.72,0,1);
+}
+.sw.on{background:var(--teal)}
+.sw-thumb{
+  position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;
+  background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16);
+  /* Лёгкий перелёт — щелчок тумблера физичен, у него есть инерция. */
+  transition:transform .32s cubic-bezier(.34,1.4,.64,1);
+}
+.sw.on .sw-thumb{transform:translateX(20px)}
+.sw:active .sw-thumb{box-shadow:0 3px 10px rgba(0,0,0,.2)}
+
+/* ---------- Сегментированный переключатель языка ---------- */
+.seg{
+  flex-shrink:0;position:relative;display:flex;
+  background:var(--bg2);border-radius:9px;padding:2px;
+}
+html.dark .seg{background:var(--surface2)}
+.seg-thumb{
+  position:absolute;top:2px;left:2px;bottom:2px;width:calc((100% - 4px) / 3);
+  border-radius:7px;background:var(--surface);box-shadow:var(--sh-xs);
+  transform:translateX(calc(var(--i) * 100%));
+  transition:transform .34s cubic-bezier(.32,.72,0,1);
+}
+html.dark .seg-thumb{background:var(--surface3)}
+.seg-btn{
+  position:relative;z-index:1;width:40px;padding:6px 0;
+  font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--text3);
+  background:none;transition:color .2s ease,transform .18s cubic-bezier(.32,.72,0,1);
+}
+.seg-btn.active{color:var(--text1)}
+.seg-btn:active{transform:scale(.93)}
+
+/* ---------- Выход ---------- */
+.row-danger{
+  justify-content:center;color:var(--red);font-size:15px;font-weight:500;
+  min-height:50px;
+}
+@media (hover:hover){ .row-danger:hover{background:var(--red-l)} }
+.row-danger:active{background:var(--red-l);transition:none}
+
+/* ---------- Адаптив ---------- */
 @media (max-width:768px){
-  .pg { overflow-x: hidden; overflow-y: auto; }
-  .pg-head { padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 0; }
-  .pg-body { padding: 14px 16px 90px; gap: 14px; }
-  .scard { padding: 18px 16px; border-radius: 20px; }
-  .scard-head { flex-direction: column; gap: 12px; margin-bottom: 16px; }
-  .save-btn-desktop { display: none; }
-  .save-btn-mobile { display: flex; width: 100%; min-height: 50px; margin-top: 16px; }
-  /* align-items:center (без явного align-items flex по умолчанию — stretch)
-     не растягивал .fields-grid на всю ширину — на широких "мобильных"
-     экранах (~768) поля сжимались до содержимого и оставляли пустую
-     половину карточки, самое заметное на этой странице "unnaturally narrow". */
-  .profile-form { flex-direction: column; gap: 16px; }
-  .fields-grid { grid-template-columns: 1fr; gap: 12px; width: 100%; }
-  .two-col-row { grid-template-columns: 1fr; gap: 14px; }
-  .field-input { font-size: 16px; }
-  .input { font-size: 16px !important; }
-  .pref-row { padding: 16px 0; min-height: 60px; }
-  .theme-btns { gap: 8px; }
-  .theme-choice { padding: 14px 8px; font-size: 12px; min-height: 80px; }
-  .theme-toggle { min-height: 44px; min-width: 56px; justify-content: flex-end; }
-  .lang-seg-btn { padding: 10px 14px; min-height: 40px; }
+  .pg{overflow-x:hidden}
+  .pg-head{padding:calc(16px + env(safe-area-inset-top,0px)) 16px 12px}
+  /* Крупный мобильный заголовок (28px/800 задаётся глобально в main.css)
+     на 390px переносится на две строки, поэтому кнопка равняется по ПЕРВОЙ
+     строке, а не повисает у нижней. */
+  .head-inner{align-items:flex-start}
+  .save-pill{margin-top:1px;padding:7px 14px;font-size:13px}
+  .pg-body{padding:4px 16px 90px;gap:22px}
+  .group-body{border-radius:var(--r-xl)}
+  .row{min-height:56px;padding:13px 16px}
+  /* iOS зумит страницу на фокусе поля с кеглем < 16px. */
+  .row-input{font-size:16px}
+  .row-field{flex-direction:column;align-items:stretch;gap:4px}
+  .row-label{min-width:0;font-size:12.5px}
+  .ident{padding:18px 16px;flex-wrap:wrap}
+  .ident-ava{width:52px;height:52px;font-size:18px}
+  /* Текст занимает всю оставшуюся ширину — бейдж гарантированно переносится
+     на вторую строку и выравнивается по имени, а не липнет к нему сбоку. */
+  .ident-text{min-width:calc(100% - 68px)}
+  .ident-badge{margin:8px 0 0 68px}
+  .seg-btn{width:44px;padding:9px 0}
+  .sw{width:51px;height:31px}
 }
 @media (max-width:480px){
-  .pg-head { padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 0; }
-  .pg-body { padding: 12px 14px 90px; }
-  .scard { padding: 16px 14px; }
+  .pg-head{padding:calc(12px + env(safe-area-inset-top,0px)) 14px 10px}
+  .pg-body{padding:4px 14px 90px}
+}
+
+/* «Меньше прозрачности» — плотная шапка вместо размытого стекла. */
+@media (prefers-reduced-transparency:reduce){
+  .pg-head.scrolled{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}
+  html.dark .pg-head.scrolled{background:var(--bg)}
 }
 </style>

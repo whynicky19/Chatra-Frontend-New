@@ -21,11 +21,13 @@ export const translations: Record<string, Record<Lang, string>> = {
   'settings.appearance': { ru: 'Внешний вид', en: 'Appearance', kk: 'Сыртқы түр' },
   'settings.security': { ru: 'Безопасность', en: 'Security', kk: 'Қауіпсіздік' },
   'settings.profile_details': { ru: 'Данные профиля', en: 'Profile Details', kk: 'Профиль деректері' },
-  'settings.save': { ru: 'Сохранить изменения', en: 'Save Changes', kk: 'Өзгерістерді сақтау' },
-  'settings.full_name': { ru: 'ПОЛНОЕ ИМЯ', en: 'FULL NAME', kk: 'ТОЛЫҚ АТЫ' },
-  'settings.email': { ru: 'EMAIL АДРЕС', en: 'EMAIL ADDRESS', kk: 'EMAIL МЕКЕНЖАЙЫ' },
-  'settings.role': { ru: 'РОЛЬ', en: 'ROLE', kk: 'РӨЛІ' },
-  'settings.institution': { ru: 'ОРГАНИЗАЦИЯ', en: 'INSTITUTION', kk: 'ҰЙЫМ' },
+  'settings.save': { ru: 'Сохранить', en: 'Save', kk: 'Сақтау' },
+  // Подписи полей — обычным регистром: в строках списка они читаются как
+  // подписи рядом со значением, а не как капслочные микро-лейблы старой формы.
+  'settings.full_name': { ru: 'Полное имя', en: 'Full name', kk: 'Толық аты' },
+  'settings.email': { ru: 'Email', en: 'Email', kk: 'Email' },
+  'settings.role': { ru: 'Роль', en: 'Role', kk: 'Рөлі' },
+  'settings.institution': { ru: 'Организация', en: 'Institution', kk: 'Ұйым' },
   'settings.preferences': { ru: 'Настройки', en: 'Preferences', kk: 'Баптаулар' },
   'settings.email_notif': { ru: 'Email уведомления', en: 'Email Notifications', kk: 'Email хабарламалары' },
   'settings.email_notif_sub': { ru: 'Обновления курсов и сообщения', en: 'Course updates and messages', kk: 'Курс жаңартулары мен хабарлар' },
