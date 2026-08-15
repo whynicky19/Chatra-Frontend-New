@@ -11,7 +11,7 @@
             <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
           </div>
           <div class="modal-head-txt">
-            <div class="modal-title">{{ created ? 'Обложка предмета' : 'Создать класс' }}</div>
+            <div class="modal-title">{{ created ? 'Обложка предмета' : 'Создать предмет' }}</div>
             <div class="modal-sub">{{ created ? 'Подберите цвет, иконку и картинку' : 'Название, период и преподаватель' }}</div>
           </div>
         </div>
@@ -26,7 +26,7 @@
              первый — они идут до обложки: раскрытый выбор иконок иначе
              утаскивает главное поле («Название») ниже видимой части шторки. -->
         <template v-if="!created">
-          <div class="field"><label class="field-label">Название класса<span class="req">*</span></label><AutoTextarea v-model="title" class="inp" :max-height="110" placeholder="Например: Математика 10А" autofocus/></div>
+          <div class="field"><label class="field-label">Название предмета<span class="req">*</span></label><AutoTextarea v-model="title" class="inp" :max-height="110" placeholder="Например: Математика 10А" autofocus/></div>
           <div class="field"><label class="field-label">Описание</label><AutoTextarea v-model="description" class="inp" :max-height="130" placeholder="Краткое описание курса"/></div>
           <div class="field-row">
             <div class="field"><label class="field-label">Период</label><input v-model="period" class="inp" placeholder="2024-2025"/></div>
@@ -54,7 +54,7 @@
         <button v-if="!created" class="btn btn-white" @click="close">Отмена</button>
         <button v-if="!created" class="btn btn-teal" :disabled="!title.trim() || loading" @click="submit">
           <div v-if="loading" class="spinner"></div>
-          <span v-else>Создать класс</span>
+          <span v-else>Создать предмет</span>
         </button>
         <!-- Предмет уже сохранён, поэтому это просто «закрыть»: обложка есть в
              любом случае, даже если генерацию не запускали или она не удалась. -->
@@ -115,9 +115,9 @@ const submit = async () => {
     // а дальнейшая генерация просто заменит картинку.
     emit('created', p)
 
-    toast.ok('Класс создан')
+    toast.ok('Предмет создан')
     // Первую генерацию запускаем сами — для пользователя это продолжение
-    // нажатия «Создать класс», а не отдельное непонятное действие.
+    // нажатия «Создать предмет», а не отдельное непонятное действие.
     generateCover()
   } catch (e: any) {
     toast.err(e?.response?.data?.detail || 'Ошибка')

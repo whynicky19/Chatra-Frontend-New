@@ -11,7 +11,7 @@
           </div>
           <div class="modal-head-txt">
             <div class="modal-title">Добавить лекцию</div>
-            <div class="modal-sub">Учебный материал для класса</div>
+            <div class="modal-sub">Учебный материал для предмета</div>
           </div>
         </div>
         <button class="modal-close" aria-label="Закрыть" @click="$emit('close')">

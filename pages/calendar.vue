@@ -249,7 +249,7 @@ onMounted(async () => {
     ])
 
     const classIds = classes.map((c: any) => c.id)
-    const classMap = new Map<number, string>(classes.map((c: any) => [c.id, c.name || `Класс #${c.id}`]))
+    const classMap = new Map<number, string>(classes.map((c: any) => [c.id, c.name || `Предмет #${c.id}`]))
 
     const perClass = await Promise.all(
       classIds.map((id: number) => assignSvc.list(id).catch(() => [] as any[]))
@@ -263,7 +263,7 @@ onMounted(async () => {
       .map((a: any) => ({
         id: a.id,
         class_id: a.class_id,
-        class_name: classMap.get(a.class_id) ?? `Класс #${a.class_id}`,
+        class_name: classMap.get(a.class_id) ?? `Предмет #${a.class_id}`,
         title: a.title,
         deadline: a.deadline,
         submitted: submittedIds.has(a.id),

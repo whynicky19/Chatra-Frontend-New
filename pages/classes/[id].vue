@@ -311,7 +311,7 @@
         </div>
         <div class="class-info-body">
           <div v-if="classCode" class="ci-code-card">
-            <div class="ci-code-label">{{ lang==='ru' ? 'Код класса' : lang==='kk' ? 'Сынып коды' : 'Class code' }}</div>
+            <div class="ci-code-label">{{ lang==='ru' ? 'Код предмета' : lang==='kk' ? 'Пән коды' : 'Subject code' }}</div>
             <div class="ci-code-row">
               <button class="ci-code-value" @click="copyCode" :title="lang==='ru'?'Нажмите чтобы скопировать код':'Click to copy code'">
                 <strong>{{ classCode }}</strong>
@@ -678,7 +678,7 @@ const toggleRotation = async () => {
   } catch (e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
   finally { savingRotation.value = false }
 }
-const classTitle = computed(() => currentClass.value?.name || `Класс #${classId.value}`)
+const classTitle = computed(() => currentClass.value?.name || `Предмет #${classId.value}`)
 
 const classPosts = computed(() => allPosts.value.filter(p => p.title?.includes(`[${classId.value}]`)))
 // Лекции — новые сверху, старые снизу (по запросу пользователя). classPosts

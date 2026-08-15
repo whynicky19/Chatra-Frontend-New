@@ -76,7 +76,7 @@
               <p v-else class="u-empty">Запросов к ИИ ещё не было</p>
             </section>
 
-            <!-- Классы -->
+            <!-- Предметы -->
             <section class="u-sec">
               <h3 class="u-sec-title">
                 Предметы

@@ -126,7 +126,7 @@
     <div v-if="editingClass" class="overlay" @click.self="editingClass=null">
       <div class="modal edit-class-modal">
         <div class="modal-head">
-          <span class="modal-title">{{ lang==='ru' ? 'Редактировать класс' : lang==='kk' ? 'Сыныпты өңдеу' : 'Edit Class' }}</span>
+          <span class="modal-title">{{ lang==='ru' ? 'Редактировать предмет' : lang==='kk' ? 'Пәнді өңдеу' : 'Edit Subject' }}</span>
           <button class="btn btn-icon btn-ghost" @click="editingClass=null">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -144,8 +144,8 @@
             @generate="regenerateCover"
           />
           <div class="edit-field">
-            <label class="field-label">{{ lang==='ru' ? 'НАЗВАНИЕ КЛАССА' : lang==='kk' ? 'СЫНЫП АТАУЫ' : 'CLASS NAME' }}</label>
-            <input v-model="editForm.title" class="field-input" :placeholder="lang==='ru'?'Название класса...':lang==='kk'?'Сынып атауы...':'Class name...'"/>
+            <label class="field-label">{{ lang==='ru' ? 'НАЗВАНИЕ ПРЕДМЕТА' : lang==='kk' ? 'ПӘН АТАУЫ' : 'SUBJECT NAME' }}</label>
+            <input v-model="editForm.title" class="field-input" :placeholder="lang==='ru'?'Название предмета...':lang==='kk'?'Пән атауы...':'Subject name...'"/>
           </div>
           <div class="edit-field">
             <label class="field-label">{{ lang==='ru' ? 'ОПИСАНИЕ' : lang==='kk' ? 'СИПАТТАМА' : 'DESCRIPTION' }}</label>
@@ -464,7 +464,7 @@ const saveEditClass = async () => {
     })
     await preloadImage(updated.cover_thumbnail || updated.cover_image)
     classesStore.upsert(updated)
-    toast.ok(lang.value==='ru' ? 'Класс обновлён' : lang.value==='kk' ? 'Сынып жаңартылды' : 'Class updated')
+    toast.ok(lang.value==='ru' ? 'Предмет обновлён' : lang.value==='kk' ? 'Пән жаңартылды' : 'Subject updated')
     editingClass.value = null
   } catch(e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
   finally { editSaving.value = false }

@@ -31,7 +31,7 @@
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
           </div>
           <div class="es-title">{{ lang==='ru' ? 'Архив пуст' : lang==='kk' ? 'Мұрағат бос' : 'Archive is empty' }}</div>
-          <div class="es-sub">{{ lang==='ru' ? 'Здесь появятся классы прошлых учебных лет' : lang==='kk' ? 'Мұнда өткен оқу жылдарының сыныптары көрінеді' : 'Classes from past academic years will appear here' }}</div>
+          <div class="es-sub">{{ lang==='ru' ? 'Здесь появятся предметы прошлых учебных лет' : lang==='kk' ? 'Мұнда өткен оқу жылдарының пәндері көрінеді' : 'Subjects from past academic years will appear here' }}</div>
         </div>
 
         <!-- Grid -->

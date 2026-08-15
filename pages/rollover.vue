@@ -171,9 +171,9 @@ const { t, lang } = useI18n()
 type Stage = 'select' | 'confirm' | 'result'
 const stage = ref<Stage>('select')
 const stepList = computed(() => lang.value === 'ru'
-  ? ['Классы', 'Подтверждение', 'Дедлайны']
-  : lang.value === 'kk' ? ['Сыныптар', 'Растау', 'Мерзімдер']
-  : ['Classes', 'Confirm', 'Deadlines'])
+  ? ['Предметы', 'Подтверждение', 'Дедлайны']
+  : lang.value === 'kk' ? ['Пәндер', 'Растау', 'Мерзімдер']
+  : ['Subjects', 'Confirm', 'Deadlines'])
 const stepIndex = computed(() => stage.value === 'select' ? 0 : stage.value === 'confirm' ? 1 : 2)
 const loading = ref(true)
 const processing = ref(false)
