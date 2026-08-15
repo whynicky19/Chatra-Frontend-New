@@ -1,70 +1,29 @@
 <template>
-  <div class="pp-page">
-    <div class="pp-container">
-      <button class="pp-back" @click="goBack">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        {{ lang==='ru' ? 'Назад' : lang==='kk' ? 'Артқа' : 'Back' }}
-      </button>
-
-      <!-- Top bar -->
-      <header class="pp-top">
-        <NuxtLink to="/" class="pp-brand">Chatra</NuxtLink>
-        <div class="pp-langs">
-          <button v-for="l in langs" :key="l.code" @click="setLang(l.code)"
-                  :class="['pp-lang', { active: lang === l.code }]">{{ l.label }}</button>
-        </div>
-      </header>
-
-      <!-- Hero -->
-      <div class="pp-icon" aria-hidden="true">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <path d="M14 2v6h6"/>
-          <path d="M8 13h8"/>
-          <path d="M8 17h5"/>
-        </svg>
-      </div>
-      <h1 class="pp-title">{{ c.title }}</h1>
-      <p class="pp-updated">{{ c.updatedLabel }}: {{ UPDATED }}</p>
-      <p class="pp-intro">{{ c.intro }}</p>
-
-      <!-- Sections -->
-      <section v-for="(s, i) in c.sections" :key="i" class="pp-card">
-        <h2 class="pp-card-title">{{ s.t }}</h2>
-        <p class="pp-card-body">{{ s.b }}</p>
-      </section>
-
-      <footer class="pp-footer">© {{ year }} Chatra</footer>
-    </div>
-  </div>
+  <LegalDoc :title="c.title" :updated="UPDATED" :updated-label="c.updatedLabel"
+            :intro="c.intro" :sections="c.sections">
+    <template #icon>
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <path d="M14 2v6h6"/>
+        <path d="M8 13h8"/>
+        <path d="M8 17h5"/>
+      </svg>
+    </template>
+  </LegalDoc>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from '#app'
 import { useI18n } from '~/composables/useI18n'
 
 // Публичная страница — без авторизации и без layout приложения.
 definePageMeta({ layout: false })
 
-const { lang, setLang } = useI18n()
-const router = useRouter()
-// Открыть могли откуда угодно (регистрация, логин, настройки, внешняя
-// ссылка) — возвращаемся в историю браузера, а если её нет (открыли
-// страницу напрямую), уводим на главный экран, а не оставляем в тупике.
-const goBack = () => {
-  if (import.meta.client && window.history.length > 1) router.back()
-  else router.push('/')
-}
-
-const langs = [
-  { code: 'ru' as const, label: 'RU' },
-  { code: 'en' as const, label: 'EN' },
-  { code: 'kk' as const, label: 'KZ' },
-]
+// Разметка, оформление, переключатель языка и кнопка «назад» — в LegalDoc,
+// общем для privacy/terms/rules. Здесь остаётся только сам текст.
+const { lang } = useI18n()
 
 const UPDATED = '20.07.2026'
-const year = new Date().getFullYear()
 
 // Текст совпадает с экраном условий использования в приложении.
 const content = {
@@ -79,7 +38,7 @@ const content = {
       { t: 'Использование искусственного интеллекта', b: 'В приложении доступны функции на основе искусственного интеллекта: ИИ-помощник, генерация учебных материалов и автоматическая проверка заданий. Эти функции запускаются только по вашей инициативе.\n\nОтветы ИИ формируются автоматически и могут содержать неточности. Они носят вспомогательный характер, не заменяют профессиональную оценку преподавателя и не являются юридической, медицинской или иной специализированной консультацией. ИИ-проверка запускается преподавателем, и выставленную оценку преподаватель может изменить.\n\nЗапрещается использовать функции ИИ для создания противоправного контента, обхода правил учебного заведения или введения других пользователей в заблуждение.' },
       { t: 'Пользовательский контент', b: 'Права на материалы, которые вы создаёте или загружаете в приложении — сообщения, задания, ответы и файлы, — остаются за вами или их правообладателями.\n\nЗагружая контент, вы предоставляете нам ограниченное право хранить, обрабатывать и отображать его в объёме, необходимом для работы сервиса: показа участникам вашего класса, синхронизации между устройствами и выполнения запрошенных вами функций.\n\nВы подтверждаете, что обладаете необходимыми правами на размещаемые материалы. Мы вправе удалить контент, нарушающий эти Условия или законодательство.' },
       { t: 'Интеллектуальная собственность', b: 'Приложение, его интерфейс, дизайн, логотипы, программный код и иные элементы принадлежат правообладателю Chatra и защищены законодательством об интеллектуальной собственности.\n\nВам предоставляется ограниченная, отзывная, неисключительная и непередаваемая лицензия на использование приложения в личных или учебных целях. Запрещается копировать, изменять, декомпилировать или распространять приложение и его части без нашего письменного разрешения.' },
-      { t: 'Ограничение ответственности', b: 'Сервис предоставляется «как есть». Мы не гарантируем, что работа приложения будет полностью бесперебойной и безошибочной, а результаты работы ИИ — абсолютно точными.\n\nВ пределах, допускаемых применимым правом, мы не несём ответственности за косвенные убытки и упущенную выгоду, за содержание материалов, размещённых пользователями, а также за решения, принятые на основании ответов ИИ.\n\nЭти Условия не ограничивают права, которые не могут быть ограничены в соответствии с законодательством вашей страны.' },
+      { t: 'Ограничение ответственности', b: 'Мы развиваем и поддерживаем сервис, но не можем гарантировать его бесперебойную работу, отсутствие ошибок и абсолютную точность ответов ИИ.\n\nВ пределах, допускаемых применимым правом, мы не несём ответственности за косвенные убытки и упущенную выгоду, за содержание материалов, размещённых пользователями, а также за решения, принятые на основании ответов ИИ.\n\nЭти Условия не ограничивают права, которые не могут быть ограничены в соответствии с законодательством вашей страны.' },
       { t: 'Приостановка или удаление аккаунта', b: 'Мы вправе ограничить доступ к сервису, временно приостановить или удалить аккаунт, если пользователь нарушает эти Условия или правила поведения, создаёт угрозу безопасности платформы либо других пользователей или действует в нарушение закона.\n\nПри существенных нарушениях доступ может быть ограничен незамедлительно. По возможности мы сообщаем пользователю о причинах и предоставляем возможность обжаловать решение, написав нам через раздел «Связаться с разработчиком».' },
       { t: 'Изменения условий', b: 'Мы можем периодически обновлять Условия использования — например, при появлении новых функций или изменении требований законодательства. В случае существенных изменений мы уведомим пользователей через приложение или иным доступным способом.\n\nАктуальная редакция всегда доступна в приложении. Продолжая пользоваться Chatra после вступления изменений в силу, вы принимаете обновлённые Условия.' },
       { t: 'Заключительные положения', b: 'Эти Условия составляют полное соглашение между вами и Chatra в отношении использования приложения и дополняются Политикой конфиденциальности и Правилами сообщества.\n\nЕсли отдельное положение будет признано недействительным, остальные положения сохраняют силу. Условия толкуются в соответствии с применимым законодательством по месту нахождения правообладателя.\n\nПо любым вопросам вы можете связаться с нами через раздел «Связаться с разработчиком» в настройках приложения.' },
@@ -96,7 +55,7 @@ const content = {
       { t: 'Use of artificial intelligence', b: 'The app offers AI-powered features: an AI assistant, generation of study materials and automated assignment review. These features run only at your initiative.\n\nAI responses are generated automatically and may contain inaccuracies. They are supportive in nature, do not replace a teacher\'s professional judgement, and are not legal, medical or other specialist advice. AI review is started by the teacher, and the teacher can change the grade it produces.\n\nYou may not use AI features to create unlawful content, to circumvent the rules of an educational institution, or to mislead other users.' },
       { t: 'User content', b: 'The rights to material you create or upload in the app — messages, assignments, answers and files — remain with you or their respective rights holders.\n\nBy uploading content, you grant us a limited right to store, process and display it to the extent needed to run the service: showing it to members of your class, syncing it across your devices and performing the functions you request.\n\nYou confirm that you hold the rights necessary to post the material. We may remove content that breaches these Terms or the law.' },
       { t: 'Intellectual property', b: 'The app itself — its interface, design, logos, software code and other elements — belongs to the Chatra rights holder and is protected by intellectual property law.\n\nYou are granted a limited, revocable, non-exclusive and non-transferable licence to use the app for personal or educational purposes. You may not copy, modify, decompile or distribute the app or any part of it without our written permission.' },
-      { t: 'Limitation of liability', b: 'The service is provided "as is". We do not warrant that the app will operate entirely without interruption or error, or that AI output will be completely accurate.\n\nTo the extent permitted by applicable law, we are not liable for indirect losses or lost profits, for content posted by users, or for decisions made on the basis of AI responses.\n\nThese Terms do not limit any rights that cannot be limited under the law of your country.' },
+      { t: 'Limitation of liability', b: 'We actively develop and maintain the service, but we cannot guarantee uninterrupted operation, freedom from errors, or complete accuracy of AI responses.\n\nTo the extent permitted by applicable law, we are not liable for indirect losses or lost profits, for content posted by users, or for decisions made on the basis of AI responses.\n\nThese Terms do not limit any rights that cannot be limited under the law of your country.' },
       { t: 'Suspension or deletion of an account', b: 'We may restrict access to the service, suspend or delete an account if a user breaches these Terms or the rules of conduct, creates a risk to the security of the platform or other users, or acts unlawfully.\n\nIn cases of serious violations, access may be restricted immediately. Where possible we inform the user of the reasons and give them the opportunity to appeal by writing to us via "Contact the developer".' },
       { t: 'Changes to these Terms', b: 'We may update these Terms of Service from time to time — for example, when new features are added or legal requirements change. If the changes are material, we will notify users through the app or by other available means.\n\nThe current version is always available in the app. By continuing to use Chatra after the changes take effect, you accept the updated Terms.' },
       { t: 'Final provisions', b: 'These Terms constitute the entire agreement between you and Chatra regarding use of the app, and are supplemented by the Privacy Policy and the Community Guidelines.\n\nIf any provision is found to be invalid, the remaining provisions stay in force. These Terms are interpreted in accordance with the applicable law of the rights holder\'s place of establishment.\n\nFor any questions, you can contact us via "Contact the developer" in the app settings.' },
@@ -113,7 +72,7 @@ const content = {
       { t: 'Жасанды интеллектті пайдалану', b: 'Қосымшада жасанды интеллектке негізделген функциялар бар: ИИ-көмекші, оқу материалдарын жасау және тапсырмаларды автоматты тексеру. Бұл функциялар тек сіздің бастамаңызбен іске қосылады.\n\nИИ жауаптары автоматты түрде қалыптасады және дәл болмауы мүмкін. Олар көмекші сипатта болады, оқытушының кәсіби бағасын алмастырмайды және заңдық, медициналық немесе өзге де мамандандырылған кеңес болып табылмайды. ИИ-тексеруді оқытушы іске қосады және қойылған бағаны оқытушы өзгерте алады.\n\nИИ функцияларын құқыққа қайшы мазмұн жасау, оқу орнының ережелерін айналып өту немесе басқа пайдаланушыларды жаңылыстыру үшін пайдалануға тыйым салынады.' },
       { t: 'Пайдаланушы контенті', b: 'Қосымшада өзіңіз жасайтын немесе жүктейтін материалдарға — хабарламалар, тапсырмалар, жауаптар және файлдарға — құқықтар сізде немесе олардың құқық иелерінде қалады.\n\nКонтент жүктей отырып, сіз бізге оны сервистің жұмысы үшін қажет көлемде сақтауға, өңдеуге және көрсетуге шектеулі құқық бересіз: сыныбыңыздың қатысушыларына көрсету, құрылғылар арасында синхрондау және сұралған функцияларды орындау.\n\nСіз орналастыратын материалдарға қажетті құқықтарыңыз бар екенін растайсыз. Біз осы Шарттарды немесе заңнаманы бұзатын контентті жоюға құқылымыз.' },
       { t: 'Зияткерлік меншік', b: 'Қосымшаның өзі, оның интерфейсі, дизайны, логотиптері, бағдарламалық коды және өзге де элементтері Chatra құқық иесіне тиесілі және зияткерлік меншік туралы заңнамамен қорғалады.\n\nСізге қосымшаны жеке немесе оқу мақсатында пайдалануға шектеулі, кері қайтарылатын, айрықша емес және берілмейтін лицензия ұсынылады. Қосымшаны және оның бөліктерін біздің жазбаша рұқсатымызсыз көшіруге, өзгертуге, декомпиляциялауға немесе таратуға тыйым салынады.' },
-      { t: 'Жауапкершілікті шектеу', b: 'Сервис «қалай бар, солай» ұсынылады. Біз қосымшаның жұмысы толықтай үзіліссіз әрі қатесіз болатынына, ал ИИ нәтижелерінің абсолютті дәл болатынына кепілдік бермейміз.\n\nҚолданыстағы құқық рұқсат ететін шекте біз жанама шығындар мен жіберіп алынған пайда үшін, пайдаланушылар орналастырған материалдардың мазмұны үшін, сондай-ақ ИИ жауаптары негізінде қабылданған шешімдер үшін жауап бермейміз.\n\nОсы Шарттар еліңіздің заңнамасына сәйкес шектелуге жатпайтын құқықтарды шектемейді.' },
+      { t: 'Жауапкершілікті шектеу', b: 'Біз сервисті дамытып, қолдап отырамыз, бірақ оның үзіліссіз жұмысына, қатесіз болуына және ИИ жауаптарының абсолютті дәлдігіне кепілдік бере алмаймыз.\n\nҚолданыстағы құқық рұқсат ететін шекте біз жанама шығындар мен жіберіп алынған пайда үшін, пайдаланушылар орналастырған материалдардың мазмұны үшін, сондай-ақ ИИ жауаптары негізінде қабылданған шешімдер үшін жауап бермейміз.\n\nОсы Шарттар еліңіздің заңнамасына сәйкес шектелуге жатпайтын құқықтарды шектемейді.' },
       { t: 'Аккаунтты тоқтата тұру немесе жою', b: 'Пайдаланушы осы Шарттарды немесе мінез-құлық ережелерін бұзса, платформаның не басқа пайдаланушылардың қауіпсіздігіне қатер төндірсе немесе заңды бұза әрекет етсе, біз сервиске қолжетімділікті шектеуге, аккаунтты уақытша тоқтата тұруға немесе жоюға құқылымыз.\n\nЕлеулі бұзушылықтар кезінде қолжетімділік дереу шектелуі мүмкін. Мүмкіндігінше біз пайдаланушыға себептерін хабарлаймыз және «Әзірлеушімен байланысу» бөлімі арқылы жазып, шешімге шағымдану мүмкіндігін береміз.' },
       { t: 'Шарттардың өзгеруі', b: 'Біз осы Пайдалану шарттарын мезгіл-мезгіл жаңартып отыруымыз мүмкін — мысалы, жаңа функциялар пайда болғанда немесе заңнама талаптары өзгергенде. Елеулі өзгерістер болған жағдайда пайдаланушыларды қосымша арқылы немесе өзге қолжетімді тәсілмен хабардар етеміз.\n\nӨзекті нұсқа әрқашан қосымшада қолжетімді. Өзгерістер күшіне енгеннен кейін Chatra-ны пайдалануды жалғастыра отырып, сіз жаңартылған Шарттарды қабылдайсыз.' },
       { t: 'Қорытынды ережелер', b: 'Осы Шарттар қосымшаны пайдалануға қатысты сіз бен Chatra арасындағы толық келісімді құрайды және Құпиялылық саясаты мен Қоғамдастық ережелерімен толықтырылады.\n\nЕгер жекелеген ереже жарамсыз деп танылса, қалған ережелер күшінде қалады. Шарттар құқық иесінің орналасқан жері бойынша қолданыстағы заңнамаға сәйкес түсіндіріледі.\n\nКез келген сұрақтар бойынша қосымша баптауларындағы «Әзірлеушімен байланысу» бөлімі арқылы бізге хабарласа аласыз.' },
@@ -126,98 +85,3 @@ const c = computed(() => content[lang.value] || content.ru)
 useHead({ title: computed(() => c.value.title) })
 </script>
 
-<style scoped>
-/* #__nuxt фиксирован по высоте с overflow:hidden — страница должна быть
-   собственным скролл-контейнером, иначе контент обрезается и не скроллится. */
-.pp-page {
-  height: 100vh;
-  height: 100dvh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  background: var(--bg, #f5f6f8);
-  color: var(--text1, #1c1c1e);
-  padding: 0 20px 64px;
-}
-.pp-container { max-width: 720px; margin: 0 auto; }
-
-.pp-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 18px;
-  padding: 6px 4px;
-  background: none;
-  border: none;
-  color: var(--text4, #8e8e93);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color .15s;
-}
-.pp-back:hover { color: var(--teal, #0d9488); }
-
-.pp-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 0 8px;
-}
-.pp-brand {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: var(--teal, #0d9488);
-  text-decoration: none;
-}
-.pp-langs { display: flex; gap: 6px; }
-.pp-lang {
-  border: none;
-  background: transparent;
-  color: var(--text4, #8e8e93);
-  font-size: 13px;
-  font-weight: 700;
-  padding: 6px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-.pp-lang.active { background: var(--teal, #0d9488); color: #fff; }
-
-.pp-icon {
-  width: 56px; height: 56px;
-  margin: 24px 0 16px;
-  border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--surface2);
-  color: var(--text3);
-}
-.pp-title { font-size: 30px; font-weight: 800; letter-spacing: -0.6px; margin: 0; }
-.pp-updated { font-size: 13px; color: var(--text4, #8e8e93); font-weight: 600; margin: 8px 0 0; }
-.pp-intro { font-size: 16px; line-height: 1.6; margin: 16px 0 24px; }
-
-.pp-card {
-  background: var(--surface, #fff);
-  border: 1px solid var(--border, #e5e5ea);
-  border-radius: 18px;
-  padding: 20px;
-  margin-bottom: 14px;
-}
-.pp-card-title { font-size: 17px; font-weight: 800; letter-spacing: -0.2px; margin: 0 0 10px; }
-/* pre-line — в тексте разделов есть абзацы и списки, разделённые \n. */
-.pp-card-body { font-size: 15px; line-height: 1.6; color: var(--text2, #3a3a3c); margin: 0; white-space: pre-line; }
-
-.pp-footer { text-align: center; color: var(--text4, #8e8e93); font-size: 13px; margin-top: 32px; }
-
-@media (prefers-color-scheme: dark) {
-  .pp-page { background: var(--bg, #000); color: var(--text1, #f2f2f7); }
-  .pp-card { background: var(--surface, #1c1c1e); border-color: var(--border, #2c2c2e); }
-  .pp-card-body { color: var(--text2, #c7c7cc); }
-}
-
-@media (max-width: 768px) {
-  .pp-page { padding: 0 16px 48px; }
-  .pp-title { font-size: 24px; }
-  .pp-lang { padding: 10px 12px; min-height: 44px; }
-  .pp-back { position: relative; }
-  .pp-back::after { content: ''; position: absolute; top: -12px; bottom: -12px; left: -8px; right: -8px; }
-}
-</style>
