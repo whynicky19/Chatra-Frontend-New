@@ -155,7 +155,7 @@ const close = () => {
    «шасси» шапки и подвала, утопленное тело и белые карточки полей. */
 .modal {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl);
-  padding: 0; width: 100%; max-width: 520px; max-height: 88vh;
+  padding: 0; width: 100%; max-width: 720px; max-height: 94vh;
   display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden;
 }
 .sheet-grabber { display: none; }

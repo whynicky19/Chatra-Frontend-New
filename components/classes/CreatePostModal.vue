@@ -156,7 +156,7 @@ const submit = async () => {
    как в сгруппированных формах iOS. */
 .modal {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl);
-  padding: 0; width: 100%; max-width: 560px; max-height: 88vh;
+  padding: 0; width: 100%; max-width: 780px; max-height: 94vh;
   display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden;
 }
 .sheet-grabber { display: none; }
