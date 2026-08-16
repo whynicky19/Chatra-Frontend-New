@@ -29,19 +29,16 @@ export const useAiSvc = () => {
       return Array.isArray(data) ? data : []
     },
 
-    /** POST /ai/threads — создать тред с дефолтным заголовком */
     createThread: async (): Promise<AiThread> => {
       const { data } = await api.post('/ai/threads', {})
       return data
     },
 
-    /** PATCH /ai/threads/:id — переименовать */
     renameThread: async (id: number, title: string): Promise<AiThread> => {
       const { data } = await api.patch(`/ai/threads/${id}`, { title })
       return data
     },
 
-    /** PATCH /ai/threads/:id — закрепить / открепить */
     pinThread: async (id: number, pinned: boolean): Promise<AiThread> => {
       const { data } = await api.patch(`/ai/threads/${id}`, { pinned })
       return data
@@ -52,13 +49,11 @@ export const useAiSvc = () => {
       await api.delete(`/ai/threads/${id}`)
     },
 
-    /** GET /ai/history — история треда или класса */
     getHistory: async (params: HistoryParams): Promise<any[]> => {
       const { data } = await api.get('/ai/history', { params: historyParams(params) })
       return Array.isArray(data) ? data : []
     },
 
-    /** DELETE /ai/history — очистить историю треда или класса */
     clearHistory: async (params: HistoryParams): Promise<void> => {
       await api.delete('/ai/history', { params: historyParams(params) })
     },
@@ -75,7 +70,6 @@ export const useAiSvc = () => {
       return Array.isArray(data) ? data : []
     },
 
-    /** POST /ai/chat — отправить сообщение */
     chat: async (body: {
       messages: any[]
       max_tokens?: number

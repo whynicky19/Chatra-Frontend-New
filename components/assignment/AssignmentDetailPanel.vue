@@ -1,7 +1,6 @@
 <template>
   <div class="adp" :class="mode">
 
-    <!-- Header -->
     <div class="am-head" :class="{ scrolled }">
       <div class="am-head-wash" aria-hidden="true"></div>
       <button class="adp-back" @click="$emit('close')">
@@ -43,13 +42,11 @@
         <div class="desc-block">{{ descriptionText }}</div>
       </div>
 
-      <!-- Assignment files -->
       <div v-if="assignmentFiles.length" class="section">
         <div class="section-label">{{ t('am.task_files') }}<span class="section-count">{{ assignmentFiles.length }}</span></div>
         <FileListCard :files="assignmentFiles" @open="openPreview" />
       </div>
 
-      <!-- Reference solution files -->
       <div v-if="referenceFiles.length" class="section">
         <div class="section-label">{{ t('am.reference_files') }}<span class="section-count">{{ referenceFiles.length }}</span></div>
         <div class="section-hint">
@@ -95,7 +92,6 @@
         {{ t('am.readonly_archive') }}
       </div>
 
-      <!-- Not submitted yet: single-column submit form -->
       <div v-else-if="!mySubmission" class="section">
         <div class="section-label">{{ t('am.my_work') }}</div>
         <div class="submit-form">
@@ -150,7 +146,6 @@
         </div>
       </div>
 
-      <!-- Already submitted: two-column layout — answer on the left, status/grade on the right -->
       <div v-else class="ad-grid">
         <div class="ad-col-main">
           <div v-if="mySubmission.text_content || mySubmission.file_url || parsedSubmittedUrls.length" class="section">
@@ -187,7 +182,6 @@
             </span>
           </div>
 
-          <!-- Grade card — тот же компонент, что и у преподавателя -->
           <GradeResultCard
             v-if="mySubmission.grade"
             :grade="mySubmission.grade"
@@ -215,7 +209,6 @@
             </div>
           </div>
 
-          <!-- Retract button (only if not graded, not archived) -->
           <button v-if="mySubmission.status !== 'graded' && !readonly" class="btn btn-ghost retract-btn" :disabled="retracting" @click="retract">
             <div v-if="retracting" class="spinner"></div>
             <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
@@ -229,7 +222,6 @@
     <div v-if="tab === 'submissions' && canSeeSubmissions" class="am-body" @scroll.passive="onBodyScroll">
       <div v-if="loadingSubs" class="load-center"><div class="spinner" style="width:24px;height:24px;border-width:3px;border-color:var(--border2);border-top-color:var(--teal)"></div></div>
 
-      <!-- Detail view -->
       <div v-else-if="activeSub" class="sub-detail">
         <button class="back-sub-btn" @click="activeSub = null">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -260,7 +252,6 @@
             <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openPreview" />
           </div>
 
-          <!-- Needs review card: Статус / Предлагаемая оценка ИИ / Уверенность / Причины / Анализ ИИ + 2 действия -->
           <div class="needs-review-banner">
             <div class="nrb-title">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -368,7 +359,6 @@
           </button>
         </div>
 
-        <!-- Manual grade form -->
         <div v-if="showManualGrade" ref="manualGradeFormEl" class="manual-grade-form">
           <div class="mgf-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -402,7 +392,6 @@
         </div>
       </div>
 
-      <!-- List view -->
       <div v-else>
         <div v-if="!submissions.length" class="empty-block">
           <div class="empty-ico">
@@ -709,7 +698,6 @@ const runAiGrade = async () => {
   finally { grading.value = false; stopCheckSteps() }
 }
 
-// Manual grading
 const showManualGrade = ref(false)
 const manualScore = ref(0)
 const manualFeedback = ref('')

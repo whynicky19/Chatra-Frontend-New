@@ -29,7 +29,6 @@
           <textarea v-model="body" class="inp inp-ta" rows="4" placeholder="Текст лекции, ссылки на видео..."></textarea>
         </div>
 
-        <!-- File upload -->
         <div class="field">
           <label class="field-label">Прикрепить файлы</label>
           <div class="file-drop" :class="{ dragging: drag, 'has-file': selFiles.length }" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDrop" @click="fi?.click()">
@@ -53,7 +52,6 @@
           </div>
         </div>
 
-        <!-- Upload progress -->
         <div v-if="uploading" class="upload-progress">
           <div class="upload-bar-wrap">
             <div class="upload-bar" :style="{ transform: `scaleX(${uploadPct / 100})` }"></div>

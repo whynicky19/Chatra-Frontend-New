@@ -1,6 +1,5 @@
 <template>
   <div class="asgn-card" @click="$emit('open', assignment)">
-    <!-- Left color accent -->
     <div class="asgn-accent" :class="accentClass"></div>
 
     <div class="asgn-ico-wrap" :class="icoClass">
@@ -27,7 +26,6 @@
     </div>
 
     <div class="asgn-status-wrap">
-      <!-- Student status badge -->
       <template v-if="!isTeacher">
         <div v-if="mySubmission?.status === 'graded' && mySubmission.grade" class="status-pill graded">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>

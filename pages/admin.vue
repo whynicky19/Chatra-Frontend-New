@@ -11,7 +11,6 @@
     </div>
 
     <div class="pg-body">
-      <!-- Общие цифры организации -->
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-icon stat-icon-blue">

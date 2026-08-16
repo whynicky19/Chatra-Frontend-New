@@ -29,7 +29,6 @@
     <p v-if="error" class="ca-error">{{ error }}</p>
     <p v-else-if="isFallback" class="ca-note">{{ L.fallbackNote }}</p>
 
-    <!-- Цвет -->
     <div class="ca-group">
       <span class="ca-group-label">{{ L.color }}</span>
       <div class="ca-swatches">

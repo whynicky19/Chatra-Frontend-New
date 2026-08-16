@@ -2,7 +2,6 @@
   <Transition name="modal">
     <div v-if="classId" class="overlay" @click.self="$emit('close')">
       <div class="modal cl-modal">
-        <!-- Обложка предмета как шапка -->
         <header class="cl-cover" :style="coverFallback">
           <SubjectCover :src="detail?.cover_image || card?.cover_thumbnail" :icon="detail?.cover_icon || card?.cover_icon"
                         :color="detail?.cover_color || card?.cover_color" :size="70" class="cl-cover-art"/>
@@ -41,7 +40,6 @@
           <template v-else-if="detail">
             <p v-if="detail.description" class="cl-desc">{{ detail.description }}</p>
 
-            <!-- Содержимое предмета -->
             <section class="sec">
               <h3 class="sec-title">Содержимое</h3>
               <div class="tiles">
@@ -64,7 +62,6 @@
               </div>
             </section>
 
-            <!-- Расход ИИ -->
             <section class="sec">
               <h3 class="sec-title">
                 Расход ИИ
@@ -92,7 +89,6 @@
               <p v-else class="empty-line">К ИИ по этому предмету ещё не обращались</p>
             </section>
 
-            <!-- Потоки -->
             <section v-if="detail.cohorts.length" class="sec">
               <h3 class="sec-title">Потоки</h3>
               <div class="cohorts">
@@ -104,7 +100,6 @@
               </div>
             </section>
 
-            <!-- Участники -->
             <section class="sec">
               <h3 class="sec-title">
                 Участники
@@ -130,7 +125,6 @@
               <p v-else class="empty-line">{{ detail.members.length ? 'Никого не найдено' : 'Участников пока нет' }}</p>
             </section>
 
-            <!-- Возврат студентов из прошлых потоков -->
             <section class="sec">
               <h3 class="sec-title">
                 Вернуть студента

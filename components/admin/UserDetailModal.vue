@@ -2,7 +2,6 @@
   <Transition name="modal">
     <div v-if="userId" class="overlay" @click.self="$emit('close')">
       <div class="modal user-modal">
-        <!-- Шапка: кто это и в каком он состоянии -->
         <header class="u-head">
           <span class="u-avatar" :style="{ background: avatarColor(userId) }">{{ initials(name) }}</span>
           <div class="u-id">
@@ -29,7 +28,6 @@
           <div v-if="loading" class="center-loading"><div class="spinner"></div></div>
 
           <template v-else-if="detail">
-            <!-- ИИ -->
             <section class="u-sec">
               <h3 class="u-sec-title">Расход ИИ</h3>
               <div class="u-tiles">
@@ -76,7 +74,6 @@
               <p v-else class="u-empty">Запросов к ИИ ещё не было</p>
             </section>
 
-            <!-- Предметы -->
             <section class="u-sec">
               <h3 class="u-sec-title">
                 Предметы
@@ -101,7 +98,6 @@
               </div>
             </section>
 
-            <!-- Учебная активность -->
             <section class="u-sec">
               <h3 class="u-sec-title">Учебная активность</h3>
               <div class="facts">
@@ -138,7 +134,6 @@
               </div>
             </section>
 
-            <!-- Управление -->
             <section class="u-sec">
               <h3 class="u-sec-title">Управление</h3>
               <div class="ctl-row">

@@ -2,7 +2,6 @@
   <div class="pg anim-in">
     <div class="pg-body">
       <div class="content-area">
-        <!-- Large-title header (iOS style) -->
         <button class="back-row" @click="goBack">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
           {{ t('nav.classes') }}
@@ -17,7 +16,6 @@
           </div>
         </div>
 
-        <!-- Loading -->
         <div v-if="loading" class="classes-grid">
           <div v-for="n in 3" :key="n" class="class-card skeleton-card">
             <div class="skel-cover"></div>
@@ -25,7 +23,6 @@
           </div>
         </div>
 
-        <!-- Empty -->
         <div v-else-if="!archivedClasses.length" class="empty-state">
           <div class="es-icon-wrap">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
@@ -34,7 +31,6 @@
           <div class="es-sub">{{ lang==='ru' ? 'Здесь появятся предметы прошлых учебных лет' : lang==='kk' ? 'Мұнда өткен оқу жылдарының пәндері көрінеді' : 'Subjects from past academic years will appear here' }}</div>
         </div>
 
-        <!-- Grid -->
         <div v-else class="classes-grid">
           <div v-for="cls in archivedClasses" :key="cls.id" class="class-card arch-card" @click="goClass(cls.id)">
             <div class="card-cover" :style="(cls.cover_thumbnail || cls.cover_image || cls.cover_color) ? {} : {background: coverGrad(cls.id)}">

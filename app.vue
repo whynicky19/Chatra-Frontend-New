@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-// Apply dark mode before first paint to prevent flash
+// Тема применяется до первой отрисовки, иначе моргает светлый фон.
 useHead({
   script: [
     {

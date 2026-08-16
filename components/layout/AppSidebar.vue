@@ -1,6 +1,5 @@
 <template>
   <aside :class="['sb', { collapsed: isCollapsed }]">
-    <!-- Logo — click to toggle sidebar -->
     <div class="sb-logo" @click="toggleSidebar">
       <template v-if="!isCollapsed">
         <span class="logo-img-new" role="img" aria-label="Chatra"></span>
@@ -41,7 +40,6 @@
       </NuxtLink>
     </nav>
 
-    <!-- Nudge: нет ФИО -->
     <div v-if="!isCollapsed && !isMobile && !auth.fullname" class="fio-nudge" @click="$router.push('/settings')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       <span>Укажите ваше ФИО в настройках</span>

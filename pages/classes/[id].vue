@@ -1,7 +1,6 @@
 <template>
   <div class="cd-page">
 
-    <!-- Loading -->
     <div v-if="loading" class="full-load">
       <div class="spin-ring"></div>
     </div>
@@ -11,9 +10,7 @@
            "Предметы › Название" над ней (та же навигация уже есть внутри
            самой обложки, см. .page-header-top) ══ -->
       <div class="cd-layout">
-        <!-- Left content -->
         <div class="cd-main">
-          <!-- Page header with cover image — collapses smoothly on scroll to free up room -->
           <!-- Картинку, цвет и предметную иконку рисует SubjectCover; без них
                шапка остаётся с дефолтным фоном из .page-header. -->
           <div class="page-header" :class="{ 'header-collapsed': coverCollapsed }">
@@ -37,13 +34,11 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
             </button>
 
-            <!-- Notice when teacher is viewing a past (archived) cohort -->
             <div v-if="viewingArchiveCohort" class="cohort-view-notice">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
               {{ t('cohort.viewing_archive') }}
             </div>
 
-            <!-- Class name only — bottom of the cover on both mobile and desktop -->
             <div class="page-header-body">
               <div class="page-title-row">
                 <h1 class="page-title" :class="{'title-dark': classMeta.cover_image}">{{ classTitle }}</h1>
@@ -94,7 +89,6 @@
             </button>
           </div>
 
-          <!-- Read-only notice for archived students -->
           <div v-if="isArchivedForUser" class="archive-notice">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             {{ t('cohort.readonly_notice') }}
@@ -134,10 +128,8 @@
             </div>
           </div>
 
-          <!-- Tab content -->
           <div class="tab-content" :class="{ 'ai-mode': tab === 'ai' }">
 
-            <!-- LECTURES -->
             <template v-if="tab === 'lectures'">
               <div v-if="!lectures.length" class="empty-state-card">
                 <div class="es-icon-wrap"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
@@ -165,7 +157,6 @@
               </div>
             </template>
 
-            <!-- ASSIGNMENTS -->
             <template v-if="tab === 'assignments'">
               <div v-if="loadingAssignments" class="tab-load"><div class="spin-ring"></div></div>
               <template v-else>
@@ -240,7 +231,6 @@
             </template>
           </div>
 
-          <!-- Next deadline -->
           <div class="sidebar-card" v-if="nextDeadline">
             <div class="next-deadline-label">{{ t('class.next_deadline') }}</div>
             <div class="next-deadline-row">
@@ -287,7 +277,6 @@
       </button>
     </div>
 
-    <!-- Modals -->
     <Transition name="modal">
       <LazyCreatePostModal v-if="showCreate" :class-id="classId" @close="showCreate = false" @created="onPostCreated" />
     </Transition>
@@ -384,7 +373,6 @@
     </div>
     </Transition>
 
-    <!-- Edit Post Modal -->
     <Transition name="modal">
     <div v-if="editingPost" class="overlay" @click.self="editingPost=null">
       <div class="modal" style="max-width:520px;width:100%">
@@ -440,7 +428,6 @@
     </div>
     </Transition>
 
-    <!-- Edit Assignment Modal -->
     <Transition name="modal">
     <div v-if="editingAssignment" class="overlay" @click.self="editingAssignment=null">
       <div class="modal" style="max-width:520px;width:100%">
@@ -497,7 +484,6 @@
             <label class="field-label">{{ lang==='ru'?'ДЕДЛАЙН':'DEADLINE' }}</label>
             <input v-model="editAsgForm.deadline" type="datetime-local" class="field-input"/>
           </div>
-          <!-- Criteria -->
           <div class="edit-field">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
               <label class="field-label">{{ lang==='ru'?'КРИТЕРИИ ОЦЕНИВАНИЯ':'GRADING CRITERIA' }}</label>
@@ -838,7 +824,6 @@ const saveEditPost = async () => {
   editPostSaving.value = true
   try {
     const p = editingPost.value
-    // Загружаем вновь выбранные файлы, чтобы заменить/дополнить прикрепления
     const uploaded: string[] = []
     for (const f of editPostNewFiles.value) {
       const { file_url } = await uploadSvc.upload(f)
@@ -909,7 +894,6 @@ const saveEditAssignment = async () => {
   if (!editingAssignment.value || !canSaveEditAssignment.value) return
   editAsgSaving.value = true
   try {
-    // Загружаем вновь выбранные файлы задания
     const uploadedTaskUrls: string[] = []
     for (const f of editAsgNewFiles.value) {
       const { file_url } = await uploadSvc.upload(f)
@@ -920,7 +904,6 @@ const saveEditAssignment = async () => {
     const fileLines = [...editAsgFiles.value.map(f => f.url), ...uploadedTaskUrls].join('\n')
     const descWithFiles = [stripFilesFromText(editAsgForm.value.description), fileLines].filter(Boolean).join('\n')
 
-    // Загружаем вновь выбранные файлы эталонного решения
     const uploadedRefUrls: string[] = []
     for (const f of editAsgNewRefFiles.value) {
       const { file_url } = await uploadSvc.upload(f)
@@ -1040,13 +1023,11 @@ onMounted(async () => {
 
 <style scoped>
 .cd-page{height:100%;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
-/* Loading */
 .full-load{flex:1;display:flex;align-items:center;justify-content:center}
 .spin-ring{width:30px;height:30px;border:3px solid var(--border2);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
 .tab-load{display:flex;justify-content:center;padding:60px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Layout */
 .cd-layout{display:flex;flex:1;overflow:hidden;gap:0}
 .cd-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 /* Правый сайдбар (рейтинг/дедлайн) остаётся в DOM даже на вкладке ИИ и
@@ -1160,11 +1141,9 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .quick-action-btn:hover{background:var(--surface3)}
 .quick-action-btn:active{transform:scale(.97)}
 
-/* Tab content */
 .tab-content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px}
 .tab-content.ai-mode{padding:0;overflow:hidden}
 
-/* Items list — compact, modern cards */
 .items-list{display:flex;flex-direction:column;gap:9px}
 .item-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s ease,border-color .2s ease}
 .item-row:hover{border-color:var(--border2);box-shadow:var(--sh-sm);transform:translateY(-2px)}
@@ -1184,7 +1163,6 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .item-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .meta-date,.meta-files{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--text4);background:var(--surface2);padding:3px 9px;border-radius:100px}
 
-/* Status badges */
 .status-badge{flex-shrink:0;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:100px;letter-spacing:.04em;white-space:nowrap}
 .status-progress{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}
 .status-late{background:rgba(220,38,38,.1);color:var(--red);border:1px solid rgba(220,38,38,.2)}
@@ -1195,7 +1173,6 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .item-row.item-disabled{cursor:default;opacity:.75}
 .item-row.item-disabled:hover{background:transparent}
 
-/* Item actions */
 .item-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .item-del{width:30px;height:30px;border-radius:10px;background:transparent;border:1px solid transparent;color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;opacity:0}
 .item-row:hover .item-del{opacity:1}
@@ -1211,7 +1188,6 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .item-menu-item:hover{background:var(--surface2)}
 .item-menu-item.danger{color:var(--red)}
 .item-menu-item.danger:hover{background:var(--red-l)}
-/* Edit form fields */
 .edit-field{display:flex;flex-direction:column;gap:6px}
 .field-label{font-size:11px;font-weight:700;color:var(--text4);letter-spacing:.07em}
 .field-input{padding:10px 14px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--surface2);color:var(--text1);font-size:14px;font-family:inherit;transition:border-color .15s;outline:none}
@@ -1224,7 +1200,6 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .eaf-rm{width:20px;height:20px;border-radius:50%;background:var(--surface3);color:var(--text4);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
 .eaf-rm:hover{background:var(--red-l);color:var(--red)}
 .edit-asg-ref-section{background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.18);border-radius:var(--r-lg);padding:12px}
-/* Criteria editing */
 .btn-add-criterion{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 12px;cursor:pointer;font-family:inherit;transition:all .15s}
 .btn-add-criterion:hover{background:var(--surface3)}
 .criteria-edit-list{display:flex;flex-direction:column;gap:10px}
@@ -1245,12 +1220,10 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .btn-late{padding:7px 16px;border-radius:var(--r-md);background:var(--red);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:.04em;transition:opacity .15s}
 .btn-late:hover{opacity:.85}
 
-/* Empty state */
 .empty-state-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 40px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-2xl);gap:6px;text-align:center}
 .es-h{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:16.5px;font-weight:700;color:var(--text2)}
 .es-p{font-size:13px;color:var(--text4);max-width:260px;line-height:1.5}
 
-/* Sidebar cards */
 .sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px}
 /* Рейтинг — тёмная карточка с акцентом бренд-цвета (не сплошная заливка):
    тонкая цветная рамка/подсветка по краю + сам номер и прогресс-бары в
@@ -1291,7 +1264,6 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .pb-fill{height:100%;background:linear-gradient(90deg,var(--teal-h),var(--teal));border-radius:100px;transition:width .5s ease}
 .perf-fill{background:rgba(var(--teal-rgb),.55)}
 
-/* Next deadline */
 .next-deadline-label{font-size:10px;font-weight:700;color:var(--text4);letter-spacing:.1em;margin-bottom:12px}
 .next-deadline-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
 .deadline-date-box{width:48px;height:52px;border-radius:var(--r-md);background:var(--surface2);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
@@ -1300,7 +1272,6 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .deadline-title{font-size:13px;font-weight:700;color:var(--text1);margin-bottom:3px}
 .deadline-remaining{font-size:11px;color:var(--text4)}
 
-/* AI guide */
 .ai-guide-head{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--text3);margin-bottom:10px}
 .ai-guide-body p{font-size:12px;color:var(--text4);line-height:1.6;margin-bottom:10px}
 .ai-guide-link{font-size:12px;font-weight:700;color:var(--teal);background:none;border:none;cursor:pointer;padding:0;transition:opacity .15s}
@@ -1368,6 +1339,5 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
   .page-title{font-size:18px}
 }
 
-/* Empty state icon */
 .es-icon-wrap{width:64px;height:64px;border-radius:18px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);margin-bottom:4px;opacity:.8}
 </style>

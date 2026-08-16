@@ -12,7 +12,6 @@
     </header>
 
     <div class="pg-body">
-      <!-- Личность: кто я в системе -->
       <section class="group g-1">
         <div class="group-body acct">
           <div class="acct-text">
@@ -23,7 +22,6 @@
         </div>
       </section>
 
-      <!-- Профиль -->
       <section class="group g-2">
         <h2 class="group-label">{{ t('settings.profile_details') }}</h2>
         <div class="group-body">
@@ -56,7 +54,6 @@
         </p>
       </section>
 
-      <!-- Оформление -->
       <section class="group g-3">
         <h2 class="group-label">{{ lang==='ru'?'Оформление':lang==='kk'?'Безендіру':'Appearance' }}</h2>
         <div class="group-body">
@@ -94,10 +91,8 @@
         </div>
       </section>
 
-      <!-- Разделы -->
       <section class="group g-5">
         <div class="group-body">
-          <!-- Новый учебный год (rollover) — только преподаватель/админ -->
           <NuxtLink v-if="auth.isTeacher || auth.isAdmin" to="/rollover" class="row row-nav">
             <div class="ic" style="--ic:#FF9500">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>

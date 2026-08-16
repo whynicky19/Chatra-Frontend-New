@@ -10,7 +10,6 @@
     </div>
 
     <div class="pg-body">
-      <!-- Change password -->
       <div class="scard">
         <div class="scard-head-sm">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
@@ -34,7 +33,6 @@
         </button>
       </div>
 
-      <!-- Delete account -->
       <div class="scard deactivate-card">
         <div class="deactivate-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
@@ -46,7 +44,6 @@
         <button class="deactivate-btn" @click="openDelete">{{ t('settings.delete_title') }}</button>
       </div>
 
-      <!-- Delete confirmation modal -->
       <div v-if="showDelete" class="modal-overlay" @click.self="showDelete=false">
         <div class="modal-card anim-scale">
           <div class="modal-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
@@ -79,7 +76,6 @@ const toast = useToast()
 const { t, lang } = useI18n()
 const { changePassword, deleteAccount } = useAuth()
 
-// ── Смена пароля ──
 const curPw = ref(''); const newPw = ref(''); const changingPw = ref(false); const pwErr = ref('')
 const doChangePassword = async () => {
   if (!curPw.value || newPw.value.length < 8 || changingPw.value) return
@@ -94,7 +90,6 @@ const doChangePassword = async () => {
   }
 }
 
-// ── Удаление аккаунта ──
 const showDelete = ref(false); const deletePw = ref(''); const deleting = ref(false); const delErr = ref('')
 const openDelete = () => { deletePw.value = ''; delErr.value = ''; showDelete.value = true }
 const doDeleteAccount = async () => {

@@ -1,6 +1,5 @@
 <template>
   <div class="auth-card">
-    <!-- Org type badge -->
     <div class="org-badge-row">
       <button :class="['org-pill', { school: org.isSchool }]" :title="lang==='ru'?'Сменить организацию':'Change organization'" @click="switchOrg">
         <span class="org-pill-icon">
@@ -118,7 +117,6 @@ const sub = async () => {
 .input:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(var(--teal-rgb),.16)!important}
 .input::placeholder{color:var(--text4)!important}
 
-/* Кнопка регистрации: плоская заливка акцентом, без цветного ореола тени */
 /* Плоская заливка и отсутствие цветного ореола теперь заданы в самом .btn-teal
    (assets/css/main.css) — здесь остаются только метрики кнопки. */
 .auth-submit{height:50px;border-radius:14px;font-size:15px;font-weight:600;margin-top:6px}

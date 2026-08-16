@@ -2,7 +2,6 @@
   <div class="pg anim-in">
     <div class="pg-body">
       <div class="content-area">
-        <!-- Header -->
         <div class="pg-head">
           <div class="pg-head-left">
             <h1 class="pg-title">{{ t('classes.catalog') }}</h1>
@@ -21,7 +20,6 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
               <span class="btn-head-label">Уведомления</span>
             </NuxtLink>
-            <!-- Lang switcher (mobile-visible) -->
             <div class="head-lang-switch">
               <button v-for="l in [{code:'ru',label:'RU'},{code:'en',label:'EN'},{code:'kk',label:'KZ'}]" :key="l.code"
                 :class="['head-lang-btn', { active: lang === l.code }]" @click="setLang(l.code as any)">{{ l.label }}</button>
@@ -105,7 +103,6 @@
           </template>
         </div>
 
-        <!-- Archived classes — dedicated entry (WhatsApp-style), opens separate screen -->
         <button v-if="!loading && archivedClasses.length" class="archive-entry" @click="router.push('/classes/archive')">
           <div class="ae-icon">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
@@ -184,7 +181,6 @@
           <div class="code-boxes">
             <input v-for="(_, i) in 6" :key="i" :ref="el => { if(el) codeRefs[i] = el as HTMLInputElement }" class="code-box" maxlength="1" :value="codeChars[i]" @input="onCodeInput($event, i)" @keydown="onCodeKey($event, i)" @paste="onCodePaste" inputmode="text" autocomplete="off" style="text-transform:uppercase"/>
           </div>
-          <!-- Live "class found" preview (no join) -->
           <div v-if="lookingUp" class="lookup-status">
             <div class="spinner" style="width:13px;height:13px;border-width:2px;border-color:var(--border2);border-top-color:var(--teal)"></div>
             {{ lang==='ru' ? 'Проверяем код…' : lang==='kk' ? 'Кодты тексереміз…' : 'Checking code…' }}
@@ -209,7 +205,6 @@
     </div>
     </Transition>
 
-    <!-- Delete confirm modal -->
     <Transition name="modal">
     <div v-if="deletingClass" class="overlay" @click.self="deletingClass=null">
       <div class="modal" style="max-width:400px">
@@ -234,7 +229,6 @@
     </div>
     </Transition>
 
-    <!-- Leave confirm modal -->
     <Transition name="modal">
     <div v-if="leavingClass" class="overlay" @click.self="leavingClass=null">
       <div class="modal" style="max-width:400px">
@@ -584,7 +578,6 @@ watch(() => auth.user?.id, async (newId) => {
 .pg-body{flex:1;overflow-y:auto;width:100%}
 .content-area{padding:32px 32px 80px;width:100%;box-sizing:border-box}
 
-/* Header */
 .pg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;gap:20px}
 .pg-head-left{flex:1;text-align:center}
 .pg-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:28px;font-weight:900;color:var(--text1);margin-bottom:6px;letter-spacing:-.02em;text-align:center}
@@ -598,17 +591,14 @@ watch(() => auth.user?.id, async (newId) => {
 .head-lang-btn:hover{color:var(--teal)}
 .head-lang-btn.active{background:var(--teal);color:#fff;box-shadow:0 2px 6px rgba(var(--teal-rgb),0.3)}
 
-/* Header nav buttons */
 .btn-head-icon{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r-md);border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;font-family:inherit;white-space:nowrap}
 .btn-head-icon:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-l)}
 
-/* Grid */
 .classes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;margin-bottom:32px;width:100%}
 @media (min-width:769px){
   :global(html.sidebar-collapsed .classes-grid){grid-template-columns:repeat(3,1fr)}
 }
 
-/* Archive entry — WhatsApp-style row opening a separate screen */
 .archive-entry{display:flex;align-items:center;gap:14px;width:100%;padding:14px 18px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-xs);cursor:pointer;font-family:inherit;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s}
 .archive-entry:hover{transform:translateY(-1px);box-shadow:var(--sh-sm)}
 .archive-entry:active{transform:scale(.99)}
@@ -618,7 +608,6 @@ watch(() => auth.user?.id, async (newId) => {
 .ae-chevron{color:var(--text4);flex-shrink:0}
 .lookup-status{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:12px;color:var(--text4);font-weight:500}
 
-/* Class card */
 /* transition намеренно не переопределяется здесь — берётся из общего правила
    .scard,.class-card,.card в main.css (единая спокойная кривая для всех
    поднимающихся карточек сайта). */
@@ -639,7 +628,6 @@ watch(() => auth.user?.id, async (newId) => {
    несла информации, только конкурировала за внимание с названием). */
 .card-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:17px;font-weight:800;color:var(--text1);line-height:1.25;margin-bottom:6px}
 .card-desc{font-size:13px;color:var(--text4);line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-/* Учитель + число уроков — одна тихая строка вместо двух */
 .card-meta{font-size:12px;color:var(--text4);margin-bottom:14px}
 .card-footer{border-top:1px solid var(--border);padding-top:14px}
 .card-action-row{display:flex;align-items:center;justify-content:space-between}
@@ -673,7 +661,6 @@ watch(() => auth.user?.id, async (newId) => {
   .skel-cover, .skel-line{animation:none}
 }
 
-/* Add card */
 .add-card{background:var(--surface);border:2px dashed var(--border);cursor:pointer;transition:all .2s;min-height:360px;display:flex}
 .add-card:hover{border-color:var(--teal);background:var(--glass)}
 .add-card-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:12px;flex:1}
@@ -682,14 +669,12 @@ watch(() => auth.user?.id, async (newId) => {
 .add-title{font-size:15px;font-weight:700;color:var(--text2);line-height:1.3}
 .add-sub{font-size:13px;color:var(--text4);max-width:160px;line-height:1.5}
 
-/* Empty state */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;gap:12px;text-align:center}
 .es-icon-wrap{width:72px;height:72px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);margin-bottom:8px}
 .es-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:20px;font-weight:700;color:var(--text2)}
 .es-sub{font-size:14px;color:var(--text4);max-width:300px;line-height:1.6}
 .es-btn{margin-top:8px}
 
-/* Edit class modal */
 .edit-class-modal{max-width:480px;width:100%}
 .edit-form{padding:4px 0 8px;display:flex;flex-direction:column;gap:16px}
 .edit-field{display:flex;flex-direction:column;gap:6px}
@@ -714,7 +699,6 @@ watch(() => auth.user?.id, async (newId) => {
 .found-name{position:relative;z-index:1;font-size:14px;font-weight:700;color:#fff}
 .found-meta{padding:8px 14px;font-size:12px;color:var(--text4);background:var(--surface2)}
 
-/* Delete modal */
 .del-body{display:flex;align-items:flex-start;gap:14px;padding:4px 0 18px}
 .del-icon{width:44px;height:44px;border-radius:var(--r-md);background:var(--red-l);border:1px solid rgba(220,38,38,.2);display:flex;align-items:center;justify-content:center;color:var(--red);flex-shrink:0}
 .del-text{font-size:14px;color:var(--text2);line-height:1.7}

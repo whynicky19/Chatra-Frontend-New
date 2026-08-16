@@ -30,7 +30,6 @@
           <textarea v-model="form.description" class="inp inp-ta" rows="3" placeholder="Подробное описание, требования, инструкции..."></textarea>
         </div>
 
-        <!-- Файлы задания -->
         <div class="field">
           <label class="field-label">Прикрепить файлы к заданию</label>
           <div class="file-drop" :class="{ dragging: drag, 'has-file': taskFiles.length }" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDropFiles" @click="taskFileInput?.click()">
@@ -54,7 +53,6 @@
           </div>
         </div>
 
-        <!-- ─── ЭТАЛОННЫЕ РЕШЕНИЯ (несколько файлов) ────────────────────── -->
         <div class="field ref-section">
           <div class="ref-header">
             <div class="ref-header-l">
@@ -71,7 +69,6 @@
             <div class="ref-badge">ИИ</div>
           </div>
 
-          <!-- Список прикреплённых эталонов -->
           <div v-if="refFiles.length" class="attached-files">
             <div v-for="(rf, i) in refFiles" :key="`${rf.name}_${rf.url || (rf.file ? rf.file.size + '_' + rf.file.lastModified : i)}`" class="attached-file">
               <span class="ftb ftb-sm">{{ fileEmoji(rf.file) }}</span>
@@ -99,20 +96,17 @@
             <span class="drop-hint">PDF, DOCX, DOC, PPTX, XLSX, TXT, MD… · Несколько файлов</span>
           </div>
 
-          <!-- Прогресс загрузки -->
           <div v-if="uploadingRef" class="upload-prog">
             <div class="upload-track"><div class="upload-bar indeterminate"></div></div>
             <span>Загрузка эталонных решений...</span>
           </div>
         </div>
-        <!-- ─────────────────────────────────────────────────────────────── -->
 
         <div class="field">
           <label class="field-label">Дедлайн</label>
           <input v-model="form.deadline" type="datetime-local" class="inp" />
         </div>
 
-        <!-- Criteria -->
         <div class="field">
           <div class="criteria-head">
             <label class="field-label">Критерии оценивания</label>
@@ -175,7 +169,6 @@ const taskFileInput = ref<HTMLInputElement>()
 const refFileInput = ref<HTMLInputElement>()
 const taskFiles = ref<File[]>([])
 
-// Multi-file reference solutions
 interface RefFileDraft { name: string; file: File | null; url: string }
 const refFiles = ref<RefFileDraft[]>([])
 
@@ -257,7 +250,6 @@ const submit = async () => {
   try {
     let description = form.value.description.trim() || undefined
 
-    // Загружаем файлы задания
     if (taskFiles.value.length) {
       uploadingTask.value = true
       const urls: string[] = []
@@ -275,7 +267,6 @@ const submit = async () => {
       }
     }
 
-    // Загружаем эталонные решения (несколько файлов)
     const resolvedRefUrls: string[] = []
     if (refFiles.value.length) {
       uploadingRef.value = true
@@ -388,7 +379,6 @@ const submit = async () => {
 .inp:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.12); }
 .inp-ta { resize: vertical; min-height: 88px; line-height: 1.65; }
 
-/* Критерии */
 .criteria-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .crit-add {
   display: inline-flex; align-items: center; gap: 5px;
@@ -441,7 +431,6 @@ const submit = async () => {
   background: var(--surface); border: 1px dashed var(--border2); border-radius: var(--r-lg);
 }
 
-/* Загрузка файлов */
 .file-drop {
   border: 1.5px dashed var(--border2); border-radius: var(--r-lg); padding: 20px 16px;
   display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;

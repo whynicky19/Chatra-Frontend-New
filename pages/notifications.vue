@@ -139,7 +139,6 @@ onMounted(async () => {
     const sevenDays = 7 * 24 * 3600 * 1000
     const collected: NotifItem[] = []
 
-    // New assignments (last 7 days)
     for (const a of allAssignments) {
       const age = now - parseUtc(a.created_at).getTime()
       if (age > sevenDays) continue
@@ -158,7 +157,6 @@ onMounted(async () => {
       })
     }
 
-    // Upcoming deadlines (no submission, deadline within 48h)
     const submittedIds = new Set(subs.map((s: any) => s.assignment_id))
     const fortyEightH = 48 * 3600 * 1000
     for (const a of allAssignments) {
@@ -177,7 +175,6 @@ onMounted(async () => {
       })
     }
 
-    // Graded submissions
     for (const s of subs) {
       if (s.status !== 'graded') continue
       const a = allAssignments.find((x: any) => x.id === s.assignment_id)

@@ -13,7 +13,6 @@ export const useOrgStore = defineStore('org', {
     isUniversity: (s) => s.orgType === 'university',
     orgTypeString: (s): string => s.orgType ?? 'university',
 
-    // Primary color per org
     primaryColor: (s) => s.orgType === 'school' ? '#F59E0B' : '#00B1C9',
     primaryDark:  (s) => s.orgType === 'school' ? '#D97706' : '#009AAF',
     primaryLight: (s) => s.orgType === 'school' ? 'rgba(245,158,11,.1)' : 'rgba(0,177,201,.1)',
@@ -52,7 +51,6 @@ export const useOrgStore = defineStore('org', {
   },
 })
 
-/** Inject CSS variables based on org type */
 export function applyOrgTheme(type: OrgType) {
   const root = document.documentElement
   if (type === 'school') {

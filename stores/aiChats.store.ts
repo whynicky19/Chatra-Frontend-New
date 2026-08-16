@@ -92,7 +92,6 @@ export const useAiChatsStore = defineStore('aiChats', {
       this.messages = []
       this._nextId = 0
 
-      // Мгновенный показ из localStorage-кэша...
       if (import.meta.client) {
         try {
           const raw = localStorage.getItem(msgsKey(this._uid(), id))
@@ -106,7 +105,6 @@ export const useAiChatsStore = defineStore('aiChats', {
         } catch {}
       }
 
-      // ...затем всегда синхронизируемся с сервером.
       try {
         const rows = await useAiSvc().getHistory({ threadId: id })
         if (this.activeId !== id) return   // юзер уже переключился
@@ -221,7 +219,6 @@ export const useAiChatsStore = defineStore('aiChats', {
 
         applyQuota(data.quota)
 
-        // Обновляем заголовок/свежесть треда локально, без перезагрузки списка.
         const conv = this.conversations.find(c => c.id === threadId)
         if (conv) {
           if (data.thread_title) conv.title = data.thread_title

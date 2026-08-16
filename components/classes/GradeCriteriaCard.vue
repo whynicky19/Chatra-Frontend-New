@@ -1,6 +1,5 @@
 <template>
   <div class="gcc">
-    <!-- Критерии: детальный разбор -->
     <div v-if="criteria.length" class="gcc-section">
       <div class="gcc-heading">
         <span class="gcc-heading-txt">{{ t('am.by_criteria') }}</span>
@@ -24,7 +23,6 @@
       </div>
     </div>
 
-    <!-- Комментарий преподавателя -->
     <div v-if="!gradedByAi && grade.feedback" class="gcc-teacher-comment">
       <div class="gcc-tc-head">
         <span class="gcc-tc-ava">
@@ -139,7 +137,6 @@ html.dark .tone-ok { --tone: #F0A94B; --tone-rgb: 240,169,75; }
 }
 .gcc-quote { position: absolute; left: 0; top: 3px; bottom: 3px; width: 2px; border-radius: 2px; background: var(--border2); }
 
-/* Комментарий преподавателя */
 .gcc-teacher-comment {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--r-xl); padding: 15px 16px; box-shadow: var(--sh-xs);

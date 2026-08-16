@@ -1,6 +1,5 @@
 <template>
   <div class="auth-card">
-    <!-- Org type badge -->
     <div class="org-badge-row">
       <button :class="['org-pill', { school: org.isSchool }]" :title="lang==='ru'?'Сменить организацию':'Change organization'" @click="switchOrg">
         <span class="org-pill-icon">

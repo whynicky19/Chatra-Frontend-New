@@ -13,17 +13,14 @@ export const resetLogoutFlag = () => { _loggingOut = false }
 const doLogout = () => {
   if (_loggingOut) return
   _loggingOut = true
-  // Call store lazily — Pinia is guaranteed to be ready here (inside interceptor)
   try { useAuthStore().logout() } catch {}
   if (import.meta.client) window.location.href = '/login'
 }
 
 export const useApi = (): AxiosInstance => {
-  // Always get fresh baseURL from runtimeConfig
   const cfg = useRuntimeConfig()
   const base = cfg.public.apiBase as string
 
-  // Re-create if baseURL changed (e.g. env switch)
   if (_api && _baseURL === base) return _api
 
   _baseURL = base
@@ -33,8 +30,6 @@ export const useApi = (): AxiosInstance => {
     headers: { 'ngrok-skip-browser-warning': 'true' },
   })
 
-  // ── Request interceptor ───────────────────────────────────────────────────
-  // Get token lazily inside the interceptor — Pinia is always ready here
   _api.interceptors.request.use((r: InternalAxiosRequestConfig) => {
     try {
       const auth = useAuthStore()
@@ -43,7 +38,6 @@ export const useApi = (): AxiosInstance => {
     return r
   })
 
-  // ── Response interceptor ─────────────────────────────────────────────────
   _api.interceptors.response.use(
     r => r,
     async (e) => {

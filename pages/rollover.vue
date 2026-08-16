@@ -2,7 +2,6 @@
   <div class="pg anim-in">
     <div class="pg-body">
       <div class="content-area">
-        <!-- Header -->
         <div class="ro-head">
           <button class="ro-back" @click="goBack">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
@@ -11,7 +10,6 @@
           <h1 class="pg-title">{{ t('rollover.title') }}</h1>
           <p class="pg-sub">{{ t('rollover.subtitle') }}</p>
 
-          <!-- Step indicator -->
           <div v-if="!loading && items.length" class="ro-steps">
             <div v-for="(s, i) in stepList" :key="i" class="ro-step" :class="{ active: stepIndex === i, done: stepIndex > i }">
               <div class="ro-step-dot">
@@ -24,7 +22,6 @@
           </div>
         </div>
 
-        <!-- Loading -->
         <div v-if="loading" class="ro-load"><div class="spin-ring"></div></div>
 
         <!-- ═══ STAGE 1 — SELECT ═══ -->
@@ -311,7 +308,6 @@ onMounted(async () => {
   // учителя/админа выкидывало бы на "/" по пустому auth.user.
   if (auth.token && !auth.user) await fetchMe()
 
-  // Только преподаватель/админ
   if (!(auth.user?.role === 'teacher' || auth.user?.role === 'admin')) {
     router.replace('/')
     return
@@ -342,7 +338,6 @@ onMounted(async () => {
 .ro-select-link:hover{opacity:.75}
 .ro-select-dot{font-size:12px;color:var(--text4);opacity:.6}
 
-/* Step indicator */
 .ro-steps{display:flex;align-items:center;margin-top:22px}
 .ro-step{display:flex;align-items:center;gap:8px;position:relative}
 .ro-step-dot{width:24px;height:24px;border-radius:50%;background:var(--surface2);color:var(--text4);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .25s;border:1px solid var(--border)}
@@ -376,7 +371,6 @@ onMounted(async () => {
 
 .ro-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
 
-/* Confirm */
 .ro-confirm-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:24px;margin-bottom:20px;box-shadow:var(--sh-xs)}
 .ro-confirm-title{font-size:18px;font-weight:800;color:var(--text1);margin-bottom:8px;letter-spacing:-.01em}
 .ro-confirm-intro{font-size:14px;color:var(--text3);line-height:1.6;margin-bottom:16px}
@@ -386,7 +380,6 @@ onMounted(async () => {
 .ro-confirm-year{font-size:12px;font-weight:700;color:var(--text4)}
 .ro-confirm-summary{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--text3);border-top:1px solid var(--border);padding-top:16px}
 
-/* Result */
 .ro-result-head{margin-bottom:18px}
 .ro-result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px 20px;margin-bottom:16px;box-shadow:var(--sh-xs)}
 .ro-result-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}

@@ -1,7 +1,6 @@
 <template>
   <div class="org-shell">
     <div class="org-content">
-      <!-- Lang switcher -->
       <div class="lang-row r0">
         <button v-for="l in langs" :key="l.code"
           :class="['lang-btn', { active: lang === l.code }]"
@@ -16,7 +15,6 @@
         <span class="logo-mark" :style="{ background: logoGradient }"></span>
       </div>
 
-      <!-- Заголовок -->
       <div class="org-head r2">
         <h1 class="org-title">{{ tt('Добро пожаловать', 'Қош келдіңіз', 'Welcome') }}</h1>
         <h1 class="org-title accent" :style="{ color: picked ? accent : 'var(--text1)' }">
@@ -27,7 +25,6 @@
           'Choose your organization type') }}</p>
       </div>
 
-      <!-- Карточки -->
       <div class="org-options">
         <button class="org-option r3" :class="{ selected: picked === 'university' }"
           :style="picked === 'university' ? selStyle(TEAL) : {}"
@@ -61,7 +58,6 @@
         </button>
       </div>
 
-      <!-- Продолжить -->
       <div class="org-footer r5">
         <button class="continue-btn" :disabled="!picked"
           :style="picked ? { background: accent } : {}"
@@ -135,7 +131,6 @@ const proceed = () => {
   width: 100%; max-width: 440px;
 }
 
-/* Lang row */
 .lang-row {
   display: flex; gap: 4px;
   margin-bottom: 30px;
@@ -172,7 +167,6 @@ const proceed = () => {
   transition: background .45s ease;
 }
 
-/* Заголовок */
 .org-head { text-align: center; margin-bottom: 32px; }
 /* Вес 700, а не 800: у Apple крупный заголовок набирается bold, heavy
    приберегается для очень коротких акцентных надписей. Трекинг плотнее —
@@ -189,7 +183,6 @@ const proceed = () => {
   max-width: 320px; margin-left: auto; margin-right: auto;
 }
 
-/* Карточки */
 .org-options { display: flex; flex-direction: column; gap: 13px; width: 100%; }
 .org-option {
   display: flex; align-items: center; gap: 14px;
@@ -234,7 +227,6 @@ const proceed = () => {
   transition: all .22s ease;
 }
 
-/* Продолжить */
 .org-footer { width: 100%; margin-top: 26px; display: flex; flex-direction: column; align-items: center; }
 .continue-btn {
   width: 100%; height: 52px;
@@ -251,7 +243,6 @@ const proceed = () => {
 .continue-btn:disabled { cursor: not-allowed; }
 .org-note { margin-top: 12px; font-size: 12px; color: var(--text4); text-align: center; }
 
-/* Ступенчатое появление */
 .r0, .r1, .r2, .r3, .r4, .r5 { animation: rise .5s cubic-bezier(.16,1,.3,1) both; }
 .r1 { animation-delay: .05s; }
 .r2 { animation-delay: .12s; }

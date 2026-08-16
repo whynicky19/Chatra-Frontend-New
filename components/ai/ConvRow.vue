@@ -114,7 +114,6 @@ onUnmounted(() => {
   document.removeEventListener('scroll', onScroll, true)
 })
 
-// ── Inline rename ──
 const renaming = ref(false)
 const renameText = ref('')
 const renameInputEl = ref<HTMLInputElement | null>(null)
@@ -131,7 +130,6 @@ const commit = () => {
 }
 const cancel = () => { renaming.value = false }
 
-// ── Actions ──
 const onRename = () => { closeMenu(); startRename() }
 const onTogglePin = () => { closeMenu(); store.togglePin(props.conv.id) }
 const onDelete = () => {

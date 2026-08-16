@@ -31,7 +31,6 @@
       </div>
 
       <div class="sb-list">
-        <!-- Empty state (no chats at all) -->
         <div v-if="!store.conversations.length" class="sb-empty">
           <div class="sb-empty-ico"><span class="chatra-glyph lg"></span></div>
           <div class="sb-empty-title">{{ t('ai.no_chats') }}</div>
@@ -42,7 +41,6 @@
           </button>
         </div>
 
-        <!-- No search results -->
         <div v-else-if="!filtered.length" class="sb-noresult">{{ t('ai.no_search_results') }}</div>
 
         <template v-else>
@@ -64,7 +62,6 @@
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="4"/><line x1="9.5" y1="4" x2="9.5" y2="20"/></svg>
       </button>
 
-      <!-- Messages area -->
       <div ref="area" class="chat-area">
         <div v-if="!msgs.length" class="chat-empty-state">
           <div class="empty-title">Chatra AI</div>
@@ -101,7 +98,6 @@
 
       <AiLimitNotice v-if="quota.aiLimitReached.value" :quota="quota.quota.value" class="notice-wide"/>
 
-      <!-- Input -->
       <div class="chat-inp">
         <AutoTextarea
           ref="inp"
@@ -157,7 +153,6 @@ const SIDEBAR_COLLAPSE_KEY = '_ai_sidebar_collapsed'
 const tt = (ru: string, kk: string, en: string) =>
   lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
 
-// ── Sidebar list ──────────────────────────────────────────────────────────
 const filtered = computed(() => {
   const q = query.value.trim().toLowerCase()
   const list = store.sortedConversations
@@ -186,7 +181,6 @@ const toggleSidebar = () => {
   }
 }
 
-// ── Actions ───────────────────────────────────────────────────────────────
 const openConv = (id: number) => {
   store.setActive(id)
   if (isMobile.value) closeDrawer()
@@ -202,7 +196,6 @@ const newChat = () => {
   if (isMobile.value) closeDrawer()
 }
 
-// ── Empty-state tip cards ─────────────────────────────────────────────────
 const icoBook = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>'
 const icoBulb = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18h6M10 22h4M12 2a7 7 0 00-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0012 2z"/></svg>'
 const icoPen = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>'
@@ -379,7 +372,6 @@ const onDrawerTouchEnd = () => {
   if (closed) mobileDrawerOpen.value = false
 }
 
-// ── Lifecycle ─────────────────────────────────────────────────────────────
 let mq: MediaQueryList | null = null
 const onMq = (e: MediaQueryListEvent | MediaQueryList) => { isMobile.value = e.matches }
 

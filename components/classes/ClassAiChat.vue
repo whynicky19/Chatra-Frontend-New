@@ -43,7 +43,6 @@
         </div>
       </div>
 
-      <!-- ── Messages ── -->
       <div ref="msgsEl" class="ai-msgs" @scroll="onAiMsgsScroll">
         <div v-if="!msgs.length" class="welcome">
           <div class="welcome-title">Готов помочь!</div>
@@ -72,7 +71,6 @@
       </div>
     </div>
 
-    <!-- ── Input ── -->
     <AiLimitNotice v-if="aiLimitReached" :quota="aiQuota.quota.value"/>
 
     <div class="ai-input-bar">
@@ -98,7 +96,6 @@ import { useApi } from '~/services/api'
 import { useAiQuota } from '~/composables/useAiQuota'
 import type { Submission } from '~/services/assignments'
 
-// ── Props ────────────────────────────────────────────────────────────────────
 const props = defineProps<{
   className?: string
   classPosts?: any[]
@@ -122,10 +119,8 @@ const onAiMsgsScroll = (e: Event) => {
   emit('scroll-state', msgs.value.length > 0 || (e.target as HTMLElement).scrollTop > 24)
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────────
 const MAX_CHARS = 14000  // max chars per file in context
 
-// ── Dependencies ──────────────────────────────────────────────────────────────
 const auth = useAuthStore()
 const svc = useAssignmentsSvc()
 const usersSvc = useUsersSvc()
@@ -137,7 +132,6 @@ const aiLimit = computed(() => aiQuota.aiLimit.value)
 
 const studentMap = ref<Record<number, string>>({})
 
-// ── State ─────────────────────────────────────────────────────────────────────
 interface Msg { id: number; role: 'user' | 'assistant'; text: string }
 
 const msgs = ref<Msg[]>([])
@@ -150,7 +144,6 @@ const pendingSubs = ref<Submission[]>([])
 const gradingId = ref<number | null>(null)
 let nextId = 0
 
-// ── Session persistence ────────────────────────────────────────────────────────
 const storageKey = computed(() => `ai_chat_class_${props.classId ?? 'x'}`)
 
 const persist = () => {
@@ -168,7 +161,6 @@ const restore = () => {
   } catch {}
 }
 
-// ── Computed ──────────────────────────────────────────────────────────────────
 // Лекции класса в порядке "1, 2, 3..." — posts.position с бэкенда (см.
 // migrations/017), с fallback на id для лекций без position (старые записи).
 // Номер нужен, чтобы AI мог связать "объясни 2 лекцию" с конкретным постом.
@@ -217,7 +209,6 @@ const quickItems = [
   { i: 'help', t: 'Частые ошибки', p: 'Какие типичные ошибки допускают по данной теме и как их избежать?' },
 ]
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
 const getStudentName = (id: number) => studentMap.value[id] || `Студент #${id}`
 
 const emoji = (url: string) => {
@@ -335,7 +326,6 @@ const scrollBottom = () => nextTick(() => {
   if (msgs.value.length > 0) emit('scroll-state', true)
 })
 
-// ── Build system prompt ────────────────────────────────────────────────────────
 const buildSystem = (): string => {
   const className = props.className || 'этого класса'
   let sys = `Ты — опытный ИИ-ассистент и педагог класса "${className}". Помогаешь студентам понять материалы, объясняешь темы доступно, помогаешь решать задания и проверяешь работы. Отвечай на русском языке. Будь точным, дружелюбным и педагогически грамотным.`
@@ -372,7 +362,6 @@ const buildSystem = (): string => {
   return sys
 }
 
-// ── Grade submission ───────────────────────────────────────────────────────────
 const gradeOne = async (sub: Submission) => {
   gradingId.value = sub.id
   try {
@@ -403,7 +392,6 @@ const gradeOne = async (sub: Submission) => {
   } finally { gradingId.value = null }
 }
 
-// ── Load pending submissions ───────────────────────────────────────────────────
 const loadPending = async () => {
   if (!props.isTeacher || !props.assignmentId) return
   try {
@@ -421,7 +409,6 @@ const loadPending = async () => {
   } catch {}
 }
 
-// ── Send ──────────────────────────────────────────────────────────────────────
 const pushSend = (text: string) => { inputTxt.value = text; send() }
 
 const send = async () => {
@@ -442,7 +429,6 @@ const send = async () => {
   loading.value = true
 
   try {
-    // Use last 20 messages for context
     const history = msgs.value.slice(-20).map(m => ({ role: m.role, content: m.text }))
     const systemPrompt = buildSystem()
 
@@ -500,7 +486,6 @@ const syncFromServer = async () => {
   } catch {}
 }
 
-// ── Lifecycle ─────────────────────────────────────────────────────────────────
 watch(msgs, scrollBottom)
 
 onMounted(() => {
@@ -514,14 +499,12 @@ onMounted(() => {
 <style scoped>
 .class-ai { display: flex; flex-direction: column; height: 100%; background: var(--bg); overflow: hidden; position: relative; }
 
-/* Minimal top bar — clear-chat action only, no title/branding */
 /* Floating actions — overlay the messages area, no header bar/divider under the cover */
 .ai-floating-actions { position: absolute; top: 12px; right: 14px; z-index: 5; display: flex; gap: 8px; }
 .hdr-btn { position: relative; width: 34px; height: 34px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; box-shadow: var(--sh-xs); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .hdr-btn:hover, .hdr-btn-active { background: rgba(var(--teal-rgb),.1); border-color: rgba(var(--teal-rgb),.25); color: var(--teal); }
 .hdr-badge { position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; background: var(--yellow); border-radius: 8px; font-size: 10px; font-weight: 700; color: #1c1c1e; display: flex; align-items: center; justify-content: center; border: 2px solid var(--surface); padding: 0 3px; }
 
-/* Body */
 .ai-body { flex: 1; display: flex; overflow: hidden; min-height: 0; position: relative; }
 
 /* Sidebar (teacher tools) */
@@ -538,10 +521,8 @@ onMounted(() => {
 .grade-btn:disabled { opacity: .5; cursor: not-allowed; }
 .grade-btn:not(:disabled):hover { background: var(--teal-h); }
 
-/* Messages */
 .ai-msgs { flex: 1; overflow-y: auto; padding: 56px 20px 18px; display: flex; flex-direction: column; gap: 14px; }
 
-/* Welcome */
 .welcome { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; margin: auto; max-width: 440px; padding: 20px; }
 .welcome-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 21px; font-weight: 900; color: var(--text1); }
 .welcome-desc { font-size: 13px; color: var(--text4); line-height: 1.5; }
@@ -573,14 +554,12 @@ onMounted(() => {
 :deep(.msg-bubble .md-table th), :deep(.msg-bubble .md-table td) { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
 :deep(.msg-bubble .md-table th) { background: rgba(0,0,0,.04); font-weight: 700; }
 
-/* Typing indicator */
 .typing-bbl { display: flex; align-items: center; gap: 5px; padding: 14px 18px; }
 .typing-bbl span { width: 6px; height: 6px; border-radius: 50%; background: var(--text4); animation: bounce .8s ease infinite; }
 .typing-bbl span:nth-child(2) { animation-delay: .14s; }
 .typing-bbl span:nth-child(3) { animation-delay: .28s; }
 @keyframes bounce { 0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)} }
 
-/* Input bar */
 .ai-input-bar { display: flex; align-items: flex-end; gap: 10px; padding: 12px 18px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
 .ai-textarea { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 11px 15px; color: var(--text1); font-size: 13.5px; resize: none; line-height: 1.5; max-height: 140px; overflow-y: auto; transition: border-color .15s; font-family: inherit; }
 .ai-textarea:focus { border-color: rgba(var(--teal-rgb),.45); outline: none; }
@@ -608,7 +587,6 @@ html.dark .send-btn.locked { background: var(--surface3, var(--surface2)); }
   .quick-grid { grid-template-columns: 1fr; }
 }
 
-/* Spinners */
 .spin-xs { width: 12px; height: 12px; border: 2px solid var(--border2); border-top-color: var(--teal); border-radius: 50%; animation: spin .6s linear infinite; flex-shrink: 0; }
 .spin-xs.white { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
 @keyframes spin { to{transform:rotate(360deg)} }

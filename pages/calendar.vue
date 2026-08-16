@@ -18,7 +18,6 @@
       <template v-else>
         <div class="cal-layout">
         <div class="cal-left">
-        <!-- Mini calendar -->
         <div class="cal-wrap">
           <div class="cal-header">
             <button class="btn btn-icon btn-ghost btn-sm" @click="prevMonth">
@@ -54,7 +53,6 @@
           </div>
         </div>
 
-        <!-- 7-day strip -->
         <div class="strip-label">Ближайшие 7 дней</div>
         <div class="strip-scroll">
           <div
@@ -69,9 +67,8 @@
           </div>
         </div>
 
-        </div><!-- /cal-left -->
+        </div>
 
-        <!-- Day detail — right column -->
         <div class="cal-right">
           <div class="day-detail">
             <div class="detail-label-row">
@@ -97,7 +94,7 @@
             </div>
           </div>
         </div>
-        </div><!-- /cal-layout -->
+        </div>
       </template>
     </div>
   </div>
@@ -286,12 +283,10 @@ onMounted(async () => {
 .pg-title{font-size:24px;font-weight:800;letter-spacing:-.02em}
 .pg-body{padding:20px 32px 32px}
 
-/* Two-column layout on desktop */
 .cal-layout{display:grid;grid-template-columns:minmax(320px,480px) 1fr;gap:24px;align-items:start}
 .cal-left{min-width:0}
 .cal-right{min-width:0}
 
-/* Calendar */
 .cal-wrap{background:var(--surface);border-radius:20px;padding:20px;margin-bottom:20px;box-shadow:var(--sh-sm)}
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .cal-month-label{font-size:15px;font-weight:700;color:var(--text1);text-transform:capitalize}
@@ -311,7 +306,6 @@ onMounted(async () => {
 .lg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text4);font-weight:500}
 .lg-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
 
-/* 7-day strip */
 .strip-label{font-size:11px;font-weight:800;color:var(--text4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
 .strip-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;-webkit-overflow-scrolling:touch;max-width:100%;scroll-snap-type:x proximity;scrollbar-width:none}
 .strip-scroll::-webkit-scrollbar{display:none}
@@ -326,7 +320,6 @@ onMounted(async () => {
 .strip-num{font-size:16px;font-weight:800;color:var(--text1)}
 .strip-badge{background:var(--text3);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:100px}
 
-/* Day detail — right column */
 .day-detail{background:var(--surface);border-radius:20px;padding:20px;position:sticky;top:0;box-shadow:var(--sh-sm)}
 .detail-label-row{display:flex;align-items:center;gap:8px;margin-bottom:16px}
 .detail-label{font-size:15px;font-weight:700;color:var(--text1);text-transform:capitalize}

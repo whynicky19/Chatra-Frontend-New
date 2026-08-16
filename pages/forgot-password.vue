@@ -3,7 +3,6 @@
     <h2 class="auth-title">{{ codeSent ? t('reset.title') : t('forgot.title') }}</h2>
     <p class="auth-sub">{{ codeSent ? t('reset.sub') : t('forgot.sub') }}</p>
 
-    <!-- Шаг 1: email -->
     <form v-if="!codeSent" @submit.prevent="sendCode" class="auth-form">
       <div class="frow">
         <label class="flabel">Email</label>
@@ -17,7 +16,6 @@
       </button>
     </form>
 
-    <!-- Шаг 2: код + новый пароль -->
     <form v-else @submit.prevent="doReset" class="auth-form">
       <div class="frow">
         <label class="flabel">{{ t('verify.code_label') }}</label>

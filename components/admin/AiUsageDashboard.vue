@@ -1,6 +1,5 @@
 <template>
   <div class="dash">
-    <!-- Период отчёта + обновление -->
     <div class="dash-bar">
       <div class="seg" :style="{ '--n': periods.length, '--i': periodIndex }">
         <div class="seg-ind"></div>
@@ -144,7 +143,6 @@
       </div>
       <div v-else class="card dash-empty">За этот период запросов к ИИ не было</div>
 
-      <!-- Структура расхода и динамика -->
       <div class="two-col two-col-chart">
         <section class="card">
           <div class="card-head">
@@ -292,7 +290,6 @@
         </div>
       </section>
 
-      <!-- Предметы и люди -->
       <div class="two-col">
         <section class="card">
           <div class="card-head">

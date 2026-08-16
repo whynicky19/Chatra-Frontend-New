@@ -30,7 +30,6 @@
       <p class="grc-summary-text">{{ grade.feedback }}</p>
     </div>
 
-    <!-- Сильные / слабые стороны — только для оценки ИИ -->
     <div v-if="gradedByAi && (strengths.length || weaknesses.length)" class="grc-analysis-grid">
       <div v-if="strengths.length" class="grc-bullet-card ok">
         <div class="grc-bullet-title">
@@ -115,7 +114,6 @@ html.dark .tone-excellent { --tone-rgb: 74,222,128; }
 html.dark .tone-poor { --tone-rgb: 248,113,113; }
 html.dark .tone-ok { --tone: #F0A94B; --tone-rgb: 240,169,75; }
 
-/* Hero */
 .grc-hero {
   position: relative; overflow: hidden;
   border-radius: var(--r-2xl);
@@ -149,7 +147,6 @@ html.dark .tone-ok { --tone: #F0A94B; --tone-rgb: 240,169,75; }
 .grc-by-badge svg { color: var(--tone); }
 .grc-badge-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--text4); margin: 0 2px; }
 
-/* Резюме ИИ */
 .grc-summary {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--r-xl); padding: 15px 16px;
@@ -169,7 +166,6 @@ html.dark .tone-ok { --tone: #F0A94B; --tone-rgb: 240,169,75; }
 }
 .grc-summary-text { font-size: 13.5px; line-height: 1.65; color: var(--text2); margin: 0; white-space: pre-wrap; }
 
-/* Сильные / слабые стороны */
 .grc-analysis-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .grc-bullet-card {
   border-radius: var(--r-xl); padding: 14px 15px;

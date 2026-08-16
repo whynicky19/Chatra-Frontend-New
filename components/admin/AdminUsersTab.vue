@@ -1,6 +1,5 @@
 <template>
   <div class="tab">
-    <!-- Поиск, создание, фильтры -->
     <div class="bar">
       <div class="search-wrap">
         <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -82,7 +81,6 @@
                      @role="setRole" @unlimited="setUnlimited"
                      @block="doBlock" @unblock="doUnblock" @remove="doDelete"/>
 
-    <!-- Создание пользователя -->
     <Transition name="modal">
       <div v-if="showCreate" class="overlay" @click.self="showCreate = false">
         <div class="modal">
