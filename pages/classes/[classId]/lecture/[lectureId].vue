@@ -31,6 +31,16 @@
               @open-file="openFile"
             />
             <MaterialListPanel :files="files" :active-index="activeIndex" @open="openFile" />
+
+            <div class="lec-highlights">
+              <HighlightsPanel
+                :items="lectureHighlights"
+                show-file
+                @go="h => goHighlight(h)"
+                @note="h => goHighlight(h, true)"
+                @remove="h => highlights.remove(h.id)"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -56,6 +66,7 @@ import { renderBody } from '~/composables/useRenderBody'
 import { extractFilesFromText, stripFilesFromText } from '~/composables/useAttachments'
 import { provideLectureData, type LecturePost } from '~/composables/useLectureData'
 import { useSidePanelCollapse } from '~/composables/useSidePanelCollapse'
+import { useHighlights, type Highlight } from '~/composables/useHighlights'
 
 definePageMeta({ layout: 'default' })
 
@@ -101,6 +112,18 @@ const { collapsed, toggle: toggleCollapse } = useSidePanelCollapse()
 const canCollapse = computed(() => !isMobile.value && hasActiveFile.value)
 const isCollapsed = computed(() => canCollapse.value && collapsed.value)
 
+const highlights = useHighlights()
+const lectureHighlights = computed(() => highlights.forLecture(classId.value, lectureId.value))
+
+// Файл выделения может быть не тем, что открыт сейчас, — открываем нужный и
+// передаём id: просмотрщик сам долистает до места и подсветит его.
+const goHighlight = (h: Highlight, withNote = false) => {
+  router.push({
+    path: `/classes/${classId.value}/lecture/${lectureId.value}/file/${h.fileIndex}`,
+    query: withNote ? { hl: h.id, note: '1' } : { hl: h.id },
+  })
+}
+
 const openFile = (index: number) => router.push(`/classes/${classId.value}/lecture/${lectureId.value}/file/${index}`)
 const goBack = () => router.push(`/classes/${classId.value}?tab=lectures`)
 
@@ -136,6 +159,7 @@ const fmtDate = (d: string) => { if (!d) return ''; try { return parseUtc(d).toL
 .lec-toggle:active { transform: scale(.92); }
 
 .lec-left-scroll { flex: 1; overflow-y: auto; padding: 8px 28px 32px; }
+.lec-highlights { margin-top: 26px; }
 .lec-back {
   display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
   margin: 20px 28px 4px; padding: 0; background: none; border: none;

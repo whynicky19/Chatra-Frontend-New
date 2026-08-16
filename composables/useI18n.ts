@@ -439,6 +439,22 @@ export const translations: Record<string, Record<Lang, string>> = {
   'am.sending': { ru: 'Отправка...', en: 'Sending...', kk: 'Жіберілуде...' },
   'am.submit_work_btn': { ru: 'Сдать работу', en: 'Submit work', kk: 'Жұмысты тапсыру' },
 
+  // Выделения в материалах лекции
+  'hl.section': { ru: 'Мои выделения', en: 'My highlights', kk: 'Менің белгілеулерім' },
+  'hl.empty': { ru: 'Выделите текст в материале — он появится здесь.', en: 'Select text in a material — it will show up here.', kk: 'Материалдағы мәтінді белгілеңіз — ол осында шығады.' },
+  'hl.note': { ru: 'Заметка', en: 'Note', kk: 'Жазба' },
+  'hl.note_placeholder': { ru: 'Короткая заметка…', en: 'Short note…', kk: 'Қысқа жазба…' },
+  'hl.ask_ai': { ru: 'Спросить AI', en: 'Ask AI', kk: 'AI-дан сұрау' },
+  'hl.copy': { ru: 'Копировать', en: 'Copy', kk: 'Көшіру' },
+  'hl.copied': { ru: 'Скопировано', en: 'Copied', kk: 'Көшірілді' },
+  'hl.delete': { ru: 'Удалить', en: 'Delete', kk: 'Жою' },
+  'hl.more': { ru: 'Ещё', en: 'More', kk: 'Тағы' },
+  'hl.page': { ru: 'стр.', en: 'p.', kk: 'бет' },
+  'hl.color_yellow': { ru: 'Жёлтый', en: 'Yellow', kk: 'Сары' },
+  'hl.color_green': { ru: 'Зелёный', en: 'Green', kk: 'Жасыл' },
+  'hl.color_blue': { ru: 'Синий', en: 'Blue', kk: 'Көк' },
+  'hl.color_red': { ru: 'Красный', en: 'Red', kk: 'Қызыл' },
+
   // Сворачивание второй колонки (список заданий / материалов лекции)
   'panel.collapse': { ru: 'Свернуть список', en: 'Collapse list', kk: 'Тізімді жию' },
   'panel.expand': { ru: 'Развернуть список', en: 'Expand list', kk: 'Тізімді жаю' },

@@ -1,5 +1,5 @@
 <template>
-  <div class="dvs" :class="mode" ref="rootEl">
+  <div class="dvs" :class="mode" ref="rootEl" @pointerup="onContentPointerUp">
     <div class="dvs-toolbar">
       <button class="dvs-btn dvs-back" @click="$emit('close')" :title="t('general.back')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
@@ -12,6 +12,10 @@
           <button class="dvs-btn" @click="zoomIn" :title="t('lecture.zoom_in')">+</button>
           <span class="dvs-page-counter">{{ page }} / {{ pageCount }}</span>
         </template>
+        <button v-if="context" class="dvs-btn dvs-hl-btn" :class="{ active: showPanel }" @click="showPanel = !showPanel" :title="t('hl.section')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16"/><path d="M8.5 15.5l-3.5.9.9-3.5L15.6 3.2a1.9 1.9 0 012.7 2.7L8.5 15.5z"/></svg>
+          <span v-if="fileHighlights.length" class="dvs-hl-count">{{ fileHighlights.length }}</span>
+        </button>
         <button class="dvs-btn" @click="toggleFullscreen" :title="t('lecture.fullscreen')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
         </button>
@@ -36,13 +40,15 @@
         <button class="btn btn-teal btn-sm" @click="download">{{ t('lecture.download') }}</button>
       </div>
 
-      <PdfPageViewer v-else-if="isPaged && pdfDoc" :doc="pdfDoc" :page="page" :zoom="zoom" />
+      <PdfPageViewer v-else-if="isPaged && pdfDoc" :doc="pdfDoc" :page="page" :zoom="zoom" @text-layer="onTextLayer" />
 
-      <img v-else-if="kind === 'image'" :src="file?.url" class="dvs-image" :alt="file?.name" @error="onImgError" />
+      <div v-else-if="kind === 'image'" class="dvs-image-wrap">
+        <img :src="file?.url" class="dvs-image" :alt="file?.name" @error="onImgError" />
+      </div>
 
-      <div v-else-if="kind === 'sheet'" class="dvs-sheet" v-html="sheetHtml"></div>
+      <div v-else-if="kind === 'sheet'" ref="sheetEl" class="dvs-sheet" v-html="sheetHtml"></div>
 
-      <pre v-else-if="kind === 'text'" class="dvs-text">{{ textContent }}</pre>
+      <pre v-else-if="kind === 'text'" ref="textEl" class="dvs-text">{{ textContent }}</pre>
 
       <div v-else class="dvs-state dvs-error">
         <div class="dvs-error-text">{{ t('lecture.unsupported') }}</div>
@@ -58,21 +64,66 @@
       @select="p => page = p"
       class="dvs-strip"
     />
+
+    <HighlightMenu
+      v-if="menu.visible"
+      :x="menu.x"
+      :y="menu.y"
+      :below="menu.below"
+      :color="activeHighlight?.color || null"
+      :note="activeHighlight?.note || ''"
+      :saved="!!activeId"
+      :note-open="noteOpen"
+      @pick-color="pickColor"
+      @open-note="openNote"
+      @close-note="closeMenu"
+      @save-note="saveNote"
+      @ask-ai="askAi"
+      @copy="copySelection"
+      @remove="removeActive"
+    />
+
+    <Transition name="dvs-panel">
+      <div v-if="showPanel && context" class="dvs-hl-panel">
+        <div class="dvs-hl-head">
+          <span class="dvs-hl-title">{{ t('hl.section') }}</span>
+          <button class="dvs-btn" @click="showPanel = false" :title="t('general.cancel')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="dvs-hl-body">
+          <HighlightsPanel :items="fileHighlights" hide-header @go="onPanelGo" @note="onPanelNote" @remove="removeHighlight" />
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, shallowRef, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute, useRouter } from '#app'
 import { useI18n } from '~/composables/useI18n'
+import { useToast } from '~/composables/useToast'
 import { downloadFile } from '~/composables/useFilePreview'
 import { useDocumentLoader, kindOf } from '~/composables/useDocumentLoader'
 import { useFullscreen } from '~/composables/useFullscreen'
 import { loadPdfjs } from '~/composables/usePdfjs'
+import { useHighlights, type Highlight, type HighlightColor, type HighlightContext } from '~/composables/useHighlights'
+import { serializeRange, paintHighlights, clearMarks, MARK_CLASS, type SerializedRange } from '~/composables/useTextHighlighter'
+import { queueAiMessage, buildQuotePrompt } from '~/composables/useAiHandoff'
 
-const props = defineProps<{ file: { url: string; name: string } | null; mode: 'panel' | 'fullpage' }>()
+const props = defineProps<{
+  file: { url: string; name: string } | null
+  mode: 'panel' | 'fullpage'
+  /** Без контекста лекции выделения выключены — просмотрщик остаётся обычным. */
+  context?: HighlightContext | null
+}>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
-const { t } = useI18n()
+const { t, lang } = useI18n()
+const toast = useToast()
+const route = useRoute()
+const router = useRouter()
 const rootEl = ref<HTMLElement | null>(null)
 const { toggleFullscreen } = useFullscreen(rootEl)
 
@@ -92,6 +143,41 @@ const zoom = ref(1)
 
 const isLoading = computed(() => loading.value || pdfLoading.value)
 
+/* ── Состояние выделений ───────────────────────────────────────────────── */
+
+const highlights = useHighlights()
+const sheetEl = ref<HTMLElement | null>(null)
+const textEl = ref<HTMLElement | null>(null)
+// Поверхность — то, внутри чего живёт текст: страница PDF (текстовый слой),
+// контейнер docx, таблица или plain text. Смещения выделения считаются
+// относительно неё.
+const surfaceEl = ref<HTMLElement | null>(null)
+const showPanel = ref(false)
+const menu = ref({ visible: false, x: 0, y: 0, below: false })
+const pending = ref<SerializedRange | null>(null)
+const activeId = ref<string | null>(null)
+const noteOpen = ref(false)
+const lastColor = ref<HighlightColor>('yellow')
+
+const closeMenu = () => {
+  menu.value = { ...menu.value, visible: false }
+  pending.value = null
+  activeId.value = null
+  noteOpen.value = false
+}
+
+// Стартовый масштаб — по ширине панели: страница A4 шире телефона и узкой
+// второй колонки, и на 100% её края уходили бы за экран.
+const fitPdfZoom = async (doc: any) => {
+  const body = rootEl.value?.querySelector('.dvs-body') as HTMLElement | null
+  if (!body) return
+  const padding = window.innerWidth <= 768 ? 24 : 48
+  const first = await doc.getPage(1)
+  const width = first.getViewport({ scale: 1 }).width
+  const available = body.clientWidth - padding
+  if (width > 0 && available > 0) zoom.value = Math.min(1, +(available / width).toFixed(2))
+}
+
 const loadPdfDoc = async (url: string) => {
   pdfLoading.value = true
   try {
@@ -100,6 +186,8 @@ const loadPdfDoc = async (url: string) => {
     pdfDoc.value = doc
     pageCount.value = doc.numPages
     page.value = 1
+    await nextTick()
+    await fitPdfZoom(doc)
   } catch {
     errorMsg.value = 'Не удалось загрузить предпросмотр файла'
   } finally {
@@ -112,6 +200,8 @@ watch(() => props.file?.url, async (url) => {
   pageCount.value = 0
   page.value = 1
   zoom.value = 1
+  closeMenu()
+  surfaceEl.value = null
   if (!url) return
   if (kind.value === 'pdf') {
     await loadPdfDoc(url)
@@ -133,12 +223,262 @@ const nextPage = () => { if (page.value < pageCount.value) page.value++ }
 const onImgError = () => { errorMsg.value = 'Не удалось загрузить предпросмотр файла' }
 const download = () => { if (props.file) downloadFile(props.file.url, props.file.name) }
 
+/* ── Выделения ─────────────────────────────────────────────────────────── */
+
+const surfaceKey = computed(() => (isPaged.value ? page.value : 0))
+
+const fileHighlights = computed<Highlight[]>(() => {
+  const ctx = props.context
+  if (!ctx) return []
+  return highlights.items.value
+    .filter(h => h.classId === ctx.classId && h.lectureId === ctx.lectureId && h.fileIndex === ctx.fileIndex)
+    .sort((a, b) => a.page - b.page || a.start - b.start)
+})
+
+const surfaceHighlights = computed(() => fileHighlights.value.filter(h => h.page === surfaceKey.value))
+
+const onTextLayer = (el: HTMLElement | null) => { surfaceEl.value = props.context ? el : null }
+
+// Не-страничные документы рисуются один раз — поверхность берём, как только
+// контент оказался в DOM. Перерисовку зовём явно: элемент-контейнер тот же
+// самый (меняется только его содержимое), и watch по ссылке молчал бы.
+watch([isLoading, kind, () => props.file?.url], () => {
+  if (!props.context || isPaged.value) return
+  nextTick(() => {
+    surfaceEl.value = kind.value === 'docx' ? docxContainer.value
+      : kind.value === 'sheet' ? sheetEl.value
+      : kind.value === 'text' ? textEl.value
+      : null
+    fitDocxPage()
+    repaint()
+  })
+}, { immediate: true })
+
+// Лист Word шире панели просмотра (A4 при узкой второй колонке) — ужимаем его
+// целиком, а не режем по краю: zoom меняет саму раскладку, поэтому документ
+// остаётся по центру и полностью читаемым, а выделения остаются на своих
+// местах (в отличие от transform, который оставил бы пустую полосу справа).
+const fitDocxPage = () => {
+  const box = docxContainer.value
+  if (!box || kind.value !== 'docx') return
+  box.style.zoom = ''
+  const sheet = box.querySelector('section') as HTMLElement | null
+  if (!sheet) return
+  const cs = getComputedStyle(box)
+  const available = box.clientWidth - parseFloat(cs.paddingLeft || '0') - parseFloat(cs.paddingRight || '0')
+  const width = sheet.getBoundingClientRect().width
+  if (width > available && available > 0) box.style.zoom = String(Math.max(0.4, available / width))
+}
+
+const repaint = () => {
+  const root = surfaceEl.value
+  if (!root) return
+  paintHighlights(root, surfaceHighlights.value)
+}
+watch([surfaceEl, surfaceHighlights], () => nextTick(repaint))
+
+/* ── Плавающее меню ────────────────────────────────────────────────────── */
+
+const activeHighlight = computed(() => (activeId.value ? highlights.byId(activeId.value) : null))
+
+const showMenuAt = (rect: DOMRect) => {
+  const root = rootEl.value
+  if (!root) return
+  const box = root.getBoundingClientRect()
+  const below = rect.top - box.top < 92
+  const x = Math.min(Math.max(rect.left + rect.width / 2 - box.left, 150), Math.max(150, box.width - 150))
+  const y = (below ? rect.bottom : rect.top) - box.top
+  menu.value = { visible: true, x, y, below }
+}
+
+const selectedText = () => pending.value?.text || activeHighlight.value?.text || ''
+
+const evaluateSelection = () => {
+  const root = surfaceEl.value
+  const sel = window.getSelection()
+  if (!root || !sel || sel.isCollapsed || !sel.rangeCount) return false
+  const range = sel.getRangeAt(0)
+  if (!root.contains(range.commonAncestorContainer)) return false
+  const ser = serializeRange(root, range, sel.toString())
+  if (!ser || !ser.text.trim()) return false
+  pending.value = ser
+  activeId.value = null
+  noteOpen.value = false
+  showMenuAt(range.getBoundingClientRect())
+  return true
+}
+
+const openExisting = (markEl: HTMLElement) => {
+  const id = markEl.dataset.hlId
+  if (!id || !highlights.byId(id)) return false
+  pending.value = null
+  activeId.value = id
+  noteOpen.value = false
+  showMenuAt(markEl.getBoundingClientRect())
+  return true
+}
+
+const onContentPointerUp = (e: PointerEvent) => {
+  if (!props.context) return
+  const target = e.target as HTMLElement | null
+  if (target?.closest('.hm, .dvs-hl-panel, .dvs-toolbar')) return
+  const markEl = target?.closest?.(`.${MARK_CLASS}`) as HTMLElement | null
+  // Выделение доступно только после того, как браузер его зафиксирует.
+  setTimeout(() => {
+    if (evaluateSelection()) return
+    if (markEl && openExisting(markEl)) return
+    closeMenu()
+  }, 0)
+}
+
+// Длинный тап на мобильном выделяет текст уже после pointerup — ловим сам факт
+// изменения выделения, но только открываем меню (закрытие остаётся за тапом).
+let selTimer: ReturnType<typeof setTimeout> | null = null
+const onSelectionChange = () => {
+  if (!props.context || noteOpen.value) return
+  if (selTimer) clearTimeout(selTimer)
+  selTimer = setTimeout(() => {
+    const sel = window.getSelection()
+    if (!sel || sel.isCollapsed || !sel.rangeCount) return
+    evaluateSelection()
+  }, 220)
+}
+
+const createFromPending = (color: HighlightColor): Highlight | null => {
+  const ctx = props.context
+  if (!ctx || !pending.value) return null
+  const created = highlights.add({
+    classId: ctx.classId,
+    lectureId: ctx.lectureId,
+    fileIndex: ctx.fileIndex,
+    fileName: props.file?.name || '',
+    page: surfaceKey.value,
+    start: pending.value.start,
+    end: pending.value.end,
+    text: pending.value.text,
+    color,
+    note: '',
+  })
+  pending.value = null
+  activeId.value = created.id
+  window.getSelection()?.removeAllRanges()
+  return created
+}
+
+const pickColor = (color: HighlightColor) => {
+  lastColor.value = color
+  if (activeId.value) highlights.update(activeId.value, { color })
+  else if (!createFromPending(color)) return
+  closeMenu()
+}
+
+const openNote = () => {
+  if (!activeId.value && !createFromPending(lastColor.value)) return
+  noteOpen.value = true
+}
+
+const saveNote = (text: string) => {
+  if (activeId.value) highlights.update(activeId.value, { note: text })
+  closeMenu()
+}
+
+const removeActive = () => {
+  if (activeId.value) removeHighlight(highlights.byId(activeId.value)!)
+  closeMenu()
+}
+
+const removeHighlight = (h: Highlight) => {
+  if (!h) return
+  highlights.remove(h.id)
+  if (activeId.value === h.id) closeMenu()
+}
+
+const copySelection = () => {
+  const text = selectedText().trim()
+  if (!text) return
+  navigator.clipboard?.writeText(text).then(() => toast.ok(t('hl.copied'))).catch(() => {})
+  closeMenu()
+}
+
+// Отдельного ИИ-интерфейса в просмотрщике нет: фрагмент уходит в тот же чат
+// класса, что и обычные вопросы на вкладке «ИИ».
+const askAi = () => {
+  const ctx = props.context
+  const text = selectedText().trim()
+  if (!ctx || !text) return
+  queueAiMessage(ctx.classId, buildQuotePrompt({
+    lang: lang.value,
+    text,
+    lectureTitle: ctx.lectureTitle,
+    lectureId: ctx.lectureId,
+    fileName: props.file?.name || '',
+    page: isPaged.value ? page.value : null,
+  }))
+  closeMenu()
+  window.getSelection()?.removeAllRanges()
+  router.push(`/classes/${ctx.classId}?tab=ai`)
+}
+
+/* ── Переход к сохранённому выделению ──────────────────────────────────── */
+
+const findMark = (id: string) => rootEl.value?.querySelector<HTMLElement>(`[data-hl-id="${id}"]`) || null
+
+const waitUntil = async (cond: () => boolean, tries = 50): Promise<boolean> => {
+  for (let i = 0; i < tries; i++) {
+    if (cond()) return true
+    await new Promise(r => setTimeout(r, 100))
+  }
+  return false
+}
+
+const jumpTo = async (h: Highlight, openNoteAfter = false) => {
+  if (!props.context || h.fileIndex !== props.context.fileIndex) return
+  if (isPaged.value) {
+    // Переход может прийти вместе с открытием файла: пока документ грузится,
+    // loadPdfDoc всё равно сбросит страницу на первую.
+    if (!(await waitUntil(() => !!pdfDoc.value))) return
+    if (h.page && page.value !== h.page) page.value = h.page
+  }
+  await nextTick()
+  await waitUntil(() => !!findMark(h.id))
+  const el = findMark(h.id)
+  if (!el) return
+  el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  el.classList.add('hl-flash')
+  setTimeout(() => el.classList.remove('hl-flash'), 1400)
+  if (openNoteAfter) {
+    activeId.value = h.id
+    pending.value = null
+    noteOpen.value = true
+    showMenuAt(el.getBoundingClientRect())
+  }
+}
+
+const onPanelGo = (h: Highlight) => { showPanel.value = false; jumpTo(h) }
+const onPanelNote = (h: Highlight) => { showPanel.value = false; jumpTo(h, true) }
+
+// Переход из списка выделений лекции: ?hl=<id> (&note=1 — сразу открыть заметку).
+watch(() => [route.query.hl, route.query.note, props.file?.url], async () => {
+  const id = route.query.hl as string | undefined
+  if (!id || !props.context) return
+  const h = highlights.byId(id)
+  if (!h || h.fileIndex !== props.context.fileIndex) return
+  const wantNote = route.query.note === '1'
+  router.replace({ query: {} })
+  await jumpTo(h, wantNote)
+}, { immediate: true })
+
 const onKeydown = (e: KeyboardEvent) => {
   const active = document.activeElement
   if (active && ['INPUT', 'TEXTAREA'].includes(active.tagName)) return
   if ((active as HTMLElement)?.isContentEditable) return
 
-  if (e.key === 'Escape') { if (document.fullscreenElement) document.exitFullscreen(); else emit('close'); return }
+  if (e.key === 'Escape') {
+    if (menu.value.visible) { closeMenu(); return }
+    if (showPanel.value) { showPanel.value = false; return }
+    if (document.fullscreenElement) document.exitFullscreen(); else emit('close')
+    return
+  }
   if (isPaged.value) {
     if (e.key === 'ArrowLeft' || (e.key === ' ' && e.shiftKey)) { e.preventDefault(); prevPage(); return }
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); return }
@@ -149,12 +489,35 @@ const onKeydown = (e: KeyboardEvent) => {
   if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); return }
 }
 
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onUnmounted(() => window.removeEventListener('keydown', onKeydown))
+// Меню привязано к координатам внутри просмотрщика — при прокрутке оно
+// оторвалось бы от текста, поэтому просто закрываем его.
+const onScrollCapture = () => { if (menu.value.visible && !noteOpen.value) closeMenu() }
+
+let resizeTimer: ReturnType<typeof setTimeout> | null = null
+const onResize = () => {
+  if (resizeTimer) clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(fitDocxPage, 150)
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+  window.addEventListener('resize', onResize)
+  document.addEventListener('selectionchange', onSelectionChange)
+  rootEl.value?.addEventListener('scroll', onScrollCapture, true)
+})
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('resize', onResize)
+  document.removeEventListener('selectionchange', onSelectionChange)
+  rootEl.value?.removeEventListener('scroll', onScrollCapture, true)
+  if (resizeTimer) clearTimeout(resizeTimer)
+  if (selTimer) clearTimeout(selTimer)
+  if (surfaceEl.value) clearMarks(surfaceEl.value)
+})
 </script>
 
 <style scoped>
-.dvs { display: flex; flex-direction: column; height: 100%; background: var(--surface); overflow: hidden; }
+.dvs { position: relative; display: flex; flex-direction: column; height: 100%; background: var(--surface); overflow: hidden; }
 .dvs.panel { border-radius: var(--r-xl); border: 1px solid var(--border); box-shadow: var(--sh-md); }
 .dvs.fullpage { border-radius: 0; }
 
@@ -174,23 +537,87 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dvs-zoom-val { font-size: 12px; color: var(--text4); min-width: 36px; text-align: center; font-variant-numeric: tabular-nums; }
 .dvs-page-counter { font-size: 12px; color: var(--text4); margin-left: 8px; padding-left: 10px; border-left: 1px solid var(--border); font-variant-numeric: tabular-nums; }
 
+.dvs-hl-btn { position: relative; }
+.dvs-hl-btn.active { background: var(--teal-l); color: var(--teal); }
+.dvs-hl-count {
+  position: absolute; top: -1px; right: -2px; min-width: 14px; height: 14px; padding: 0 3px;
+  border-radius: 7px; background: var(--teal); color: #fff; font-size: 9px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--surface);
+}
+
 .dvs-body { flex: 1; overflow: auto; background: var(--bg); display: flex; }
 .dvs-state { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 60px 20px; }
 .dvs-error-text { font-size: 13px; color: var(--text4); text-align: center; max-width: 340px; }
-.dvs-image { max-width: 100%; max-height: 100%; margin: auto; object-fit: contain; }
+
+/* Каждый тип контента центрируется своим способом, но по одному принципу:
+   пока документ уже окна — он стоит посередине, когда шире — контейнер
+   растёт вместе с ним и ничего не срезается по краям. */
+.dvs-image-wrap { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.dvs-image { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--r-sm); box-shadow: var(--sh-md); }
+
 .dvs-docx { flex: 1; width: 100%; padding: 32px; background: #fff; overflow: auto; }
+.dvs-docx > :deep(*) { margin-left: auto; margin-right: auto; }
+
 .dvs-sheet { width: 100%; padding: 20px; overflow: auto; }
-.dvs-sheet :deep(table) { border-collapse: collapse; font-size: 13px; }
+.dvs-sheet :deep(table) { border-collapse: collapse; font-size: 13px; margin: 0 auto; }
 .dvs-sheet :deep(td), .dvs-sheet :deep(th) { border: 1px solid var(--border); padding: 4px 8px; white-space: nowrap; }
-.dvs-text { width: 100%; padding: 24px; font-size: 13px; line-height: 1.6; color: var(--text1); white-space: pre-wrap; word-break: break-word; font-family: inherit; }
+
+.dvs-text {
+  width: 100%; max-width: 860px; margin: 0 auto; padding: 24px;
+  font-size: 13px; line-height: 1.6; color: var(--text1);
+  white-space: pre-wrap; word-break: break-word; font-family: inherit;
+}
 
 .dvs-strip { flex-shrink: 0; border-top: 1px solid var(--border); background: var(--surface); }
 
 .dvs :deep(.immersive-fallback) { position: fixed; inset: 0; z-index: 2000; border-radius: 0; }
 
+/* Пометки живут внутри контента, созданного императивно (pdf.js, docx-preview),
+   поэтому правила глубокие. Тона совпадают с кружками в меню и кромками в
+   списке «Мои выделения». */
+.dvs :deep(.hl-mark) {
+  background-color: transparent; color: inherit; padding: 0; border-radius: 3px;
+  cursor: pointer; transition: filter .15s ease-out;
+}
+.dvs :deep(.hl-mark.hl-yellow) { background-color: rgba(255, 216, 77, .45); }
+.dvs :deep(.hl-mark.hl-green) { background-color: rgba(123, 220, 160, .45); }
+.dvs :deep(.hl-mark.hl-blue) { background-color: rgba(124, 197, 245, .45); }
+.dvs :deep(.hl-mark.hl-red) { background-color: rgba(255, 154, 154, .45); }
+.dvs :deep(.hl-mark[data-hl-note]) { box-shadow: inset 0 -2px 0 rgba(0,0,0,.22); }
+.dvs :deep(.hl-mark:hover) { filter: saturate(1.35) brightness(.97); }
+.dvs :deep(.hl-mark.hl-flash) { animation: hl-flash 1.4s ease-out; }
+@keyframes hl-flash {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--teal-rgb), 0); }
+  25% { box-shadow: 0 0 0 4px rgba(var(--teal-rgb), .35); }
+}
+
+.dvs-hl-panel {
+  position: absolute; top: 55px; right: 12px; bottom: 12px; width: 320px; z-index: 30;
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl);
+  box-shadow: 0 18px 44px rgba(0,0,0,.18); overflow: hidden;
+}
+.dvs-hl-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 10px 12px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.dvs-hl-title { font-size: 13px; font-weight: 700; color: var(--text1); }
+.dvs-hl-body { flex: 1; overflow-y: auto; padding: 12px; }
+
+.dvs-panel-enter-active, .dvs-panel-leave-active { transition: opacity .2s ease-out, transform .2s cubic-bezier(.22,1,.36,1); }
+.dvs-panel-enter-from, .dvs-panel-leave-to { opacity: 0; transform: translateX(12px); }
+
 @media (max-width: 768px) {
   .dvs-docx :deep(section) { padding: 16px !important; }
   .dvs-docx :deep(table) { max-width: 100%; table-layout: fixed; word-break: break-word; }
   .dvs-docx { padding: 12px; }
+  .dvs-image-wrap { padding: 12px; }
+  .dvs-text { padding: 16px; }
+  .dvs-hl-panel { top: 52px; left: 8px; right: 8px; bottom: 8px; width: auto; }
+  .dvs-panel-enter-from, .dvs-panel-leave-to { transform: translateY(12px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dvs :deep(.hl-mark.hl-flash) { animation: none; }
+  .dvs-panel-enter-active, .dvs-panel-leave-active { transition: none; }
 }
 </style>

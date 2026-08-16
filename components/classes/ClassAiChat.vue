@@ -94,6 +94,7 @@ import { useToast } from '~/composables/useToast'
 import { parseUtc } from '~/composables/useDeadline'
 import { useApi } from '~/services/api'
 import { useAiQuota } from '~/composables/useAiQuota'
+import { takeAiMessage } from '~/composables/useAiHandoff'
 import type { Submission } from '~/services/assignments'
 
 const props = defineProps<{
@@ -488,11 +489,21 @@ const syncFromServer = async () => {
 
 watch(msgs, scrollBottom)
 
-onMounted(() => {
+onMounted(async () => {
   restore()
-  syncFromServer()
+  // Ждём серверную историю: она перезаписывает msgs целиком, и отправленный
+  // раньше вопрос из просмотрщика просто исчез бы из переписки.
+  await syncFromServer()
   nextTick(scrollBottom)
   loadPending()
+
+  // Фрагмент лекции, отправленный кнопкой «Спросить AI» в просмотрщике: тот же
+  // тред класса, отдельный чат не заводим.
+  const handoff = takeAiMessage(props.classId)
+  if (handoff) {
+    inputTxt.value = handoff
+    send()
+  }
 })
 </script>
 
