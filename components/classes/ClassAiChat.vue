@@ -76,8 +76,8 @@
     <div class="ai-input-bar">
       <AutoTextarea ref="inputEl" v-model="inputTxt" class="ai-textarea"
         :placeholder="aiLimitReached ? 'Лимит исчерпан' : 'Спросите Chatra AI'"
-        :max-height="140" submit-on-enter :disabled="aiLimitReached" @submit="send" />
-      <button :class="['send-btn', { locked: aiLimitReached }]" :disabled="!inputTxt.trim() || loading || aiLimitReached" @click="send">
+        :max-height="140" submit-on-enter :disabled="aiLimitReached" @submit="send()" />
+      <button :class="['send-btn', { locked: aiLimitReached }]" :disabled="!inputTxt.trim() || loading || aiLimitReached" @click="send()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
       </button>
     </div>
@@ -94,7 +94,7 @@ import { useToast } from '~/composables/useToast'
 import { parseUtc } from '~/composables/useDeadline'
 import { useApi } from '~/services/api'
 import { useAiQuota } from '~/composables/useAiQuota'
-import { takeAiMessage } from '~/composables/useAiHandoff'
+import { takeAiMessage, type AiHandoff } from '~/composables/useAiHandoff'
 import type { Submission } from '~/services/assignments'
 
 const props = defineProps<{
@@ -412,7 +412,12 @@ const loadPending = async () => {
 
 const pushSend = (text: string) => { inputTxt.value = text; send() }
 
-const send = async () => {
+/**
+ * @param source ссылка на выделенный фрагмент лекции («Спросить AI»). Сервер по
+ *   annotation_id / lecture_id сам добавляет в контекст, из какой лекции и
+ *   страницы взят текст — клиентской формулировке он не доверяет.
+ */
+const send = async (source?: AiHandoff) => {
   const text = inputTxt.value.trim()
   if (!text || loading.value) return
 
@@ -441,6 +446,12 @@ const send = async () => {
       max_tokens: 2500,
       temperature: 0.55,
       class_id: props.classId,  // тред ИИ-вкладки класса (не глобальный)
+      ...(source ? {
+        annotation_id: source.annotationId ?? undefined,
+        lecture_id: source.lectureId ?? undefined,
+        lecture_page: source.page ?? undefined,
+        quote: source.quote ?? undefined,
+      } : {}),
     })
 
     const reply = data.content || '...'
@@ -501,8 +512,8 @@ onMounted(async () => {
   // тред класса, отдельный чат не заводим.
   const handoff = takeAiMessage(props.classId)
   if (handoff) {
-    inputTxt.value = handoff
-    send()
+    inputTxt.value = handoff.text
+    send(handoff)
   }
 })
 </script>

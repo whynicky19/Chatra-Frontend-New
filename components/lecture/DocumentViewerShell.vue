@@ -71,7 +71,7 @@
       :y="menu.y"
       :below="menu.below"
       :color="activeHighlight?.color || null"
-      :note="activeHighlight?.note || ''"
+      :note="activeHighlight?.comment || ''"
       :saved="!!activeId"
       :note-open="noteOpen"
       @pick-color="pickColor"
@@ -155,7 +155,7 @@ const surfaceEl = ref<HTMLElement | null>(null)
 const showPanel = ref(false)
 const menu = ref({ visible: false, x: 0, y: 0, below: false })
 const pending = ref<SerializedRange | null>(null)
-const activeId = ref<string | null>(null)
+const activeId = ref<number | null>(null)
 const noteOpen = ref(false)
 const lastColor = ref<HighlightColor>('yellow')
 
@@ -231,8 +231,8 @@ const fileHighlights = computed<Highlight[]>(() => {
   const ctx = props.context
   if (!ctx) return []
   return highlights.items.value
-    .filter(h => h.classId === ctx.classId && h.lectureId === ctx.lectureId && h.fileIndex === ctx.fileIndex)
-    .sort((a, b) => a.page - b.page || a.start - b.start)
+    .filter(h => h.class_id === ctx.classId && h.lecture_id === ctx.lectureId && h.file_index === ctx.fileIndex)
+    .sort((a, b) => a.page - b.page || a.start_offset - b.start_offset)
 })
 
 const surfaceHighlights = computed(() => fileHighlights.value.filter(h => h.page === surfaceKey.value))
@@ -291,7 +291,7 @@ const showMenuAt = (rect: DOMRect) => {
   menu.value = { visible: true, x, y, below }
 }
 
-const selectedText = () => pending.value?.text || activeHighlight.value?.text || ''
+const selectedText = () => pending.value?.text || activeHighlight.value?.selected_text || ''
 
 const evaluateSelection = () => {
   const root = surfaceEl.value
@@ -309,7 +309,7 @@ const evaluateSelection = () => {
 }
 
 const openExisting = (markEl: HTMLElement) => {
-  const id = markEl.dataset.hlId
+  const id = Number(markEl.dataset.hlId)
   if (!id || !highlights.byId(id)) return false
   pending.value = null
   activeId.value = id
@@ -344,41 +344,52 @@ const onSelectionChange = () => {
   }, 220)
 }
 
-const createFromPending = (color: HighlightColor): Highlight | null => {
+const createFromPending = async (color: HighlightColor): Promise<Highlight | null> => {
   const ctx = props.context
-  if (!ctx || !pending.value) return null
-  const created = highlights.add({
-    classId: ctx.classId,
-    lectureId: ctx.lectureId,
-    fileIndex: ctx.fileIndex,
-    fileName: props.file?.name || '',
-    page: surfaceKey.value,
-    start: pending.value.start,
-    end: pending.value.end,
-    text: pending.value.text,
-    color,
-    note: '',
-  })
+  const sel = pending.value
+  if (!ctx || !sel) return null
   pending.value = null
-  activeId.value = created.id
   window.getSelection()?.removeAllRanges()
+  const created = await highlights.add({
+    lecture_id: ctx.lectureId,
+    class_id: ctx.classId,
+    file_index: ctx.fileIndex,
+    page: surfaceKey.value,
+    selected_text: sel.text,
+    prefix: sel.prefix,
+    suffix: sel.suffix,
+    start_offset: sel.start,
+    end_offset: sel.end,
+    color,
+  })
+  if (!created) {
+    toast.err(t('hl.save_failed'))
+    return null
+  }
+  activeId.value = created.id
   return created
 }
 
-const pickColor = (color: HighlightColor) => {
+const pickColor = async (color: HighlightColor) => {
   lastColor.value = color
-  if (activeId.value) highlights.update(activeId.value, { color })
-  else if (!createFromPending(color)) return
-  closeMenu()
+  if (activeId.value) {
+    highlights.update(activeId.value, { color })
+    closeMenu()
+    return
+  }
+  // Меню закрываем сразу, не дожидаясь ответа сервера: пометка появляется
+  // оптимистично, а сбой сохранения покажет тост (см. createFromPending).
+  const created = await createFromPending(color)
+  if (created) closeMenu()
 }
 
-const openNote = () => {
-  if (!activeId.value && !createFromPending(lastColor.value)) return
+const openNote = async () => {
+  if (!activeId.value && !(await createFromPending(lastColor.value))) return
   noteOpen.value = true
 }
 
 const saveNote = (text: string) => {
-  if (activeId.value) highlights.update(activeId.value, { note: text })
+  if (activeId.value) highlights.update(activeId.value, { comment: text })
   closeMenu()
 }
 
@@ -404,16 +415,25 @@ const copySelection = () => {
 // класса, что и обычные вопросы на вкладке «ИИ».
 const askAi = () => {
   const ctx = props.context
+  const saved = activeHighlight.value
   const text = selectedText().trim()
   if (!ctx || !text) return
-  queueAiMessage(ctx.classId, buildQuotePrompt({
-    lang: lang.value,
-    text,
-    lectureTitle: ctx.lectureTitle,
+  const srcPage = saved ? saved.page : (isPaged.value ? page.value : 0)
+  queueAiMessage({
+    classId: ctx.classId,
+    text: buildQuotePrompt({
+      lang: lang.value,
+      text,
+      lectureTitle: ctx.lectureTitle,
+      page: srcPage,
+    }),
+    // Сервер по этим полям сам определит лекцию и страницу — они и попадут в
+    // контекст ответа (см. routers/ai.py:_fragment_context).
+    annotationId: saved?.id ?? null,
     lectureId: ctx.lectureId,
-    fileName: props.file?.name || '',
-    page: isPaged.value ? page.value : null,
-  }))
+    page: srcPage,
+    quote: saved ? null : text,
+  })
   closeMenu()
   window.getSelection()?.removeAllRanges()
   router.push(`/classes/${ctx.classId}?tab=ai`)
@@ -432,7 +452,7 @@ const waitUntil = async (cond: () => boolean, tries = 50): Promise<boolean> => {
 }
 
 const jumpTo = async (h: Highlight, openNoteAfter = false) => {
-  if (!props.context || h.fileIndex !== props.context.fileIndex) return
+  if (!props.context || h.file_index !== props.context.fileIndex) return
   if (isPaged.value) {
     // Переход может прийти вместе с открытием файла: пока документ грузится,
     // loadPdfDoc всё равно сбросит страницу на первую.
@@ -459,10 +479,11 @@ const onPanelNote = (h: Highlight) => { showPanel.value = false; jumpTo(h, true)
 
 // Переход из списка выделений лекции: ?hl=<id> (&note=1 — сразу открыть заметку).
 watch(() => [route.query.hl, route.query.note, props.file?.url], async () => {
-  const id = route.query.hl as string | undefined
+  const id = Number(route.query.hl)
   if (!id || !props.context) return
+  // id выделения теперь серверный (число), а в query он строкой.
   const h = highlights.byId(id)
-  if (!h || h.fileIndex !== props.context.fileIndex) return
+  if (!h || h.file_index !== props.context.fileIndex) return
   const wantNote = route.query.note === '1'
   router.replace({ query: {} })
   await jumpTo(h, wantNote)
@@ -500,6 +521,8 @@ const onResize = () => {
 }
 
 onMounted(() => {
+  // Серверная истина: пометки, сделанные в приложении, должны появиться здесь.
+  if (props.context) highlights.load({ lectureId: props.context.lectureId })
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('resize', onResize)
   document.addEventListener('selectionchange', onSelectionChange)

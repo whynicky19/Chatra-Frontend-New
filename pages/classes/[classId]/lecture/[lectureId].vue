@@ -24,6 +24,7 @@
 
           <div class="lec-left-scroll">
             <LectureInfoPanel
+              ref="infoPanel"
               :title="cleanLectureTitle(post.title)"
               :date="fmtDate(post.created_at)"
               :description="description"
@@ -35,7 +36,7 @@
             <div class="lec-highlights">
               <HighlightsPanel
                 :items="lectureHighlights"
-                show-file
+                show-lecture
                 @go="h => goHighlight(h)"
                 @note="h => goHighlight(h, true)"
                 @remove="h => highlights.remove(h.id)"
@@ -54,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRoute, useRouter } from '#app'
 import { usePostsSvc } from '~/services/posts'
 import { useClassesStore } from '~/stores/classes.store'
@@ -67,6 +68,7 @@ import { extractFilesFromText, stripFilesFromText } from '~/composables/useAttac
 import { provideLectureData, type LecturePost } from '~/composables/useLectureData'
 import { useSidePanelCollapse } from '~/composables/useSidePanelCollapse'
 import { useHighlights, type Highlight } from '~/composables/useHighlights'
+import { paintHighlights } from '~/composables/useTextHighlighter'
 
 definePageMeta({ layout: 'default' })
 
@@ -96,7 +98,11 @@ const load = async () => {
     loading.value = false
   }
 }
-onMounted(load)
+onMounted(() => {
+  load()
+  // Пометки лекции — с сервера: сделанные в приложении должны быть здесь.
+  highlights.load({ lectureId: lectureId.value })
+})
 
 const files = computed(() => post.value ? extractFilesFromText(getFullBody(post.value)) : [])
 const description = computed(() => post.value ? renderBody(stripFilesFromText(getFullBody(post.value))) : '')
@@ -115,11 +121,32 @@ const isCollapsed = computed(() => canCollapse.value && collapsed.value)
 const highlights = useHighlights()
 const lectureHighlights = computed(() => highlights.forLecture(classId.value, lectureId.value))
 
+// Выделения в тексте самой лекции (их делают в приложении: там просмотрщика
+// файлов нет) — показываем прямо в описании, чтобы пометка с телефона была
+// видна и здесь.
+const infoPanel = ref<{ descEl: HTMLElement | null } | null>(null)
+const textHighlights = computed(() => lectureHighlights.value.filter(h => h.file_index < 0))
+
+const paintDescription = () => {
+  const root = infoPanel.value?.descEl
+  if (root) paintHighlights(root, textHighlights.value)
+}
+watch([textHighlights, () => infoPanel.value?.descEl, description], () => nextTick(paintDescription))
+
 // Файл выделения может быть не тем, что открыт сейчас, — открываем нужный и
 // передаём id: просмотрщик сам долистает до места и подсветит его.
 const goHighlight = (h: Highlight, withNote = false) => {
+  if (h.file_index < 0) {
+    // Пометка в тексте лекции: она уже на экране, просто подводим к ней глаз.
+    const el = infoPanel.value?.descEl?.querySelector<HTMLElement>(`[data-hl-id="${h.id}"]`)
+    if (!el) return
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    el.classList.add('hl-flash')
+    setTimeout(() => el.classList.remove('hl-flash'), 1400)
+    return
+  }
   router.push({
-    path: `/classes/${classId.value}/lecture/${lectureId.value}/file/${h.fileIndex}`,
+    path: `/classes/${classId.value}/lecture/${lectureId.value}/file/${h.file_index}`,
     query: withNote ? { hl: h.id, note: '1' } : { hl: h.id },
   })
 }
@@ -160,6 +187,20 @@ const fmtDate = (d: string) => { if (!d) return ''; try { return parseUtc(d).toL
 
 .lec-left-scroll { flex: 1; overflow-y: auto; padding: 8px 28px 32px; }
 .lec-highlights { margin-top: 26px; }
+
+/* Пометки в тексте лекции: те же тона, что и в просмотрщике файлов. Разметку
+   вставляет paintHighlights императивно, поэтому правила глубокие. */
+.lec-left :deep(.hl-mark) { background-color: transparent; color: inherit; border-radius: 3px; }
+.lec-left :deep(.hl-mark.hl-yellow) { background-color: rgba(255, 216, 77, .45); }
+.lec-left :deep(.hl-mark.hl-green) { background-color: rgba(123, 220, 160, .45); }
+.lec-left :deep(.hl-mark.hl-blue) { background-color: rgba(124, 197, 245, .45); }
+.lec-left :deep(.hl-mark.hl-red) { background-color: rgba(255, 154, 154, .45); }
+.lec-left :deep(.hl-mark[data-hl-note]) { box-shadow: inset 0 -2px 0 rgba(0,0,0,.22); }
+.lec-left :deep(.hl-mark.hl-flash) { animation: lec-hl-flash 1.4s ease-out; }
+@keyframes lec-hl-flash {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--teal-rgb), 0); }
+  25% { box-shadow: 0 0 0 4px rgba(var(--teal-rgb), .35); }
+}
 .lec-back {
   display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
   margin: 20px 28px 4px; padding: 0; background: none; border: none;

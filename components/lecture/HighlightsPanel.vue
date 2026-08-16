@@ -11,13 +11,13 @@
       <div v-for="h in items" :key="h.id" class="hp-row" :class="`hp-${h.color}`" @click="$emit('go', h)">
         <span class="hp-bar"></span>
         <div class="hp-main">
-          <div class="hp-text">{{ h.text.trim() }}</div>
-          <div v-if="h.note" class="hp-note">
+          <div class="hp-text">{{ h.selected_text.trim() }}</div>
+          <div v-if="h.comment" class="hp-note">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-            {{ h.note }}
+            {{ h.comment }}
           </div>
           <div class="hp-meta">
-            <template v-if="showFile">{{ h.fileName }}<span v-if="h.page"> · </span></template>
+            <template v-if="showLecture && h.lecture_title">{{ h.lecture_title }}<span v-if="h.page"> · </span></template>
             <template v-if="h.page">{{ t('hl.page') }} {{ h.page }}</template>
           </div>
         </div>
@@ -38,7 +38,7 @@
 import { useI18n } from '~/composables/useI18n'
 import type { Highlight } from '~/composables/useHighlights'
 
-defineProps<{ items: Highlight[]; showFile?: boolean; hideHeader?: boolean }>()
+defineProps<{ items: Highlight[]; showLecture?: boolean; hideHeader?: boolean }>()
 defineEmits<{
   (e: 'go', h: Highlight): void
   (e: 'note', h: Highlight): void

@@ -4,16 +4,31 @@
 const STORE_KEY = '_ai_handoff'
 const MAX_AGE_MS = 2 * 60 * 1000
 
-interface AiHandoff { classId: number; text: string; createdAt: number }
+/**
+ * Кроме текста сообщения несёт ссылку на источник фрагмента. Сервер по ней сам
+ * достаёт лекцию и страницу (см. routers/ai.py:_fragment_context) — формулировке
+ * в тексте он не доверяет, поэтому передавать нужно именно идентификаторы.
+ */
+export interface AiHandoff {
+  classId: number
+  text: string
+  /** id сохранённого выделения; для неcохранённого — lectureId + quote. */
+  annotationId?: number | null
+  lectureId?: number | null
+  page?: number | null
+  quote?: string | null
+  createdAt: number
+}
 
-export const queueAiMessage = (classId: number, text: string) => {
+export const queueAiMessage = (payload: Omit<AiHandoff, 'createdAt'>) => {
   if (!import.meta.client) return
-  const payload: AiHandoff = { classId, text, createdAt: Date.now() }
-  try { sessionStorage.setItem(STORE_KEY, JSON.stringify(payload)) } catch {}
+  try {
+    sessionStorage.setItem(STORE_KEY, JSON.stringify({ ...payload, createdAt: Date.now() }))
+  } catch {}
 }
 
 /** Забирает сообщение ровно один раз: повторный вход на вкладку его не отправит. */
-export const takeAiMessage = (classId: number | undefined): string | null => {
+export const takeAiMessage = (classId: number | undefined): AiHandoff | null => {
   if (!import.meta.client || classId == null) return null
   try {
     const raw = sessionStorage.getItem(STORE_KEY)
@@ -22,7 +37,7 @@ export const takeAiMessage = (classId: number | undefined): string | null => {
     if (payload?.classId !== classId) return null
     sessionStorage.removeItem(STORE_KEY)
     if (!payload.text || Date.now() - payload.createdAt > MAX_AGE_MS) return null
-    return payload.text
+    return payload
   } catch { return null }
 }
 
@@ -32,16 +47,13 @@ export interface QuoteContext {
   lang: 'ru' | 'en' | 'kk'
   text: string
   lectureTitle: string
-  lectureId: number
-  fileName: string
   page?: number | null
 }
 
 /**
- * Вопрос звучит как обычное сообщение студента, а служебные идентификаторы
- * уходят отдельной строкой в конце — по ним модель понимает, из какого
- * материала фрагмент, и может опереться на текст этой лекции в системном
- * промпте (см. buildSystem в ClassAiChat.vue).
+ * Видимая формулировка вопроса. Идентификаторы лекции/страницы в текст не
+ * вписываем — они уходят полями запроса, а сервер добавляет источник в
+ * системный контекст сам.
  */
 export const buildQuotePrompt = (ctx: QuoteContext): string => {
   const quote = ctx.text.trim().replace(/\s+/g, ' ').slice(0, MAX_QUOTE)
@@ -50,12 +62,12 @@ export const buildQuotePrompt = (ctx: QuoteContext): string => {
 
   if (ctx.lang === 'en') {
     const where = [title ? `the lecture “${title}”` : 'the lecture', page ? `p. ${page}` : ''].filter(Boolean).join(', ')
-    return `Explain this excerpt from ${where}:\n\n«${quote}»\n\n(source: lecture #${ctx.lectureId}, file “${ctx.fileName}”)`
+    return `Explain this excerpt from ${where}:\n\n«${quote}»`
   }
   if (ctx.lang === 'kk') {
     const where = [title ? `«${title}» дәрісінен` : 'дәрістен', page ? `${page}-бет` : ''].filter(Boolean).join(', ')
-    return `Осы үзіндіні түсіндіріп бер (${where}):\n\n«${quote}»\n\n(дереккөз: дәріс #${ctx.lectureId}, файл «${ctx.fileName}»)`
+    return `Осы үзіндіні түсіндіріп бер (${where}):\n\n«${quote}»`
   }
   const where = [title ? `из лекции «${title}»` : 'из лекции', page ? `стр. ${page}` : ''].filter(Boolean).join(', ')
-  return `Объясни этот фрагмент ${where}:\n\n«${quote}»\n\n(источник: лекция #${ctx.lectureId}, файл «${ctx.fileName}»)`
+  return `Объясни этот фрагмент ${where}:\n\n«${quote}»`
 }

@@ -42,7 +42,18 @@ const boundaryOffset = (nodes: Text[], container: Node, offset: number): number 
   return total
 }
 
-export interface SerializedRange { start: number; end: number; text: string }
+export interface SerializedRange {
+  start: number
+  end: number
+  text: string
+  /** Текст вокруг фрагмента — якорь на случай, если смещения не сойдутся. */
+  prefix: string
+  suffix: string
+}
+
+// Длина якоря: достаточно, чтобы отличить одинаковые фразы в разных местах
+// документа, и достаточно мало, чтобы не хранить полстраницы на выделение.
+const ANCHOR_CHARS = 60
 
 /**
  * @param text читаемый текст фрагмента. По умолчанию берётся из самого Range,
@@ -59,7 +70,15 @@ export const serializeRange = (root: HTMLElement, range: Range, text?: string): 
   const start = boundaryOffset(nodes, range.startContainer, range.startOffset)
   const end = boundaryOffset(nodes, range.endContainer, range.endOffset)
   if (end <= start) return null
-  return { start, end, text: visible }
+
+  const full = nodes.map(n => n.data).join('')
+  return {
+    start,
+    end,
+    text: visible,
+    prefix: full.slice(Math.max(0, start - ANCHOR_CHARS), start),
+    suffix: full.slice(end, end + ANCHOR_CHARS),
+  }
 }
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -89,11 +108,45 @@ const findNearest = (haystack: string, expected: string, near: number): [number,
 }
 
 /**
+ * Поиск по якорю TextQuoteSelector: prefix + сам фрагмент + suffix. Пробелы
+ * между словами не фиксируем — у разных рендереров (pdf.js на сайте, свой
+ * текст лекции в приложении) они расставлены по-разному.
+ */
+const findAnchored = (
+  haystack: string,
+  expected: string,
+  anchor?: { prefix?: string; suffix?: string },
+): [number, number] | null => {
+  const prefix = (anchor?.prefix || '').trim()
+  const suffix = (anchor?.suffix || '').trim()
+  if (!prefix && !suffix) return null
+  const loose = (s: string) => s.split(/\s+/).filter(Boolean).map(escapeRe).join('\\s*')
+  const body = loose(expected)
+  if (!body) return null
+  // Без lookbehind (его переменную длину понимают не все Safari): префикс —
+  // обычная группа, начало фрагмента считаем по её длине.
+  const re = new RegExp(
+    (prefix ? `(${loose(prefix)}\\s*)` : '') + `(${body})` + (suffix ? `(?:\\s*${loose(suffix)})` : ''),
+  )
+  const m = re.exec(haystack)
+  if (!m) return null
+  const head = prefix ? m[1].length : 0
+  const bodyText = prefix ? m[2] : m[1]
+  return [m.index + head, bodyText.length]
+}
+
+/**
  * Обратное преобразование: смещения → Range. Если текст по смещениям не сошёлся
  * с сохранённым (документ перерисован иначе), ищем сам фрагмент по тексту —
  * выделение переживает мелкие расхождения вместо того, чтобы просто пропасть.
  */
-export const restoreRange = (root: HTMLElement, start: number, end: number, expected?: string): Range | null => {
+export const restoreRange = (
+  root: HTMLElement,
+  start: number,
+  end: number,
+  expected?: string,
+  anchor?: { prefix?: string; suffix?: string },
+): Range | null => {
   const nodes = textNodesIn(root)
   if (!nodes.length) return null
 
@@ -122,7 +175,15 @@ export const restoreRange = (root: HTMLElement, start: number, end: number, expe
   const direct = build(start, end)
   if (!expected || (direct && squash(direct.toString()) === squash(expected))) return direct
 
-  const hit = findNearest(nodes.map(n => n.data).join(''), expected, start)
+  const full = nodes.map(n => n.data).join('')
+
+  // Сначала по якорю «текст до + фрагмент + текст после»: он различает
+  // одинаковые фразы в разных местах документа надёжнее, чем близость к
+  // прежнему смещению (на другом устройстве смещение может уехать сильно).
+  const anchored = findAnchored(full, expected, anchor)
+  if (anchored) return build(anchored[0], anchored[0] + anchored[1])
+
+  const hit = findNearest(full, expected, start)
   if (!hit) return direct
   return build(hit[0], hit[0] + hit[1])
 }
@@ -155,8 +216,8 @@ const wrapRange = (root: HTMLElement, range: Range, hl: Highlight) => {
     if (from > 0) target = target.splitText(from)
     const mark = document.createElement('mark')
     mark.className = `${MARK_CLASS} hl-${hl.color}`
-    mark.dataset.hlId = hl.id
-    if (hl.note) mark.dataset.hlNote = '1'
+    mark.dataset.hlId = String(hl.id)
+    if (hl.comment) mark.dataset.hlNote = '1'
     target.parentNode?.insertBefore(mark, target)
     mark.appendChild(target)
   }
@@ -166,7 +227,7 @@ const wrapRange = (root: HTMLElement, range: Range, hl: Highlight) => {
 export const paintHighlights = (root: HTMLElement, list: Highlight[]) => {
   clearMarks(root)
   for (const hl of list) {
-    const range = restoreRange(root, hl.start, hl.end, hl.text)
+    const range = restoreRange(root, hl.start_offset, hl.end_offset, hl.selected_text, hl)
     if (range) wrapRange(root, range, hl)
   }
 }

@@ -446,6 +446,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'hl.note_placeholder': { ru: 'Короткая заметка…', en: 'Short note…', kk: 'Қысқа жазба…' },
   'hl.ask_ai': { ru: 'Спросить AI', en: 'Ask AI', kk: 'AI-дан сұрау' },
   'hl.copy': { ru: 'Копировать', en: 'Copy', kk: 'Көшіру' },
+  'hl.save_failed': { ru: 'Не удалось сохранить выделение', en: 'Could not save the highlight', kk: 'Белгілеуді сақтау мүмкін болмады' },
   'hl.copied': { ru: 'Скопировано', en: 'Copied', kk: 'Көшірілді' },
   'hl.delete': { ru: 'Удалить', en: 'Delete', kk: 'Жою' },
   'hl.more': { ru: 'Ещё', en: 'More', kk: 'Тағы' },

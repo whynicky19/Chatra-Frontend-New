@@ -3,11 +3,12 @@
     <h1 class="lip-title">{{ title }}</h1>
     <div class="lip-date">{{ date }}</div>
 
-    <div v-if="description" class="lip-desc" v-html="description" @click="onBodyClick"></div>
+    <div v-if="description" ref="descEl" class="lip-desc" v-html="description" @click="onBodyClick"></div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { sameFilePath } from '~/composables/useFileUrl'
 
 const props = defineProps<{
@@ -17,6 +18,11 @@ const props = defineProps<{
   files: { url: string; name: string }[]
 }>()
 const emit = defineEmits<{ (e: 'open-file', index: number): void }>()
+
+// Текст лекции — тоже поверхность для выделений: их делают в приложении, а
+// здесь мы их показываем и умеем к ним прокручивать (см. страницу лекции).
+const descEl = ref<HTMLElement | null>(null)
+defineExpose({ descEl })
 
 const onBodyClick = (e: MouseEvent) => {
   const target = (e.target as HTMLElement)?.closest('[data-preview-url]') as HTMLElement | null
