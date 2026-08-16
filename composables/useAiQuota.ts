@@ -3,7 +3,7 @@ import { useApi } from '~/services/api'
 import { useAuthStore } from '~/stores/auth.store'
 
 // Дефолт до первого ответа сервера; настоящий лимит приходит из /ai/limits.
-export const AI_LIMIT = 50
+export const AI_LIMIT = 30
 
 // Дневная квота ИИ — серверная (GET /ai/limits), общая с приложением: считать
 // локально нельзя, иначе лимит обходится сменой браузера или чисткой storage.
