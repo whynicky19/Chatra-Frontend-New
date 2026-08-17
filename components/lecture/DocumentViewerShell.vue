@@ -235,7 +235,19 @@ const fileHighlights = computed<Highlight[]>(() => {
     .sort((a, b) => a.page - b.page || a.start_offset - b.start_offset)
 })
 
-const surfaceHighlights = computed(() => fileHighlights.value.filter(h => h.page === surfaceKey.value))
+// Номер страницы — свойство пагинации КОНКРЕТНОГО клиента, а не документа:
+// docx приложение открывает как PDF (бэкенд конвертирует его в LibreOffice) и
+// пишет странице номер 1..N, а здесь тот же docx рисует docx-preview — одна
+// сплошная поверхность без страниц (page = 0). Поэтому страница — только
+// подсказка «где искать», а не условие: на непагинированной поверхности
+// показываем все пометки файла, а на страничной — ещё и те, у которых страница
+// неизвестна. Настоящий отбор делает поиск по тексту с якорем (restoreRange):
+// не нашлось — пометка просто не рисуется.
+const surfaceHighlights = computed(() =>
+  isPaged.value
+    ? fileHighlights.value.filter(h => h.page === surfaceKey.value || h.page === 0)
+    : fileHighlights.value,
+)
 
 const onTextLayer = (el: HTMLElement | null) => { surfaceEl.value = props.context ? el : null }
 

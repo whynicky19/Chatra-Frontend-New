@@ -184,7 +184,10 @@ export const restoreRange = (
   if (anchored) return build(anchored[0], anchored[0] + anchored[1])
 
   const hit = findNearest(full, expected, start)
-  if (!hit) return direct
+  // Текста нет на этой поверхности вовсе — значит, выделение относится к другой
+  // странице (или к другому документу). Рисовать его по исходным смещениям
+  // нельзя: там лежит чужой текст, и пометка встала бы наугад не на своё место.
+  if (!hit) return null
   return build(hit[0], hit[0] + hit[1])
 }
 
