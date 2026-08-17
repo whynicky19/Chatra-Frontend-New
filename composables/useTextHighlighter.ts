@@ -71,68 +71,105 @@ export const serializeRange = (root: HTMLElement, range: Range, text?: string): 
   const end = boundaryOffset(nodes, range.endContainer, range.endOffset)
   if (end <= start) return null
 
-  const full = nodes.map(n => n.data).join('')
-  return {
-    start,
-    end,
-    text: visible,
-    prefix: full.slice(Math.max(0, start - ANCHOR_CHARS), start),
-    suffix: full.slice(end, end + ANCHOR_CHARS),
-  }
+  return { start, end, text: visible, ...anchorAround(nodes, start, end) }
 }
 
-const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
 /**
- * Ищет фрагмент в тексте поверхности, выбирая вхождение, ближайшее к исходному
- * месту (один и тот же фрагмент может встречаться в документе не раз).
- * Если дословно не нашлось — сравниваем по словам: Range.toString() добавляет
- * переводы строк на <br> текстового слоя pdf.js, а в самих узлах их нет.
+ * Текст вокруг фрагмента для якоря — из «читаемого» вида поверхности, где
+ * соседние узлы разделены переводом строки.
+ *
+ * Смещения (start/end) считаются по узлам, склеенным подряд, и такими обязаны
+ * остаться — иначе они разъедутся с restoreRange. А вот в якорь склейку
+ * тащить нельзя: строка pdf.js и ячейка таблицы docx — отдельные узлы без
+ * пробелов между ними, и якорь получался вида «Алёна45/100Помазков». В
+ * приложении тот же текст приходит от PDFium с пробелами, и такой якорь там не
+ * найдётся уже никогда. Лишний пробел, наоборот, безобиден: сравнение всюду
+ * идёт без учёта пробелов (см. squashIndexed).
  */
-const findNearest = (haystack: string, expected: string, near: number): [number, number] | null => {
-  const hits: [number, number][] = []
-  for (let i = haystack.indexOf(expected); i !== -1; i = haystack.indexOf(expected, i + 1)) {
-    hits.push([i, expected.length])
+const anchorAround = (nodes: Text[], start: number, end: number) => {
+  let plain = 0
+  let readable = ''
+  let from = 0, to = 0
+  for (const node of nodes) {
+    if (start >= plain && start <= plain + node.data.length) from = readable.length + (start - plain)
+    if (end >= plain && end <= plain + node.data.length) to = readable.length + (end - plain)
+    readable += `${node.data}\n`
+    plain += node.data.length
   }
-  if (!hits.length) {
-    const words = expected.split(/\s+/).filter(Boolean).map(escapeRe)
-    if (!words.length) return null
-    const re = new RegExp(words.join('\\s*'), 'g')
-    for (let m = re.exec(haystack); m; m = re.exec(haystack)) {
-      hits.push([m.index, m[0].length])
-      if (m.index === re.lastIndex) re.lastIndex++
-    }
+  return {
+    prefix: readable.slice(Math.max(0, from - ANCHOR_CHARS), from),
+    suffix: readable.slice(to, to + ANCHOR_CHARS),
   }
-  if (!hits.length) return null
-  return hits.reduce((best, h) => (Math.abs(h[0] - near) < Math.abs(best[0] - near) ? h : best))
+}
+
+export const squash = (s: string) => s.replace(/\s+/g, '')
+
+/** Текст поверхности без пробелов + карта «символ → смещение в оригинале». */
+interface Squashed { text: string; map: number[] }
+
+// Весь поиск идёт по тексту БЕЗ пробелов. Пробелы — единственное, в чём
+// рендереры расходятся всегда: pdf.js держит строку в отдельном узле без
+// разделителя, PDFium в приложении ставит перенос, docx-preview — ячейку
+// таблицы. Сравнивая без них, мы находим фрагмент независимо от того, кто и
+// чем рисовал документ, а карта возвращает найденное обратно в смещения
+// исходного текста поверхности.
+const squashIndexed = (s: string): Squashed => {
+  let text = ''
+  const map: number[] = []
+  for (let i = 0; i < s.length; i++) {
+    if (/\s/.test(s[i])) continue
+    text += s[i]
+    map.push(i)
+  }
+  return { text, map }
+}
+
+/** Смещения в сжатом тексте → диапазон [начало, конец) в исходном. */
+const toOriginal = (hay: Squashed, from: number, to: number): [number, number] =>
+  [hay.map[from], hay.map[to - 1] + 1]
+
+const hitsOf = (haystack: string, needle: string): number[] => {
+  const out: number[] = []
+  if (!needle) return out
+  for (let i = haystack.indexOf(needle); i !== -1; i = haystack.indexOf(needle, i + 1)) out.push(i)
+  return out
 }
 
 /**
- * Поиск по якорю TextQuoteSelector: prefix + сам фрагмент + suffix. Пробелы
- * между словами не фиксируем — у разных рендереров (pdf.js на сайте, свой
- * текст лекции в приложении) они расставлены по-разному.
+ * Поиск по якорю TextQuoteSelector: prefix + сам фрагмент + suffix. Якорь
+ * различает одинаковые фразы в разных местах документа. Если целиком не
+ * сошёлся (фрагмент у края страницы, сосед перерисован иначе) — пробуем
+ * половинками, это всё равно точнее, чем один голый текст.
  */
 const findAnchored = (
-  haystack: string,
+  hay: Squashed,
   expected: string,
   anchor?: { prefix?: string; suffix?: string },
 ): [number, number] | null => {
-  const prefix = (anchor?.prefix || '').trim()
-  const suffix = (anchor?.suffix || '').trim()
-  if (!prefix && !suffix) return null
-  const loose = (s: string) => s.split(/\s+/).filter(Boolean).map(escapeRe).join('\\s*')
-  const body = loose(expected)
-  if (!body) return null
-  // Без lookbehind (его переменную длину понимают не все Safari): префикс —
-  // обычная группа, начало фрагмента считаем по её длине.
-  const re = new RegExp(
-    (prefix ? `(${loose(prefix)}\\s*)` : '') + `(${body})` + (suffix ? `(?:\\s*${loose(suffix)})` : ''),
-  )
-  const m = re.exec(haystack)
-  if (!m) return null
-  const head = prefix ? m[1].length : 0
-  const bodyText = prefix ? m[2] : m[1]
-  return [m.index + head, bodyText.length]
+  const body = squash(expected)
+  const prefix = squash(anchor?.prefix || '')
+  const suffix = squash(anchor?.suffix || '')
+  if (!body || (!prefix && !suffix)) return null
+
+  for (const [head, tail] of [[prefix, suffix], [prefix, ''], ['', suffix]]) {
+    if (!head && !tail) continue
+    const at = hitsOf(hay.text, head + body + tail)[0]
+    if (at == null) continue
+    return toOriginal(hay, at + head.length, at + head.length + body.length)
+  }
+  return null
+}
+
+/**
+ * Ищет сам фрагмент, выбирая вхождение, ближайшее к исходному месту: один и
+ * тот же текст может встречаться в документе не раз, а якорь мог не сойтись.
+ */
+const findNearest = (hay: Squashed, expected: string, near: number): [number, number] | null => {
+  const body = squash(expected)
+  const hits = hitsOf(hay.text, body)
+  if (!hits.length) return null
+  const best = hits.reduce((b, i) => (Math.abs(hay.map[i] - near) < Math.abs(hay.map[b] - near) ? i : b))
+  return toOriginal(hay, best, best + body.length)
 }
 
 /**
@@ -171,24 +208,23 @@ export const restoreRange = (
 
   // Пробелы игнорируем: переводы строк есть в сохранённом тексте выделения,
   // но не в самих текстовых узлах (см. serializeRange).
-  const squash = (s: string) => s.replace(/\s+/g, '')
   const direct = build(start, end)
   if (!expected || (direct && squash(direct.toString()) === squash(expected))) return direct
 
-  const full = nodes.map(n => n.data).join('')
+  const hay = squashIndexed(nodes.map(n => n.data).join(''))
 
   // Сначала по якорю «текст до + фрагмент + текст после»: он различает
   // одинаковые фразы в разных местах документа надёжнее, чем близость к
   // прежнему смещению (на другом устройстве смещение может уехать сильно).
-  const anchored = findAnchored(full, expected, anchor)
-  if (anchored) return build(anchored[0], anchored[0] + anchored[1])
+  const anchored = findAnchored(hay, expected, anchor)
+  if (anchored) return build(anchored[0], anchored[1])
 
-  const hit = findNearest(full, expected, start)
+  const hit = findNearest(hay, expected, start)
   // Текста нет на этой поверхности вовсе — значит, выделение относится к другой
   // странице (или к другому документу). Рисовать его по исходным смещениям
   // нельзя: там лежит чужой текст, и пометка встала бы наугад не на своё место.
   if (!hit) return null
-  return build(hit[0], hit[0] + hit[1])
+  return build(hit[0], hit[1])
 }
 
 /** Снимает ранее нарисованные подсветки, возвращая текст в исходный вид. */

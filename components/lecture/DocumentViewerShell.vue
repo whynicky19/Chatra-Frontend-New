@@ -382,17 +382,17 @@ const createFromPending = async (color: HighlightColor): Promise<Highlight | nul
   return created
 }
 
+// Цвет не закрывает меню: цвет и заметка — части одного действия, и раньше
+// после выбора цвета фрагмент приходилось выделять заново, чтобы дописать
+// комментарий. Меню остаётся на месте, но уже на созданной пометке — закрыть
+// его можно тапом мимо или Esc.
 const pickColor = async (color: HighlightColor) => {
   lastColor.value = color
   if (activeId.value) {
     highlights.update(activeId.value, { color })
-    closeMenu()
     return
   }
-  // Меню закрываем сразу, не дожидаясь ответа сервера: пометка появляется
-  // оптимистично, а сбой сохранения покажет тост (см. createFromPending).
-  const created = await createFromPending(color)
-  if (created) closeMenu()
+  await createFromPending(color)
 }
 
 const openNote = async () => {
