@@ -35,21 +35,16 @@
 
         <div class="hero-grid">
           <div class="hero-copy">
-            <div class="hero-badge reveal">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 2c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5Z"/><path d="M17.5 12c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3Z"/></svg>
-              {{ d('hero.badge') }}
-            </div>
-            <h1 class="hero-title reveal reveal-delay-1">
+            <h1 class="hero-title reveal">
               {{ d('hero.title_1') }}<br/><span class="grad-text">{{ d('hero.title_2') }}</span>
             </h1>
-            <p class="hero-sub reveal reveal-delay-2">{{ d('hero.sub') }}</p>
-            <div class="hero-ctas reveal reveal-delay-3">
+            <p class="hero-sub reveal reveal-delay-1">{{ d('hero.sub') }}</p>
+            <div class="hero-ctas reveal reveal-delay-2">
               <NuxtLink to="/register" class="btn btn-teal btn-lg hero-cta">{{ d('cta.main') }}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </NuxtLink>
               <NuxtLink to="/login" class="btn btn-white btn-lg hero-cta2">{{ d('cta.login') }}</NuxtLink>
             </div>
-            <p class="hero-note reveal reveal-delay-4">{{ d('hero.note') }}</p>
           </div>
 
           <!-- Живой макет чата — один в один с ClassAiChat:
@@ -81,15 +76,6 @@
                 </div>
               </div>
             </div>
-
-            <div class="float-chip fc-deadline">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              {{ d('demo.chip_deadline') }}
-            </div>
-            <div class="float-chip fc-grade">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              {{ d('demo.chip_grade') }}
-            </div>
           </div>
         </div>
       </section>
@@ -115,7 +101,7 @@
             </div>
           </div>
 
-          <div class="bcard b-accent reveal reveal-delay-1">
+          <div class="bcard reveal reveal-delay-1">
             <div class="bicon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
             </div>
@@ -165,14 +151,6 @@
             <h3 class="btitle">{{ d('f.tasks.title') }}</h3>
             <p class="btext">{{ d('f.tasks.text') }}</p>
           </div>
-
-          <div class="bcard reveal reveal-delay-1">
-            <div class="bicon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-            </div>
-            <h3 class="btitle">{{ d('f.notif.title') }}</h3>
-            <p class="btext">{{ d('f.notif.text') }}</p>
-          </div>
         </div>
       </section>
 
@@ -191,27 +169,70 @@
         </div>
 
         <div class="split-visual reveal reveal-right">
-          <div class="mock-window">
-            <div class="mw-bar"><span></span><span></span><span></span></div>
-            <div class="mw-body">
-              <div class="mw-side">
-                <div v-for="(s, i) in subjects" :key="s.name"
-                  :class="['mw-item', { active: i === activeSubject }]" @click="activeSubject = i">
-                  <span class="mw-swatch" :style="{ background: s.color }"></span>{{ s.name }}
+          <!-- Реплика страницы предмета с сайта: обложка класса, сегмент-контрол
+               табов в стиле iOS (Лекции / Задания / ИИ-чат со скользящим
+               индикатором) и содержимое активного таба. -->
+          <div class="mock-window cls-win">
+            <div class="cls-cover">
+              <div class="cls-cover-pattern" aria-hidden="true"></div>
+              <div class="cls-cover-t">{{ d('sa.class_name') }}</div>
+              <div class="cls-cover-s">{{ d('sa.class_teacher') }}</div>
+            </div>
+            <div class="tabs-bar">
+              <div class="tabs-indicator" :style="{ transform: `translateX(calc(100% * ${clsTab}))` }"></div>
+              <button :class="['tab-btn', { active: clsTab === 0 }]" @click="clsTab = 0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                {{ d('sa.tab_lectures') }} <span class="tab-num">12</span>
+              </button>
+              <button :class="['tab-btn', { active: clsTab === 1 }]" @click="clsTab = 1">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                {{ d('sa.tab_tasks') }} <span class="tab-num">3</span>
+              </button>
+              <button :class="['tab-btn', { active: clsTab === 2 }]" @click="clsTab = 2">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                {{ d('sa.tab_ai') }}
+              </button>
+            </div>
+
+            <div class="cls-pane" :class="'p' + clsTab">
+              <!-- Лекции -->
+              <div v-if="clsTab === 0" class="cls-list">
+                <div v-for="(l, i) in lectures" :key="i" class="mli-row">
+                  <div class="mli-icon" style="color:#E5484D;background:#E5484D24">PDF</div>
+                  <div class="mli-info"><div class="mli-name">{{ l }}</div><div class="mli-meta">PDF</div></div>
+                  <svg class="mli-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               </div>
-              <div class="mw-chat">
-                <Transition name="fade" mode="out-in">
-                  <div :key="activeSubject" class="mw-msgs">
-                    <div class="bubble own sm">{{ subjects[activeSubject].q }}</div>
-                    <div class="bubble sm">{{ subjects[activeSubject].a }}</div>
-                    <div class="src-chip">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                      {{ subjects[activeSubject].src }}
-                    </div>
-                  </div>
-                </Transition>
+              <!-- Задания -->
+              <div v-else-if="clsTab === 1" class="cls-list">
+                <div v-for="(a, i) in clsAssignments" :key="i" class="cls-asgn">
+                  <div class="cls-asgn-t">{{ a.t }}</div>
+                  <div class="cls-asgn-m">{{ a.m }}</div>
+                  <span :class="['status-pill', a.pill]">{{ a.s }}</span>
+                </div>
               </div>
+              <!-- ИИ-чат -->
+              <template v-else>
+                <div class="mw-chat">
+                  <Transition name="fade" mode="out-in">
+                    <div :key="activeSubject" class="cai-msgs">
+                      <div class="msg-row user">
+                        <div class="msg-bubble">{{ subjects[activeSubject].q }}</div>
+                      </div>
+                      <div class="msg-row assistant">
+                        <div class="msg-sender">Chatra AI</div>
+                        <div class="msg-bubble">{{ subjects[activeSubject].a }}</div>
+                      </div>
+                    </div>
+                  </Transition>
+                </div>
+                <div class="mw-input">
+                  <div class="ai-textarea sm">{{ d('demo.placeholder') }}</div>
+                  <div class="send-btn sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+                  </div>
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -332,23 +353,48 @@
         </div>
 
         <div ref="graderSection" class="split-visual reveal reveal-right">
-          <div class="grade-card">
-            <div class="gc-head">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              {{ d('gr.card_title') }}
+          <!-- Реплика GradeResultCard из приложения: hero с кольцом на
+               подкрашенной подложке, бейдж «Проверено ИИ», разбор ИИ и
+               две карточки сильных сторон / зон роста. -->
+          <div class="grc">
+            <div class="grc-hero">
+              <div class="grc-hero-wash" aria-hidden="true"></div>
+              <div class="grc-hero-inner">
+                <template v-if="graderShown"><ScoreRing :score="87" :max-score="100"/></template>
+                <div class="grc-verdict">{{ d('gr.verdict') }}</div>
+                <div class="grc-by-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  {{ d('gr.by_badge') }}
+                </div>
+              </div>
             </div>
-            <div class="gc-body">
-              <ScoreRing v-if="graderShown" :score="87" :max-score="100"/>
-              <div class="gc-fb">
-                <div class="gc-fb-row ok">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-                  <span>{{ d('gr.strength') }}</span>
+
+            <div class="grc-summary">
+              <div class="grc-summary-head">
+                <span class="grc-spark">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </span>
+                {{ d('gr.sum_label') }}
+              </div>
+              <p class="grc-summary-text">{{ d('gr.summary') }}</p>
+            </div>
+
+            <div class="grc-analysis-grid">
+              <div class="grc-bullet-card ok">
+                <div class="grc-bullet-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="20 6 9 17 4 12"/></svg>
+                  {{ d('gr.st_title') }}
                 </div>
-                <div class="gc-fb-row warn">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <span>{{ d('gr.improve') }}</span>
+                <div class="grc-bullet-row"><span class="grc-dot"></span><span>{{ d('gr.strength') }}</span></div>
+                <div class="grc-bullet-row"><span class="grc-dot"></span><span>{{ d('gr.strength2') }}</span></div>
+              </div>
+              <div class="grc-bullet-card warn">
+                <div class="grc-bullet-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  {{ d('gr.im_title') }}
                 </div>
-                <p class="gc-summary">{{ d('gr.summary') }}</p>
+                <div class="grc-bullet-row"><span class="grc-dot"></span><span>{{ d('gr.improve') }}</span></div>
+                <div class="grc-bullet-row"><span class="grc-dot"></span><span>{{ d('gr.improve2') }}</span></div>
               </div>
             </div>
           </div>
@@ -456,39 +502,21 @@
         </div>
       </section>
 
-      <!-- ===== STEPS ===== -->
-      <section class="section steps-wrap">
-        <div class="sec-head reveal">
-          <h2 class="sec-title">{{ d('steps.title') }}</h2>
-        </div>
-        <div class="steps">
-          <div class="step reveal">
-            <span class="step-n">1</span>
-            <h3 class="step-t">{{ d('steps.s1_t') }}</h3>
-            <p class="step-d">{{ d('steps.s1_d') }}</p>
-          </div>
-          <div class="step reveal reveal-delay-1">
-            <span class="step-n">2</span>
-            <h3 class="step-t">{{ d('steps.s2_t') }}</h3>
-            <p class="step-d">{{ d('steps.s2_d') }}</p>
-          </div>
-          <div class="step reveal reveal-delay-2">
-            <span class="step-n">3</span>
-            <h3 class="step-t">{{ d('steps.s3_t') }}</h3>
-            <p class="step-d">{{ d('steps.s3_d') }}</p>
-          </div>
-        </div>
-      </section>
-
       <!-- ===== FINAL CTA ===== -->
-      <section class="section cta-wrap">
-        <div class="cta reveal reveal-scale">
-          <div class="cta-orb" aria-hidden="true"></div>
-          <h2 class="cta-title">{{ d('cta.title') }}</h2>
-          <p class="cta-sub">{{ d('cta.sub') }}</p>
-          <NuxtLink to="/register" class="btn btn-lg cta-btn">{{ d('cta.main') }}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </NuxtLink>
+      <section class="cta-final">
+        <div class="orb cf-orb-a" aria-hidden="true"></div>
+        <div class="orb cf-orb-b" aria-hidden="true"></div>
+        <div class="cf-inner">
+          <h2 class="cf-title reveal">
+            {{ d('cta.title_1') }}<br/><span class="grad-text shimmer">{{ d('cta.title_2') }}</span>
+          </h2>
+          <p class="cf-sub reveal reveal-delay-1">{{ d('cta.sub') }}</p>
+          <div class="cf-actions reveal reveal-delay-2">
+            <NuxtLink to="/register" class="btn btn-teal btn-lg cf-btn">{{ d('cta.main') }}
+              <svg class="cf-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </NuxtLink>
+            <NuxtLink to="/login" class="cf-alt">{{ d('cta.login') }}</NuxtLink>
+          </div>
         </div>
       </section>
     </main>
@@ -539,18 +567,19 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       login: { ru: 'Войти', en: 'Log in', kk: 'Кіру' }[l],
     },
     cta: {
-      main: { ru: 'Начать бесплатно', en: 'Start free', kk: 'Тегін бастаңыз' }[l],
-      short: { ru: 'Начать бесплатно', en: 'Start free', kk: 'Тегін бастау' }[l],
+      main: { ru: 'Начать', en: 'Get started', kk: 'Бастау' }[l],
+      short: { ru: 'Начать', en: 'Get started', kk: 'Бастау' }[l],
       login: { ru: 'У меня есть аккаунт', en: 'I have an account', kk: 'Аккаунтым бар' }[l],
-      title: { ru: 'Готовы учиться умнее?', en: 'Ready to learn smarter?', kk: 'Ақылды оқуға дайынсыз ба?' }[l],
+      title: { ru: 'Начните учиться', en: 'Start learning', kk: 'Оқуды бастаңыз' }[l],
+      title_1: { ru: 'Начните учиться', en: 'Start learning', kk: 'Оқуды бастаңыз' }[l],
+      title_2: { ru: 'умнее уже сегодня', en: 'smarter today', kk: 'ақылдырақ бүгін' }[l],
       sub: {
-        ru: 'Регистрация занимает меньше минуты. ИИ уже ждёт ваши лекции.',
-        en: 'Sign-up takes under a minute. Your AI is already waiting for your lectures.',
-        kk: 'Тіркеу бір минуттан аз уақыт алады. ЖИ дәрістеріңізді күтіп тұр.',
+        ru: 'Лекции, ИИ по каждому предмету и дедлайны — в одном приложении.',
+        en: 'Lectures, an AI for every subject and deadlines — in one app.',
+        kk: 'Дәрістер, әр пәнге арналған ЖИ және мерзімдер — бір қосымшада.',
       }[l],
     },
     hero: {
-      badge: { ru: 'AI for Education', en: 'AI for Education', kk: 'Білім беруға арналған ЖИ' }[l],
       title_1: { ru: 'Учитесь умнее с ИИ,', en: 'Learn smarter with an AI', kk: 'Өз дәрістеріңізді білетін ЖИ-мен' }[l],
       title_2: { ru: 'который знает ваши лекции', en: 'that knows your lectures', kk: 'ақылды оқыңыз' }[l],
       sub: {
@@ -558,18 +587,11 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         en: 'Chatra is a learning platform with an AI for every subject: it answers from your lectures, grades your work and never lets a deadline slip.',
         kk: 'Chatra — әр пәнге арналған ЖИ бар оқу платформасы: дәрістеріңіз бойынша жауап береді, жұмыстарды тексереді және мерзімді жібермейді.',
       }[l],
-      note: {
-        ru: 'Для студентов и преподавателей · Университеты и школы',
-        en: 'For students and teachers · Universities and schools',
-        kk: 'Студенттер мен мұғалімдерге · Университеттер мен мектептер',
-      }[l],
     },
     demo: {
       subject: { ru: 'Физика · ИИ предмета', en: 'Physics · Subject AI', kk: 'Физика · Пән ЖИ' }[l],
       status: { ru: 'знает 12 лекций', en: 'knows 12 lectures', kk: '12 дәрісті біледі' }[l],
       placeholder: { ru: 'Спросите Chatra AI', en: 'Ask Chatra AI', kk: 'Chatra ЖИ-ден сұраңыз' }[l],
-      chip_deadline: { ru: 'Дедлайн: эссе · пт', en: 'Deadline: essay · Fri', kk: 'Мерзім: эссе · жм' }[l],
-      chip_grade: { ru: 'Работа проверена · 87/100', en: 'Work graded · 87/100', kk: 'Жұмыс тексерілді · 87/100' }[l],
     },
     msgs: [
       { own: true, text: { ru: 'Объясни квантовый туннельный эффект простыми словами', en: 'Explain quantum tunneling in simple words', kk: 'Кванттық туннель эффектісін қарапайым тілмен түсіндір' }[l] },
@@ -644,6 +666,11 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
     },
     sa: {
       kicker: { ru: 'ИИ ПРЕДМЕТА', en: 'SUBJECT AI', kk: 'ПӘН ЖИ' }[l],
+      class_name: { ru: 'Физика', en: 'Physics', kk: 'Физика' }[l],
+      class_teacher: { ru: 'Преподаватель: А. Иванов', en: 'Teacher: A. Ivanov', kk: 'Мұғалім: А. Иванов' }[l],
+      tab_lectures: { ru: 'Лекции', en: 'Lectures', kk: 'Дәрістер' }[l],
+      tab_tasks: { ru: 'Задания', en: 'Tasks', kk: 'Тапсырмалар' }[l],
+      tab_ai: { ru: 'ИИ-чат', en: 'AI chat', kk: 'ЖИ-чат' }[l],
       title: { ru: 'ИИ, который прочитал все лекции вашего предмета', en: 'An AI that has read every lecture of your subject', kk: 'Пәніңіздің барлық дәрісін оқыған ЖИ' }[l],
       text: {
         ru: 'Выберите предмет — и общайтесь с его собственным ассистентом. Он отвечает со ссылками на конкретные лекции и файлы.',
@@ -732,8 +759,15 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         { ru: 'Преподаватель всегда может перепроверить оценку', en: 'The teacher can always review and override the grade', kk: 'Мұғалім бағаны әрқашан қайта тексере алады' }[l],
       ] as string[],
       card_title: { ru: 'Эссе · проверено ИИ', en: 'Essay · graded by AI', kk: 'Эссе · ЖИ тексерді' }[l],
+      verdict: { ru: 'Отлично', en: 'Excellent', kk: 'Тамаша' }[l],
+      by_badge: { ru: 'Проверено ИИ', en: 'Graded by AI', kk: 'ЖИ тексерген' }[l],
+      sum_label: { ru: 'Разбор ИИ', en: 'AI analysis', kk: 'ЖИ талдауы' }[l],
+      st_title: { ru: 'Сильные стороны', en: 'Strengths', kk: 'Күшті жақтары' }[l],
+      im_title: { ru: 'Зоны роста', en: 'Areas to improve', kk: 'Даму аймақтары' }[l],
       strength: { ru: 'Чёткая структура аргументации', en: 'Clear argument structure', kk: 'Дәлелдеме құрылымы айқын' }[l],
+      strength2: { ru: 'Выводы подтверждаются примерами из лекций', en: 'Conclusions are backed by lecture examples', kk: 'Қорытындылар дәріс мысалдарымен негізделген' }[l],
       improve: { ru: 'Добавьте больше ссылок на лекции', en: 'Add more references to lectures', kk: 'Дәрістерге көбірек сілтеме қосыңыз' }[l],
+      improve2: { ru: 'Второй абзац можно связать с темой недели 4', en: 'Paragraph two could tie into week 4’s topic', kk: 'Екінші абзацты 4-апта тақырыбымен байланыстыруға болады' }[l],
       summary: {
         ru: 'Хорошая работа: выводы подтверждаются примерами. Чтобы поднять балл, свяжите второй абзац с темой недели 4.',
         en: 'Solid work: conclusions are backed by examples. To raise the score, tie paragraph two to week 4’s topic.',
@@ -760,15 +794,6 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       st_pending: { ru: 'В ожидании', en: 'Pending', kk: 'Күтілуде' }[l],
       st_grading: { ru: 'Проверяется', en: 'Grading', kk: 'Тексерілуде' }[l],
       st_late: { ru: 'Просрочено', en: 'Overdue', kk: 'Кешікті' }[l],
-    },
-    steps: {
-      title: { ru: 'Как начать', en: 'How to get started', kk: 'Қалай бастау керек' }[l],
-      s1_t: { ru: 'Выберите организацию', en: 'Choose your organization', kk: 'Ұйымды таңдаңыз' }[l],
-      s1_d: { ru: 'Университет или школа — интерфейс подстроится под вас.', en: 'University or school — the interface adapts to you.', kk: 'Университет немесе мектеп — интерфейс сізге бейімделеді.' }[l],
-      s2_t: { ru: 'Создайте предмет или войдите по коду', en: 'Create a subject or join by code', kk: 'Пән жасаңыз немесе кодпен кіріңіз' }[l],
-      s2_d: { ru: 'Преподаватели создают предметы, студенты входят по 6-значному коду.', en: 'Teachers create subjects, students join with a 6-digit code.', kk: 'Мұғалімдер пән жасайды, студенттер 6 таңбалы кодпен кіреді.' }[l],
-      s3_t: { ru: 'Учитесь с ИИ каждый день', en: 'Learn with AI every day', kk: 'Күн сайын ЖИ-мен оқыңыз' }[l],
-      s3_d: { ru: 'Спрашивайте, сдавайте работы, следите за оценками и дедлайнами.', en: 'Ask questions, submit work, track grades and deadlines.', kk: 'Сұраңыз, жұмыс тапсырыңыз, бағалар мен мерзімдерді қадағалаңыз.' }[l],
     },
     foot: {
       privacy: { ru: 'Конфиденциальность', en: 'Privacy', kk: 'Құпиялық' }[l],
@@ -838,8 +863,7 @@ const scheduleLoop = () => {
   return () => { cancelled = true; clearAll() }
 }
 
-/* --- Макет «ИИ предмета»: активный предмет переключается кликом --- */
-const activeSubject = ref(1)
+/* --- Демо-диалог ИИ предмета (показывается в табе «ИИ-чат») --- */
 const subjects = computed(() => [
   { name: { ru: 'Математика', en: 'Mathematics', kk: 'Математика' }[lang.value], color: '#3730a3',
     q: { ru: 'Откуда взялась формула в лекции 5?', en: 'Where does the lecture 5 formula come from?', kk: '5-дәрістегі формула қайдан шыққан?' }[lang.value],
@@ -853,6 +877,23 @@ const subjects = computed(() => [
     q: { ru: 'Каковы основные причины реформы?', en: 'What were the main causes of the reform?', kk: 'Реформаның негізгі себептері қандай?' }[lang.value],
     a: { ru: 'Лекция 4 выделяет три причины: экономическое давление, …', en: 'Lecture 4 identifies three causes: economic pressure, …', kk: '4-дәріс үш себепті атап көрсетеді: экономикалық қысым, …' }[lang.value],
     src: { ru: 'Источник: lecture_04.pdf', en: 'Source: lecture_04.pdf', kk: 'Дереккөз: lecture_04.pdf' }[lang.value] },
+])
+
+/* --- Макет страницы предмета: табы как на сайте (Лекции/Задания/ИИ-чат) --- */
+const clsTab = ref(2)
+const activeSubject = ref(1)
+const lectures = computed(() => [
+  { ru: 'Лекция 1 · Кинематика', en: 'Lecture 1 · Kinematics', kk: '1-дәріс · Кинематика' }[lang.value],
+  { ru: 'Лекция 2 · Динамика', en: 'Lecture 2 · Dynamics', kk: '2-дәріс · Динамика' }[lang.value],
+  { ru: 'Лекция 3 · Законы сохранения', en: 'Lecture 3 · Conservation laws', kk: '3-дәріс · Сақтық заңдары' }[lang.value],
+])
+const clsAssignments = computed(() => [
+  { t: { ru: 'Лабораторная работа №1', en: 'Lab report №1', kk: 'Зертханалық жұмыс №1' }[lang.value],
+    m: { ru: '10 баллов · до пятницы', en: '10 points · due Friday', kk: '10 ұпай · жұмаға дейін' }[lang.value],
+    s: { ru: 'Проверяется', en: 'Grading', kk: 'Тексерілуде' }[lang.value], pill: 'grading' },
+  { t: { ru: 'Задачи по динамике', en: 'Dynamics problem set', kk: 'Динамика есептері' }[lang.value],
+    m: { ru: '20 баллов', en: '20 points', kk: '20 ұпай' }[lang.value],
+    s: { ru: 'В ожидании', en: 'Pending', kk: 'Күтілуде' }[lang.value], pill: 'pending' },
 ])
 
 /* --- Секция AI Grader: ScoreRing монтируем только когда карточка видна,
@@ -923,7 +964,6 @@ html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
 @keyframes orb-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(40px,26px,0) scale(1.08)}}
 @media (prefers-reduced-motion: reduce){.orb{animation:none}}
 
-.hero-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:100px;background:var(--teal-l);color:var(--teal);font-size:12px;font-weight:700;letter-spacing:.03em;margin-bottom:24px}
 .hero-title{font-size:clamp(36px,4.8vw,60px);font-weight:800;line-height:1.06;letter-spacing:-.033em;color:var(--text1);margin-bottom:22px}
 .grad-text{background:linear-gradient(120deg,var(--teal),var(--teal-h) 55%,var(--teal-d));-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero-sub{font-size:17.5px;color:var(--text3);line-height:1.65;max-width:480px;margin-bottom:32px}
@@ -931,7 +971,6 @@ html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
 .hero-cta{height:52px;border-radius:15px;padding:0 26px;font-size:15.5px;box-shadow:0 8px 24px rgba(var(--teal-rgb),.28)}
 .hero-cta:hover{box-shadow:0 10px 30px rgba(var(--teal-rgb),.38)}
 .hero-cta2{height:52px;border-radius:15px;padding:0 22px;font-size:15.5px}
-.hero-note{margin-top:20px;font-size:12.5px;color:var(--text4)}
 
 /* --- Макет чата (копия ClassAiChat) --- */
 .hero-visual{position:relative;display:flex;justify-content:center}
@@ -942,7 +981,7 @@ html.dark .chat-dot{box-shadow:0 0 0 3px rgba(74,222,128,.15)}
 .chat-head-t{min-width:0;flex:1}
 .chat-title{font-size:13.5px;font-weight:700;color:var(--text1);letter-spacing:-.01em}
 .chat-status{font-size:11px;color:var(--text4)}
-.chat-spark{width:28px;height:28px;border-radius:9px;background:var(--teal-l);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-spark{width:28px;height:28px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .chat-body{display:flex;flex-direction:column;gap:10px;padding:16px;min-height:270px;justify-content:flex-end}
 .bubble{max-width:85%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.55;color:var(--msg-other-color);background:var(--msg-other-bg);border-bottom-left-radius:5px;width:fit-content;animation:msg-in .3s cubic-bezier(.16,1,.3,1)}
 .bubble.own{align-self:flex-end;background:var(--msg-own-bg);color:var(--msg-own-color);border-radius:16px;border-bottom-right-radius:5px}
@@ -959,15 +998,6 @@ html.dark .chat-dot{box-shadow:0 0 0 3px rgba(74,222,128,.15)}
 .typing span:nth-child(3){animation-delay:.36s}
 @media (prefers-reduced-motion: reduce){.typing span{animation:none}}
 
-.float-chip{position:absolute;display:flex;align-items:center;gap:6px;padding:8px 13px;border-radius:100px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-md);font-size:12px;font-weight:700;color:var(--text2);white-space:nowrap}
-.fc-deadline{top:-14px;left:-8px;color:var(--red);animation:float 5s ease-in-out infinite}
-.fc-grade{bottom:-12px;right:-6px;color:var(--green);animation:float 6s ease-in-out 1.2s infinite}
-@media (prefers-reduced-motion: reduce){.fc-deadline,.fc-grade{animation:none}}
-@media (max-width:1020px){
-  .fc-deadline{left:2px;top:-10px}
-  .fc-grade{right:2px}
-}
-
 /* ====== СЕКЦИИ ====== */
 .section{max-width:1160px;margin:0 auto;padding:110px 24px}
 .sec-head{text-align:center;max-width:660px;margin:0 auto 56px}
@@ -978,14 +1008,15 @@ html.dark .chat-dot{box-shadow:0 0 0 3px rgba(74,222,128,.15)}
 .kicker{font-size:12px;font-weight:800;letter-spacing:.09em;color:var(--teal);margin-bottom:12px}
 
 /* --- Bento --- */
+/* Apple-стиль: плоская белая плитка с волосной границей, воздух, иконка без
+   плашки; тень появляется только при наведении. */
 .bento{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.bcard{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:28px;box-shadow:var(--sh-xs);display:flex;flex-direction:column;gap:10px;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s,border-color .15s}
-@media (hover:hover){.bcard:hover{transform:translateY(-4px);box-shadow:var(--sh-md)}}
+.bcard{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:34px 32px;box-shadow:none;display:flex;flex-direction:column;gap:10px;transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s,border-color .25s}
+@media (hover:hover){.bcard:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--border2)}}
 .b-wide{grid-column:span 2}
-.b-accent{background:linear-gradient(160deg,var(--teal-l),var(--surface) 70%)}
-.bicon{width:44px;height:44px;border-radius:14px;background:var(--teal-l);color:var(--teal);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
-.btitle{font-size:17.5px;font-weight:800;color:var(--text1);letter-spacing:-.014em}
-.btext{font-size:13.5px;color:var(--text3);line-height:1.6;flex:1}
+.bicon{color:var(--teal);margin-bottom:10px}
+.btitle{font-size:17.5px;font-weight:700;color:var(--text1);letter-spacing:-.02em}
+.btext{font-size:14px;color:var(--text3);line-height:1.65;flex:1}
 
 .mini-bubbles{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .mb{max-width:75%;padding:8px 12px;border-radius:14px;font-size:12px;color:var(--msg-other-color);background:var(--msg-other-bg);border-bottom-left-radius:4px}
@@ -1023,25 +1054,62 @@ html.dark .chat-dot{box-shadow:0 0 0 3px rgba(74,222,128,.15)}
 .checklist svg{color:var(--teal);flex-shrink:0;margin-top:2px}
 
 .mock-window{width:100%;max-width:540px;background:var(--surface);border:1px solid var(--border);border-radius:24px;box-shadow:var(--sh-lg);overflow:hidden}
+
+/* --- Макет страницы предмета (реплика pages/classes/[id].vue) --- */
+.cls-win{max-width:560px}
+/* Обложка класса — тил-градиент как у SubjectCover */
+.cls-cover{position:relative;padding:26px 24px 22px;background:linear-gradient(135deg,var(--teal-d),var(--teal));color:#fff;overflow:hidden}
+.cls-cover-pattern{position:absolute;inset:0;background:radial-gradient(ellipse at 85% -20%,rgba(255,255,255,.25),transparent 60%);pointer-events:none}
+.cls-cover-t{position:relative;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.cls-cover-s{position:relative;font-size:12px;color:rgba(255,255,255,.8);margin-top:3px}
+
+/* Сегмент-контрол табов — копия .tabs-bar/.tab-btn с класс-страницы:
+   «полочка» на --surface2 со скользящей подложкой активного таба */
+.tabs-bar{position:relative;display:flex;align-items:stretch;padding:3px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.tabs-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / 3);background:var(--surface);border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.tab-btn{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 6px;font-size:12px;font-weight:600;color:var(--text4);background:transparent;border:none;border-radius:9px;cursor:pointer;transition:color .2s;white-space:nowrap;font-family:inherit;letter-spacing:-.01em}
+.tab-btn svg{flex-shrink:0}
+.tab-btn.active{color:var(--text1);font-weight:700}
+.tab-num{font-size:10.5px;font-weight:700;background:var(--surface3);color:var(--text3);padding:1px 6px;border-radius:100px}
+.tab-btn.active .tab-num{background:var(--teal-l);color:var(--teal)}
+
+.cls-pane{display:flex;flex-direction:column;min-height:300px}
+.cls-list{display:flex;flex-direction:column}
+.cls-list .mli-row{padding:12px 16px}
+.cls-asgn{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border)}
+.cls-asgn:last-child{border-bottom:none}
+.cls-asgn-t{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cls-asgn-m{font-size:11.5px;color:var(--text4);flex-shrink:0}
+
 .mw-bar{display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--glass);align-items:center}
 .mw-bar span{width:9px;height:9px;border-radius:50%;background:var(--surface3);flex-shrink:0}
 .mw-file{display:flex;align-items:center;gap:7px;margin-left:10px;font-size:12px;font-weight:600;color:var(--text3)}
 .ftb{display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:4px;line-height:1.4;min-width:28px}
-.mw-body{display:grid;grid-template-columns:150px 1fr;min-height:300px}
-.mw-side{border-right:1px solid var(--border);padding:10px;display:flex;flex-direction:column;gap:4px;background:var(--glass)}
-.mw-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--r-sm);font-size:12.5px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s;text-align:left}
-@media (hover:hover){.mw-item:hover{background:var(--glass2)}}
-.mw-item.active{background:var(--teal-l);color:var(--teal)}
-.mw-swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.mw-chat{padding:16px;display:flex;align-items:center}
-.mw-msgs{display:flex;flex-direction:column;gap:9px;width:100%}
-.src-chip{display:inline-flex;align-items:center;gap:6px;width:fit-content;padding:5px 11px;border-radius:100px;background:var(--teal-l);color:var(--teal);font-size:11px;font-weight:700}
+.mw-chat{flex:1;padding:16px;display:flex;align-items:center}
+
+/* Реплика сообщений ClassAiChat: у ассистента — «Chatra AI» и пузырь на
+   --surface с бордером; у пользователя — градиентный пузырь с тенью. */
+.cai-msgs{display:flex;flex-direction:column;gap:12px;width:100%}
+.msg-row{display:flex;flex-direction:column;gap:6px;max-width:85%}
+.msg-row.user{align-self:flex-end;align-items:flex-end}
+.msg-row.assistant{align-self:flex-start}
+.msg-sender{font-size:11.5px;font-weight:700;color:var(--text3)}
+.msg-bubble{padding:11px 15px;border-radius:18px;font-size:12.5px;line-height:1.6;word-break:break-word}
+.msg-row.assistant .msg-bubble{background:var(--surface);border:1px solid var(--border);color:var(--text1);border-bottom-left-radius:6px}
+.msg-row.user .msg-bubble{background:linear-gradient(135deg,var(--teal),var(--teal-h));color:#fff;border-bottom-right-radius:6px;box-shadow:0 4px 20px rgba(var(--teal-rgb),.3)}
+.mw-input{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--border)}
+.ai-textarea.sm{padding:9px 13px;font-size:12.5px;border-radius:12px}
+.send-btn.sm{width:36px;height:36px}
 
 .fade-enter-active,.fade-leave-active{transition:opacity .18s ease}
 .fade-enter-from,.fade-leave-to{opacity:0}
 
-/* --- Макет экрана лекции (материалы + выделения) --- */
-.lec-win{max-width:600px}
+/* --- Макет экрана лекции (материалы + выделения) ---
+   Секция асимметричная: визуальной колонке с окном лекции отдаём больше
+   места, чтобы плавающее меню выделения помещалось целиком. */
+#highlights.split{grid-template-columns:1.15fr 1fr;gap:48px}
+.lec-win{max-width:660px}
 .lec-body{display:grid;grid-template-columns:1.2fr 1fr;min-height:360px}
 .lec-page{padding:20px 22px;border-right:1px solid var(--border);position:relative}
 .lec-h{font-size:15px;font-weight:800;color:var(--text1);letter-spacing:-.015em;margin-bottom:12px}
@@ -1052,15 +1120,16 @@ html.dark .hl-yellow{background:rgba(255,216,77,.28)}
 .hl-green{background:rgba(123,220,160,.4)}
 html.dark .hl-green{background:rgba(123,220,160,.26)}
 
-/* Меню выделения — копия HighlightMenu (.hm-*) */
-.hm{position:absolute;z-index:5;left:50%;transform:translate(-50%,-46px);display:inline-flex;padding:6px;background:var(--surface);border:1px solid var(--border);border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.08);white-space:nowrap}
-.hm-row{display:flex;align-items:center;gap:2px}
-.hm-color{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px}
+/* Меню выделения — копия HighlightMenu (.hm-*), компактный размер,
+   чтобы помещаться в колонку документа без обрезки */
+.hm{position:absolute;z-index:5;left:57%;transform:translate(-50%,-44px);display:inline-flex;padding:5px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.08);white-space:nowrap}
+.hm-row{display:flex;align-items:center;gap:1px}
+.hm-color{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px}
 .hm-color.active{background:var(--surface3)}
-.hm-color span{width:17px;height:17px;border-radius:50%;display:block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.hm-color span{width:15px;height:15px;border-radius:50%;display:block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .c-yellow{background:#FFD84D}.c-green{background:#7BDCA0}.c-blue{background:#7CC5F5}.c-red{background:#FF9A9A}
-.hm-sep{width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0}
-.hm-btn{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 9px;border-radius:9px;color:var(--text2);font-size:12.5px;font-weight:600}
+.hm-sep{width:1px;height:16px;background:var(--border);margin:0 4px;flex-shrink:0}
+.hm-btn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border-radius:8px;color:var(--text2);font-size:11.5px;font-weight:600}
 .hm-btn.hm-ai{color:var(--teal)}
 
 .lec-side{padding:16px;background:var(--glass)}
@@ -1078,17 +1147,30 @@ html.dark .hl-green{background:rgba(123,220,160,.26)}
 .hp-meta{font-size:11px;color:var(--text4);margin-top:4px}
 .lec-side .mli-row{padding:9px 12px}
 
-/* --- AI Grader --- */
-.grade-card{width:100%;max-width:520px;background:var(--surface);border:1px solid var(--border);border-radius:24px;box-shadow:var(--sh-lg);overflow:hidden}
-.gc-head{display:flex;align-items:center;gap:8px;padding:13px 18px;border-bottom:1px solid var(--border);background:var(--glass);font-size:13px;font-weight:700;color:var(--text1)}
-.gc-head svg{color:var(--yellow)}
-.gc-body{display:grid;grid-template-columns:200px 1fr;gap:22px;padding:22px;align-items:center}
-.gc-fb{display:flex;flex-direction:column;gap:9px;min-width:0}
-.gc-fb-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:8px 12px;border-radius:var(--r-sm)}
-.gc-fb-row.ok{background:var(--green-l);color:var(--green)}
-.gc-fb-row.warn{background:var(--yellow-l);color:#B45309}
-.gc-fb-row span{min-width:0}
-.gc-summary{font-size:12.5px;color:var(--text3);line-height:1.6;margin-top:4px}
+/* --- AI Grader: реплика GradeResultCard (.grc-*, tone-good) --- */
+.grc{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
+.grc-hero{position:relative;overflow:hidden;border-radius:var(--r-2xl);background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-xs)}
+.grc-hero-wash{position:absolute;inset:-40% -20% auto -20%;height:78%;background:radial-gradient(ellipse at 50% 0%, rgba(var(--teal-rgb),.22), rgba(var(--teal-rgb),0) 70%);pointer-events:none}
+.grc-hero-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding:22px 18px 20px}
+.grc-verdict{font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--text1);text-align:center;line-height:1.2}
+.grc-by-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text2);background:var(--surface2);border:1px solid var(--border);padding:5px 12px;border-radius:100px}
+.grc-by-badge svg{color:var(--teal)}
+.grc-summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:15px 16px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--sh-xs)}
+.grc-summary-head{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text4)}
+.grc-spark{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;flex-shrink:0;background:linear-gradient(140deg,var(--teal-h),var(--teal-d));color:#fff;box-shadow:0 2px 6px rgba(var(--teal-rgb),.3)}
+.grc-summary-text{font-size:13px;line-height:1.65;color:var(--text2);margin:0}
+.grc-analysis-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.grc-bullet-card{border-radius:var(--r-xl);padding:14px 15px;display:flex;flex-direction:column;gap:9px;border:1px solid}
+.grc-bullet-card.ok{background:rgba(52,199,89,.07);border-color:rgba(52,199,89,.22)}
+.grc-bullet-card.warn{background:rgba(232,151,58,.07);border-color:rgba(232,151,58,.24)}
+.grc-bullet-title{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.grc-bullet-card.ok .grc-bullet-title{color:var(--green)}
+.grc-bullet-card.warn .grc-bullet-title{color:#B45309}
+html.dark .grc-bullet-card.warn .grc-bullet-title{color:#F0A94B}
+.grc-bullet-row{display:flex;align-items:flex-start;gap:9px;font-size:13px;line-height:1.55;color:var(--text2)}
+.grc-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:7px}
+.grc-bullet-card.ok .grc-dot{background:var(--green)}
+.grc-bullet-card.warn .grc-dot{background:#E8973A}
 
 /* --- Задания: копии AssignmentCard (.asgn-*) --- */
 .asgn-list{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
@@ -1113,22 +1195,25 @@ html.dark .hl-green{background:rgba(123,220,160,.26)}
 .meta-score{color:var(--text2);font-weight:600}
 .asgn-arrow{color:var(--text4);flex-shrink:0}
 
-/* --- Steps --- */
-.steps-wrap{padding-top:30px}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.step{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:28px;box-shadow:var(--sh-xs)}
-.step-n{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;font-size:14px;font-weight:800;margin-bottom:14px}
-.step-t{font-size:16.5px;font-weight:800;color:var(--text1);margin-bottom:8px;letter-spacing:-.012em}
-.step-d{font-size:13.5px;color:var(--text3);line-height:1.6}
-
-/* --- Final CTA --- */
-.cta-wrap{padding-bottom:120px}
-.cta{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--teal),var(--teal-d));border-radius:32px;padding:80px 32px;text-align:center;box-shadow:var(--teal-glow)}
-.cta-orb{position:absolute;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.12);filter:blur(60px);top:-130px;right:-60px;pointer-events:none}
-.cta-title{position:relative;font-size:clamp(28px,3.6vw,42px);font-weight:800;color:#fff;letter-spacing:-.028em;margin-bottom:12px}
-.cta-sub{position:relative;font-size:15.5px;color:rgba(255,255,255,.82);margin-bottom:32px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.6}
-.cta-btn{position:relative;height:54px;border-radius:15px;padding:0 30px;background:#fff;color:var(--teal-d);font-size:15.5px;font-weight:700}
-.cta-btn:hover{background:rgba(255,255,255,.92)}
+/* --- Final CTA: типографика вместо градиентной «ИИ-коробки» ---
+   Секция full-bleed (без max-width), чтобы мягкий тил-фон уходил на всю
+   ширину экрана; контент — в узкой центральной колонке. */
+.cta-final{position:relative;width:100%;padding:150px 24px 160px;text-align:center;overflow:hidden}
+.cf-orb-a{width:640px;height:640px;top:-160px;left:-140px;margin:0;background:rgba(var(--teal-rgb),.11)}
+.cf-orb-b{width:560px;height:560px;bottom:-240px;right:-120px;background:rgba(var(--teal-rgb),.09)}
+.cf-inner{position:relative;z-index:1;max-width:720px;margin:0 auto}
+.cf-title{font-size:clamp(34px,5vw,58px);font-weight:800;line-height:1.07;letter-spacing:-.033em;color:var(--text1);margin-bottom:18px}
+.grad-text{background:linear-gradient(120deg,var(--teal),var(--teal-h) 55%,var(--teal-d));-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 200%;animation:shimmer-grad 6s ease-in-out infinite}
+@keyframes shimmer-grad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@media (prefers-reduced-motion: reduce){.grad-text{animation:none}}
+.cf-sub{font-size:16.5px;color:var(--text3);line-height:1.65;margin-bottom:34px}
+.cf-actions{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+.cf-btn{height:54px;border-radius:16px;padding:0 30px;font-size:15.5px;box-shadow:0 8px 24px rgba(var(--teal-rgb),.28)}
+.cf-btn:hover{box-shadow:0 10px 30px rgba(var(--teal-rgb),.38)}
+.cf-arrow{transition:transform .22s cubic-bezier(.32,.72,0,1)}
+.cf-btn:hover .cf-arrow{transform:translateX(4px)}
+.cf-alt{font-size:14.5px;font-weight:600;color:var(--text3);transition:color .15s}
+.cf-alt:hover{color:var(--teal)}
 
 /* ====== FOOTER ====== */
 .lfooter{border-top:1px solid var(--border);background:var(--surface)}
@@ -1161,20 +1246,17 @@ html.dark .hl-green{background:rgba(123,220,160,.26)}
   .hero{padding:calc(var(--topbar) + 32px) 16px 72px}
   .hero-title{font-size:clamp(30px,8.6vw,38px)}
   .hero-visual{padding:0 4px}
-  .fc-deadline{top:-10px;left:0}
-  .fc-grade{bottom:-10px;right:0}
   .bento{grid-template-columns:1fr}
   .b-wide{grid-column:span 1}
   .steps{grid-template-columns:1fr}
-  .mw-body{grid-template-columns:118px 1fr;min-height:270px}
   /* Экран лекции: панель уезжает под документ */
   .lec-body{grid-template-columns:1fr}
   .lec-page{border-right:none;border-bottom:1px solid var(--border)}
-  .hm{transform:translate(-50%,-42px) scale(.86)}
-  .gc-body{grid-template-columns:1fr;place-items:center}
+  .hm{transform:translate(-50%,-42px) scale(.82)}
   .asgn-card{gap:12px;padding:16px}
   .asgn-arrow{display:none}
-  .cta{padding:60px 22px;border-radius:26px}
+  .cta-final{padding:96px 16px 104px}
+  .cf-actions{flex-direction:column;gap:14px}
   /* На тач-устройствах hover-lift не нужен — отклик через :active */
   .bcard:active,.asgn-card:active{transform:scale(.98)}
 }
