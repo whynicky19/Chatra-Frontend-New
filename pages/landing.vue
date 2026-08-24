@@ -524,10 +524,7 @@
     <!-- ===== FOOTER ===== -->
     <footer class="lfooter">
       <div class="lf-inner">
-        <div class="lf-brand">
-          <span class="l-logo sm"></span>
-          <span>Chatra</span>
-        </div>
+        <div class="lf-brand">Chatra</div>
         <nav class="lf-links">
           <NuxtLink to="/privacy">{{ d('foot.privacy') }}</NuxtLink>
           <NuxtLink to="/terms">{{ d('foot.terms') }}</NuxtLink>
@@ -572,7 +569,7 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       login: { ru: 'У меня есть аккаунт', en: 'I have an account', kk: 'Аккаунтым бар' }[l],
       title: { ru: 'Начните учиться', en: 'Start learning', kk: 'Оқуды бастаңыз' }[l],
       title_1: { ru: 'Начните учиться', en: 'Start learning', kk: 'Оқуды бастаңыз' }[l],
-      title_2: { ru: 'умнее уже сегодня', en: 'smarter today', kk: 'ақылдырақ бүгін' }[l],
+      title_2: { ru: 'эффективнее уже сегодня', en: 'more effectively today', kk: 'тиімдірек бүгін' }[l],
       sub: {
         ru: 'Лекции, ИИ по каждому предмету и дедлайны — в одном приложении.',
         en: 'Lectures, an AI for every subject and deadlines — in one app.',
@@ -580,8 +577,8 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       }[l],
     },
     hero: {
-      title_1: { ru: 'Учитесь умнее с ИИ,', en: 'Learn smarter with an AI', kk: 'Өз дәрістеріңізді білетін ЖИ-мен' }[l],
-      title_2: { ru: 'который знает ваши лекции', en: 'that knows your lectures', kk: 'ақылды оқыңыз' }[l],
+      title_1: { ru: 'Учитесь эффективнее с ИИ,', en: 'Learn more effectively with an AI', kk: 'Өз дәрістеріңізді білетін ЖИ-мен' }[l],
+      title_2: { ru: 'который знает ваши лекции', en: 'that knows your lectures', kk: 'тиімді оқыңыз' }[l],
       sub: {
         ru: 'Chatra — учебная платформа с ИИ для каждого предмета: отвечает по вашим лекциям, проверяет работы и не даёт пропустить дедлайны.',
         en: 'Chatra is a learning platform with an AI for every subject: it answers from your lectures, grades your work and never lets a deadline slip.',
@@ -678,8 +675,9 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         kk: 'Пәнді таңдаңыз және оның жеке көмекшісімен сөйлесіңіз. Ол нақты дәрістерге сілтеме жасап жауап береді.',
       }[l],
       points: [
+        { ru: 'Знает контекст каждой лекции — темы, термины и формулы', en: 'Knows the context of every lecture — topics, terms and formulas', kk: 'Әр дәрістің контекстін біледі — тақырыптан формулаларға дейін' }[l],
         { ru: 'Ответы с указанием источника — лекции и файлы', en: 'Answers cite their source — lectures and files', kk: 'Жауаптар дереккөзді көрсетеді — дәрістер мен файлдар' }[l],
-        { ru: 'Понимает формулы, графики и термины курса', en: 'Understands your course formulas, graphs and terms', kk: 'Курстың формулаларын, графиктерін мен терминдерін түсінеді' }[l],
+        { ru: 'Понимает графики и обозначения именно вашего курса', en: 'Understands your course’s graphs and notation', kk: 'Сіздің курсіңіздің графиктері мен белгіленімін түсінеді' }[l],
         { ru: 'Помнит историю ваших диалогов по предмету', en: 'Remembers your per-subject conversation history', kk: 'Пән бойынша диалог тарихын есте сақтайды' }[l],
       ] as string[],
     },
@@ -982,7 +980,7 @@ html.dark .chat-dot{box-shadow:0 0 0 3px rgba(74,222,128,.15)}
 .chat-title{font-size:13.5px;font-weight:700;color:var(--text1);letter-spacing:-.01em}
 .chat-status{font-size:11px;color:var(--text4)}
 .chat-spark{width:28px;height:28px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.chat-body{display:flex;flex-direction:column;gap:10px;padding:16px;min-height:270px;justify-content:flex-end}
+.chat-body{display:flex;flex-direction:column;gap:10px;padding:16px;min-height:372px;justify-content:flex-end}
 .bubble{max-width:85%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.55;color:var(--msg-other-color);background:var(--msg-other-bg);border-bottom-left-radius:5px;width:fit-content;animation:msg-in .3s cubic-bezier(.16,1,.3,1)}
 .bubble.own{align-self:flex-end;background:var(--msg-own-bg);color:var(--msg-own-color);border-radius:16px;border-bottom-right-radius:5px}
 .bubble.sm{font-size:12.5px;padding:9px 13px}
@@ -1172,28 +1170,29 @@ html.dark .grc-bullet-card.warn .grc-bullet-title{color:#F0A94B}
 .grc-bullet-card.ok .grc-dot{background:var(--green)}
 .grc-bullet-card.warn .grc-dot{background:#E8973A}
 
-/* --- Задания: копии AssignmentCard (.asgn-*) --- */
-.asgn-list{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-.asgn-card{display:flex;align-items:center;gap:16px;padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);position:relative;overflow:hidden;transition:all .18s;cursor:default}
-@media (hover:hover){.asgn-card:hover{background:var(--surface2);border-color:var(--border2);transform:translateY(-1px);box-shadow:var(--sh-sm)}}
+/* --- Задания: копии AssignmentCard (.asgn-*) с более премиальной отделкой --- */
+.asgn-list{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.asgn-card{display:flex;align-items:center;gap:18px;padding:21px 24px;background:var(--surface);border:1px solid var(--border);border-radius:22px;position:relative;overflow:hidden;transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s,border-color .2s;cursor:default;box-shadow:var(--sh-xs)}
+@media (hover:hover){.asgn-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--border2)}}
 .asgn-accent{position:absolute;left:0;top:0;bottom:0;width:3px}
 .accent-blue{background:var(--text4)}
 .accent-green{background:var(--green)}
 .accent-red{background:var(--red)}
 .accent-purple{background:var(--purple)}
-.asgn-ico-wrap{width:44px;height:44px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ico-blue{background:var(--surface3);color:var(--text3);border:1px solid var(--border)}
-.ico-green{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.15)}
-.ico-red{background:var(--red-l);color:var(--red);border:1px solid rgba(248,113,113,.15)}
+.asgn-ico-wrap{width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ico-blue{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+.ico-green{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.18)}
+.ico-red{background:var(--red-l);color:var(--red);border:1px solid rgba(248,113,113,.18)}
 .asgn-main{flex:1;min-width:0}
-.asgn-title{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.asgn-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.meta-due,.meta-score{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text4);font-weight:500}
+.asgn-title{font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.asgn-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.meta-due,.meta-score{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text4);font-weight:500}
 .meta-due{color:var(--text3)}
-.meta-due.overdue{color:var(--red)}
-.meta-due.soon{color:var(--yellow)}
+.meta-due.overdue{color:var(--red);font-weight:600}
+.meta-due.soon{color:var(--yellow);font-weight:600}
 .meta-score{color:var(--text2);font-weight:600}
-.asgn-arrow{color:var(--text4);flex-shrink:0}
+.asgn-arrow{color:var(--text4);flex-shrink:0;transition:transform .2s cubic-bezier(.32,.72,0,1),color .2s}
+@media (hover:hover){.asgn-card:hover .asgn-arrow{transform:translateX(3px);color:var(--teal)}}
 
 /* --- Final CTA: типографика вместо градиентной «ИИ-коробки» ---
    Секция full-bleed (без max-width), чтобы мягкий тил-фон уходил на всю
@@ -1246,6 +1245,9 @@ html.dark .grc-bullet-card.warn .grc-bullet-title{color:#F0A94B}
   .hero{padding:calc(var(--topbar) + 32px) 16px 72px}
   .hero-title{font-size:clamp(30px,8.6vw,38px)}
   .hero-visual{padding:0 4px}
+  /* На узких экранах строки переносятся чаще — запас по высоте больше,
+     чтобы карточка чата не меняла размер в течение цикла анимации */
+  .chat-body{min-height:470px}
   .bento{grid-template-columns:1fr}
   .b-wide{grid-column:span 1}
   .steps{grid-template-columns:1fr}
