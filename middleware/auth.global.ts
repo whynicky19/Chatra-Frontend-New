@@ -14,7 +14,18 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (!org.isSelected) org.init()
 
-  const pub = ['/login', '/register', '/org', '/verify-email', '/forgot-password']
+  // Лендинг публичный, но авторизованного пользователя сразу отправляем в
+  // приложение — повторная регистрация/витрина ему не нужна.
+  if (to.path === '/landing' && auth.token) {
+    return navigateTo('/', { replace: true })
+  }
+
+  // Неавторизованному посетителю вместо каталога показываем лендинг.
+  if (!auth.token && to.path === '/') {
+    return navigateTo('/landing', { replace: true })
+  }
+
+  const pub = ['/login', '/register', '/org', '/verify-email', '/forgot-password', '/landing']
   const isPublic = pub.includes(to.path)
 
   if (to.path === '/org') return

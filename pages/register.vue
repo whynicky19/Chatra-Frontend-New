@@ -1,5 +1,9 @@
 <template>
   <div class="auth-card">
+    <NuxtLink to="/landing" class="back-to-landing">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+      {{ lang==='ru'?'На главную':lang==='kk'?'Басты бет':'Back to home' }}
+    </NuxtLink>
     <div class="org-badge-row">
       <button :class="['org-pill', { school: org.isSchool }]" :title="lang==='ru'?'Сменить организацию':'Change organization'" @click="switchOrg">
         <span class="org-pill-icon">
@@ -103,6 +107,10 @@ const sub = async () => {
 <style scoped>
 /* Карточка вокруг формы, чтобы не сливалась с фоном */
 .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--sh-sm);padding:28px 26px;width:100%;max-width:400px;margin:0 auto}
+.back-to-landing{display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;padding:6px 12px 6px 9px;border-radius:100px;background:var(--surface2);border:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--text3);transition:all .15s}
+.back-to-landing:hover{color:var(--teal);border-color:rgba(var(--teal-rgb),.35);background:var(--teal-l)}
+.back-to-landing svg{transition:transform .15s}
+.back-to-landing:hover svg{transform:translateX(-2px)}
 .auth-title{font-size:24px;font-weight:700;letter-spacing:-.015em;line-height:1.2;margin-bottom:6px;color:var(--text1);text-align:center}
 .auth-sub{font-size:14.5px;color:var(--text4);margin-bottom:24px;text-align:center;line-height:1.4}
 .auth-form{display:flex;flex-direction:column;gap:0}
@@ -141,6 +149,8 @@ const sub = async () => {
   .auth-submit { height: 50px; }
   .frow { margin-bottom: 12px; }
   .org-badge-row { margin-bottom: 14px; }
+  .back-to-landing{position:relative;min-height:36px}
+  .back-to-landing::after{content:'';position:absolute;top:-9px;bottom:-9px;left:-6px;right:-6px}
   .org-pill::after{content:'';position:absolute;top:-7px;bottom:-7px;left:-4px;right:-4px}
   .reg-foot-link{position:relative;display:inline-flex;align-items:center}
   .reg-foot-link::after{content:'';position:absolute;top:-12px;bottom:-12px;left:-4px;right:-4px}
