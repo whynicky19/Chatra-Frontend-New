@@ -897,11 +897,37 @@ const graderSection = ref<HTMLElement | null>(null)
 const graderShown = ref(reducedMotion)
 let graderObserver: IntersectionObserver | null = null
 
+/* Локальный reveal-обзервер. Глобальный плагин (plugins/animations.client.ts)
+   наблюдает .reveal по router.afterEach +80ms, но при клиентской навигации
+   с page transition (out-in) DOM этой страницы монтируется позже — observe
+   находил ноль элементов, и все секции оставались с opacity:0. Поэтому
+   лендинг наблюдает свои .reveal самостоятельно в onMounted. */
+let revealObserver: IntersectionObserver | null = null
+
 const visibleMsgs = computed(() => dict.value.msgs.slice(0, visibleCount.value))
 let stopChat: (() => void) | null = null
 
 onMounted(() => {
   if (!reducedMotion) stopChat = scheduleLoop()
+
+  const root = document.querySelector('.landing')
+  if (root) {
+    const els = root.querySelectorAll('.reveal')
+    if (reducedMotion) {
+      els.forEach(el => el.classList.add('revealed'))
+    } else {
+      revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('revealed')
+            revealObserver?.unobserve(e.target)
+          }
+        })
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' })
+      els.forEach(el => revealObserver!.observe(el))
+    }
+  }
+
   if (!graderShown.value && graderSection.value) {
     graderObserver = new IntersectionObserver((entries) => {
       entries.forEach(e => {
@@ -911,7 +937,7 @@ onMounted(() => {
     graderObserver.observe(graderSection.value)
   }
 })
-onUnmounted(() => { stopChat?.(); graderObserver?.disconnect() })
+onUnmounted(() => { stopChat?.(); graderObserver?.disconnect(); revealObserver?.disconnect() })
 
 const year = new Date().getFullYear()
 </script>
