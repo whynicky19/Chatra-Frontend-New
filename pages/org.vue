@@ -1,5 +1,9 @@
 <template>
   <div class="org-shell">
+    <NuxtLink to="/landing" class="back-landing">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+      {{ tt('На главную', 'Басты бет', 'Back to home') }}
+    </NuxtLink>
     <div class="org-content">
       <div class="lang-row r0">
         <button v-for="l in langs" :key="l.code"
@@ -122,6 +126,31 @@ const proceed = () => {
   justify-content: center;
   position: relative;
   overflow: hidden;
+}
+
+/* Кнопка назад на лендинг — в углу экрана, как системный back в iOS */
+.back-landing {
+  position: absolute;
+  top: calc(18px + env(safe-area-inset-top, 0px));
+  left: 20px;
+  z-index: 2;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px 7px 10px;
+  border-radius: 100px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--sh-xs);
+  font-size: 12.5px; font-weight: 600;
+  color: var(--text3);
+  transition: color .15s, border-color .15s, background .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.back-landing:hover { color: var(--teal); border-color: rgba(var(--teal-rgb), .35); }
+.back-landing:active { transform: scale(.96); }
+.back-landing svg { transition: transform .15s; }
+.back-landing:hover svg { transform: translateX(-2px); }
+@media (max-width: 768px) {
+  .back-landing { top: calc(14px + env(safe-area-inset-top, 0px)); left: 14px; min-height: 38px; }
 }
 
 .org-content {

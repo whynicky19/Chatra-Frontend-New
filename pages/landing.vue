@@ -22,7 +22,7 @@
               role="tab" :aria-selected="lang === l.code" @click="setLang(l.code)">{{ l.label }}</button>
           </div>
           <NuxtLink to="/login" class="btn btn-ghost l-login">{{ d('nav.login') }}</NuxtLink>
-          <NuxtLink to="/register" class="btn btn-teal l-cta-sm">{{ d('cta.short') }}</NuxtLink>
+          <NuxtLink to="/org" class="btn btn-teal l-cta-sm">{{ d('cta.short') }}</NuxtLink>
         </div>
       </div>
     </header>
@@ -40,10 +40,9 @@
             </h1>
             <p class="hero-sub reveal reveal-delay-1">{{ d('hero.sub') }}</p>
             <div class="hero-ctas reveal reveal-delay-2">
-              <NuxtLink to="/register" class="btn btn-teal btn-lg hero-cta">{{ d('cta.main') }}
+              <NuxtLink to="/org" class="btn btn-teal btn-lg hero-cta">{{ d('cta.main') }}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </NuxtLink>
-              <NuxtLink to="/login" class="btn btn-white btn-lg hero-cta2">{{ d('cta.login') }}</NuxtLink>
             </div>
           </div>
 
@@ -512,10 +511,9 @@
           </h2>
           <p class="cf-sub reveal reveal-delay-1">{{ d('cta.sub') }}</p>
           <div class="cf-actions reveal reveal-delay-2">
-            <NuxtLink to="/register" class="btn btn-teal btn-lg cf-btn">{{ d('cta.main') }}
+            <NuxtLink to="/org" class="btn btn-teal btn-lg cf-btn">{{ d('cta.main') }}
               <svg class="cf-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </NuxtLink>
-            <NuxtLink to="/login" class="cf-alt">{{ d('cta.login') }}</NuxtLink>
           </div>
         </div>
       </section>
@@ -566,7 +564,6 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
     cta: {
       main: { ru: 'Начать', en: 'Get started', kk: 'Бастау' }[l],
       short: { ru: 'Начать', en: 'Get started', kk: 'Бастау' }[l],
-      login: { ru: 'У меня есть аккаунт', en: 'I have an account', kk: 'Аккаунтым бар' }[l],
       title: { ru: 'Начните учиться', en: 'Start learning', kk: 'Оқуды бастаңыз' }[l],
       title_1: { ru: 'Начните учиться', en: 'Start learning', kk: 'Оқуды бастаңыз' }[l],
       title_2: { ru: 'эффективнее уже сегодня', en: 'more effectively today', kk: 'тиімдірек бүгін' }[l],
@@ -968,7 +965,6 @@ html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
 .hero-ctas{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .hero-cta{height:52px;border-radius:15px;padding:0 26px;font-size:15.5px;box-shadow:0 8px 24px rgba(var(--teal-rgb),.28)}
 .hero-cta:hover{box-shadow:0 10px 30px rgba(var(--teal-rgb),.38)}
-.hero-cta2{height:52px;border-radius:15px;padding:0 22px;font-size:15.5px}
 
 /* --- Макет чата (копия ClassAiChat) --- */
 .hero-visual{position:relative;display:flex;justify-content:center}
@@ -1211,8 +1207,6 @@ html.dark .grc-bullet-card.warn .grc-bullet-title{color:#F0A94B}
 .cf-btn:hover{box-shadow:0 10px 30px rgba(var(--teal-rgb),.38)}
 .cf-arrow{transition:transform .22s cubic-bezier(.32,.72,0,1)}
 .cf-btn:hover .cf-arrow{transform:translateX(4px)}
-.cf-alt{font-size:14.5px;font-weight:600;color:var(--text3);transition:color .15s}
-.cf-alt:hover{color:var(--teal)}
 
 /* ====== FOOTER ====== */
 .lfooter{border-top:1px solid var(--border);background:var(--surface)}
