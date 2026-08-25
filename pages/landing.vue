@@ -8,13 +8,6 @@
             <span class="l-brand-name">Chatra</span>
           </div>
 
-          <nav class="lnav-links" aria-label="Sections">
-            <a href="#features">{{ d('nav.features') }}</a>
-            <a href="#subject-ai">{{ d('nav.subject_ai') }}</a>
-            <a href="#grader">AI Grader</a>
-            <a href="#deadlines">{{ d('nav.deadlines') }}</a>
-          </nav>
-
           <div class="lnav-r">
             <NuxtLink to="/org" class="btn btn-teal l-cta-sm">{{ d('cta.short') }}</NuxtLink>
           </div>
@@ -214,9 +207,12 @@
                индикатором) и содержимое активного таба. -->
           <div class="mock-window cls-win">
             <div class="cls-cover">
-              <div class="cls-cover-pattern" aria-hidden="true"></div>
-              <div class="cls-cover-t">{{ d('sa.class_name') }}</div>
-              <div class="cls-cover-s">{{ d('sa.class_teacher') }}</div>
+              <span class="cls-glyph" aria-hidden="true">Φ</span>
+              <div class="cls-cover-t">
+                <div class="cls-cover-name">{{ d('sa.class_name') }}</div>
+                <div class="cls-cover-s">{{ d('sa.class_teacher') }}</div>
+              </div>
+              <svg class="cls-spark" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 2c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5Z"/><path d="M17.5 12c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3Z"/></svg>
             </div>
             <div class="tabs-bar">
               <div class="tabs-indicator" :style="{ transform: `translateX(calc(100% * ${clsTab}))` }"></div>
@@ -393,10 +389,10 @@
         </div>
 
         <div ref="graderSection" class="split-visual reveal reveal-right">
-          <!-- Реплика GradeResultCard из приложения: hero с кольцом на
-               подкрашенной подложке, бейдж «Проверено ИИ», разбор ИИ и
-               две карточки сильных сторон / зон роста. -->
-          <div class="grc">
+          <!-- Реплика GradeResultCard из приложения, единая поверхность:
+               hero с кольцом → разбор ИИ → сильные стороны / зоны роста,
+               зоны разделены волосяными линиями как сгруппированный список iOS -->
+          <div class="grc-card">
             <div class="grc-hero">
               <div class="grc-hero-wash" aria-hidden="true"></div>
               <div class="grc-hero-inner">
@@ -419,22 +415,22 @@
               <p class="grc-summary-text">{{ d('gr.summary') }}</p>
             </div>
 
-            <div class="grc-analysis-grid">
-              <div class="grc-bullet-card ok">
-                <div class="grc-bullet-title">
+            <div class="grc-analysis">
+              <div class="grc-col">
+                <div class="grc-bullet-title ok">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="20 6 9 17 4 12"/></svg>
                   {{ d('gr.st_title') }}
                 </div>
-                <div class="grc-bullet-row"><span class="grc-dot"></span><span>{{ d('gr.strength') }}</span></div>
-                <div class="grc-bullet-row"><span class="grc-dot"></span><span>{{ d('gr.strength2') }}</span></div>
+                <div class="grc-bullet-row"><span class="grc-dot ok"></span><span>{{ d('gr.strength') }}</span></div>
+                <div class="grc-bullet-row"><span class="grc-dot ok"></span><span>{{ d('gr.strength2') }}</span></div>
               </div>
-              <div class="grc-bullet-card warn">
-                <div class="grc-bullet-title">
+              <div class="grc-col">
+                <div class="grc-bullet-title warn">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                   {{ d('gr.im_title') }}
                 </div>
-                <div class="grc-bullet-row"><span class="grc-dot"></span><span>{{ d('gr.improve') }}</span></div>
-                <div class="grc-bullet-row"><span class="grc-dot"></span><span>{{ d('gr.improve2') }}</span></div>
+                <div class="grc-bullet-row"><span class="grc-dot warn"></span><span>{{ d('gr.improve') }}</span></div>
+                <div class="grc-bullet-row"><span class="grc-dot warn"></span><span>{{ d('gr.improve2') }}</span></div>
               </div>
             </div>
           </div>
@@ -451,9 +447,9 @@
           <p class="sec-sub">{{ d('dl.sub') }}</p>
         </div>
 
-        <div class="asgn-list">
-          <div class="asgn-card reveal">
-            <div class="asgn-ico-wrap ico-blue">
+        <div class="asgn-group reveal">
+          <div class="asgn-row">
+            <div class="asgn-ico">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
             <div class="asgn-main">
@@ -463,6 +459,7 @@
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   {{ d('dl.item1_due') }}
                 </span>
+                <span class="meta-sep" aria-hidden="true"></span>
                 <span class="meta-score">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
                   {{ d('dl.item1_score') }}
@@ -473,11 +470,11 @@
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               {{ d('dl.st_pending') }}
             </div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="asgn-arrow"><path d="M9 18l6-6-6-6"/></svg>
+            <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
           </div>
 
-          <div class="asgn-card reveal reveal-delay-1">
-            <div class="asgn-ico-wrap ico-blue">
+          <div class="asgn-row">
+            <div class="asgn-ico">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
             <div class="asgn-main">
@@ -493,11 +490,11 @@
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               {{ d('dl.st_grading') }}
             </div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="asgn-arrow"><path d="M9 18l6-6-6-6"/></svg>
+            <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
           </div>
 
-          <div class="asgn-card reveal reveal-delay-2">
-            <div class="asgn-ico-wrap ico-green">
+          <div class="asgn-row">
+            <div class="asgn-ico">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
             <div class="asgn-main">
@@ -513,11 +510,11 @@
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               87/100
             </div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="asgn-arrow"><path d="M9 18l6-6-6-6"/></svg>
+            <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
           </div>
 
-          <div class="asgn-card reveal reveal-delay-3">
-            <div class="asgn-ico-wrap ico-red">
+          <div class="asgn-row">
+            <div class="asgn-ico overdue">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
             <div class="asgn-main">
@@ -533,7 +530,7 @@
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               {{ d('dl.st_late') }}
             </div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="asgn-arrow"><path d="M9 18l6-6-6-6"/></svg>
+            <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
           </div>
         </div>
       </section>
@@ -1044,11 +1041,7 @@ html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
 .l-logo.sm{width:28px}
 .l-brand-name{font-size:17px;font-weight:700;color:var(--text1);letter-spacing:-.02em}
 
-.lnav-links{display:flex;align-items:center;gap:30px;margin:0 auto}
-.lnav-links a{font-size:13.5px;font-weight:500;color:var(--text2);letter-spacing:-.01em;text-decoration:none;transition:color .18s ease}
-.lnav-links a:hover{color:var(--text1)}
-
-.lnav-r{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.lnav-r{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:auto}
 .l-cta-sm{height:36px;padding:0 18px;border-radius:980px;font-size:13.5px;font-weight:600;letter-spacing:-.01em}
 .l-cta-sm:active{transform:scale(.96)}
 .lang-pill{position:relative;display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:3px}
@@ -1181,25 +1174,30 @@ html.dark .chat-dot{box-shadow:0 0 0 3px rgba(74,222,128,.14)}
 html.dark .mock-window{box-shadow:0 2px 6px rgba(0,0,0,.3),0 40px 80px -24px rgba(0,0,0,.6)}
 
 .cls-win{max-width:560px}
-.cls-cover{position:relative;padding:26px 24px 22px;background:linear-gradient(135deg,var(--teal-d),var(--teal));color:#fff;overflow:hidden}
-.cls-cover-pattern{position:absolute;inset:0;background:radial-gradient(ellipse at 85% -20%,rgba(255,255,255,.25),transparent 60%);pointer-events:none}
-.cls-cover-t{position:relative;font-size:19px;font-weight:700;letter-spacing:-.02em}
-.cls-cover-s{position:relative;font-size:12px;color:rgba(255,255,255,.82);margin-top:3px}
+.cls-cover{display:flex;align-items:center;gap:13px;padding:20px 22px;background:var(--bg);border-bottom:1px solid var(--border)}
+.cls-glyph{width:42px;height:42px;border-radius:12px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-xs);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:var(--text1);flex-shrink:0}
+.cls-cover-t{min-width:0;flex:1}
+.cls-cover-name{font-size:17px;font-weight:650;color:var(--text1);letter-spacing:-.02em;line-height:1.2}
+.cls-cover-s{font-size:12px;font-weight:500;color:var(--text3);margin-top:2px;letter-spacing:-.005em}
+.cls-spark{color:var(--teal);flex-shrink:0}
 
 .tabs-bar{position:relative;display:flex;align-items:stretch;padding:3px;background:var(--bg);border-bottom:1px solid var(--border)}
 .tabs-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / 3);background:var(--surface);border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.1);transition:transform .32s cubic-bezier(.32,.72,0,1)}
 html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
-.tab-btn{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 6px;font-size:12px;font-weight:550;color:var(--text3);background:transparent;border:none;border-radius:10px;cursor:pointer;transition:color .2s;white-space:nowrap;font-family:inherit;letter-spacing:-.01em}
+.tab-btn{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 6px;font-size:12px;font-weight:550;color:var(--text3);background:transparent;border:none;border-radius:10px;cursor:pointer;transition:color .2s,transform .1s ease-out;white-space:nowrap;font-family:inherit;letter-spacing:-.01em}
+.tab-btn:active{transform:scale(.96)}
 .tab-btn svg{flex-shrink:0}
 .tab-btn.active{color:var(--text1);font-weight:650}
 .tab-num{font-size:10.5px;font-weight:700;background:var(--surface3);color:var(--text3);padding:1px 6px;border-radius:100px}
 .tab-btn.active .tab-num{background:var(--teal-l);color:var(--teal)}
 
-.cls-pane{display:flex;flex-direction:column;min-height:300px}
+.cls-pane{display:flex;flex-direction:column;min-height:300px;background:var(--surface)}
 .cls-list{display:flex;flex-direction:column}
-.cls-list .mli-row{padding:12px 16px;background:transparent}
-.cls-asgn{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border)}
-.cls-asgn:last-child{border-bottom:none}
+.mli-row,.cls-asgn{position:relative}
+.cls-list .mli-row{padding:14px 18px;border-bottom:none;background:transparent}
+.cls-list .mli-row:not(:last-child)::after{content:'';position:absolute;left:70px;right:0;bottom:0;height:1px;background:var(--border)}
+.cls-asgn{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:none}
+.cls-asgn:not(:last-child)::after{content:'';position:absolute;left:18px;right:0;bottom:0;height:1px;background:var(--border)}
 .cls-asgn-t{flex:1;min-width:0;font-size:13px;font-weight:650;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
 .cls-asgn-m{font-size:11.5px;color:var(--text4);flex-shrink:0}
 
@@ -1238,7 +1236,7 @@ html.dark .hl-yellow{background:rgba(255,216,77,.28)}
 .hl-green{background:rgba(123,220,160,.4)}
 html.dark .hl-green{background:rgba(123,220,160,.26)}
 
-.hm{position:absolute;z-index:5;left:57%;transform:translate(-50%,-44px);display:inline-flex;padding:5px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.07);white-space:nowrap}
+.hm{position:absolute;z-index:5;left:57%;transform:translate(-50%,-44px);display:inline-flex;padding:6px;background:var(--surface);border:1px solid var(--border);border-radius:15px;box-shadow:0 8px 24px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);white-space:nowrap}
 .hm-row{display:flex;align-items:center;gap:1px}
 .hm-color{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px}
 .hm-color.active{background:var(--surface3)}
@@ -1248,65 +1246,65 @@ html.dark .hl-green{background:rgba(123,220,160,.26)}
 .hm-btn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border-radius:8px;color:var(--text2);font-size:11.5px;font-weight:550}
 .hm-btn.hm-ai{color:var(--teal)}
 
-.lec-side{padding:16px;background:var(--glass)}
+.lec-side{padding:18px 16px}
 .hp-label{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:650;color:var(--text4);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
 .hp-count{font-size:11px;font-weight:700;letter-spacing:0;background:var(--surface3);color:var(--text3);padding:1px 7px;border-radius:100px}
 .hp-list{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border);border-radius:16px;overflow:hidden}
-.hp-row{display:flex;align-items:stretch;gap:11px;padding:11px 12px;border-bottom:1px solid var(--border)}
-.hp-row:last-child{border-bottom:none}
+.hp-row{position:relative;display:flex;align-items:stretch;gap:11px;padding:12px;border-bottom:none}
+.hp-list .hp-row:not(:last-child)::after{content:'';position:absolute;left:28px;right:0;bottom:0;height:1px;background:var(--border)}
 .hp-bar{width:3px;align-self:stretch;border-radius:0 3px 3px 0;flex-shrink:0}
 .hp-main{flex:1;min-width:0}
 .hp-text{font-size:12.5px;line-height:1.45;color:var(--text1);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .hp-note{display:flex;align-items:flex-start;gap:5px;margin-top:5px;font-size:11.5px;line-height:1.4;color:var(--text3)}
 .hp-note svg{flex-shrink:0;margin-top:2px}
 .hp-meta{font-size:11px;color:var(--text4);margin-top:4px}
-.lec-side .mli-row{padding:9px 12px}
+.lec-side .mli-row{padding:10px 13px;border-bottom:none;background:transparent}
+.lec-side .mli-row:not(:last-child)::after{content:'';position:absolute;left:65px;right:0;bottom:0;height:1px;background:var(--border)}
 
 /* --- AI Grader --- */
-.grc{width:100%;max-width:430px;display:flex;flex-direction:column;gap:14px}
-.grc-hero{position:relative;overflow:hidden;border-radius:24px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-xs)}
-.grc-hero-wash{position:absolute;inset:-40% -20% auto -20%;height:78%;background:radial-gradient(ellipse at 50% 0%, rgba(var(--teal-rgb),.14), rgba(var(--teal-rgb),0) 70%);pointer-events:none}
-.grc-hero-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding:22px 18px 20px}
-.grc-verdict{font-size:19px;font-weight:700;letter-spacing:-.02em;color:var(--text1);text-align:center;line-height:1.2}
-.grc-by-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);background:var(--bg);border:1px solid var(--border);padding:5px 12px;border-radius:100px}
+.grc-card{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:28px;box-shadow:0 2px 6px rgba(0,0,0,.03),0 32px 64px -24px rgba(0,0,0,.12);overflow:hidden}
+html.dark .grc-card{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba(0,0,0,.6)}
+.grc-hero{position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.grc-hero-wash{position:absolute;inset:-40% -20% auto -20%;height:85%;background:radial-gradient(ellipse at 50% 0%, rgba(var(--teal-rgb),.1), rgba(var(--teal-rgb),0) 70%);pointer-events:none}
+.grc-hero-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:13px;padding:30px 24px 26px}
+.grc-verdict{font-size:22px;font-weight:650;letter-spacing:-.022em;color:var(--text1);text-align:center;line-height:1.15}
+.grc-by-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text3);background:var(--bg);border:1px solid var(--border);padding:5px 12px;border-radius:100px}
 .grc-by-badge svg{color:var(--teal)}
-.grc-summary{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:15px 16px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--sh-xs)}
+.grc-summary{padding:18px 24px;display:flex;flex-direction:column;gap:9px;border-bottom:1px solid var(--border)}
 .grc-summary-head{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--text4)}
 .grc-spark{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;flex-shrink:0;background:linear-gradient(140deg,var(--teal-h),var(--teal-d));color:#fff;box-shadow:0 2px 6px rgba(var(--teal-rgb),.25)}
-.grc-summary-text{font-size:13px;line-height:1.65;color:var(--text2);margin:0}
-.grc-analysis-grid{display:grid;grid-template-columns:1fr;gap:10px}
-.grc-bullet-card{border-radius:20px;padding:14px 15px;display:flex;flex-direction:column;gap:9px;border:1px solid}
-.grc-bullet-card.ok{background:rgba(52,199,89,.06);border-color:rgba(52,199,89,.2)}
-.grc-bullet-card.warn{background:rgba(232,151,58,.06);border-color:rgba(232,151,58,.22)}
+.grc-summary-text{font-size:13.5px;line-height:1.6;color:var(--text2);margin:0}
+.grc-analysis{display:grid;grid-template-columns:1fr 1fr}
+.grc-col{display:flex;flex-direction:column;gap:10px;padding:18px 24px}
+.grc-col + .grc-col{border-left:1px solid var(--border)}
 .grc-bullet-title{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:650;letter-spacing:.05em;text-transform:uppercase}
-.grc-bullet-card.ok .grc-bullet-title{color:var(--green)}
-.grc-bullet-card.warn .grc-bullet-title{color:#B45309}
-html.dark .grc-bullet-card.warn .grc-bullet-title{color:#F0A94B}
+.grc-bullet-title.ok{color:var(--green)}
+.grc-bullet-title.warn{color:#B45309}
+html.dark .grc-bullet-title.warn{color:#F0A94B}
 .grc-bullet-row{display:flex;align-items:flex-start;gap:9px;font-size:13px;line-height:1.55;color:var(--text2)}
 .grc-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:7px}
-.grc-bullet-card.ok .grc-dot{background:var(--green)}
-.grc-bullet-card.warn .grc-dot{background:#E8973A}
+.grc-dot.ok{background:var(--green)}
+.grc-dot.warn{background:#E8973A}
 
-/* --- Deadlines --- */
-.asgn-list{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-.asgn-card{display:flex;align-items:center;gap:18px;padding:21px 26px;background:var(--surface);border:1px solid var(--border);border-radius:24px;position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s cubic-bezier(.22,1,.36,1),border-color .2s;cursor:default}
-@media (hover:hover){
-  .asgn-card:hover{transform:translateY(-2px);box-shadow:0 16px 36px -12px rgba(0,0,0,.1);border-color:var(--border2)}
-  html.dark .asgn-card:hover{box-shadow:0 16px 36px -12px rgba(0,0,0,.55)}
-}
-.asgn-card:active{transform:scale(.985)}
-.asgn-ico-wrap{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg);color:var(--text3);border:1px solid var(--border)}
-.ico-red{background:var(--red-l);color:var(--red);border-color:rgba(248,113,113,.18)}
+/* --- Deadlines: единая сгруппированная поверхность в стиле iOS --- */
+.asgn-group{max-width:780px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:28px;box-shadow:0 2px 6px rgba(0,0,0,.03),0 32px 64px -24px rgba(0,0,0,.12);overflow:hidden}
+html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba(0,0,0,.6)}
+.asgn-row{position:relative;display:flex;align-items:center;gap:18px;padding:20px 26px;transition:background .15s ease,transform .1s ease-out}
+@media (hover:hover){.asgn-row:hover{background:var(--glass)}}
+.asgn-row:active{transform:scale(.99)}
+.asgn-row:not(:last-child)::after{content:'';position:absolute;left:90px;right:26px;bottom:0;height:1px;background:var(--border)}
+.asgn-ico{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg);color:var(--text3);border:1px solid var(--border)}
+.asgn-ico.overdue{background:var(--red-l);color:var(--red);border-color:rgba(248,113,113,.18)}
 .asgn-main{flex:1;min-width:0}
-.asgn-title{font-size:15px;font-weight:650;color:var(--text1);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
-.asgn-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.asgn-title{font-size:15.5px;font-weight:600;color:var(--text1);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.012em}
+.asgn-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.meta-sep{width:3px;height:3px;border-radius:50%;background:var(--surface3);flex-shrink:0}
 .meta-due,.meta-score{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text4);font-weight:500}
 .meta-due{color:var(--text3)}
 .meta-due.overdue{color:var(--red);font-weight:600}
 .meta-due.soon{color:var(--yellow);font-weight:600}
 .meta-score{color:var(--text2);font-weight:550}
-.asgn-arrow{color:var(--text4);flex-shrink:0;transition:transform .2s cubic-bezier(.32,.72,0,1),color .2s}
-@media (hover:hover){.asgn-card:hover .asgn-arrow{transform:translateX(3px);color:var(--teal)}}
+.asgn-arrow{color:var(--text4);flex-shrink:0}
 
 /* --- Final CTA --- */
 .cta-final{position:relative;width:100%;padding:180px 24px 190px;text-align:center;overflow:hidden}
@@ -1352,10 +1350,6 @@ html.dark .grc-bullet-card.warn .grc-bullet-title{color:#F0A94B}
   .b-wide{grid-column:span 2}
   .section{padding:104px 24px}
 }
-@media (max-width:900px){
-  .lnav-links{display:none}
-  .lnav-r{margin-left:auto}
-}
 @media (max-width:768px){
   .lnav-inner{padding:12px 16px;gap:12px}
   .l-logo{width:34px}
@@ -1374,8 +1368,13 @@ html.dark .grc-bullet-card.warn .grc-bullet-title{color:#F0A94B}
   .lec-body{grid-template-columns:1fr}
   .lec-page{border-right:none;border-bottom:1px solid var(--border)}
   .hm{transform:translate(-50%,-42px) scale(.82)}
-  .asgn-card{gap:12px;padding:16px}
+  .asgn-row{gap:12px;padding:16px 18px}
+  .asgn-row:not(:last-child)::after{left:74px;right:18px}
   .asgn-arrow{display:none}
+  .grc-analysis{grid-template-columns:1fr}
+  .grc-col + .grc-col{border-left:none;border-top:1px solid var(--border)}
+  .grc-summary{padding:16px 20px}
+  .grc-hero-inner{padding:24px 18px 22px}
   .cta-final{padding:100px 16px 110px}
   .cf-actions{flex-direction:column;gap:14px}
   .cf-btn{width:100%;max-width:360px}
