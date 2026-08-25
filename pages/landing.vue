@@ -1354,7 +1354,7 @@ const year = new Date().getFullYear()
 </script>
 
 <style scoped>
-.landing{height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;background:var(--bg);scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.landing{height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;background:var(--bg);scroll-behavior:smooth;-webkit-overflow-scrolling:touch;-webkit-tap-highlight-color:transparent;text-size-adjust:100%;-webkit-text-size-adjust:100%}
 @media (prefers-reduced-motion: reduce){.landing{scroll-behavior:auto}}
 
 .l-main{width:100%}
@@ -1824,57 +1824,163 @@ html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba
   .sa-chat{left:auto;right:-16px;bottom:-40px}
 }
 @media (max-width:768px){
-  .lnav-inner{padding:12px 16px;gap:12px}
-  .l-logo{width:34px}
-  .section{padding:76px 16px;scroll-margin-top:64px}
-  .sec-head{margin-bottom:48px}
-  .hero{padding:calc(var(--topbar) + 40px) 16px 72px}
+  /* --- каркас --- */
+  .section{padding:76px 18px;scroll-margin-top:64px}
+  .sec-head{margin-bottom:44px}
+  .sec-sub{font-size:16px}
+
+  /* --- навигация --- */
+  .lnav-inner{padding:10px 16px;gap:12px}
+  .l-logo{width:32px}
+  .l-brand-name{font-size:16px}
+  .l-cta-sm{height:38px;padding:0 18px}
+
+  /* --- hero --- */
+  .hero{padding:calc(var(--topbar) + 44px) 16px 68px}
+  .hero-grid{grid-template-columns:1fr;gap:48px}
+  .hero-copy{text-align:center}
+  .grad-text{background-image:linear-gradient(115deg,var(--text1) 15%,#6e6e73 85%)}
+  html.dark .grad-text{background-image:linear-gradient(115deg,#f5f5f7 15%,#86868b 90%)}
   .hero-title{font-size:clamp(30px,8.6vw,38px)}
-  .hero-sub{font-size:16px;margin-bottom:28px}
-  .sa-chat .chat-body{min-height:360px}
+  .hero-sub{font-size:16.5px;margin-bottom:30px}
+  .hero-ctas{justify-content:center}
+  .hero-cta{width:100%;max-width:400px}
   .orb{filter:blur(70px)}
   .hero .orb-a{width:340px;height:340px;top:-130px;left:-130px}
   .hero .orb-b{width:280px;height:280px;bottom:-120px;right:-100px}
-  .bento{grid-template-columns:1fr;gap:18px}
-  .bcard{padding:28px 24px}
-  .sa-visual{padding-bottom:0}
-  .sa-chat{position:static;width:100%;max-width:420px;margin:24px auto 0}
-  .hc-card{padding:16px}
-  .hc-chip{max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis}
-  .hc-grade{right:-6px;top:-14px}
-  .hc-due{left:-6px;bottom:-14px}
-  .ai-side{display:none}
-  .ai-win{max-width:none}
-  .roles-stage{grid-template-columns:1fr;gap:18px;padding-bottom:0}
-  .rp-tea{margin:0}
-  .roles-bridge-pos{display:none}
-  .cal-grid-wrap{grid-template-columns:1fr;gap:36px}
-  .jc-card{padding:22px}
-  .jc-digits{gap:7px}
-  .jd{width:min(52px,(100% - 35px)/6);height:56px}
-  .grc-criteria{padding:14px 20px 16px}
-  .gc-name{width:42%}
+
+  /* --- коллаж предметов --- */
+  .hero-collage{max-width:460px}
+  .hc-grid{gap:12px}
+  .hc-card{padding:14px;border-radius:18px}
+  .hc-glyph{width:36px;height:36px;border-radius:10px;font-size:15px}
+  .hc-name{font-size:13.5px;margin-top:10px}
+  .hc-meta{font-size:11.5px}
+  .hc-chip{font-size:11.5px;padding:8px 12px;gap:6px;max-width:calc(100% - 12px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hcc-ico{width:18px;height:18px}
+  .hc-grade{right:-4px;top:-14px}
+  .hc-due{left:-4px;bottom:-14px}
+
+  /* --- карточки --- */
+  .bento{grid-template-columns:1fr;gap:16px}
+  .bcard{padding:24px 20px;border-radius:24px}
+  .btitle{font-size:19px}
+  .prog-demo,.mli-demo{border-radius:18px}
+  .mli-icon{width:36px;height:36px;border-radius:10px}
+
+  /* --- ИИ предмета: окно + живой чат стопкой --- */
+  .sa-visual{padding-bottom:0;flex-direction:column;align-items:center}
+  .cls-win{width:100%}
+  .cls-win,.mock-window{border-radius:24px}
+  .cls-cover{padding:16px 16px 14px;gap:11px}
+  .cls-glyph{width:38px;height:38px;border-radius:11px;font-size:16px}
+  .cls-cover-name{font-size:16px}
+  .cls-pane{min-height:0}
+  .sa-chat{position:static;width:100%;max-width:420px;margin:18px auto 0}
+  .sa-chat .chat-body{min-height:300px;padding:16px}
+  .chat-card{border-radius:24px}
+  .chat-head{padding:12px 16px}
+  .chat-body{gap:12px}
+
+  /* --- материалы и выделения --- */
+  .split{grid-template-columns:1fr;gap:40px}
+  .split.rev .split-visual{order:-1}
+  .lec-win{max-width:none}
   .lec-body{grid-template-columns:1fr}
-  .lec-page{border-right:none;border-bottom:1px solid var(--border)}
+  .lec-page{border-right:none;border-bottom:1px solid var(--border);padding:16px}
+  .lec-side{padding:14px 12px}
   .hm{transform:translate(-50%,-42px) scale(.82)}
-  .asgn-row{gap:12px;padding:16px 18px}
-  .asgn-row:not(:last-child)::after{left:74px;right:18px}
-  .asgn-arrow{display:none}
+
+  /* --- Chatra AI (тёмная) --- */
+  .ai-side{display:none}
+  .ai-win{max-width:none;border-radius:24px}
+  .ai-msgs{padding:16px;gap:12px}
+
+  /* --- AI Grader --- */
+  .grc-card{max-width:none;border-radius:24px}
+  .gw-bar{padding:11px 14px}
+  .gw-file{font-size:11.5px}
+  .grc-summary{padding:16px 18px}
+  .grc-hero-inner{padding:22px 16px 20px}
+  .grc-criteria{padding:14px 18px 16px}
+  .gc-name{width:42%;font-size:12px}
+  .gc-score{width:34px}
   .grc-analysis{grid-template-columns:1fr}
   .grc-col + .grc-col{border-left:none;border-top:1px solid var(--border)}
-  .grc-summary{padding:16px 20px}
-  .grc-hero-inner{padding:24px 18px 22px}
-  .cta-final{padding:100px 16px 110px}
+  .grc-col{padding:16px 18px}
+  .grc-teacher{padding:13px 18px}
+
+  /* --- роли --- */
+  .roles-stage{grid-template-columns:1fr;gap:16px;padding-bottom:0;max-width:520px}
+  .role-panel{border-radius:22px;padding:16px}
+  .rp-tea{margin:0}
+  .roles-bridge-pos{display:none}
+  .rp-row{padding:11px 12px}
+
+  /* --- код предмета --- */
+  .jc-card{padding:22px;border-radius:24px}
+  .jc-digits{gap:7px}
+  .jd{width:min(52px,(100% - 35px)/6);height:56px;border-radius:12px;font-size:21px}
+  .jc-found{flex-wrap:wrap;row-gap:10px}
+  .jc-btn{margin-left:auto}
+
+  /* --- календарь · дедлайны · сдача --- */
+  .cal-grid-wrap{grid-template-columns:1fr;gap:32px}
+  .cal-win{padding:14px;border-radius:20px}
+  .cal-cell{height:37px;border-radius:10px}
+  .asgn-group,.subm-card,.cal-win,.notif-card{width:100%;max-width:none}
+  .asgn-group{border-radius:22px}
+  .asgn-title{white-space:normal;overflow-wrap:break-word}
+  .asgn-row{flex-wrap:nowrap}
+  .asgn-row{gap:12px;padding:15px 16px;min-height:74px}
+  .asgn-row:not(:last-child)::after{left:70px;right:16px}
+  .asgn-ico{width:40px;height:40px;border-radius:12px}
+  .asgn-arrow{display:none}
+  .status-pill{font-size:11.5px;padding:5px 11px}
+  .subm-card{border-radius:20px;padding:17px}
+  .sc-send{height:46px}
+
+  /* --- финальный CTA --- */
+  .cta-final{padding:96px 18px 104px}
+  .cf-title{font-size:clamp(31px,9vw,40px)}
+  .cf-sub{font-size:16px;margin-bottom:32px}
   .cf-actions{flex-direction:column;gap:14px}
-  .cf-btn{width:100%;max-width:360px}
-  .lf-inner{grid-template-columns:1fr;gap:36px;padding:40px 20px 34px}
-  .lf-cols{gap:24px}
-  .lf-bar-inner{padding:14px 20px calc(16px + env(safe-area-inset-bottom,0px))}
+  .cf-btn{width:100%;max-width:380px;height:52px}
+
+  /* --- футер --- */
+  .lf-inner{grid-template-columns:1fr;gap:34px;padding:42px 18px 34px}
+  .lf-cols{gap:20px}
+  .lf-col a{font-size:13.5px;padding:2px 0}
+  .lf-bar-inner{padding:14px 18px calc(16px + env(safe-area-inset-bottom,0px))}
 }
 @media (max-width:480px){
+  .section{padding:64px 14px}
+  .sec-title{font-size:clamp(25px,7.2vw,31px)}
+  .kicker{font-size:12px}
+  .hero-title{font-size:clamp(27px,8.4vw,32px)}
+  .hero-sub{font-size:15.5px}
+  .hc-grid{gap:10px}
+  .hc-card{padding:12px}
+  .hc-chip{font-size:11px}
+  .bcard{padding:20px 16px;border-radius:22px}
+  .btitle{font-size:18px}
+  .btext{font-size:14px}
   .tab-btn{font-size:11px;padding:8px 4px;gap:4px}
   .tab-btn svg{width:12px;height:12px}
   .tab-num{display:none}
   .hm{left:50%;transform:translate(-50%,-44px) scale(.72)}
+  .math{font-size:12.5px}
+  .gw-bar>span:not(.gw-file){display:none}
+  .gw-file{margin-left:2px}
+  .jd{height:54px;font-size:19px;border-radius:11px}
+  .jc-btn{padding:7px 13px;font-size:12px}
+  .cal-cell{height:34px}
+  .cal-num{font-size:11.5px}
+  .cal-week span{font-size:9.5px}
+  .asgn-title{font-size:14.5px}
+  .meta-due,.meta-score{font-size:11.5px}
+  .sc-send{height:46px;font-size:13.5px}
+  .cf-btn{max-width:none}
+  .lf-cols{grid-template-columns:repeat(2,1fr);row-gap:26px}
 }
 </style>
