@@ -105,8 +105,8 @@
             </div>
           </div>
 
-          <!-- 03 · Файлы: список материалов как в приложении -->
-          <div class="bcard reveal">
+          <!-- 03 · Файлы: широкая горизонтальная композиция -->
+          <div class="bcard b-files reveal">
             <div class="bcopy">
               <h3 class="btitle">{{ d('f.files.title') }}</h3>
               <p class="btext">{{ d('f.files.text') }}</p>
@@ -127,53 +127,6 @@
                   <div class="mli-icon" style="color:#F2A93B;background:#F2A93B22">PPT</div>
                   <div class="mli-info"><div class="mli-name">slides_week2.pptx</div><div class="mli-meta">PPTX · 5.1 MB</div></div>
                   <svg class="mli-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 04 · AI Grader: крупное кольцо оценки -->
-          <div class="bcard reveal reveal-delay-1">
-            <div class="bcopy">
-              <h3 class="btitle">{{ d('f.grader.title') }}</h3>
-              <p class="btext">{{ d('f.grader.text') }}</p>
-            </div>
-            <div class="bvisual">
-              <div class="grade-demo" aria-hidden="true">
-                <div class="grade-ring-wrap">
-                  <svg class="grade-ring" viewBox="0 0 72 72" fill="none">
-                    <circle class="grade-track" cx="36" cy="36" r="30"/>
-                    <circle class="grade-fill" cx="36" cy="36" r="30"/>
-                  </svg>
-                  <div class="grade-num">87<span>/100</span></div>
-                </div>
-                <div class="grade-verdict">{{ d('gr.verdict') }}</div>
-                <div class="pill-demo">
-                  <span class="status-pill grading"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>{{ d('f.grader.grading') }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 05 · Задания: компактные строки со статусами -->
-          <div class="bcard reveal">
-            <div class="bcopy">
-              <h3 class="btitle">{{ d('f.tasks.title') }}</h3>
-              <p class="btext">{{ d('f.tasks.text') }}</p>
-            </div>
-            <div class="bvisual">
-              <div class="task-demo" aria-hidden="true">
-                <div class="td-row">
-                  <span class="td-name">{{ d('dl.item1_t') }}</span>
-                  <span class="status-pill pending"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>{{ d('dl.st_pending') }}</span>
-                </div>
-                <div class="td-row">
-                  <span class="td-name">{{ d('dl.item2_t') }}</span>
-                  <span class="status-pill grading"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>{{ d('dl.st_grading') }}</span>
-                </div>
-                <div class="td-row">
-                  <span class="td-name">{{ d('dl.item3_t') }}</span>
-                  <span class="status-pill graded"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>87/100</span>
                 </div>
               </div>
             </div>
@@ -368,6 +321,69 @@
         </div>
       </section>
 
+      <!-- ===== CHATRA AI (общий ассистент) ===== -->
+      <section id="chatra-ai" class="section split band-dark">
+        <div class="split-copy reveal reveal-left">
+          <div class="kicker">{{ d('ai.kicker') }}</div>
+          <h2 class="sec-title left">{{ d('ai.title') }}</h2>
+          <p class="sec-sub left">{{ d('ai.sub') }}</p>
+          <ul class="checklist">
+            <li v-for="(c, i) in d('ai.points')" :key="i" :class="'reveal reveal-delay-' + (i + 1)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              {{ c }}
+            </li>
+          </ul>
+        </div>
+
+        <div class="split-visual reveal reveal-right">
+          <!-- Реплика pages/ai.vue: сайдбар диалогов (поиск, закрепления, недавние)
+               + основной чат с формулами и продолжением разговора -->
+          <div class="ai-win" aria-hidden="true">
+            <aside class="ai-side">
+              <div class="ai-search">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                {{ d('ai.search') }}
+              </div>
+              <div class="ai-new">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                {{ d('ai.new_chat') }}
+              </div>
+              <div class="ai-group-label">{{ d('ai.pin_label') }}</div>
+              <div class="ai-conv pinned">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 01-1.11 1.79l-1.78.9A2 2 0 005 15.24V16a1 1 0 001 1h12a1 1 0 001-1v-.76a2 2 0 00-1.11-1.79l-1.78-.9A2 2 0 0115 10.76V6h1a2 2 0 000-4H8a2 2 0 000 4h1z"/></svg>
+                {{ d('ai.c1') }}
+              </div>
+              <div class="ai-group-label">{{ d('ai.recent') }}</div>
+              <div class="ai-conv active">{{ d('ai.c2') }}</div>
+              <div class="ai-conv">{{ d('ai.c3') }}</div>
+              <div class="ai-conv">{{ d('ai.c4') }}</div>
+            </aside>
+
+            <div class="ai-main">
+              <div class="ai-msgs">
+                <div class="msg-row user"><div class="msg-bubble">{{ d('ai.q') }}</div></div>
+                <div class="msg-row assistant">
+                  <div class="msg-sender">Chatra AI</div>
+                  <div class="msg-bubble">
+                    {{ d('ai.a1') }}
+                    <span class="math">x = <span class="mfrac"><span class="mn">−b ± √(b² − 4ac)</span><span class="md">2a</span></span></span><br/>
+                    <span class="math plain">D = b² − 4ac = 25 − 24 = 1</span><br/>
+                    {{ d('ai.a2') }} <span class="math roots">x₁ = 3,&nbsp;&nbsp;x₂ = 2</span>
+                  </div>
+                </div>
+                <div class="msg-row user"><div class="msg-bubble">{{ d('ai.follow') }}</div></div>
+              </div>
+              <div class="mw-input ai-input-dark">
+                <div class="ai-textarea sm">{{ d('ai.placeholder') }}</div>
+                <div class="send-btn sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ===== AI GRADER ===== -->
       <section id="grader" class="section split band">
         <div class="split-copy reveal reveal-left">
@@ -387,6 +403,11 @@
                hero с кольцом → разбор ИИ → сильные стороны / зоны роста,
                зоны разделены волосяными линиями как сгруппированный список iOS -->
           <div class="grc-card">
+            <div class="gw-bar">
+              <span></span><span></span><span></span>
+              <span class="gw-file">{{ d('grx.file') }}</span>
+            </div>
+
             <div class="grc-hero">
               <div class="grc-hero-wash" aria-hidden="true"></div>
               <div class="grc-hero-inner">
@@ -409,6 +430,15 @@
               <p class="grc-summary-text">{{ d('gr.summary') }}</p>
             </div>
 
+            <div class="grc-criteria" aria-hidden="true">
+              <div class="gc-head">{{ d('grx.crit_label') }}</div>
+              <div v-for="(c, i) in grCrits" :key="i" class="gc-row">
+                <span class="gc-name">{{ c.name }}</span>
+                <span class="gc-bar"><span class="gc-fill" :style="{ width: (graderShown ? c.score * 10 : 0) + '%' }"></span></span>
+                <span class="gc-score">{{ c.score }}/10</span>
+              </div>
+            </div>
+
             <div class="grc-analysis">
               <div class="grc-col">
                 <div class="grc-bullet-title ok">
@@ -427,21 +457,142 @@
                 <div class="grc-bullet-row"><span class="grc-dot warn"></span><span>{{ d('gr.improve2') }}</span></div>
               </div>
             </div>
+
+            <div class="grc-teacher">
+              <span class="gt-check">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <div class="gt-main">
+                <div class="gt-note">{{ d('grx.teacher_note') }}</div>
+                <div class="gt-meta">{{ d('grx.teacher_time') }}</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- ===== DEADLINES =====
-           Карточки заданий один в один с AssignmentCard: акцентная кромка,
-           иконка 44px, мета (дедлайн/баллы) и статус-пиллы. -->
-      <section id="deadlines" class="section">
+      <!-- ===== FOR STUDENTS & TEACHERS ===== -->
+      <section id="roles" class="section roles-sec">
+        <div class="sec-head reveal">
+          <div class="kicker">{{ d('roles.kicker') }}</div>
+          <h2 class="sec-title">{{ d('roles.title') }}</h2>
+          <p class="sec-sub">{{ d('roles.sub') }}</p>
+        </div>
+
+        <div class="roles-stage">
+          <div class="role-panel rp-stu reveal reveal-left">
+            <div class="rp-head">
+              <span class="rp-badge stu">{{ d('roles.st_badge') }}</span>
+              <span class="rp-date">{{ d('roles.today') }}</span>
+            </div>
+            <div class="rp-row">
+              <span class="rp-dot pending"></span>
+              <div class="rp-main">
+                <div class="rp-name">{{ d('dl.item1_t') }}</div>
+                <div class="rp-meta">{{ d('dl.item1_due') }} · {{ d('dl.item1_score') }}</div>
+              </div>
+              <span class="status-pill pending">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                {{ d('dl.st_pending') }}
+              </span>
+            </div>
+            <div class="rp-row">
+              <span class="rp-dot done"></span>
+              <div class="rp-main">
+                <div class="rp-name">{{ d('dl.item3_t') }}</div>
+                <div class="rp-meta">{{ d('roles.passed') }}</div>
+              </div>
+              <span class="status-pill graded">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                87/100
+              </span>
+            </div>
+          </div>
+
+          <div class="role-panel rp-tea reveal reveal-right reveal-delay-2" aria-hidden="true">
+            <div class="rp-head">
+              <span class="rp-badge tea">{{ d('roles.te_badge') }}</span>
+              <span class="rp-date">{{ d('roles.queue') }}</span>
+            </div>
+            <div class="rp-row">
+              <div class="rp-main">
+                <div class="rp-name">{{ d('roles.sub1') }}</div>
+                <div class="rp-meta">AI: 87/100 · {{ d('roles.ai_suggested') }}</div>
+              </div>
+              <span class="rp-btn">{{ d('roles.approve') }}</span>
+            </div>
+            <div class="rp-row">
+              <div class="rp-main">
+                <div class="rp-name">{{ d('roles.sub2') }}</div>
+                <div class="rp-meta">AI: 92/100 · {{ d('roles.ai_suggested') }}</div>
+              </div>
+              <span class="rp-btn">{{ d('roles.approve') }}</span>
+            </div>
+          </div>
+
+          <div class="roles-bridge-pos">
+            <div class="roles-bridge reveal reveal-delay-3">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 2c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5Z"/><path d="M17.5 12c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3Z"/></svg>
+              {{ d('roles.bridge') }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CALENDAR · DEADLINES · NOTIFICATIONS ===== -->
+      <section id="deadlines" class="section band">
         <div class="sec-head reveal">
           <div class="kicker">{{ d('dl.kicker') }}</div>
           <h2 class="sec-title">{{ d('dl.title') }}</h2>
           <p class="sec-sub">{{ d('dl.sub') }}</p>
         </div>
 
-        <div class="asgn-group reveal">
+        <div class="cal-grid-wrap">
+          <div class="cal-col reveal reveal-left">
+            <div class="cal-win" aria-hidden="true">
+              <div class="cal-head">
+                <div class="cal-month">{{ d('cal.month') }}</div>
+                <span class="cal-nav">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </span>
+              </div>
+              <div class="cal-week">
+                <span v-for="(w, i) in d('cal.week')" :key="'w' + i">{{ w }}</span>
+              </div>
+              <div class="cal-days">
+                <span v-for="(c, i) in calCells" :key="'c' + i" :class="['cal-cell', { blank: c === null, sel: c === calSel }]">
+                  <span class="cal-num">{{ c }}</span>
+                  <span v-if="c && calMarks[c]" :class="['cal-dot', calMarks[c]]"></span>
+                </span>
+              </div>
+            </div>
+
+            <div class="notif-card reveal reveal-delay-1" aria-hidden="true">
+              <div class="nc-head">{{ d('f.notif.title') }}</div>
+              <div class="nc-row">
+                <span class="nc-ico teal">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </span>
+                <span class="nc-text">{{ d('cal.n1') }}</span>
+              </div>
+              <div class="nc-row">
+                <span class="nc-ico yellow">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </span>
+                <span class="nc-text">{{ d('cal.n2') }}</span>
+              </div>
+              <div class="nc-row">
+                <span class="nc-ico green">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <span class="nc-text">{{ d('cal.n3') }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="cal-col-right reveal reveal-right">
+            <div class="asgn-group">
           <div class="asgn-row">
             <div class="asgn-ico">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -525,6 +676,8 @@
               {{ d('dl.st_late') }}
             </div>
             <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+          </div>
           </div>
         </div>
       </section>
@@ -824,6 +977,68 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         kk: 'Жақсы жұмыс: қорытындылар мысалдармен негізделген. Ұпайды көтеру үшін екінші абзацты 4-апта тақырыбымен байланыстырыңыз.',
       }[l],
     },
+    grx: {
+      file: { ru: 'essay_final.docx', en: 'essay_final.docx', kk: 'essay_final.docx' }[l],
+      crit_label: { ru: 'Критерии', en: 'Criteria', kk: 'Критерийлер' }[l],
+      crit1: { ru: 'Аргументация', en: 'Argumentation', kk: 'Дәлелдеме' }[l],
+      crit2: { ru: 'Структура и логика', en: 'Structure & logic', kk: 'Құрылым мен логика' }[l],
+      crit3: { ru: 'Работа с источниками', en: 'Use of sources', kk: 'Дереккөздермен жұмыс' }[l],
+      teacher_note: { ru: 'Оценку подтвердил преподаватель', en: 'Grade confirmed by the teacher', kk: 'Бағаны мұғалім растады' }[l],
+      teacher_time: { ru: 'проверено вручную', en: 'manually reviewed', kk: 'қолмен тексерілді' }[l],
+    },
+    ai: {
+      kicker: { ru: 'CHATRA AI', en: 'CHATRA AI', kk: 'CHATRA AI' }[l],
+      title: { ru: 'Ваш ИИ — за пределами предметов', en: 'Your AI, beyond every subject', kk: 'ЖИіңіз — пәндерден тыс' }[l],
+      sub: {
+        ru: 'Отдельный ассистент для всего остального: подготовка к экзаменам, разбор сложных тем, черновики и идеи. Все диалоги сохраняются и всегда под рукой.',
+        en: 'A separate assistant for everything else: exam prep, hard topics, drafts and ideas. Every conversation is saved and always at hand.',
+        kk: 'Қалғанының бәріне арналған жеке көмекші: емтиханға дайындық, күрделі тақырыптар, жобалар мен идеялар. Әр диалог сақталады.',
+      }[l],
+      points: [
+        { ru: 'История всех диалогов — с поиском и закреплением', en: 'Full chat history — with search and pins', kk: 'Диалогтер тарихы — іздеу мен бекітумен' }[l],
+        { ru: 'Понимает формулы и академические обозначения', en: 'Understands formulas and academic notation', kk: 'Формулалар мен академиялық белгілерді түсінеді' }[l],
+        { ru: 'Продолжайте разговор с места, где остановились', en: 'Pick up any conversation where you left off', kk: 'Әңгімені қалдырған жерден жалғастырыңыз' }[l],
+      ] as string[],
+      search: { ru: 'Поиск', en: 'Search', kk: 'Іздеу' }[l],
+      new_chat: { ru: 'Новый чат', en: 'New chat', kk: 'Жаңа чат' }[l],
+      pin_label: { ru: 'Закреплённые', en: 'Pinned', kk: 'Бекітілген' }[l],
+      recent: { ru: 'Недавние', en: 'Recent', kk: 'Жаңа' }[l],
+      c1: { ru: 'Курсовая: план глав', en: 'Thesis: chapter outline', kk: 'Курсовая: тараулар жоспары' }[l],
+      c2: { ru: 'Квадратные уравнения', en: 'Quadratic equations', kk: 'Квадрат теңдеулер' }[l],
+      c3: { ru: 'Подготовка к IELTS', en: 'IELTS preparation', kk: 'IELTS дайындық' }[l],
+      c4: { ru: 'Конспект по истории', en: 'History notes', kk: 'Тарих конспектісі' }[l],
+      q: { ru: 'Реши уравнение x² − 5x + 6 = 0 и объясни шаги', en: 'Solve x² − 5x + 6 = 0 and explain the steps', kk: 'x² − 5x + 6 = 0 теңдеуін шешіп, қадамдарын түсіндір' }[l],
+      a1: { ru: 'Решаем через дискриминант:', en: 'Using the discriminant:', kk: 'Дискриминант арқылы шешеміз:' }[l],
+      a2: { ru: 'значит, корни уравнения:', en: 'so the roots are:', kk: 'демек, теңдеудің түбірлері:' }[l],
+      follow: { ru: 'А если дискриминант отрицательный?', en: 'What if the discriminant is negative?', kk: 'Ал дискриминант теріс болса?' }[l],
+      placeholder: { ru: 'Спросите о чём угодно…', en: 'Ask anything…', kk: 'Кез келген нәрсені сұраңыз…' }[l],
+    },
+    roles: {
+      kicker: { ru: 'СТУДЕНТАМ И ПРЕПОДАВАТЕЛЯМ', en: 'FOR STUDENTS & TEACHERS', kk: 'СТУДЕНТЕРГЕ МЕН МҰҒАЛІМДЕРГЕ' }[l],
+      title: { ru: 'Одна платформа для всей учебной группы', en: 'One platform for the whole class', kk: 'Толық топ үшін бір платформа' }[l],
+      sub: {
+        ru: 'Студенты учатся и сдают работы. Преподаватели создают задания с критериями и принимают решения об оценках. AI ускоряет рутину — финальное слово всегда за человеком.',
+        en: 'Students study and submit work. Teachers create assignments with criteria and decide on grades. AI speeds up the routine — humans make the final call.',
+        kk: 'Студенттер оқып, жұмыс тапсырады. Мұғалімдер критерийлері бар тапсырмалар жасап, бағаны шешеді. ЖИ рутинді жылдамдатады — соңғы сөз әрқашан адамда.',
+      }[l],
+      st_badge: { ru: 'Студент', en: 'Student', kk: 'Студент' }[l],
+      te_badge: { ru: 'Преподаватель', en: 'Teacher', kk: 'Мұғалім' }[l],
+      today: { ru: 'Сегодня', en: 'Today', kk: 'Бүгін' }[l],
+      passed: { ru: 'Сдано · оценено ИИ', en: 'Submitted · graded by AI', kk: 'Тапсырылды · ЖИ бағалаған' }[l],
+      queue: { ru: 'На проверке', en: 'Review queue', kk: 'Тексеруде' }[l],
+      sub1: { ru: 'Эссе «Этика ИИ» · Марат А.', en: 'Essay “Ethics of AI” · Marat A.', kk: '«ЖИ этикасы» · Марат А.' }[l],
+      sub2: { ru: 'Задачи по рядам · Дана К.', en: 'Series problem set · Dana K.', kk: 'Қатарлар есептері · Дана К.' }[l],
+      ai_suggested: { ru: 'предложено ИИ', en: 'suggested by AI', kk: 'ЖИ ұсынған' }[l],
+      approve: { ru: 'Принять', en: 'Approve', kk: 'Қабылдау' }[l],
+      bridge: { ru: 'AI предлагает — преподаватель решает', en: 'AI suggests — the teacher decides', kk: 'ЖИ ұсынады — мұғалім шешеді' }[l],
+    },
+    cal: {
+      month: { ru: 'Октябрь', en: 'October', kk: 'Қазан' }[l],
+      week: { ru: ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'], en: ['MO','TU','WE','TH','FR','SA','SU'], kk: ['ДҰ','СЙ','СӘ','БЕ','ЖҮ','СБ','ЖЕ'] }[l] as string[],
+      n1: { ru: 'Новое задание: эссе «Этика ИИ»', en: 'New assignment: “Ethics of AI” essay', kk: 'Жаңа тапсырма: «ЖИ этикасы» эссе' }[l],
+      n2: { ru: '«Лабораторная №3» — дедлайн через 2 дня', en: '“Lab report №3” — due in 2 days', kk: '«№3 зертханалық жұмыс» — мерзім 2 күннен кейін' }[l],
+      n3: { ru: 'Работа «Задачи по рядам» оценена на 87/100', en: '“Series problem set” was graded 87/100', kk: '«Қатарлар есептері» — 87/100 болып бағаланды' }[l],
+    },
     dl: {
       kicker: { ru: 'ЗАДАНИЯ И ДЕДЛАЙНЫ', en: 'ASSIGNMENTS & DEADLINES', kk: 'ТАПСЫРМАЛАР МЕН МЕРЗІМДЕР' }[l],
       title: { ru: 'Дедлайны больше не застают врасплох', en: 'Deadlines never sneak up on you', kk: 'Мерзімдер кенеттен таңқалдырмайды' }[l],
@@ -960,6 +1175,18 @@ const clsAssignments = computed(() => [
   { t: { ru: 'Задачи по динамике', en: 'Dynamics problem set', kk: 'Динамика есептері' }[lang.value],
     m: { ru: '20 баллов', en: '20 points', kk: '20 ұпай' }[lang.value],
     s: { ru: 'В ожидании', en: 'Pending', kk: 'Күтілуде' }[lang.value], pill: 'pending' },
+])
+
+/* --- Макет календаря: октябрь, у части дней — точки заданий --- */
+const calMarks: Record<number, string> = { 10: 'upcoming', 13: 'soon', 16: 'done', 22: 'overdue' }
+const calSel = 10
+const calCells = [...Array(3).fill(null), ...Array.from({ length: 31 }, (_, i) => i + 1), null]
+
+/* --- Критерии AI Grader (для баров разбора оценки) --- */
+const grCrits = computed(() => [
+  { name: d('grx.crit1'), score: 9 },
+  { name: d('grx.crit2'), score: 8 },
+  { name: d('grx.crit3'), score: 9 },
 ])
 
 /* --- Секция AI Grader: ScoreRing монтируем только когда карточка видна,
@@ -1133,29 +1360,119 @@ html.dark .band::before{background:#151517}
 .mli-meta{font-size:11.5px;color:var(--text4);letter-spacing:.02em;margin-top:1px}
 .mli-chevron{color:var(--text4);flex-shrink:0}
 
-.grade-demo{background:var(--bg);border:1px solid var(--border);border-radius:22px;padding:26px 20px 20px;display:flex;flex-direction:column;align-items:center;gap:12px}
-.grade-ring-wrap{position:relative;width:116px;height:116px}
-.grade-ring{width:100%;height:100%;transform:rotate(-90deg)}
-.grade-track{fill:none;stroke:var(--border2);stroke-width:6}
-.grade-fill{fill:none;stroke:var(--teal);stroke-width:6;stroke-linecap:round;stroke-dasharray:188.5;stroke-dashoffset:188.5;transition:stroke-dashoffset 1.1s cubic-bezier(.22,1,.36,1) .25s}
-.revealed .grade-fill{stroke-dashoffset:24.5}
-@media (prefers-reduced-motion: reduce){.grade-fill{transition:none}}
-.grade-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:27px;font-weight:700;letter-spacing:-.02em;color:var(--text1);line-height:1}
-.grade-num span{font-size:12px;font-weight:500;color:var(--text4);letter-spacing:0;margin-top:3px}
-.grade-verdict{font-size:13.5px;font-weight:650;color:var(--green)}
-.pill-demo{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:2px}
-
-.task-demo{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border);border-radius:22px;overflow:hidden}
-.td-row{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--border)}
-.td-row:last-child{border-bottom:none}
-.td-name{flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
-
 .status-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:100px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
 .status-pill.graded{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
 .status-pill.grading{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}
 .status-pill.submitted{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
 .status-pill.late{background:var(--red-l);color:var(--red);border:1px solid rgba(248,113,113,.2)}
 .status-pill.pending{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+
+/* --- Bento: полноширинная карточка файлов --- */
+.b-files{grid-column:span 3;display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.5fr);gap:40px;align-items:center;padding:44px 40px}
+.b-files .bvisual{margin-top:0}
+
+/* --- Тёмная секция (Chatra AI) --- */
+.band-dark{position:relative}
+.band-dark::before{content:'';position:absolute;top:0;bottom:0;left:calc(50% - 50vw);width:100vw;background:#1D1D1F;pointer-events:none}
+.band-dark>*{position:relative;z-index:1}
+.band-dark .sec-title{color:#f5f5f7}
+.band-dark .sec-sub{color:#a1a1a6}
+.band-dark .checklist li{color:#c7c7cc}
+.band-dark .checklist svg{color:#f5f5f7}
+
+.ai-win{display:flex;width:100%;max-width:620px;background:#232326;border:1px solid rgba(255,255,255,.09);border-radius:28px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.3),0 44px 88px -24px rgba(0,0,0,.55)}
+.ai-side{width:198px;flex-shrink:0;background:#1C1C1E;border-right:1px solid rgba(255,255,255,.07);padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+.ai-search{display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:980px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07);color:#98989f;font-size:12px;font-weight:500}
+.ai-new{display:flex;align-items:center;gap:7px;height:34px;padding:0 11px;border-radius:11px;color:#f5f5f7;font-size:12.5px;font-weight:600;background:rgba(var(--teal-rgb),.16);border:1px solid rgba(var(--teal-rgb),.3)}
+.ai-group-label{font-size:10px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:#6e6e73;margin:8px 4px 0}
+.ai-conv{display:flex;align-items:center;gap:7px;height:32px;padding:0 10px;border-radius:9px;font-size:12.5px;font-weight:500;color:#c7c7cc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-conv svg{color:#98989f;flex-shrink:0}
+.ai-conv.active{background:rgba(255,255,255,.08);color:#f5f5f7;font-weight:600}
+.ai-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.ai-msgs{flex:1;display:flex;flex-direction:column;gap:13px;padding:20px 18px}
+.ai-win .msg-sender{color:#98989f}
+.ai-win .msg-row.assistant .msg-bubble{background:#2c2c2e;border-color:rgba(255,255,255,.08);color:#f5f5f7}
+.ai-input-dark{border-top-color:rgba(255,255,255,.07);background:#232326}
+.ai-input-dark .ai-textarea{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08);color:#98989f}
+
+.math{display:inline-flex;align-items:center;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13.5px;color:#f5f5f7;background:rgba(var(--teal-rgb),.1);border:1px solid rgba(var(--teal-rgb),.22);border-radius:8px;padding:5px 9px;margin:4px 2px;line-height:1;vertical-align:middle}
+.math.plain,.math.roots{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);font-style:normal}
+.mfrac{display:inline-flex;flex-direction:column;align-items:center;font-size:11px;line-height:1.15;margin-left:4px}
+.mfrac .mn{padding:0 4px 2px;border-bottom:1px solid #98989f}
+.mfrac .md{padding-top:2px}
+
+/* --- AI Grader: бар файла, критерии, подтверждение преподавателя --- */
+.grc-card{max-width:480px}
+.gw-bar{display:flex;align-items:center;gap:6px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--glass)}
+.gw-bar span{width:9px;height:9px;border-radius:50%;background:var(--surface3);flex-shrink:0}
+.gw-file{margin-left:8px;width:auto;height:auto;background:none;border-radius:0;font-size:12px;font-weight:550;color:var(--text3)}
+.grc-criteria{padding:16px 24px 18px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:11px}
+.gc-head{font-size:11.5px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--text4)}
+.gc-row{display:flex;align-items:center;gap:12px}
+.gc-name{width:38%;font-size:12.5px;font-weight:550;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gc-bar{flex:1;height:5px;border-radius:100px;background:var(--bg);border:1px solid var(--border);overflow:hidden}
+.gc-fill{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal-d),var(--teal));transition:width 1s cubic-bezier(.22,1,.36,1) .35s}
+@media (prefers-reduced-motion: reduce){.gc-fill{transition:none}}
+.gc-score{width:38px;text-align:right;font-size:12px;font-weight:600;color:var(--text3);font-variant-numeric:tabular-nums}
+.grc-teacher{display:flex;align-items:center;gap:11px;padding:14px 24px;background:rgba(52,199,89,.05);border-top:1px solid var(--border)}
+.gt-check{width:26px;height:26px;border-radius:50%;background:rgba(52,199,89,.14);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.gt-note{font-size:12.5px;font-weight:600;color:var(--text1);letter-spacing:-.01em}
+.gt-meta{font-size:11px;color:var(--text4);margin-top:1px}
+
+/* --- Студенты и преподаватели --- */
+.roles-stage{position:relative;max-width:880px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;padding-bottom:34px}
+.role-panel{background:var(--surface);border:1px solid var(--border);border-radius:24px;box-shadow:0 2px 6px rgba(0,0,0,.03),0 24px 48px -16px rgba(0,0,0,.12);padding:20px;display:flex;flex-direction:column;gap:12px}
+html.dark .role-panel{box-shadow:0 2px 6px rgba(0,0,0,.3),0 24px 48px -16px rgba(0,0,0,.55)}
+.rp-stu{z-index:2}
+.rp-tea{margin:-44px 0 0 -40px;z-index:1}
+.rp-head{display:flex;align-items:center;gap:10px}
+.rp-badge{font-size:11px;font-weight:700;letter-spacing:.04em;padding:4px 11px;border-radius:100px}
+.rp-badge.stu{background:var(--text1);color:var(--surface)}
+.rp-badge.tea{background:rgba(var(--teal-rgb),.1);color:var(--teal);border:1px solid rgba(var(--teal-rgb),.25)}
+.rp-date{font-size:12px;color:var(--text4);font-weight:500;margin-left:auto}
+.rp-row{display:flex;align-items:center;gap:11px;padding:12px 13px;background:var(--bg);border:1px solid var(--border);border-radius:15px}
+.rp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rp-dot.pending{background:var(--yellow)}
+.rp-dot.done{background:var(--green)}
+.rp-main{flex:1;min-width:0}
+.rp-name{font-size:13px;font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.rp-meta{font-size:11.5px;color:var(--text4);margin-top:2px}
+.rp-btn{font-size:12px;font-weight:600;color:#fff;background:var(--text1);border-radius:980px;padding:6px 14px;flex-shrink:0}
+.roles-bridge-pos{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3}
+.roles-bridge{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:980px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-md);font-size:12.5px;font-weight:600;color:var(--text1);white-space:nowrap}
+.roles-bridge svg{color:var(--teal)}
+
+/* --- Календарь · дедлайны · уведомления --- */
+.cal-grid-wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:56px;align-items:start}
+.cal-col{display:flex;flex-direction:column;gap:22px;min-width:0}
+.cal-col-right{min-width:0}
+.cal-col-right .asgn-group{max-width:none}
+.cal-win{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:18px;box-shadow:0 2px 6px rgba(0,0,0,.03),0 24px 48px -16px rgba(0,0,0,.1)}
+html.dark .cal-win{box-shadow:0 2px 6px rgba(0,0,0,.3),0 24px 48px -16px rgba(0,0,0,.5)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;padding:2px 6px 14px}
+.cal-month{font-size:15px;font-weight:700;color:var(--text1);letter-spacing:-.01em}
+.cal-nav{display:flex;gap:16px;color:var(--text4)}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
+.cal-week span{text-align:center;font-size:10.5px;font-weight:600;color:var(--text4);letter-spacing:.03em;padding:4px 0}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);row-gap:4px}
+.cal-cell{height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:12px}
+.cal-cell.blank{visibility:hidden}
+.cal-num{font-size:12.5px;font-weight:550;color:var(--text2);line-height:1;font-variant-numeric:tabular-nums}
+.cal-cell.sel{background:var(--text1)}
+.cal-cell.sel .cal-num{color:var(--surface);font-weight:700}
+.cal-dot{width:4.5px;height:4.5px;border-radius:50%}
+.cal-dot.upcoming{background:var(--teal)}
+.cal-dot.soon{background:var(--yellow)}
+.cal-dot.done{background:var(--green)}
+.cal-dot.overdue{background:var(--red)}
+.notif-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--sh-xs)}
+.nc-head{font-size:11px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--text4);padding:2px 4px 4px}
+.nc-row{display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--bg);border:1px solid var(--border);border-radius:13px}
+.nc-ico{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nc-ico.teal{background:rgba(var(--teal-rgb),.09);color:var(--teal)}
+.nc-ico.yellow{background:rgba(251,191,36,.12);color:var(--yellow)}
+.nc-ico.green{background:rgba(74,222,128,.1);color:var(--green)}
+.nc-text{font-size:12.5px;font-weight:500;color:var(--text1);line-height:1.35;letter-spacing:-.005em}
 
 /* --- Split sections --- */
 .split{display:grid;grid-template-columns:1fr 1fr;gap:76px;align-items:center}
@@ -1345,6 +1662,7 @@ html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba
   .split.rev .split-visual{order:-1}
   .bento{grid-template-columns:1fr 1fr}
   .b-wide{grid-column:span 2}
+  .b-files{grid-column:span 2;grid-template-columns:1fr;padding:30px 26px;gap:26px}
   .section{padding:104px 24px}
 }
 @media (max-width:768px){
@@ -1360,8 +1678,18 @@ html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba
   .hero .orb-a{width:340px;height:340px;top:-130px;left:-130px}
   .hero .orb-b{width:280px;height:280px;bottom:-120px;right:-100px}
   .bento{grid-template-columns:1fr;gap:18px}
-  .b-wide{grid-column:span 1;grid-template-columns:1fr;padding:30px 26px;gap:26px}
+  .b-wide,.b-files{grid-column:span 1}
+  .b-wide{grid-template-columns:1fr;padding:30px 26px;gap:26px}
+  .b-files{padding:30px 26px;gap:26px}
   .bcard{padding:28px 24px}
+  .ai-side{display:none}
+  .ai-win{max-width:none}
+  .roles-stage{grid-template-columns:1fr;gap:18px;padding-bottom:0}
+  .rp-tea{margin:0}
+  .roles-bridge-pos{display:none}
+  .cal-grid-wrap{grid-template-columns:1fr;gap:36px}
+  .grc-criteria{padding:14px 20px 16px}
+  .gc-name{width:42%}
   .lec-body{grid-template-columns:1fr}
   .lec-page{border-right:none;border-bottom:1px solid var(--border)}
   .hm{transform:translate(-50%,-42px) scale(.82)}
