@@ -570,6 +570,32 @@
         </div>
       </section>
 
+      <!-- ===== JOIN BY CODE ===== -->
+      <section id="join" class="section jc-sec">
+        <div class="sec-head reveal">
+          <div class="kicker">{{ d('jc.kicker') }}</div>
+          <h2 class="sec-title">{{ d('jc.title') }}</h2>
+          <p class="sec-sub">{{ d('jc.sub') }}</p>
+        </div>
+
+        <!-- Реплика join-modal из приложения: шесть ячеек кода
+             и живой предпросмотр найденного предмета -->
+        <div class="jc-card reveal reveal-scale" aria-hidden="true">
+          <div class="jc-label">{{ d('jc.label') }}</div>
+          <div class="jc-digits">
+            <span v-for="(n, i) in ['7','4','1','9','2','6']" :key="i" :class="['jd', { active: i === 5 }]">{{ n }}</span>
+          </div>
+          <div class="jc-found">
+            <span class="jc-glyph">Φ</span>
+            <div class="jf-main">
+              <div class="jf-name">{{ d('sa.class_name') }}</div>
+              <div class="jf-meta">{{ d('sa.class_teacher') }}</div>
+            </div>
+            <span class="jc-btn">{{ d('jc.join') }}</span>
+          </div>
+        </div>
+      </section>
+
       <!-- ===== CALENDAR · DEADLINES · NOTIFICATIONS ===== -->
       <section id="deadlines" class="section band">
         <div class="sec-head reveal">
@@ -709,6 +735,24 @@
             <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
           </div>
           </div>
+
+            <!-- Реплика AssignmentDetailPanel: сдача работы файлом
+                 с комментарием и статусом до дедлайна -->
+            <div class="subm-card reveal reveal-delay-1" aria-hidden="true">
+              <div class="sc-head">{{ d('subm.head') }}</div>
+              <div class="sc-sub">{{ d('dl.item3_t') }} · {{ d('dl.item3_score') }}</div>
+              <div class="sc-file">
+                <span class="ftb" style="background:#3B9FF2">DOC</span>
+                <span class="sc-fname">{{ d('subm.attach') }}</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.6"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="sc-comment">{{ d('subm.comment') }}</div>
+              <div class="sc-send">{{ d('subm.send') }}</div>
+              <div class="sc-done">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"/></svg>
+                {{ d('subm.done') }}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -748,6 +792,7 @@
             <div class="lf-h">{{ d('foot.col_product') }}</div>
             <a href="#features">{{ d('nav.features') }}</a>
             <a href="#subject-ai">{{ d('nav.subject_ai') }}</a>
+            <a href="#chatra-ai">Chatra AI</a>
             <a href="#grader">AI Grader</a>
             <a href="#deadlines">{{ d('nav.deadlines') }}</a>
           </div>
@@ -1025,6 +1070,25 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       m2: { ru: '3 к сдаче на этой неделе', en: '3 due this week', kk: 'Осы аптада 3 тапсыру' }[l],
       m3: { ru: 'ближайший — в пятницу', en: 'next one on Friday', kk: 'жакыны — жұма' }[l],
       m4: { ru: 'формулы, темы, черновики', en: 'formulas, topics, drafts', kk: 'формулалар, тақырыптар, жобалар' }[l],
+    },
+    jc: {
+      kicker: { ru: 'ПРИСОЕДИНЕНИЕ', en: 'GET STARTED', kk: 'ҚОСЫЛУ' }[l],
+      title: { ru: 'Один код — и вы в предмете', en: 'One code and you are in', kk: 'Бір код — және сіз топта' }[l],
+      sub: {
+        ru: 'Преподаватель делится шестизначным кодом. Введите его — Chatra найдёт предмет и добавит вас к группе.',
+        en: 'The teacher shares a six-digit code. Enter it — Chatra finds the subject and adds you to the class.',
+        kk: 'Мұғалім алты таңбалы кодпен бөліседі. Енгізіңіз — Chatra пәнді тауып, топқа қосады.',
+      }[l],
+      label: { ru: 'Код предмета', en: 'Class code', kk: 'Пән коды' }[l],
+      join: { ru: 'Вступить', en: 'Join', kk: 'Қосылу' }[l],
+      found: { ru: 'Предмет найден', en: 'Class found', kk: 'Пән табылды' }[l],
+    },
+    subm: {
+      head: { ru: 'Сдача работы', en: 'Submit your work', kk: 'Жұмысты тапсыру' }[l],
+      attach: { ru: 'essay_final.docx прикреплён', en: 'essay_final.docx attached', kk: 'essay_final.docx тіркелді' }[l],
+      comment: { ru: 'Комментарий к работе…', en: 'Add a comment…', kk: 'Жұмысқа түсініктеме…' }[l],
+      send: { ru: 'Сдать работу', en: 'Submit work', kk: 'Жұмысты тапсыру' }[l],
+      done: { ru: 'Сдано до дедлайна', en: 'Submitted before the deadline', kk: 'Мерзімге дейін тапсырылды' }[l],
     },
     grx: {
       file: { ru: 'essay_final.docx', en: 'essay_final.docx', kk: 'essay_final.docx' }[l],
@@ -1511,6 +1575,32 @@ html.dark .role-panel{box-shadow:0 2px 6px rgba(0,0,0,.3),0 24px 48px -16px rgba
 .roles-bridge{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:980px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-md);font-size:12.5px;font-weight:600;color:var(--text1);white-space:nowrap}
 .roles-bridge svg{color:var(--teal)}
 
+/* --- Вступление по коду --- */
+.jc-card{max-width:470px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:18px;box-shadow:0 2px 6px rgba(0,0,0,.03),0 32px 64px -24px rgba(0,0,0,.12)}
+html.dark .jc-card{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba(0,0,0,.6)}
+.jc-label{font-size:12.5px;font-weight:600;color:var(--text3);letter-spacing:.02em;text-align:center}
+.jc-digits{display:flex;gap:10px;justify-content:center}
+.jd{width:52px;height:62px;border-radius:14px;border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:600;color:var(--text1);font-variant-numeric:tabular-nums}
+.jd.active{border-color:var(--teal);box-shadow:0 0 0 3.5px rgba(var(--teal-rgb),.13)}
+.jc-found{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--bg);border:1px solid var(--border)}
+.jc-glyph{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:650;flex-shrink:0}
+.jf-main{flex:1;min-width:0}
+.jf-name{font-size:13.5px;font-weight:650;color:var(--text1);letter-spacing:-.01em}
+.jf-meta{font-size:11.5px;color:var(--text4);margin-top:1px}
+.jc-btn{font-size:12.5px;font-weight:600;color:#fff;background:var(--teal);padding:8px 16px;border-radius:980px;flex-shrink:0}
+
+/* --- Сдача работы --- */
+.cal-col-right{display:flex;flex-direction:column;gap:22px}
+.subm-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:20px;box-shadow:0 2px 6px rgba(0,0,0,.03),0 24px 48px -16px rgba(0,0,0,.1)}
+html.dark .subm-card{box-shadow:0 2px 6px rgba(0,0,0,.3),0 24px 48px -16px rgba(0,0,0,.5)}
+.sc-head{font-size:15px;font-weight:700;color:var(--text1);letter-spacing:-.015em}
+.sc-sub{font-size:12px;color:var(--text4);margin-top:3px}
+.sc-file{display:flex;align-items:center;gap:10px;padding:11px 13px;margin-top:14px;background:var(--bg);border:1px solid var(--border);border-radius:14px}
+.sc-fname{flex:1;min-width:0;font-size:13px;font-weight:550;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-comment{margin-top:12px;padding:11px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--border);color:var(--text4);font-size:12.5px}
+.sc-send{margin-top:14px;height:44px;border-radius:980px;background:linear-gradient(135deg,var(--teal),var(--teal-h));color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;letter-spacing:-.01em;box-shadow:0 3px 10px rgba(var(--teal-rgb),.25)}
+.sc-done{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:12px;font-weight:600;color:var(--green)}
+
 /* --- Календарь · дедлайны · уведомления --- */
 .cal-grid-wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:56px;align-items:start}
 .cal-col{display:flex;flex-direction:column;gap:22px;min-width:0}
@@ -1759,6 +1849,9 @@ html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba
   .rp-tea{margin:0}
   .roles-bridge-pos{display:none}
   .cal-grid-wrap{grid-template-columns:1fr;gap:36px}
+  .jc-card{padding:22px}
+  .jc-digits{gap:7px}
+  .jd{width:min(52px,(100% - 35px)/6);height:56px}
   .grc-criteria{padding:14px 20px 16px}
   .gc-name{width:42%}
   .lec-body{grid-template-columns:1fr}
