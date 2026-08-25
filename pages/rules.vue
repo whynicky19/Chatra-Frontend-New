@@ -1,6 +1,4 @@
 <template>
-  <!-- Правила сообщества — единственный из трёх документов без разделов и без
-       даты редакции: текст идёт одной карточкой через :body. -->
   <LegalDoc :title="c.title" :body="c.body">
     <template #icon>
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -16,6 +14,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from '~/composables/useI18n'
+
+// Правила сообщества — единственный из трёх документов без разделов и без
+// даты редакции: текст идёт одной карточкой через :body.
+// ВАЖНО: у шаблона должен быть ровно один корень (без комментариев-соседей) —
+// иначе <Transition mode="out-in"> вокруг NuxtPage ломается, и после возврата
+// назад на лендинг тот рендерится пустым.
 
 // Публичная страница — без авторизации и без layout приложения.
 definePageMeta({ layout: false })

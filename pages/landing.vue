@@ -1,31 +1,18 @@
 <template>
   <div class="landing" @scroll.passive="onScroll">
     <!-- ===== NAV ===== -->
-    <header :class="['lnav', { scrolled }]">
-      <div class="lnav-inner">
-        <div class="l-brand" @click="toTop">
-          <span class="l-logo" role="img" aria-label="Chatra"></span>
-          <span class="l-brand-name">Chatra</span>
-        </div>
-
-        <nav class="l-links">
-          <a href="#features">{{ d('nav.features') }}</a>
-          <a href="#subject-ai">{{ d('nav.subject_ai') }}</a>
-          <a href="#highlights">{{ d('nav.highlights') }}</a>
-          <a href="#grader">{{ d('nav.grader') }}</a>
-          <a href="#deadlines">{{ d('nav.deadlines') }}</a>
-        </nav>
-
-        <div class="lnav-r">
-          <div class="lang-pill" role="tablist">
-            <button v-for="l in langs" :key="l.code" :class="['lang-p', { active: lang === l.code }]"
-              role="tab" :aria-selected="lang === l.code" @click="setLang(l.code)">{{ l.label }}</button>
+      <header :class="['lnav', { scrolled }]">
+        <div class="lnav-inner">
+          <div class="l-brand" @click="toTop">
+            <span class="l-logo" role="img" aria-label="Chatra"></span>
+            <span class="l-brand-name">Chatra</span>
           </div>
-          <NuxtLink to="/login" class="btn btn-ghost l-login">{{ d('nav.login') }}</NuxtLink>
-          <NuxtLink to="/org" class="btn btn-teal l-cta-sm">{{ d('cta.short') }}</NuxtLink>
+
+          <div class="lnav-r">
+            <NuxtLink to="/org" class="btn btn-teal l-cta-sm">{{ d('cta.short') }}</NuxtLink>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
     <main class="l-main">
       <!-- ===== HERO ===== -->
@@ -47,7 +34,7 @@
           </div>
 
           <!-- Живой макет чата — один в один с ClassAiChat:
-               пузыри на --msg-* переменных + .ai-input-bar с круглой send-btn -->
+               msg-row/msg-sender/msg-bubble + .ai-input-bar с круглой send-btn -->
           <div class="hero-visual reveal reveal-right">
             <div class="chat-card">
               <div class="chat-head">
@@ -62,10 +49,14 @@
               </div>
               <div class="chat-body">
                 <template v-for="(m, i) in visibleMsgs" :key="i">
-                  <div :class="['bubble', { own: m.own }]">{{ m.text }}</div>
+                  <div :class="['msg-row', m.own ? 'user' : 'assistant']">
+                    <div v-if="!m.own" class="msg-sender">Chatra AI</div>
+                    <div class="msg-bubble">{{ m.text }}</div>
+                  </div>
                 </template>
-                <div v-if="typing" class="typing">
-                  <span></span><span></span><span></span>
+                <div v-if="typing" class="msg-row assistant">
+                  <div class="msg-sender">Chatra AI</div>
+                  <div class="msg-bubble typing-bbl"><span></span><span></span><span></span></div>
                 </div>
               </div>
               <div class="ai-input-bar">
@@ -241,7 +232,7 @@
            Макет экрана лекции один в один: страница документа с подсветкой
            выделений, меню HighlightMenu (цвета #FFD84D/#7BDCA0/#7CC5F5/#FF9A9A,
            «Заметка», «Спросить AI»), панель «Мои выделения» и список файлов. -->
-      <section id="highlights" class="section split rev">
+      <section id="highlights" class="section split split-lec rev">
         <div class="split-visual reveal reveal-left">
           <div class="mock-window lec-win">
             <div class="mw-bar">
@@ -522,14 +513,42 @@
     <!-- ===== FOOTER ===== -->
     <footer class="lfooter">
       <div class="lf-inner">
-        <div class="lf-brand">Chatra</div>
-        <nav class="lf-links">
-          <NuxtLink to="/privacy">{{ d('foot.privacy') }}</NuxtLink>
-          <NuxtLink to="/terms">{{ d('foot.terms') }}</NuxtLink>
-          <NuxtLink to="/rules">{{ d('foot.rules') }}</NuxtLink>
-          <a href="https://t.me/whynickyy" target="_blank" rel="noopener">{{ d('foot.support') }}</a>
+        <div class="lf-brandcol">
+          <div class="lf-brand"><span class="l-logo sm"></span>Chatra</div>
+          <p class="lf-tag">{{ d('foot.tag') }}</p>
+          <div class="lang-pill lf-lang" role="tablist">
+            <button v-for="l in langs" :key="l.code" :class="['lang-p', { active: lang === l.code }]"
+              role="tab" :aria-selected="lang === l.code" @click="setLang(l.code)">{{ l.label }}</button>
+          </div>
+        </div>
+
+        <nav class="lf-cols">
+          <div class="lf-col">
+            <div class="lf-h">{{ d('foot.col_product') }}</div>
+            <a href="#features">{{ d('nav.features') }}</a>
+            <a href="#subject-ai">{{ d('nav.subject_ai') }}</a>
+            <a href="#grader">AI Grader</a>
+            <a href="#deadlines">{{ d('nav.deadlines') }}</a>
+          </div>
+          <div class="lf-col">
+            <div class="lf-h">{{ d('foot.col_docs') }}</div>
+            <NuxtLink to="/privacy">{{ d('foot.privacy') }}</NuxtLink>
+            <NuxtLink to="/terms">{{ d('foot.terms') }}</NuxtLink>
+            <NuxtLink to="/rules">{{ d('foot.rules') }}</NuxtLink>
+          </div>
+          <div class="lf-col">
+            <div class="lf-h">{{ d('foot.col_support') }}</div>
+            <NuxtLink to="/login">{{ d('nav.login') }}</NuxtLink>
+            <a href="https://t.me/whynickyy" target="_blank" rel="noopener">Telegram</a>
+            <a href="https://t.me/whynickyy" target="_blank" rel="noopener">{{ d('foot.support') }}</a>
+          </div>
         </nav>
-        <div class="lf-copy">© {{ year }} Chatra</div>
+      </div>
+      <div class="lf-bar">
+        <div class="lf-bar-inner">
+          <span>© {{ year }} Chatra</span>
+          <span>{{ d('foot.made') }}</span>
+        </div>
       </div>
     </footer>
   </div>
@@ -791,6 +810,19 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       st_late: { ru: 'Просрочено', en: 'Overdue', kk: 'Кешікті' }[l],
     },
     foot: {
+      tag: {
+        ru: 'Учебная платформа с ИИ для каждого предмета.',
+        en: 'A learning platform with an AI for every subject.',
+        kk: 'Әр пәнге арналған ЖИ бар оқу платформасы.',
+      }[l],
+      col_product: { ru: 'Продукт', en: 'Product', kk: 'Өнім' }[l],
+      col_docs: { ru: 'Документы', en: 'Documents', kk: 'Құжаттар' }[l],
+      col_support: { ru: 'Поддержка', en: 'Support', kk: 'Қолдау' }[l],
+      made: {
+        ru: 'Сделано с заботой об учёбе',
+        en: 'Built with care for learning',
+        kk: 'Оқуға деген қамқорлықпен жасалды',
+      }[l],
       privacy: { ru: 'Конфиденциальность', en: 'Privacy', kk: 'Құпиялық' }[l],
       terms: { ru: 'Условия использования', en: 'Terms of Use', kk: 'Пайдалану шарттары' }[l],
       rules: { ru: 'Правила', en: 'Rules', kk: 'Ережелер' }[l],
@@ -957,6 +989,10 @@ const year = new Date().getFullYear()
 html.dark .lnav{background:rgba(11,11,13,.55)}
 .lnav.scrolled{background:rgba(255,255,255,.78);border-bottom-color:var(--border)}
 html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
+/* Плотная шапка вместо стеклянной для пользователей с этой ОС-настройкой */
+@media (prefers-reduced-transparency: reduce){
+  .lnav,.lnav.scrolled{background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none}
+}
 .lnav-inner{max-width:1160px;margin:0 auto;padding:13px 24px;display:flex;align-items:center;gap:22px}
 
 .l-brand{display:flex;align-items:center;gap:9px;cursor:pointer;flex-shrink:0}
@@ -964,16 +1000,11 @@ html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
 .l-logo.sm{width:30px}
 .l-brand-name{font-size:17px;font-weight:800;color:var(--text1);letter-spacing:-.02em}
 
-.l-links{display:flex;gap:4px;margin:0 auto}
-.l-links a{padding:8px 13px;border-radius:100px;font-size:13.5px;font-weight:600;color:var(--text3);transition:color .15s,background .15s}
-@media (hover:hover){.l-links a:hover{color:var(--text1);background:var(--glass2)}}
-
-.lnav-r{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.lnav-r{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:auto}
 .lang-pill{position:relative;display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:3px}
-.lang-p{position:relative;z-index:1;padding:5px 10px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--text4);transition:color .2s}
+.lang-p{position:relative;z-index:1;padding:5px 10px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--text4);transition:color .2s,transform .12s}
+.lang-p:active{transform:scale(.92)}
 .lang-p.active{background:var(--surface);color:var(--text1);box-shadow:var(--sh-xs)}
-
-.l-login{font-size:13.5px}
 
 /* ====== HERO ====== */
 .hero{position:relative;padding:calc(var(--topbar) + 64px) 24px 110px;overflow:hidden}
@@ -1001,22 +1032,26 @@ html.dark .chat-dot{box-shadow:0 0 0 3px rgba(74,222,128,.15)}
 .chat-head-t{min-width:0;flex:1}
 .chat-title{font-size:13.5px;font-weight:700;color:var(--text1);letter-spacing:-.01em}
 .chat-status{font-size:11px;color:var(--text4)}
-.chat-spark{width:28px;height:28px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.chat-body{display:flex;flex-direction:column;gap:10px;padding:16px;min-height:372px;justify-content:flex-end}
-.bubble{max-width:85%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.55;color:var(--msg-other-color);background:var(--msg-other-bg);border-bottom-left-radius:5px;width:fit-content;animation:msg-in .3s cubic-bezier(.16,1,.3,1)}
-.bubble.own{align-self:flex-end;background:var(--msg-own-bg);color:var(--msg-own-color);border-radius:16px;border-bottom-right-radius:5px}
-.bubble.sm{font-size:12.5px;padding:9px 13px}
+.chat-spark{width:28px;height:28px;border-radius:9px;background:rgba(var(--teal-rgb),.08);border:1px solid rgba(var(--teal-rgb),.18);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+/* Сообщения — те же классы, что в макете ИИ-вкладки предмета ниже
+   (.msg-row/.msg-sender/.msg-bubble): у ассистента подпись «Chatra AI» и
+   пузырь на --surface с бордером, у пользователя — градиентный тил-пузырь.
+   Один в один с ClassAiChat, никаких «своих» пузырей. */
+.chat-body{display:flex;flex-direction:column;gap:14px;padding:16px;min-height:372px;justify-content:flex-end}
+.chat-body .msg-row{max-width:88%}
+.chat-body .msg-bubble{font-size:13px;padding:11px 15px}
 
 /* Поле ввода — копия .ai-input-bar/.ai-textarea/.send-btn из ClassAiChat */
-.ai-input-bar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--border)}
+.ai-input-bar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--border);background:var(--surface)}
 .ai-textarea{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:11px 15px;color:var(--text4);font-size:13.5px;line-height:1.5}
 .send-btn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-h));color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(var(--teal-rgb),.4)}
 
-.typing{display:inline-flex;gap:4px;padding:12px 14px;background:var(--msg-other-bg);border-radius:16px;border-bottom-left-radius:5px;width:fit-content}
-.typing span{width:6px;height:6px;border-radius:50%;background:var(--text4);animation:pulse 1.1s ease-in-out infinite}
-.typing span:nth-child(2){animation-delay:.18s}
-.typing span:nth-child(3){animation-delay:.36s}
-@media (prefers-reduced-motion: reduce){.typing span{animation:none}}
+.typing-bbl{display:inline-flex;align-items:center;gap:5px;width:auto}
+.typing-bbl span{width:6px;height:6px;border-radius:50%;background:var(--text4);animation:bounce .8s ease infinite}
+.typing-bbl span:nth-child(2){animation-delay:.14s}
+.typing-bbl span:nth-child(3){animation-delay:.28s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+@media (prefers-reduced-motion: reduce){.typing-bbl span{animation:none}}
 
 /* ====== СЕКЦИИ ====== */
 .section{max-width:1160px;margin:0 auto;padding:110px 24px}
@@ -1039,8 +1074,10 @@ html.dark .chat-dot{box-shadow:0 0 0 3px rgba(74,222,128,.15)}
 .btext{font-size:14px;color:var(--text3);line-height:1.65;flex:1}
 
 .mini-bubbles{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-.mb{max-width:75%;padding:8px 12px;border-radius:14px;font-size:12px;color:var(--msg-other-color);background:var(--msg-other-bg);border-bottom-left-radius:4px}
-.mb-own{align-self:flex-end;background:var(--msg-own-bg);color:var(--msg-own-color);border-radius:14px;border-bottom-right-radius:4px}
+/* Те же пузыри, что в реальном чате: ассистент — --surface с бордером,
+   пользователь — градиентный тил (геометрия .msg-bubble из ClassAiChat) */
+.mb{max-width:80%;width:fit-content;padding:9px 13px;border-radius:14px;border-bottom-left-radius:4px;font-size:12px;line-height:1.5;color:var(--text1);background:var(--surface);border:1px solid var(--border)}
+.mb-own{align-self:flex-end;background:linear-gradient(135deg,var(--teal),var(--teal-h));color:#fff;border:none;border-radius:14px;border-bottom-right-radius:4px;box-shadow:0 3px 12px rgba(var(--teal-rgb),.28)}
 
 .subj-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}
 .sc{padding:5px 12px;border-radius:100px;background:var(--surface2);border:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text3)}
@@ -1086,7 +1123,7 @@ html.dark .chat-dot{box-shadow:0 0 0 3px rgba(74,222,128,.15)}
 /* Сегмент-контрол табов — копия .tabs-bar/.tab-btn с класс-страницы:
    «полочка» на --surface2 со скользящей подложкой активного таба */
 .tabs-bar{position:relative;display:flex;align-items:stretch;padding:3px;background:var(--surface2);border-bottom:1px solid var(--border)}
-.tabs-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / 3);background:var(--surface);border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.tabs-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / 3);background:var(--surface);border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:transform .32s cubic-bezier(.32,.72,0,1)}
 html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .tab-btn{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 6px;font-size:12px;font-weight:600;color:var(--text4);background:transparent;border:none;border-radius:9px;cursor:pointer;transition:color .2s;white-space:nowrap;font-family:inherit;letter-spacing:-.01em}
 .tab-btn svg{flex-shrink:0}
@@ -1115,10 +1152,10 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .msg-row.user{align-self:flex-end;align-items:flex-end}
 .msg-row.assistant{align-self:flex-start}
 .msg-sender{font-size:11.5px;font-weight:700;color:var(--text3)}
-.msg-bubble{padding:11px 15px;border-radius:18px;font-size:12.5px;line-height:1.6;word-break:break-word}
+.msg-bubble{padding:11px 15px;border-radius:18px;font-size:12.5px;line-height:1.6;word-break:break-word;animation:msg-in .3s cubic-bezier(.16,1,.3,1)}
 .msg-row.assistant .msg-bubble{background:var(--surface);border:1px solid var(--border);color:var(--text1);border-bottom-left-radius:6px}
 .msg-row.user .msg-bubble{background:linear-gradient(135deg,var(--teal),var(--teal-h));color:#fff;border-bottom-right-radius:6px;box-shadow:0 4px 20px rgba(var(--teal-rgb),.3)}
-.mw-input{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--border)}
+.mw-input{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--border);background:var(--surface)}
 .ai-textarea.sm{padding:9px 13px;font-size:12.5px;border-radius:12px}
 .send-btn.sm{width:36px;height:36px}
 
@@ -1127,8 +1164,10 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 
 /* --- Макет экрана лекции (материалы + выделения) ---
    Секция асимметричная: визуальной колонке с окном лекции отдаём больше
-   места, чтобы плавающее меню выделения помещалось целиком. */
-#highlights.split{grid-template-columns:1.15fr 1fr;gap:48px}
+   места, чтобы плавающее меню выделения помещалось целиком.
+   Класс, а не #id: ID-селектор перебивал мобильный .split{1fr} из медиазапроса
+   (специфичность в медиазапросе не растёт), и секция не складывалась на телефоне. */
+.split-lec{grid-template-columns:1.15fr 1fr;gap:48px}
 .lec-win{max-width:660px}
 .lec-body{display:grid;grid-template-columns:1.2fr 1fr;min-height:360px}
 .lec-page{padding:20px 22px;border-right:1px solid var(--border);position:relative}
@@ -1234,14 +1273,23 @@ html.dark .grc-bullet-card.warn .grc-bullet-title{color:#F0A94B}
 .cf-arrow{transition:transform .22s cubic-bezier(.32,.72,0,1)}
 .cf-btn:hover .cf-arrow{transform:translateX(4px)}
 
-/* ====== FOOTER ====== */
+/* ====== FOOTER ======
+   Бренд-колонка + три колонки ссылок + отдельная нижняя панель с копирайтом.
+   Волосные разделители вместо заливок, приглушённый текст — футер не спорит
+   с контентом за внимание. */
 .lfooter{border-top:1px solid var(--border);background:var(--surface)}
-.lf-inner{max-width:1160px;margin:0 auto;padding:26px 24px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
-.lf-brand{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:var(--text1)}
-.lf-links{display:flex;gap:18px;margin:0 auto;flex-wrap:wrap}
-.lf-links a{font-size:12.5px;color:var(--text4);transition:color .15s}
-.lf-links a:hover{color:var(--teal)}
-.lf-copy{font-size:12px;color:var(--text4)}
+.lf-inner{max-width:1160px;margin:0 auto;padding:52px 24px 44px;display:grid;grid-template-columns:1.25fr 2fr;gap:56px}
+.lf-brandcol{display:flex;flex-direction:column;align-items:flex-start;gap:14px}
+.lf-brand{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;color:var(--text1);letter-spacing:-.02em}
+.lf-tag{font-size:13px;line-height:1.55;color:var(--text4);max-width:250px}
+.lf-lang{align-self:flex-start}
+.lf-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.lf-col{display:flex;flex-direction:column;gap:11px}
+.lf-h{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text4);margin-bottom:3px}
+.lf-col a{font-size:13px;font-weight:500;color:var(--text3);transition:color .15s;width:fit-content}
+@media (hover:hover){.lf-col a:hover{color:var(--teal)}}
+.lf-bar{border-top:1px solid var(--border)}
+.lf-bar-inner{max-width:1160px;margin:0 auto;padding:15px 24px calc(17px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--text4)}
 
 /* ====== АДАПТИВ ====== */
 @media (max-width:1020px){
@@ -1257,17 +1305,17 @@ html.dark .grc-bullet-card.warn .grc-bullet-title{color:#F0A94B}
 }
 @media (max-width:768px){
   .lnav-inner{padding:12px 16px;gap:12px}
-  .l-links{display:none}
-  .lang-pill{display:none}
-  .l-login{display:none}
-  .l-cta-sm{margin-left:auto}
   .section{padding:72px 16px;scroll-margin-top:64px}
-  .hero{padding:calc(var(--topbar) + 32px) 16px 72px}
+  .hero{padding:calc(var(--topbar) + 32px) 16px 64px}
   .hero-title{font-size:clamp(30px,8.6vw,38px)}
-  .hero-visual{padding:0 4px}
+  .hero-sub{font-size:16px;margin-bottom:26px}
   /* На узких экранах строки переносятся чаще — запас по высоте больше,
      чтобы карточка чата не меняла размер в течение цикла анимации */
   .chat-body{min-height:470px}
+  /* Дешёвый blur: на мобиле пятна меньше и мягче — меньше площадь композитинга */
+  .orb{filter:blur(70px)}
+  .hero .orb-a{width:340px;height:340px;top:-130px;left:-130px}
+  .hero .orb-b{width:280px;height:280px;bottom:-120px;right:-100px}
   .bento{grid-template-columns:1fr}
   .b-wide{grid-column:span 1}
   .steps{grid-template-columns:1fr}
@@ -1277,9 +1325,23 @@ html.dark .grc-bullet-card.warn .grc-bullet-title{color:#F0A94B}
   .hm{transform:translate(-50%,-42px) scale(.82)}
   .asgn-card{gap:12px;padding:16px}
   .asgn-arrow{display:none}
-  .cta-final{padding:96px 16px 104px}
+  .cta-final{padding:88px 16px 96px}
   .cf-actions{flex-direction:column;gap:14px}
+  .cf-btn{width:100%;max-width:360px}
+  /* Футер: бренд-блок сверху, ссылки в две колонки */
+  .lf-inner{grid-template-columns:1fr;gap:36px;padding:40px 20px 34px}
+  .lf-cols{gap:24px}
+  .lf-bar-inner{padding:14px 20px calc(16px + env(safe-area-inset-bottom,0px))}
   /* На тач-устройствах hover-lift не нужен — отклик через :active */
   .bcard:active,.asgn-card:active{transform:scale(.98)}
+}
+
+/* Очень узкие экраны: табы предмета и меню выделения */
+@media (max-width:480px){
+  .tab-btn{font-size:11px;padding:8px 4px;gap:4px}
+  .tab-btn svg{width:12px;height:12px}
+  .tab-num{display:none}
+  /* Меню выделения центрируем и уменьшаем сильнее — иначе упирается в край */
+  .hm{left:50%;transform:translate(-50%,-44px) scale(.72)}
 }
 </style>
