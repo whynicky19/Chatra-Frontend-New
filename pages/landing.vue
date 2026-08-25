@@ -35,29 +35,37 @@
 
           <!-- Живой макет чата — один в один с ClassAiChat:
                msg-row/msg-sender/msg-bubble + .ai-input-bar с круглой send-btn -->
-          <div class="hero-visual reveal reveal-right">
-            <div class="chat-card" :style="!reducedMotion && heroShift ? { transform: `translateY(${-heroShift * 0.06}px)` } : undefined">
-              <div class="chat-head">
-                <span class="chat-presence" aria-hidden="true"></span>
-                <div class="chat-title">{{ d('demo.subject') }}</div>
-              </div>
-              <div class="chat-body">
-                <template v-for="(m, i) in visibleMsgs" :key="i">
-                  <div :class="['msg-row', m.own ? 'user' : 'assistant']">
-                    <div v-if="!m.own" class="msg-sender">Chatra AI</div>
-                    <div class="msg-bubble">{{ m.text }}</div>
-                  </div>
-                </template>
-                <div v-if="typing" class="msg-row assistant">
-                  <div class="msg-sender">Chatra AI</div>
-                  <div class="msg-bubble typing-bbl"><span></span><span></span><span></span></div>
+          <div class="hero-visual">
+            <div class="hero-collage" :style="!reducedMotion && heroShift ? { transform: `translateY(${-heroShift * 0.06}px)` } : undefined">
+              <div class="hc-grid">
+                <div class="hc-card reveal">
+                  <span class="hc-glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+                  <span class="hc-name">{{ d('hx.p1') }}</span>
+                  <span class="hc-meta">{{ d('hx.m1') }}</span>
+                </div>
+                <div class="hc-card reveal reveal-delay-1">
+                  <span class="hc-glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>
+                  <span class="hc-name">{{ d('hx.p2') }}</span>
+                  <span class="hc-meta">{{ d('hx.m2') }}</span>
+                </div>
+                <div class="hc-card reveal reveal-delay-2">
+                  <span class="hc-glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                  <span class="hc-name">{{ d('hx.p3') }}</span>
+                  <span class="hc-meta">{{ d('hx.m3') }}</span>
+                </div>
+                <div class="hc-card on reveal reveal-delay-3">
+                  <span class="hc-glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M9 2c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5Z"/><path d="M17.5 12c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3Z"/></svg></span>
+                  <span class="hc-name">{{ d('hx.p4') }}</span>
+                  <span class="hc-meta">{{ d('hx.m4') }}</span>
                 </div>
               </div>
-              <div class="ai-input-bar">
-                <div class="ai-textarea">{{ d('demo.placeholder') }}</div>
-                <div class="send-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-                </div>
+              <div class="hc-chip hc-grade reveal reveal-delay-3">
+                <span class="hcc-ico green"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+                {{ d('dl.item3_t') }} · 87/100
+              </div>
+              <div class="hc-chip hc-due reveal reveal-delay-4">
+                <span class="hcc-ico yellow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                {{ d('dl.item1_t') }} · {{ d('dl.item1_due') }}
               </div>
             </div>
           </div>
@@ -73,40 +81,35 @@
         </div>
 
         <div class="bento">
-          <!-- 01 · Широкая карточка: копия слева, живой фрагмент чата справа -->
-          <div class="bcard b-wide reveal">
+          <!-- 01 · Прогресс: баллы и успеваемость по предмету -->
+          <div class="bcard reveal">
             <div class="bcopy">
-              <h3 class="btitle">{{ d('f.chat.title') }}</h3>
-              <p class="btext">{{ d('f.chat.text') }}</p>
+              <h3 class="btitle">{{ d('f.prog.title') }}</h3>
+              <p class="btext">{{ d('f.prog.text') }}</p>
             </div>
             <div class="bvisual">
-              <div class="mini-bubbles" aria-hidden="true">
-                <span class="mb mb-own">{{ d('f.chat.q') }}</span>
-                <span class="mb">{{ d('f.chat.a') }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 02 · Предметы: вертикальная стопка плиток -->
-          <div class="bcard reveal reveal-delay-1 reveal-scale">
-            <div class="bcopy">
-              <h3 class="btitle">{{ d('f.subjects.title') }}</h3>
-              <p class="btext">{{ d('f.subjects.text') }}</p>
-            </div>
-            <div class="bvisual">
-              <div class="subj-tiles" aria-hidden="true">
-                <div class="st"><span class="st-glyph">Φ</span><span class="st-name">{{ d('f.subjects.s1') }}</span></div>
-                <div class="st on">
-                  <span class="st-glyph">∑</span><span class="st-name">{{ d('f.subjects.s2') }}</span>
-                  <svg class="st-spark" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 2c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5Z"/><path d="M17.5 12c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3Z"/></svg>
+              <div class="prog-demo" aria-hidden="true">
+                <div class="pg-row">
+                  <span class="pg-name">{{ d('f.subjects.s1') }}</span>
+                  <span class="pg-bar"><span class="pg-fill" style="width:78%"></span></span>
+                  <span class="pg-score">87/100</span>
                 </div>
-                <div class="st"><span class="st-glyph">⌬</span><span class="st-name">{{ d('f.subjects.s3') }}</span></div>
+                <div class="pg-row">
+                  <span class="pg-name">{{ d('f.subjects.s2') }}</span>
+                  <span class="pg-bar"><span class="pg-fill" style="width:64%"></span></span>
+                  <span class="pg-score">72/100</span>
+                </div>
+                <div class="pg-row">
+                  <span class="pg-name">{{ d('f.subjects.s3') }}</span>
+                  <span class="pg-bar"><span class="pg-fill" style="width:91%"></span></span>
+                  <span class="pg-score">94/100</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- 03 · Файлы: широкая горизонтальная композиция -->
-          <div class="bcard b-files reveal">
+          <!-- 02 · Файлы: список материалов как в приложении -->
+          <div class="bcard reveal reveal-delay-1 reveal-scale">
             <div class="bcopy">
               <h3 class="btitle">{{ d('f.files.title') }}</h3>
               <p class="btext">{{ d('f.files.text') }}</p>
@@ -148,10 +151,11 @@
           </ul>
         </div>
 
-        <div class="split-visual reveal reveal-right">
+        <div class="split-visual sa-visual reveal reveal-right">
           <!-- Реплика страницы предмета с сайта: обложка класса, сегмент-контрол
                табов в стиле iOS (Лекции / Задания / ИИ-чат со скользящим
-               индикатором) и содержимое активного таба. -->
+               индикатором), содержимое активного таба и живой диалог с ИИ
+               предмета поверх окна. -->
           <div class="mock-window cls-win">
             <div class="cls-cover">
               <span class="cls-glyph" aria-hidden="true">Φ</span>
@@ -216,6 +220,33 @@
                   </div>
                 </div>
               </template>
+            </div>
+          </div>
+
+          <!-- Живой диалог с ИИ предмета: msg-row/msg-bubble + .ai-input-bar,
+               сообщения появляются по очереди (см. scheduleLoop) -->
+          <div class="chat-card sa-chat" aria-hidden="false">
+            <div class="chat-head">
+              <span class="chat-presence"></span>
+              <div class="chat-title">{{ d('demo.subject') }}</div>
+            </div>
+            <div class="chat-body">
+              <template v-for="(m, i) in visibleMsgs" :key="i">
+                <div :class="['msg-row', m.own ? 'user' : 'assistant']">
+                  <div v-if="!m.own" class="msg-sender">Chatra AI</div>
+                  <div class="msg-bubble">{{ m.text }}</div>
+                </div>
+              </template>
+              <div v-if="typing" class="msg-row assistant">
+                <div class="msg-sender">Chatra AI</div>
+                <div class="msg-bubble typing-bbl"><span></span><span></span><span></span></div>
+              </div>
+            </div>
+            <div class="ai-input-bar">
+              <div class="ai-textarea">{{ d('demo.placeholder') }}</div>
+              <div class="send-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+              </div>
             </div>
           </div>
         </div>
@@ -782,12 +813,12 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       }[l],
     },
     hero: {
-      title_1: { ru: 'ИИ, который знает', en: 'An AI that knows', kk: 'Әр дәрісті білетін' }[l],
-      title_2: { ru: 'каждую вашу лекцию', en: 'your every lecture', kk: 'жасанды интеллект' }[l],
+      title_1: { ru: 'Всё для учёбы.', en: 'Everything for studying.', kk: 'Барлығы оқу үшін.' }[l],
+      title_2: { ru: 'В одном месте.', en: 'In one place.', kk: 'Бір жерде.' }[l],
       sub: {
-        ru: 'Chatra отвечает на вопросы по вашим лекциям, проверяет работы и следит за дедлайнами. Всё — в одном месте.',
-        en: 'Chatra answers from your lectures, grades your work and keeps track of deadlines. All in one place.',
-        kk: 'Chatra дәрістеріңіз бойынша жауап береді, жұмыстарды тексереді және мерзімдерді қадағалайды. Барлығы бір жерде.',
+        ru: 'Лекции, задания, дедлайны и помощь с учёбой — Chatra собирает всё необходимое в одном приложении.',
+        en: 'Lectures, assignments, deadlines and study help — Chatra brings everything you need into one app.',
+        kk: 'Дәрістер, тапсырмалар, мерзімдер және оқу көмекші — Chatra барлық қажеттіні бір қосымшада жинайды.',
       }[l],
     },
     demo: {
@@ -822,15 +853,23 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         a: { ru: 'Разберём формулу на примере…', en: 'Let’s walk through the formula with an example…', kk: 'Формуланы мысалмен талдайық…' }[l],
       },
       subjects: {
-        title: { ru: 'Свой ИИ для каждого предмета', en: 'A dedicated AI for every subject', kk: 'Әр пәнге арналған жеке ЖИ' }[l],
+        title: { ru: 'Все предметы — в одном месте', en: 'Every subject in one place', kk: 'Барлық пән бір жерде' }[l],
         text: {
-          ru: 'У каждого предмета — собственный ассистент, обученный на его лекциях. Ответы опираются на ваши материалы, а не на общий интернет.',
-          en: 'Every subject gets its own assistant trained on its lectures. Answers are grounded in your materials, not the open web.',
-          kk: 'Әр пәннің өз көмекшісі бар, ол сол пәннің дәрістерінен оқытылған. Жауаптар сіздің материалдарыңызға негізделеді.',
+          ru: 'Материалы, задания и прогресс по каждому предмету — в одной аккуратной сетке с обложками.',
+          en: 'Materials, assignments and progress for every subject — in one tidy grid with covers.',
+          kk: 'Әр пәннің материалдары, тапсырмалары мен үлгерімі — мұқабалары бар бір ретте тізімінде.',
         }[l],
         s1: { ru: 'Физика', en: 'Physics', kk: 'Физика' }[l],
         s2: { ru: 'Математика', en: 'Math', kk: 'Математика' }[l],
         s3: { ru: 'Биология', en: 'Biology', kk: 'Биология' }[l],
+      },
+      prog: {
+        title: { ru: 'Прогресс как на ладони', en: 'Progress at a glance', kk: 'Үлгерім алақанда' }[l],
+        text: {
+          ru: 'Баллы, проценты успеваемости и ближайший дедлайн видны прямо на карточке предмета.',
+          en: 'Scores, performance and the next deadline are right on the subject card.',
+          kk: 'Ұпай, үлгерім пайызы және келесі мерзім — тікелей пән карточкасында.',
+        }[l],
       },
       files: {
         title: { ru: 'Лекции и файлы', en: 'Lectures & files', kk: 'Дәрістер мен файлдар' }[l],
@@ -976,6 +1015,16 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         en: 'Solid work: conclusions are backed by examples. To raise the score, tie paragraph two to week 4’s topic.',
         kk: 'Жақсы жұмыс: қорытындылар мысалдармен негізделген. Ұпайды көтеру үшін екінші абзацты 4-апта тақырыбымен байланыстырыңыз.',
       }[l],
+    },
+    hx: {
+      p1: { ru: 'Лекции', en: 'Lectures', kk: 'Дәрістер' }[l],
+      p2: { ru: 'Задания', en: 'Assignments', kk: 'Тапсырмалар' }[l],
+      p3: { ru: 'Дедлайны', en: 'Deadlines', kk: 'Мерзімдер' }[l],
+      p4: { ru: 'Помощь с учёбой', en: 'Study help', kk: 'Оқуға көмек' }[l],
+      m1: { ru: '12 материалов по физике', en: '12 materials in Physics', kk: 'Физика бойынша 12 материал' }[l],
+      m2: { ru: '3 к сдаче на этой неделе', en: '3 due this week', kk: 'Осы аптада 3 тапсыру' }[l],
+      m3: { ru: 'ближайший — в пятницу', en: 'next one on Friday', kk: 'жакыны — жұма' }[l],
+      m4: { ru: 'формулы, темы, черновики', en: 'formulas, topics, drafts', kk: 'формулалар, тақырыптар, жобалар' }[l],
     },
     grx: {
       file: { ru: 'essay_final.docx', en: 'essay_final.docx', kk: 'essay_final.docx' }[l],
@@ -1161,7 +1210,7 @@ const subjects = computed(() => [
 ])
 
 /* --- Макет страницы предмета: табы как на сайте (Лекции/Задания/ИИ-чат) --- */
-const clsTab = ref(2)
+const clsTab = ref(0)
 const activeSubject = ref(1)
 const lectures = computed(() => [
   { ru: 'Лекция 1 · Кинематика', en: 'Lecture 1 · Kinematics', kk: '1-дәріс · Кинематика' }[lang.value],
@@ -1289,13 +1338,32 @@ html.dark .grad-text{background-image:linear-gradient(115deg,#f5f5f7 15%,#86868b
 .hero-cta:hover{box-shadow:0 8px 24px rgba(var(--teal-rgb),.28)}
 .hero-cta:active{transform:scale(.97)}
 
+/* --- Коллаж предметов в hero --- */
+.hero-visual{position:relative;display:flex;justify-content:center}
+.hero-collage{position:relative;width:100%;max-width:520px}
+.hc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.hc-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px;display:flex;flex-direction:column;box-shadow:0 2px 6px rgba(0,0,0,.03),0 24px 48px -16px rgba(0,0,0,.1)}
+html.dark .hc-card{box-shadow:0 2px 6px rgba(0,0,0,.3),0 24px 48px -16px rgba(0,0,0,.5)}
+.hc-glyph{width:40px;height:40px;border-radius:12px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;color:var(--text1);position:relative}
+.hc-spark{position:absolute;right:-6px;top:-6px;color:var(--teal)}
+.hc-name{font-size:14.5px;font-weight:650;color:var(--text1);letter-spacing:-.01em;margin-top:12px}
+.hc-meta{font-size:12px;color:var(--text4);font-weight:500;margin-top:3px}
+.hc-card.on{border-color:rgba(var(--teal-rgb),.35)}
+.hc-card.on .hc-glyph{background:rgba(var(--teal-rgb),.08);border-color:rgba(var(--teal-rgb),.22);color:var(--teal)}
+.hc-chip{position:absolute;display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-md);font-size:12.5px;font-weight:600;color:var(--text1);white-space:nowrap;z-index:2}
+.hcc-ico{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.hcc-ico.green{background:rgba(74,222,128,.14);color:var(--green)}
+.hcc-ico.yellow{background:rgba(251,191,36,.16);color:var(--yellow)}
+.hc-grade{right:-22px;top:-16px}
+.hc-due{left:-26px;bottom:-18px}
+
 .chat-card{will-change:transform;width:100%;max-width:450px;background:var(--surface);border:1px solid var(--border);border-radius:30px;box-shadow:0 2px 6px rgba(0,0,0,.03),0 44px 88px -22px rgba(0,0,0,.16);overflow:hidden}
 html.dark .chat-card{box-shadow:0 2px 6px rgba(0,0,0,.3),0 44px 88px -22px rgba(0,0,0,.65)}
 .chat-head{display:flex;align-items:center;gap:9px;padding:15px 20px;border-bottom:1px solid var(--border);background:var(--glass)}
 .chat-presence{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 0 3px rgba(22,163,74,.14)}
 html.dark .chat-presence{box-shadow:0 0 0 3px rgba(74,222,128,.14)}
 .chat-title{font-size:13.5px;font-weight:650;color:var(--text1);letter-spacing:-.01em;line-height:1.25}
-.chat-body{display:flex;flex-direction:column;gap:15px;padding:20px 18px;height:420px;justify-content:flex-end}
+.chat-body{display:flex;flex-direction:column;gap:15px;padding:20px 18px;min-height:300px;justify-content:flex-end}
 .chat-body .msg-row{max-width:88%}
 .chat-body .msg-bubble{font-size:13px;padding:12px 16px}
 
@@ -1324,23 +1392,27 @@ html.dark .band::before{background:#151517}
 .kicker{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--teal);margin-bottom:14px}
 
 /* --- Bento --- */
-.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.sa-visual{position:relative;padding-bottom:84px}
+.sa-chat{position:absolute;left:-64px;bottom:-72px;width:min(350px,82%);z-index:2}
+.sa-chat .chat-body{min-height:300px;height:auto}
+.bento{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.prog-demo{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border);border-radius:22px;padding:6px 0}
+.pg-row{display:flex;align-items:center;gap:12px;padding:11px 15px}
+.pg-row + .pg-row{border-top:1px solid var(--border)}
+.pg-name{width:34%;font-size:13px;font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.pg-bar{flex:1;height:5px;border-radius:100px;background:var(--surface);border:1px solid var(--border);overflow:hidden}
+.pg-fill{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal-d),var(--teal))}
+.pg-score{font-size:12px;font-weight:600;color:var(--text3);font-variant-numeric:tabular-nums;width:46px;text-align:right}
 .bcard{position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:34px 32px;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s cubic-bezier(.22,1,.36,1),border-color .25s}
 @media (hover:hover){
   .bcard:hover{transform:translateY(-4px);box-shadow:0 24px 48px -16px rgba(0,0,0,.1);border-color:var(--border2)}
   html.dark .bcard:hover{box-shadow:0 24px 48px -16px rgba(0,0,0,.55)}
 }
 .bcard:active{transform:scale(.985)}
-.b-wide{grid-column:span 2;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:36px;align-items:center;padding:44px 40px}
 .bcopy{min-width:0}
 .btitle{font-size:21px;font-weight:700;color:var(--text1);letter-spacing:-.022em;margin-bottom:10px;line-height:1.25}
 .btext{font-size:15px;color:var(--text3);line-height:1.6;letter-spacing:-.008em}
 .bvisual{margin-top:26px;flex:1;display:flex;flex-direction:column;justify-content:flex-end}
-.b-wide .bvisual{margin-top:0}
-
-.mini-bubbles{display:flex;flex-direction:column;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:22px;padding:20px}
-.mb{max-width:85%;width:fit-content;padding:12px 16px;border-radius:18px;border-bottom-left-radius:6px;font-size:13.5px;line-height:1.5;color:var(--text1);background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-xs)}
-.mb-own{align-self:flex-end;background:linear-gradient(135deg,var(--teal),var(--teal-h));color:#fff;border:none;border-radius:18px;border-bottom-right-radius:6px;box-shadow:0 4px 14px rgba(var(--teal-rgb),.25)}
 
 .subj-tiles{display:flex;flex-direction:column;gap:9px}
 .st{display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:16px;background:var(--bg);border:1px solid var(--border)}
@@ -1367,10 +1439,6 @@ html.dark .band::before{background:#151517}
 .status-pill.late{background:var(--red-l);color:var(--red);border:1px solid rgba(248,113,113,.2)}
 .status-pill.pending{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
 
-/* --- Bento: полноширинная карточка файлов --- */
-.b-files{grid-column:span 3;display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.5fr);gap:40px;align-items:center;padding:44px 40px}
-.b-files .bvisual{margin-top:0}
-
 /* --- Тёмная секция (Chatra AI) --- */
 .band-dark{position:relative}
 .band-dark::before{content:'';position:absolute;top:0;bottom:0;left:calc(50% - 50vw);width:100vw;background:#1D1D1F;pointer-events:none}
@@ -1392,8 +1460,9 @@ html.dark .band::before{background:#151517}
 .ai-msgs{flex:1;display:flex;flex-direction:column;gap:13px;padding:20px 18px}
 .ai-win .msg-sender{color:#98989f}
 .ai-win .msg-row.assistant .msg-bubble{background:#2c2c2e;border-color:rgba(255,255,255,.08);color:#f5f5f7}
-.ai-input-dark{border-top-color:rgba(255,255,255,.07);background:#232326}
-.ai-input-dark .ai-textarea{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08);color:#98989f}
+.ai-win .ai-input-dark{border-top-color:rgba(255,255,255,.07)!important;background:#232326!important}
+.ai-win .ai-input-dark .ai-textarea{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08);color:#98989f}
+.ai-win .ai-textarea.sm{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08);color:#98989f}
 
 .math{display:inline-flex;align-items:center;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13.5px;color:#f5f5f7;background:rgba(var(--teal-rgb),.1);border:1px solid rgba(var(--teal-rgb),.22);border-radius:8px;padding:5px 9px;margin:4px 2px;line-height:1;vertical-align:middle}
 .math.plain,.math.roots{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);font-style:normal}
@@ -1404,8 +1473,8 @@ html.dark .band::before{background:#151517}
 /* --- AI Grader: бар файла, критерии, подтверждение преподавателя --- */
 .grc-card{max-width:480px}
 .gw-bar{display:flex;align-items:center;gap:6px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--glass)}
-.gw-bar span{width:9px;height:9px;border-radius:50%;background:var(--surface3);flex-shrink:0}
-.gw-file{margin-left:8px;width:auto;height:auto;background:none;border-radius:0;font-size:12px;font-weight:550;color:var(--text3)}
+.gw-bar>span:not(.gw-file){width:9px;height:9px;border-radius:50%;background:var(--surface3);flex-shrink:0}
+.gw-file{flex:1;min-width:0;margin-left:10px;text-align:left;font-size:12px;font-weight:550;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;align-self:center;line-height:1}
 .grc-criteria{padding:16px 24px 18px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:11px}
 .gc-head{font-size:11.5px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--text4)}
 .gc-row{display:flex;align-items:center;gap:12px}
@@ -1602,7 +1671,7 @@ html.dark .grc-bullet-title.warn{color:#F0A94B}
 /* --- Deadlines: единая сгруппированная поверхность в стиле iOS --- */
 .asgn-group{max-width:780px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:28px;box-shadow:0 2px 6px rgba(0,0,0,.03),0 32px 64px -24px rgba(0,0,0,.12);overflow:hidden}
 html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba(0,0,0,.6)}
-.asgn-row{position:relative;display:flex;align-items:center;gap:18px;padding:20px 26px;transition:background .15s ease,transform .1s ease-out}
+.asgn-row{position:relative;display:flex;align-items:center;gap:18px;padding:20px 26px;min-height:84px;transition:background .15s ease,transform .1s ease-out}
 @media (hover:hover){.asgn-row:hover{background:var(--glass)}}
 .asgn-row:active{transform:scale(.99)}
 .asgn-row:not(:last-child)::after{content:'';position:absolute;left:90px;right:26px;bottom:0;height:1px;background:var(--border)}
@@ -1661,9 +1730,8 @@ html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba
   .split{grid-template-columns:1fr;gap:44px}
   .split.rev .split-visual{order:-1}
   .bento{grid-template-columns:1fr 1fr}
-  .b-wide{grid-column:span 2}
-  .b-files{grid-column:span 2;grid-template-columns:1fr;padding:30px 26px;gap:26px}
   .section{padding:104px 24px}
+  .sa-chat{left:auto;right:-16px;bottom:-40px}
 }
 @media (max-width:768px){
   .lnav-inner{padding:12px 16px;gap:12px}
@@ -1673,15 +1741,18 @@ html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba
   .hero{padding:calc(var(--topbar) + 40px) 16px 72px}
   .hero-title{font-size:clamp(30px,8.6vw,38px)}
   .hero-sub{font-size:16px;margin-bottom:28px}
-  .chat-body{height:520px}
+  .sa-chat .chat-body{min-height:360px}
   .orb{filter:blur(70px)}
   .hero .orb-a{width:340px;height:340px;top:-130px;left:-130px}
   .hero .orb-b{width:280px;height:280px;bottom:-120px;right:-100px}
   .bento{grid-template-columns:1fr;gap:18px}
-  .b-wide,.b-files{grid-column:span 1}
-  .b-wide{grid-template-columns:1fr;padding:30px 26px;gap:26px}
-  .b-files{padding:30px 26px;gap:26px}
   .bcard{padding:28px 24px}
+  .sa-visual{padding-bottom:0}
+  .sa-chat{position:static;width:100%;max-width:420px;margin:24px auto 0}
+  .hc-card{padding:16px}
+  .hc-chip{max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis}
+  .hc-grade{right:-6px;top:-14px}
+  .hc-due{left:-6px;bottom:-14px}
   .ai-side{display:none}
   .ai-win{max-width:none}
   .roles-stage{grid-template-columns:1fr;gap:18px;padding-bottom:0}
