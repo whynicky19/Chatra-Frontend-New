@@ -8,29 +8,6 @@ let _loggingOut = false
 let _refreshing = false
 let _refreshQueue: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = []
 
-// Серверные сбои (5xx и обрывы сети) уводим в Sentry вручную: такие ошибки
-// обычно перехватываются try/catch в коде страниц и до глобальных хендлеров
-// не доходят. 4xx не отправляем — это штатные сценарии (валидация, права).
-// Отправляем только URL и статус, без тела ответа и заголовков.
-const captureApiError = async (e: any) => {
-  const status = e?.response?.status
-  const isServerError = !e?.response || (status >= 500 && status < 600)
-  if (!isServerError || import.meta.server) return
-  // Динамический импорт: если Sentry выключен (нет DSN), модуль просто
-  // не инициализирован и captureException ничего не отправит.
-  try {
-    const { captureException } = await import('@sentry/nuxt')
-    captureException(e, {
-      tags: { api_error: true },
-      extra: {
-        url: e?.config?.url,
-        method: e?.config?.method,
-        status: status ?? 'network_error',
-      },
-    })
-  } catch {}
-}
-
 export const resetLogoutFlag = () => { _loggingOut = false }
 
 const doLogout = () => {
@@ -64,7 +41,6 @@ export const useApi = (): AxiosInstance => {
   _api.interceptors.response.use(
     r => r,
     async (e) => {
-      await captureApiError(e)
       const original = e.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
       // Заблокированный (user_inactive) или неподтверждённый (email_not_verified)

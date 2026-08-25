@@ -2,13 +2,7 @@ export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: false },
   compatibilityDate: '2025-05-01',
-  modules: ['@pinia/nuxt', '@sentry/nuxt/module'],
-  sentry: {
-    // DSN задаётся в NUXT_PUBLIC_SENTRY_DSN; без него Sentry полностью выключен
-    // (локальная разработка ничего не отправляет).
-    debug: false,
-    sourceMapsUploadOptions: { enabled: false },
-  },
+  modules: ['@pinia/nuxt'],
   css: ['~/assets/css/main.css', 'katex/dist/katex.min.css'],
   components: [{ path: '~/components', pathPrefix: false }],
   runtimeConfig: {
@@ -17,8 +11,6 @@ export default defineNuxtConfig({
       // локальный бэкенд для разработки; в проде задаётся через переменную
       // окружения NUXT_PUBLIC_API_BASE (реальный HTTPS-домен).
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api',
-      // Публичный DSN Sentry (клиентский ключ, не секрет, но держим в env).
-      sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || '',
     },
   },
   app: {
