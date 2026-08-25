@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@pinia/nuxt": "^0.9.0",
+    "@sentry/nuxt": "^10.71.0",
     "axios": "^1.6.7",
     "docx-preview": "^0.3.7",
     "dompurify": "^3.4.11",
