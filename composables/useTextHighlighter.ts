@@ -25,21 +25,40 @@ const textNodesIn = (root: HTMLElement): Text[] => {
   return out
 }
 
-/** Абсолютное смещение граничной точки диапазона в тексте поверхности. */
-const boundaryOffset = (nodes: Text[], container: Node, offset: number): number => {
+/**
+ * Абсолютное смещение граничной точки диапазона в тексте поверхности.
+ * Возвращает null, если граница вообще не лежит в собранных текстовых узлах
+ * (например попала в плавающее меню или другой чужой узел): раньше такой
+ * случай тихо давал offset = длина всего текста, и пометка сохранялась
+ * битой — не находила себя потом ни на сайте, ни в приложении.
+ */
+const boundaryOffset = (nodes: Text[], container: Node, offset: number): number | null => {
   const point = document.createRange()
-  point.setStart(container, offset)
+  try {
+    point.setStart(container, offset)
+  } catch {
+    return null
+  }
   point.collapse(true)
 
   let total = 0
   for (const node of nodes) {
+    let cmp: number
+    try {
+      cmp = point.comparePoint(node, node.data.length)
+    } catch {
+      continue
+    }
     // Узел целиком до границы (или кончается ровно на ней) — прибавляем длину.
-    if (point.comparePoint(node, node.data.length) <= 0) { total += node.data.length; continue }
+    if (cmp <= 0) { total += node.data.length; continue }
     // Дальше граница либо внутри этого узла, либо перед ним.
     if (node === container) return total + offset
     return total
   }
-  return total
+  // Граница после всех узлов поверхности или внутри постороннего поддерева.
+  return container.nodeType === Node.TEXT_NODE && nodes.includes(container as Text)
+    ? nodes.reduce((acc, n) => acc + n.data.length, 0)
+    : null
 }
 
 export interface SerializedRange {
@@ -69,7 +88,8 @@ export const serializeRange = (root: HTMLElement, range: Range, text?: string): 
 
   const start = boundaryOffset(nodes, range.startContainer, range.startOffset)
   const end = boundaryOffset(nodes, range.endContainer, range.endOffset)
-  if (end <= start) return null
+  // null = граница вне текста поверхности (меню и т.п.) — такую пометку не сохраняем.
+  if (start == null || end == null || end <= start) return null
 
   return { start, end, text: visible, ...anchorAround(nodes, start, end) }
 }

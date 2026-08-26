@@ -333,6 +333,12 @@ const evaluateSelection = () => {
   if (!root || !sel || sel.isCollapsed || !sel.rangeCount) return false
   const range = sel.getRangeAt(0)
   if (!root.contains(range.commonAncestorContainer)) return false
+  // Граница попала в само меню выделения (раньше было возможно: меню без
+  // user-select всплывало вплотную к протяжке) — такая пометка битая, её
+  // смещения указывали бы в текст кнопок. Не сериализуем вовсе.
+  const anc = range.commonAncestorContainer
+  const ancEl = anc.nodeType === Node.ELEMENT_NODE ? anc as Element : anc.parentElement
+  if (ancEl?.closest('.hm')) return false
   const ser = serializeRange(root, range, sel.toString())
   if (!ser || !ser.text.trim()) return false
   pending.value = ser
@@ -368,12 +374,21 @@ const onContentPointerUp = (e: PointerEvent) => {
 // Длинный тап на мобильном выделяет текст уже после pointerup — ловим сам факт
 // изменения выделения, но только открываем меню (закрытие остаётся за тапом).
 let selTimer: ReturnType<typeof setTimeout> | null = null
+// Кнопка мыши/палец ещё удерживаются: меню во время активной протяжки не
+// показываем — оно всплывает вплотную к курсору, и продолжение драга цепляло
+// его текст, визуально «обрезая» выделение. Меню появится из onContentPointerUp.
+let pointerDown = false
+
+const onPointerDown = () => { pointerDown = true }
+const onPointerUp = () => { pointerDown = false }
+
 const onSelectionChange = () => {
   if (!props.context || noteOpen.value) return
   if (selTimer) clearTimeout(selTimer)
   selTimer = setTimeout(() => {
     const sel = window.getSelection()
     if (!sel || sel.isCollapsed || !sel.rangeCount) return
+    if (pointerDown) return
     evaluateSelection()
   }, 220)
 }
@@ -560,12 +575,16 @@ onMounted(() => {
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('resize', onResize)
   document.addEventListener('selectionchange', onSelectionChange)
+  document.addEventListener('pointerdown', onPointerDown, true)
+  document.addEventListener('pointerup', onPointerUp, true)
   rootEl.value?.addEventListener('scroll', onScrollCapture, true)
 })
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('resize', onResize)
   document.removeEventListener('selectionchange', onSelectionChange)
+  document.removeEventListener('pointerdown', onPointerDown, true)
+  document.removeEventListener('pointerup', onPointerUp, true)
   rootEl.value?.removeEventListener('scroll', onScrollCapture, true)
   if (resizeTimer) clearTimeout(resizeTimer)
   if (selTimer) clearTimeout(selTimer)

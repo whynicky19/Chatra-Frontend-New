@@ -115,6 +115,11 @@ const save = () => emit('save-note', draft.value.trim())
   box-shadow: 0 10px 30px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08);
   -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
   animation: hm-in .16s cubic-bezier(.22,1,.36,1);
+  /* Меню всплывает прямо над выделением ещё во время протяжки: без этого
+     продолжение драга захватывало ТЕКСТ КНОПОК меню («Заметка», «Спросить
+     AI») — нативное выделение «обрывалось», а в сохранённую пометку попадал
+     мусор из подписей. */
+  user-select: none; -webkit-user-select: none;
 }
 .hm-below { transform: translate(-50%, 10px); }
 @keyframes hm-in { from { opacity: 0; transform: translate(-50%, calc(-100% - 4px)) scale(.96); } }
