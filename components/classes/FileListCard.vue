@@ -1,7 +1,7 @@
 <template>
   <div class="flc-list">
     <a v-for="f in files" :key="f.url" href="#" class="flc-row" @click.prevent="$emit('open', f.url, f.name)">
-      <img v-if="isImageUrl(f.url)" :src="f.url" class="flc-thumb" alt="" />
+      <img v-if="isImageUrl(f.url)" :src="fixFileUrlSafe(f.url)" class="flc-thumb" alt="" />
       <div v-else class="flc-icon" :style="{ background: fileVisual(f.url).bg, color: fileVisual(f.url).color }">{{ fileVisual(f.url).label }}</div>
       <div class="flc-info">
         <div class="flc-name">{{ f.name }}</div>
@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
 import { isImageUrl, fileVisual } from '~/composables/useFileVisual'
+import { fixFileUrlSafe } from '~/composables/useFileUrl'
 
 defineProps<{ files: { url: string; name: string }[] }>()
 defineEmits<{ (e: 'open', url: string, name: string): void }>()

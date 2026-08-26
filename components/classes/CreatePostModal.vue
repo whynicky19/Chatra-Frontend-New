@@ -14,7 +14,7 @@
             <div class="modal-sub">Учебный материал для предмета</div>
           </div>
         </div>
-        <button class="modal-close" aria-label="Закрыть" @click="$emit('close')">
+        <button class="modal-close" aria-label="Закрыть" :disabled="loading" @click="loading || $emit('close')">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
@@ -32,7 +32,7 @@
         <div class="field">
           <label class="field-label">Прикрепить файлы</label>
           <div class="file-drop" :class="{ dragging: drag, 'has-file': selFiles.length }" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDrop" @click="fi?.click()">
-            <input type="file" style="display:none" ref="fi" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.ppt,.pptx" @change="onPick" />
+            <input type="file" style="display:none" ref="fi" multiple :accept="ACCEPT_ATTR" @change="onPick" />
             <div class="drop-ico">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </div>
@@ -61,7 +61,7 @@
       </div>
 
       <div class="modal-foot">
-        <button class="btn btn-white" @click="$emit('close')">Отмена</button>
+        <button class="btn btn-white" :disabled="loading" @click="$emit('close')">Отмена</button>
         <button class="btn btn-teal" :disabled="!title.trim() || loading" @click="submit">
           <div v-if="loading" class="spinner"></div>
           <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -77,6 +77,7 @@ import { ref } from 'vue'
 import { useToast } from '~/composables/useToast'
 import { usePostsSvc } from '~/services/posts'
 import { useUploadSvc } from '~/services/uploads'
+import { ACCEPT_ATTR, validateFiles } from '~/composables/useFileUploadValidation'
 
 const props = defineProps<{ classId: number }>()
 const emit = defineEmits<{ close: []; created: [p: any] }>()
@@ -103,11 +104,20 @@ const fileIcon = (f: File) => {
 const fileSize = (f: File) => f.size < 1024 * 1024 ? (f.size / 1024).toFixed(0) + ' KB' : (f.size / 1024 / 1024).toFixed(1) + ' MB'
 
 const onPick = (e: Event) => {
-  selFiles.value = [...selFiles.value, ...Array.from((e.target as HTMLInputElement).files || [])]
+  const input = e.target as HTMLInputElement
+  addFiles(Array.from(input.files || []))
+  // Сброс value: без него повторный выбор ТОГО ЖЕ файла не срабатывает —
+  // change не бросается, если путь совпал с предыдущим.
+  input.value = ''
 }
 const onDrop = (e: DragEvent) => {
   drag.value = false
-  selFiles.value = [...selFiles.value, ...Array.from(e.dataTransfer?.files || [])]
+  addFiles(Array.from(e.dataTransfer?.files || []))
+}
+const addFiles = (incoming: File[]) => {
+  const { ok, rejected } = validateFiles(incoming, { alreadySelected: selFiles.value.length })
+  for (const r of rejected) toast.err(`${r.name}: ${r.reason}`)
+  if (ok.length) selFiles.value = [...selFiles.value, ...ok]
 }
 const removeFile = (i: number) => { selFiles.value = selFiles.value.filter((_, idx) => idx !== i) }
 
@@ -188,6 +198,7 @@ const submit = async () => {
 }
 .modal-close:hover { background: var(--surface3); color: var(--text1); }
 .modal-close:active { transform: scale(.9); }
+.modal-close:disabled { opacity: .45; cursor: default; }
 
 .modal-body {
   padding: 18px 22px 24px; overflow-y: auto; flex: 1;

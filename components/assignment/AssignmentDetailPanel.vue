@@ -108,7 +108,7 @@
           <div class="field">
             <label class="field-label">{{ t('am.attach_files') }}</label>
             <div class="file-drop" :class="{ 'has-file': submittedFiles.length }" @click="fileInputEl?.click()" @dragover.prevent @drop.prevent="onDrop">
-              <input ref="fileInputEl" type="file" style="display:none" multiple @change="onFileSelect" />
+              <input ref="fileInputEl" type="file" style="display:none" multiple :accept="ACCEPT_ATTR" @change="onFileSelect" />
               <template v-if="!submittedFiles.length">
                 <div class="drop-ico">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -479,6 +479,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useFilePreview } from '~/composables/useFilePreview'
 import { scoreTone } from '~/composables/useScoreTone'
 import { extractFilesFromText, stripFilesFromText, fileNameFromUrl, withNameFragment } from '~/composables/useAttachments'
+import { validateFiles, ACCEPT_ATTR } from '~/composables/useFileUploadValidation'
 import type { Assignment, Submission } from '~/services/assignments'
 
 const props = defineProps<{ assignment: Assignment; mode: 'panel' | 'fullpage'; isTeacher?: boolean; readonly?: boolean; cohortId?: number }>()
@@ -568,7 +569,16 @@ const parsedActiveReviewReasons = computed(() => { if (!activeSub.value?.ai_revi
 
 const parseFileUrls = (raw?: string | null): string[] => {
   if (!raw) return []
-  try { const arr = JSON.parse(raw); return Array.isArray(arr) ? arr : [] } catch { return [] }
+  try {
+    const arr = JSON.parse(raw)
+    // Легаси-данные: file_urls мог сохраниться одиночной URL-строкой (не
+    // JSON-массивом) — раньше такой файл молча пропадал из списка сдачи.
+    if (Array.isArray(arr)) return arr.filter((u) => typeof u === 'string')
+    if (typeof arr === 'string') return arr ? [arr] : []
+    return []
+  } catch {
+    return raw.trim().startsWith('http') ? [raw] : []
+  }
 }
 const parsedSubmittedUrls = computed(() => parseFileUrls(mySubmission.value?.file_urls))
 const parsedActiveUrls = computed(() => parseFileUrls(activeSub.value?.file_urls))
@@ -631,15 +641,18 @@ const getEmoji = (url: string) => {
 const fileSz = (f: File) => f.size < 1048576 ? (f.size/1024).toFixed(0)+' KB' : (f.size/1048576).toFixed(1)+' MB'
 
 const clearFiles = () => { submittedFiles.value = []; uploadedUrl.value = '' }
-const clearFile = () => { submittedFiles.value = []; uploadedUrl.value = '' }
 const onDrop = (e: DragEvent) => {
-  const files = Array.from(e.dataTransfer?.files || [])
-  submittedFiles.value = [...submittedFiles.value, ...files]
+  addSubmittedFiles(Array.from(e.dataTransfer?.files || []))
 }
 const onFileSelect = (e: Event) => {
-  const files = Array.from((e.target as HTMLInputElement).files || [])
-  submittedFiles.value = [...submittedFiles.value, ...files]
-  ;(e.target as HTMLInputElement).value = ''
+  const input = e.target as HTMLInputElement
+  addSubmittedFiles(Array.from(input.files || []))
+  input.value = ''
+}
+const addSubmittedFiles = (incoming: File[]) => {
+  const { ok, rejected } = validateFiles(incoming, { alreadySelected: submittedFiles.value.length })
+  for (const r of rejected) toast.err(`${r.name}: ${r.reason}`)
+  if (ok.length) submittedFiles.value = [...submittedFiles.value, ...ok]
 }
 
 const loadSubs = async () => {
@@ -829,6 +842,9 @@ const retract = async () => {
     mySubmission.value = null
     form.value = { text: '', file: null }
     uploadedUrl.value = ''
+    // Полная очистка формы сдачи: раньше submittedFiles (уже выбранные, ещё
+    // не загруженные файлы) оставались и уезжали в следующую сдачу.
+    submittedFiles.value = []
     toast.ok(t('am.retracted'))
     emit('submitted', null)
   } catch (e: any) { toast.err(e?.response?.data?.detail || t('am.err_retract')) }

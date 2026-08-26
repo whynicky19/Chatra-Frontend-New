@@ -750,7 +750,9 @@ const lateCount = computed(() => mySubmissions.value.filter(s => s.status === 'l
 const fmtDate = (d: string) => { if (!d) return ''; try { return parseUtc(d).toLocaleDateString(lang.value === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }) } catch { return d } }
 const ATTACHMENT_LINK = /📎\s*\[([^\]]+)\]\(([^)]+)\)/g
 const getPreview = (p: any): string => { const body = getFullBody(p); const clean = body.replace(ATTACHMENT_LINK, '').replace(/(https?:\/\/[^\s]+)/g, '').replace(/\s+/g, ' ').trim(); return clean.length > 100 ? clean.slice(0, 100) + '…' : clean || (lang.value==='ru'?'Нет описания':'No description') }
-const FILE_EXT = /\.(pdf|doc|docx|txt|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|webp|md)(\?[^\s]*)?/i
+// Список синхронизирован с FILE_EXT_RE (composables/useAttachments.ts) — иначе
+// счётчик «N файлов» на карточке лекции расходился с реальным списком файлов.
+const FILE_EXT = /\.(pdf|doc|docx|txt|md|sm|ppt|pptx|xls|xlsx|csv|rtf|png|jpg|jpeg|gif|webp|bmp|svg|heic|heif|mp3|wav|m4a|webm|ogg|mp4)(\?[^\s#]*)?/i
 // Пробел в URL допустим (оригинальное имя файла в пути) — границу задают
 // кавычки/спецсимволы JSON, а не whitespace, иначе файлы с пробелом в имени
 // (напр. "Lection 1.pptx") не считались бы вложениями.

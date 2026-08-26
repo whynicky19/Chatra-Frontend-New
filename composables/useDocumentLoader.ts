@@ -58,8 +58,13 @@ export function useDocumentLoader() {
   const sheetHtml = ref('')
   const textContent = ref('')
   const convertedPdfUrl = ref('')
+  // Токен загрузки: быстрое переключение между двумя файлами раньше давало
+  // гонку — медленный ответ первого затирал sheetHtml/textContent/docxContainer
+  // второго. Устаревший ответ просто отбрасывается.
+  let loadSeq = 0
 
   const load = async (file: DocFile | null | undefined) => {
+    const seq = ++loadSeq
     errorMsg.value = ''
     sheetHtml.value = ''
     textContent.value = ''
@@ -72,11 +77,13 @@ export function useDocumentLoader() {
       loading.value = true
       try {
         const { pdf_url } = await uploadSvc.previewPdf(file.url)
+        if (seq !== loadSeq) return
         convertedPdfUrl.value = pdf_url
       } catch {
+        if (seq !== loadSeq) return
         errorMsg.value = 'Не удалось подготовить предпросмотр документа'
       } finally {
-        loading.value = false
+        if (seq === loadSeq) loading.value = false
       }
       return
     }
@@ -88,16 +95,27 @@ export function useDocumentLoader() {
       // иногда ловит условный 304 Not Modified с пустым телом — fetch() не
       // подставляет закэшированный body сам, поэтому парсинг падал на "пустом" файле.
       const res = await fetch(file.url, { cache: 'no-store' })
+      if (seq !== loadSeq) return
       if (!res.ok) throw new Error('fetch failed')
 
       if (k === 'docx') {
         const blob = await res.blob()
         await nextTick()
+        if (seq !== loadSeq) return
         if (docxContainer.value) {
           docxContainer.value.innerHTML = ''
           const { renderAsync } = await import('docx-preview')
           const isMobile = window.innerWidth <= 768
           await renderAsync(blob, docxContainer.value, undefined, { className: 'docx-view', inWrapper: false, ignoreWidth: isMobile, ignoreHeight: isMobile })
+          // docx-preview рендерит содержимое документа императивно и без
+          // санитизации (в отличие от xlsx-ветки ниже) — прогоняем результат
+          // через DOMPurify, чтобы вредоносный .docx не внедрил скрипт.
+          try {
+            const { default: DOMPurify } = await import('dompurify')
+            const sanitized = DOMPurify.sanitize(docxContainer.value.innerHTML, { ADD_ATTR: ['style'] })
+            docxContainer.value.innerHTML = sanitized
+          } catch {}
+          if (seq !== loadSeq) return
           if (isMobile) {
             loading.value = false
             await nextTick()
@@ -106,19 +124,25 @@ export function useDocumentLoader() {
         }
       } else if (k === 'sheet') {
         const buf = await res.arrayBuffer()
+        if (seq !== loadSeq) return
         const XLSX = await import('xlsx')
         const wb = XLSX.read(buf, { type: 'array' })
         const sheetName = wb.SheetNames[0]
         const sheet = wb.Sheets[sheetName]
         const { default: DOMPurify } = await import('dompurify')
-        sheetHtml.value = DOMPurify.sanitize(XLSX.utils.sheet_to_html(sheet, { editable: false }))
+        const html = DOMPurify.sanitize(XLSX.utils.sheet_to_html(sheet, { editable: false }))
+        if (seq !== loadSeq) return
+        sheetHtml.value = html
       } else if (k === 'text') {
-        textContent.value = await res.text()
+        const text = await res.text()
+        if (seq !== loadSeq) return
+        textContent.value = text
       }
     } catch {
+      if (seq !== loadSeq) return
       errorMsg.value = 'Не удалось загрузить предпросмотр файла'
     } finally {
-      loading.value = false
+      if (seq === loadSeq) loading.value = false
     }
   }
 

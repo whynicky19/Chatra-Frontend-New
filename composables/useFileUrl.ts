@@ -18,6 +18,26 @@ export const fixFileUrl = (url?: string | null): string => {
     .replace(/https?:\/\/127\.0\.0\.1:\d+/, root)
 }
 
+// Вариант для мест вне setup-контекста (обработчики событий, composables без
+// инстанса): useRuntimeConfig() там недоступен — тогда подменяем на origin
+// текущей страницы. Раньше fixFileUrl применялся только к обложкам, а
+// превью/скачивание/картинки вложений ходили по сырому localhost:8000 и не
+// грузились при открытии сайта с другой машины.
+export const fixFileUrlSafe = (url?: string | null): string => {
+  if (!url) return ''
+  try {
+    return fixFileUrl(url)
+  } catch {
+    try {
+      return url
+        .replace(/https?:\/\/localhost:\d+/, window.location.origin)
+        .replace(/https?:\/\/127\.0\.0\.1:\d+/, window.location.origin)
+    } catch {
+      return url
+    }
+  }
+}
+
 // Подписанные ссылки несут exp/sig в query, который бэкенд пересчитывает при
 // каждом запросе — путь файла при этом не меняется. Если сравнивать URL
 // целиком, любое фоновое обновление списка классов выглядело бы как "новая"

@@ -2,7 +2,7 @@
   <div class="ftg-grid">
     <a v-for="url in files" :key="url" href="#" class="ftg-tile" @click.prevent="$emit('open', url, fileNameFromUrl(url))">
       <div class="ftg-box">
-        <img v-if="isImageUrl(url)" :src="url" class="ftg-img" alt="" />
+        <img v-if="isImageUrl(url)" :src="fixFileUrlSafe(url)" class="ftg-img" alt="" />
         <div v-else class="ftg-icon" :style="{ background: fileVisual(url).bg, color: fileVisual(url).color }">{{ fileVisual(url).label }}</div>
       </div>
       <div class="ftg-name">{{ fileNameFromUrl(url) }}</div>
@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { isImageUrl, fileVisual } from '~/composables/useFileVisual'
 import { fileNameFromUrl } from '~/composables/useAttachments'
+import { fixFileUrlSafe } from '~/composables/useFileUrl'
 
 defineProps<{ files: string[] }>()
 defineEmits<{ (e: 'open', url: string, name: string): void }>()

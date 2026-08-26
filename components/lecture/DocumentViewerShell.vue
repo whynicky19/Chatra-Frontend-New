@@ -178,25 +178,47 @@ const fitPdfZoom = async (doc: any) => {
   if (width > 0 && available > 0) zoom.value = Math.min(1, +(available / width).toFixed(2))
 }
 
+// Токен загрузки PDF: повторный watch при быстрой смене файла запускал
+// параллельные getDocument — поздний resolve устаревшего документа затирал
+// pdfDoc свежего. Устаревший результат отбрасывается, а его документ
+// уничтожается (иначе pdfjs держит worker-ресурсы за каждый файл).
+let pdfLoadSeq = 0
+
+const destroyPdfDoc = () => {
+  if (pdfDoc.value) {
+    try { pdfDoc.value.destroy() } catch {}
+    pdfDoc.value = null
+  }
+}
+
 const loadPdfDoc = async (url: string) => {
+  const seq = ++pdfLoadSeq
   pdfLoading.value = true
   try {
     const pdfjsLib = await loadPdfjs()
     const doc = await pdfjsLib.getDocument({ url }).promise
+    if (seq !== pdfLoadSeq) {
+      try { doc.destroy() } catch {}
+      return
+    }
+    destroyPdfDoc()
     pdfDoc.value = doc
     pageCount.value = doc.numPages
     page.value = 1
     await nextTick()
+    if (seq !== pdfLoadSeq) return
     await fitPdfZoom(doc)
   } catch {
-    errorMsg.value = 'Не удалось загрузить предпросмотр файла'
+    if (seq === pdfLoadSeq) errorMsg.value = 'Не удалось загрузить предпросмотр файла'
   } finally {
-    pdfLoading.value = false
+    if (seq === pdfLoadSeq) pdfLoading.value = false
   }
 }
 
 watch(() => props.file?.url, async (url) => {
-  pdfDoc.value = null
+  // Инвалидируем токен ДО уничтожения: параллельная загрузка увидит смену и не перезапишет.
+  pdfLoadSeq++
+  destroyPdfDoc()
   pageCount.value = 0
   page.value = 1
   zoom.value = 1
@@ -547,6 +569,10 @@ onUnmounted(() => {
   rootEl.value?.removeEventListener('scroll', onScrollCapture, true)
   if (resizeTimer) clearTimeout(resizeTimer)
   if (selTimer) clearTimeout(selTimer)
+  // pdfjs-документы держат worker-ресурсы: без destroy() каждый открытый
+  // PDF утекал до конца жизни страницы.
+  pdfLoadSeq++
+  destroyPdfDoc()
   if (surfaceEl.value) clearMarks(surfaceEl.value)
 })
 </script>

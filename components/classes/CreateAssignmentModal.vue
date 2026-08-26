@@ -14,7 +14,7 @@
             <div class="modal-sub">Заполните данные задания</div>
           </div>
         </div>
-        <button class="modal-close" aria-label="Закрыть" @click="$emit('close')">
+        <button class="modal-close" aria-label="Закрыть" :disabled="saving" @click="saving || $emit('close')">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
@@ -33,7 +33,7 @@
         <div class="field">
           <label class="field-label">Прикрепить файлы к заданию</label>
           <div class="file-drop" :class="{ dragging: drag, 'has-file': taskFiles.length }" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDropFiles" @click="taskFileInput?.click()">
-            <input type="file" style="display:none" ref="taskFileInput" multiple @change="onPickFiles" />
+            <input type="file" style="display:none" ref="taskFileInput" multiple :accept="ACCEPT_ATTR" @change="onPickFiles" />
             <div class="drop-ico">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </div>
@@ -85,7 +85,7 @@
           <div class="file-drop" :class="{ dragging: dragRef, 'has-file': refFiles.length }"
                @dragover.prevent="dragRef=true" @dragleave="dragRef=false"
                @drop.prevent="onDropRef" @click="refFileInput?.click()">
-            <input type="file" style="display:none" ref="refFileInput" multiple @change="onPickRef" />
+            <input type="file" style="display:none" ref="refFileInput" multiple :accept="ACCEPT_ATTR" @change="onPickRef" />
             <div class="drop-ico">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </div>
@@ -139,7 +139,7 @@
       </div>
 
       <div class="modal-foot">
-        <button class="btn btn-white" @click="$emit('close')">Отмена</button>
+        <button class="btn btn-white" :disabled="saving" @click="$emit('close')">Отмена</button>
         <button class="btn btn-teal" :disabled="!canSubmit || saving" @click="submit">
           <div v-if="saving" class="spinner"></div>
           <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -156,6 +156,7 @@ import { useAssignmentsSvc } from '~/services/assignments'
 import { useUploadSvc } from '~/services/uploads'
 import { useToast } from '~/composables/useToast'
 import { withNameFragment } from '~/composables/useAttachments'
+import { ACCEPT_ATTR, validateFiles } from '~/composables/useFileUploadValidation'
 
 const emit = defineEmits(['close', 'created'])
 const props = defineProps<{ classId: number }>()
@@ -194,26 +195,36 @@ const fileSz = (f: File | null) => {
 }
 
 const onPickFiles = (e: Event) => {
-  taskFiles.value = [...taskFiles.value, ...Array.from((e.target as HTMLInputElement).files || [])]
+  const input = e.target as HTMLInputElement
+  addTaskFiles(Array.from(input.files || []))
+  // Сброс value: без него повторный выбор того же файла не срабатывает
+  // (change не бросается при совпадении пути) — как в onPickRef ниже.
+  input.value = ''
 }
 const onDropFiles = (e: DragEvent) => {
   drag.value = false
-  taskFiles.value = [...taskFiles.value, ...Array.from(e.dataTransfer?.files || [])]
+  addTaskFiles(Array.from(e.dataTransfer?.files || []))
+}
+const addTaskFiles = (incoming: File[]) => {
+  const { ok, rejected } = validateFiles(incoming, { alreadySelected: taskFiles.value.length })
+  for (const r of rejected) toast.err(`${r.name}: ${r.reason}`)
+  if (ok.length) taskFiles.value = [...taskFiles.value, ...ok]
+}
+const addRefFiles = (incoming: File[]) => {
+  const remaining = 10 - refFiles.value.length
+  if (remaining <= 0) { toast.err('Не более 10 эталонных файлов'); return }
+  const { ok, rejected } = validateFiles(incoming.slice(0, remaining), { alreadySelected: refFiles.value.length })
+  for (const r of rejected) toast.err(`${r.name}: ${r.reason}`)
+  for (const f of ok) refFiles.value.push({ name: f.name, file: f, url: '' })
 }
 const onPickRef = (e: Event) => {
-  const files = Array.from((e.target as HTMLInputElement).files || [])
-  for (const f of files) {
-    refFiles.value.push({ name: f.name, file: f, url: '' })
-  }
+  addRefFiles(Array.from((e.target as HTMLInputElement).files || []))
   // reset input so same file can be re-added if needed
   if (refFileInput.value) refFileInput.value.value = ''
 }
 const onDropRef = (e: DragEvent) => {
   dragRef.value = false
-  const files = Array.from(e.dataTransfer?.files || [])
-  for (const f of files) {
-    refFiles.value.push({ name: f.name, file: f, url: '' })
-  }
+  addRefFiles(Array.from(e.dataTransfer?.files || []))
 }
 
 const form = ref({
@@ -257,6 +268,7 @@ const submit = async () => {
         uploadIdx.value = i + 1
         uploadPct.value = Math.round(((i + 1) / taskFiles.value.length) * 100)
         const { file_url } = await uploadSvc.upload(taskFiles.value[i])
+        if (!file_url) throw new Error('upload_failed')
         // Оригинальное имя — во фрагменте URL (единый формат с приложением);
         // клиенты скрывают эти строки при отображении описания
         urls.push(withNameFragment(file_url, taskFiles.value[i].name))
@@ -275,6 +287,7 @@ const submit = async () => {
           resolvedRefUrls.push(rf.url)
         } else if (rf.file) {
           const { file_url } = await uploadSvc.upload(rf.file)
+          if (!file_url) throw new Error('upload_failed')
           resolvedRefUrls.push(file_url)
         }
       }
@@ -350,6 +363,7 @@ const submit = async () => {
 }
 .modal-close:hover { background: var(--surface3); color: var(--text1); }
 .modal-close:active { transform: scale(.9); }
+.modal-close:disabled { opacity: .45; cursor: default; }
 
 .modal-body {
   padding: 18px 22px 24px; overflow-y: auto; flex: 1;

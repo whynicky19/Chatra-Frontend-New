@@ -6,7 +6,10 @@
 // пробелом в оригинальном имени файла (легаси-данные, см. SIGNED_UPLOAD_URL_RE
 // ниже) обрывает совпадение и хвост "имени" остаётся сырым текстом.
 const MD_FILE_RE = /📎\s*\[([^\]\n]+)\]\((https?:\/\/[^)\n]+)\)/g
-const FILE_EXT_RE = /\.(pdf|doc|docx|txt|md|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|webp)(\?[^\s#]*)?$/i
+// Список синхронизирован с ALLOWED_EXTENSIONS бэкенда (routers/uploads.py) и
+// kindOf() из useDocumentLoader.ts: раньше zip/mp4/csv/heic не распознавались
+// как вложения в тексте описания и выпадали из списка файлов.
+const FILE_EXT_RE = /\.(pdf|doc|docx|txt|md|sm|ppt|pptx|xls|xlsx|csv|rtf|png|jpg|jpeg|gif|webp|bmp|svg|heic|heif|mp3|wav|m4a|webm|ogg|mp4)(\?[^\s#]*)?$/i
 const URL_RE = /(https?:\/\/[^\s\n"'<>]+)/g
 // Легаси-данные (до фикса пробела в services/uploads.ts): бэкенд кладёт
 // оригинальное имя файла прямо в путь URL, из-за чего в тексте описания мог
