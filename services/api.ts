@@ -113,13 +113,17 @@ export const useApi = (): AxiosInstance => {
 
         original.headers.Authorization = `Bearer ${data.access_token}`
         return _api!.request(original)
-      } catch (refreshErr) {
+      } catch (refreshErr: any) {
         // Иначе запросы, вставшие в очередь пока шёл refresh, зависали бы
         // навсегда (их промис никогда не resolve/reject) — бесконечный
         // спиннер, хотя пользователя уже увело на /login через doLogout().
         _refreshQueue.forEach(q => q.reject(refreshErr))
         _refreshQueue = []
-        doLogout()
+        // Разлогин только по вердикту сервера: 401/403 на сам refresh —
+        // токен реально отозван/протух. Сетевой сбой, таймаут или 5xx —
+        // не повод рвать сессию: следующий запрос повторит refresh.
+        const st = refreshErr?.response?.status
+        if (st === 401 || st === 403) doLogout()
         return Promise.reject(e)
       } finally {
         _refreshing = false

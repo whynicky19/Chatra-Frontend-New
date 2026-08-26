@@ -128,6 +128,8 @@ const submit = async () => {
 
 const generateCover = async () => {
   if (!created.value || generating.value) return   // защита от двойного клика
+  const prevImage = created.value.cover_image
+  const prevSource = created.value.cover_source
   generating.value = true
   coverError.value = null
   try {
@@ -136,16 +138,33 @@ const generateCover = async () => {
     emit('cover', created.value)
   } catch (e: any) {
     const detail = e?.response?.data?.detail
-    coverError.value = detail === 'too_many_cover_generations'
-      ? 'Слишком много генераций подряд — попробуйте позже.'
-      : 'Не удалось сгенерировать обложку. Обложка по умолчанию уже сохранена.'
+    if (detail === 'too_many_cover_generations') {
+      coverError.value = 'Слишком много генераций подряд — попробуйте позже.'
+      return
+    }
+    // 409 «генерация уже идёт» или обрыв связи: сервер всё равно дорисует и
+    // сохранит — ждём результат, а не показываем ложную ошибку.
+    const recoverable = detail === 'cover_generation_in_progress'
+      || e?.response == null || (e?.response?.status ?? 0) >= 500
+    if (!recoverable) {
+      coverError.value = 'Не удалось сгенерировать обложку. Обложка по умолчанию уже сохранена.'
+      return
+    }
+    const recovered = await classesSvc.awaitPendingCover(created.value.id, prevImage, prevSource)
+    if (recovered) {
+      created.value = { ...created.value, ...recovered } as ClassResponse
+      emit('cover', created.value)
+    } else {
+      coverError.value = 'Не удалось сгенерировать обложку. Обложка по умолчанию уже сохранена.'
+    }
   } finally {
     generating.value = false
   }
 }
 
 const close = () => {
-  if (generating.value) return   // не бросаем запрос генерации на полпути
+  // Закрывать можно и во время генерации: POST уже отправлен, сервер
+  // дорисует и сохранит обложку сам, карточка подхватит её при обновлении.
   emit('close')
 }
 </script>

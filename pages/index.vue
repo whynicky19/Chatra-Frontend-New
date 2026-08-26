@@ -403,6 +403,8 @@ const openEditClass = async (cls: any) => {
 
 const regenerateCover = async () => {
   if (!editingClass.value || coverGenerating.value) return   // защита от двойного клика
+  const prevImage = editForm.value.cover_image
+  const prevSource = editForm.value.cover_source
   coverGenerating.value = true
   coverError.value = null
   try {
@@ -410,22 +412,47 @@ const regenerateCover = async () => {
       editingClass.value.id, editForm.value.cover_color, editForm.value.cover_icon,
     )
     await preloadImage(res.cover_image)
-    editForm.value.cover_image = res.cover_image || ''
-    editForm.value.cover_source = res.cover_source
-    // Карточка в списке должна обновиться сразу, не дожидаясь «Сохранить»:
-    // обложка на сервере уже заменена.
-    classesStore.upsert({ ...editingClass.value, ...res })
+    applyCoverResult(res)
   } catch (e: any) {
-    coverError.value = e?.response?.data?.detail === 'too_many_cover_generations'
-      ? (lang.value === 'ru' ? 'Слишком много генераций подряд — попробуйте позже.'
+    const detail = e?.response?.data?.detail
+    if (detail === 'too_many_cover_generations') {
+      coverError.value = lang.value === 'ru' ? 'Слишком много генераций подряд — попробуйте позже.'
         : lang.value === 'kk' ? 'Тым көп жасау әрекеті — кейінірек көріңіз.'
-        : 'Too many generations in a row — try again later.')
-      : (lang.value === 'ru' ? 'Не удалось сгенерировать обложку. Прежняя обложка сохранена.'
+        : 'Too many generations in a row — try again later.'
+      return
+    }
+    // 409 «генерация уже идёт» или обрыв связи/таймаут прокси: сервер всё
+    // равно дорисует и сохранит — ждём результат, а не показываем ложную
+    // ошибку «преждняя обложка сохранена».
+    const recoverable = detail === 'cover_generation_in_progress'
+      || e?.response == null || (e?.response?.status ?? 0) >= 500
+    if (!recoverable) {
+      coverError.value = lang.value === 'ru' ? 'Не удалось сгенерировать обложку. Прежняя обложка сохранена.'
         : lang.value === 'kk' ? 'Мұқаба жасалмады. Алдыңғы мұқаба сақталды.'
-        : 'Could not generate the cover. The previous one is kept.')
+        : 'Could not generate the cover. The previous one is kept.'
+      return
+    }
+    const recovered = await classesSvc.awaitPendingCover(editingClass.value.id, prevImage, prevSource)
+    if (recovered) {
+      await preloadImage(recovered.cover_image)
+      applyCoverResult(recovered)
+    } else {
+      coverError.value = lang.value === 'ru' ? 'Не удалось сгенерировать обложку. Прежняя обложка сохранена.'
+        : lang.value === 'kk' ? 'Мұқаба жасалмады. Алдыңғы мұқаба сақталды.'
+        : 'Could not generate the cover. The previous one is kept.'
+    }
   } finally {
     coverGenerating.value = false
   }
+}
+
+const applyCoverResult = (res: any) => {
+  if (!editingClass.value) return
+  editForm.value.cover_image = res.cover_image || ''
+  editForm.value.cover_source = res.cover_source
+  // Карточка в списке должна обновиться сразу, не дожидаясь «Сохранить»:
+  // обложка на сервере уже заменена.
+  classesStore.upsert({ ...editingClass.value, ...res })
 }
 
 // Загруженная обложка приходит с сервера по новому URL (файл только что

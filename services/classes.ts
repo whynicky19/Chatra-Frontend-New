@@ -142,6 +142,41 @@ export const useClassesSvc = () => {
       const { data } = await api.post(`/classes/${classId}/cover/generate`, { color, icon })
       return data
     },
+    // Ждёт завершения УЖЕ ИДУЩЕЙ генерации: сервер на повторный запрос
+    // отвечает 409 cover_generation_in_progress (а при обрыве соединения и
+    // подавно продолжает дорисовывать сам) — результат появится в БД, хотя
+    // сам POST упал. Опрашиваем класс, пока не придёт новая картинка
+    // относительно [prevImage]/[prevSource], либо до таймаута (~160 c).
+    awaitPendingCover: async (
+      classId: number,
+      prevImage?: string | null,
+      prevSource?: string | null,
+    ): Promise<{
+      cover_image: string | null
+      cover_thumbnail: string | null
+      cover_color: string | null
+      cover_icon: string | null
+      cover_source: string | null
+    } | null> => {
+      for (let i = 0; i < 40; i++) {
+        await new Promise(r => setTimeout(r, 4000))
+        try {
+          const { data } = await api.get(`/classes/${classId}`)
+          const img = data?.cover_image || ''
+          const src = data?.cover_source || ''
+          if (src && img && (img !== (prevImage || '') || src !== (prevSource || ''))) {
+            return {
+              cover_image: data.cover_image,
+              cover_thumbnail: data.cover_thumbnail,
+              cover_color: data.cover_color,
+              cover_icon: data.cover_icon,
+              cover_source: data.cover_source,
+            }
+          }
+        } catch { /* одиночный сбой опроса не повод бросать ожидание */ }
+      }
+      return null
+    },
     // Перегенерация инвайт-кода — только владелец класса / админ.
     // Старый код перестаёт работать, возвращается новый.
     regenerateCode: async (classId: number): Promise<string> => {
