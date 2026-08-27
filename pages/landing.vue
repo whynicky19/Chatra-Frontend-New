@@ -166,7 +166,7 @@
               <svg class="cls-spark" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 2c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5Z"/><path d="M17.5 12c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3Z"/></svg>
             </div>
             <div class="tabs-bar">
-              <div class="tabs-indicator" :style="{ transform: `translateX(calc(100% * ${clsTab}))` }"></div>
+              <div ref="tabsIndicatorEl" class="tabs-indicator"></div>
               <button :class="['tab-btn', { active: clsTab === 0 }]" @click="clsTab = 0">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
                 {{ d('sa.tab_lectures') }} <span class="tab-num">12</span>
@@ -442,7 +442,7 @@
             <div class="grc-hero">
               <div class="grc-hero-wash" aria-hidden="true"></div>
               <div class="grc-hero-inner">
-                <template v-if="graderShown"><ScoreRing :score="87" :max-score="100"/></template>
+                <ScoreRing :score="87" :max-score="100"/>
                 <div class="grc-verdict">{{ d('gr.verdict') }}</div>
                 <div class="grc-by-badge">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -649,92 +649,104 @@
           </div>
 
           <div class="cal-col-right reveal reveal-right">
-            <div class="asgn-group">
-          <div class="asgn-row">
-            <div class="asgn-ico">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            </div>
-            <div class="asgn-main">
-              <div class="asgn-title">{{ d('dl.item1_t') }}</div>
-              <div class="asgn-meta">
-                <span class="meta-due soon">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  {{ d('dl.item1_due') }}
-                </span>
-                <span class="meta-sep" aria-hidden="true"></span>
-                <span class="meta-score">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-                  {{ d('dl.item1_score') }}
-                </span>
+            <div class="asgn-list">
+              <div class="asgn-card accent-blue">
+                <div class="asgn-accent"></div>
+                <div class="asgn-ico-wrap ico-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <div class="asgn-main">
+                  <div class="asgn-title">{{ d('dl.item1_t') }}</div>
+                  <div class="asgn-meta">
+                    <span class="meta-due soon">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      {{ d('dl.item1_due') }}
+                    </span>
+                    <span class="meta-sep" aria-hidden="true"></span>
+                    <span class="meta-score">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                      {{ d('dl.item1_score') }}
+                    </span>
+                  </div>
+                </div>
+                <div class="asgn-status-wrap">
+                  <div class="status-pill pending">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    {{ d('dl.st_pending') }}
+                  </div>
+                  <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
               </div>
-            </div>
-            <div class="status-pill pending">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              {{ d('dl.st_pending') }}
-            </div>
-            <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
 
-          <div class="asgn-row">
-            <div class="asgn-ico">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            </div>
-            <div class="asgn-main">
-              <div class="asgn-title">{{ d('dl.item2_t') }}</div>
-              <div class="asgn-meta">
-                <span class="meta-score">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-                  {{ d('dl.item2_score') }}
-                </span>
+              <div class="asgn-card accent-purple">
+                <div class="asgn-accent"></div>
+                <div class="asgn-ico-wrap ico-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <div class="asgn-main">
+                  <div class="asgn-title">{{ d('dl.item2_t') }}</div>
+                  <div class="asgn-meta">
+                    <span class="meta-score">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                      {{ d('dl.item2_score') }}
+                    </span>
+                  </div>
+                </div>
+                <div class="asgn-status-wrap">
+                  <div class="status-pill grading">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    {{ d('dl.st_grading') }}
+                  </div>
+                  <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
               </div>
-            </div>
-            <div class="status-pill grading">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              {{ d('dl.st_grading') }}
-            </div>
-            <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
 
-          <div class="asgn-row">
-            <div class="asgn-ico">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            </div>
-            <div class="asgn-main">
-              <div class="asgn-title">{{ d('dl.item3_t') }}</div>
-              <div class="asgn-meta">
-                <span class="meta-score">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-                  {{ d('dl.item3_score') }}
-                </span>
+              <div class="asgn-card accent-green">
+                <div class="asgn-accent"></div>
+                <div class="asgn-ico-wrap ico-green">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <div class="asgn-main">
+                  <div class="asgn-title">{{ d('dl.item3_t') }}</div>
+                  <div class="asgn-meta">
+                    <span class="meta-score">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                      {{ d('dl.item3_score') }}
+                    </span>
+                  </div>
+                </div>
+                <div class="asgn-status-wrap">
+                  <div class="status-pill graded">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    87/100
+                  </div>
+                  <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
               </div>
-            </div>
-            <div class="status-pill graded">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              87/100
-            </div>
-            <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
 
-          <div class="asgn-row">
-            <div class="asgn-ico overdue">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            </div>
-            <div class="asgn-main">
-              <div class="asgn-title">{{ d('dl.item4_t') }}</div>
-              <div class="asgn-meta">
-                <span class="meta-due overdue">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  {{ d('dl.item4_due') }}
-                </span>
+              <div class="asgn-card accent-red">
+                <div class="asgn-accent"></div>
+                <div class="asgn-ico-wrap ico-red">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <div class="asgn-main">
+                  <div class="asgn-title">{{ d('dl.item4_t') }}</div>
+                  <div class="asgn-meta">
+                    <span class="meta-due overdue">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      {{ d('dl.item4_due') }}
+                    </span>
+                  </div>
+                </div>
+                <div class="asgn-status-wrap">
+                  <div class="status-pill late">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    {{ d('dl.st_late') }}
+                  </div>
+                  <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
               </div>
             </div>
-            <div class="status-pill late">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              {{ d('dl.st_late') }}
-            </div>
-            <svg class="asgn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          </div>
 
             <!-- Реплика AssignmentDetailPanel: сдача работы файлом
                  с комментарием и статусом до дедлайна -->
@@ -821,9 +833,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from '~/composables/useI18n'
 import { useOrgStore, applyOrgTheme } from '~/stores/org.store'
+import { createSpring, createReducedMotionSpring, type SpringHandle } from '~/composables/useSpring'
+import { useReducedMotion } from '~/composables/useReducedMotion'
 
 definePageMeta({ layout: false })
 useHead({ title: 'Chatra - AI for Education' })
@@ -1210,16 +1224,62 @@ const langs = [
   { code: 'kk' as const, label: 'KZ' },
 ]
 
+/* --- Реактивные accessibility-флаги (§14 Reduced motion) --- */
+const { reducedMotion } = useReducedMotion()
+
 /* --- Навигационная шапка: hairline-граница появляется только при скролле --- */
 const scrolled = ref(false)
 const heroShift = ref(0)
 let scrollRaf = 0
+let lastScrollTop = 0
+let lastScrollT = 0
+
+/* Velocity-aware параллакс (§3, §5): не просто `top * k`, а критически
+   демпфированная "погоня" за таргетом с остаточной velocity от
+   пользовательского скролла. Это даёт правильное ощущение инерции —
+   при быстрой прокрутке коллаж чуть отстаёт и догоняет, при медленной
+   просто следует за пальцем. */
+let heroShiftVel = 0
+let heroShiftRaf = 0
+const tickHeroShift = (targetVal: number) => {
+  cancelAnimationFrame(heroShiftRaf)
+  const step = () => {
+    const dt = 1 / 60
+    // damping 1.0, response 0.4 → stiffness ≈ 6.25, coeff ≈ 5
+    const k = 6.25
+    const c = 5
+    const accel = -k * (heroShift.value - targetVal) - c * heroShiftVel
+    heroShiftVel += accel * dt
+    heroShift.value = Math.max(0, heroShift.value + heroShiftVel * dt)
+    if (Math.abs(heroShift.value - targetVal) < 0.05 && Math.abs(heroShiftVel) < 0.05) {
+      heroShift.value = targetVal
+      heroShiftVel = 0
+      return
+    }
+    heroShiftRaf = requestAnimationFrame(step)
+  }
+  step()
+}
+
 const onScroll = (e: Event) => {
   if (scrollRaf) return
   scrollRaf = requestAnimationFrame(() => {
-    const top = (e.target as HTMLElement).scrollTop
+    const target = e.target as HTMLElement
+    const now = performance.now()
+    const top = target.scrollTop
     scrolled.value = top > 8
-    if (!reducedMotion) heroShift.value = Math.max(0, Math.min(top, 900))
+    if (!reducedMotion.value) {
+      const dt = Math.max(1, now - lastScrollT)
+      const instVel = (top - lastScrollTop) / (dt / 1000)
+      // Передаём пользовательскую velocity в текущую spring'овую позицию —
+      // на быстром прокручивании вниз коллаж "убегает" чуть вперёд.
+      heroShiftVel = heroShiftVel * 0.5 + instVel * 0.06 * 0.5
+      lastScrollTop = top
+      lastScrollT = now
+      tickHeroShift(Math.max(0, Math.min(top, 900)) * 0.06)
+    } else {
+      heroShift.value = Math.max(0, Math.min(top, 900)) * 0.06
+    }
     scrollRaf = 0
   })
 }
@@ -1232,8 +1292,6 @@ const toTop = () => {
 const visibleCount = ref(0)
 const typing = ref(false)
 let timers: ReturnType<typeof setTimeout>[] = []
-const reducedMotion = typeof window !== 'undefined'
-  && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 const scheduleLoop = () => {
   const clearAll = () => { timers.forEach(clearTimeout); timers = [] }
@@ -1255,6 +1313,66 @@ const scheduleLoop = () => {
   }
   run()
   return () => { cancelled = true; clearAll() }
+}
+
+/* --- Reveal-логика: CSS-transition через класс .revealed (§1) ---
+   Стили: .reveal { opacity: 0; transform: translateY(12px); } +
+   .reveal.revealed { opacity: 1; transform: none; transition: .55s; }
+   IntersectionObserver ставит .revealed на видимых элементах —
+   это сохраняет быстрый скролл (CSS-transition дешевле JS-spring). */
+let revealObserver: IntersectionObserver | null = null
+
+/* --- Hover-микро-motion через JS spring (§4, §1) ---
+   Применяем ко всем CTA / карточкам, которые пользователь может
+   "потрогать". При pointerenter запускаем spring вверх (y -4, scale 1.005),
+   при pointerleave — обратно. На touch-устройствах (hover: none) — не
+   навешиваем, чтобы не было "застрявшего" состояния после тапа. */
+let hoverSprings: SpringHandle[] = []
+const setupHoverSpring = (
+  selector: string,
+  hover: { y: number; scale: number },
+  press: { scale: number } = { scale: 0.97 },
+) => {
+  if (reducedMotion.value) return
+  if (typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches) return
+  document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+    let mode: 'idle' | 'hover' | 'press' = 'idle'
+    const animateTo = (targetY: number, targetS: number) => {
+      const h = createSpring({
+        from: 0,
+        to: 1,
+        damping: 1.0,
+        response: 0.28,
+        onUpdate: (p) => {
+          // читаем текущее значение через presentation-значения,
+          // иначе при быстром enter/leave будет jump
+          el.style.transform = `translateY(${(1 - p) * 0 + p * targetY}px) scale(${1 + (p * (targetS - 1))})`
+        },
+        onRest: () => {
+          if (mode === 'idle') {
+            el.style.transform = ''
+          }
+        },
+      })
+      hoverSprings.push(h)
+    }
+    el.addEventListener('pointerenter', () => {
+      mode = 'hover'
+      animateTo(hover.y, hover.scale)
+    })
+    el.addEventListener('pointerleave', () => {
+      mode = 'idle'
+      animateTo(0, 1)
+    })
+    el.addEventListener('pointerdown', () => {
+      mode = 'press'
+      animateTo(hover.y, press.scale)
+    })
+    el.addEventListener('pointerup', () => {
+      mode = 'hover'
+      animateTo(hover.y, hover.scale)
+    })
+  })
 }
 
 /* --- Демо-диалог ИИ предмета (показывается в табе «ИИ-чат») --- */
@@ -1305,50 +1423,351 @@ const grCrits = computed(() => [
 /* --- Секция AI Grader: ScoreRing монтируем только когда карточка видна,
        чтобы счётчик «набегал» на глазах у пользователя --- */
 const graderSection = ref<HTMLElement | null>(null)
-const graderShown = ref(reducedMotion)
+const graderShown = ref(reducedMotion.value)
 let graderObserver: IntersectionObserver | null = null
 
-/* Локальный reveal-обзервер. Глобальный плагин (plugins/animations.client.ts)
-   наблюдает .reveal по router.afterEach +80ms, но при клиентской навигации
-   с page transition (out-in) DOM этой страницы монтируется позже — observe
-   находил ноль элементов, и все секции оставались с opacity:0. Поэтому
-   лендинг наблюдает свои .reveal самостоятельно в onMounted. */
-let revealObserver: IntersectionObserver | null = null
+/* --- Tabs-indicator в Subject AI: spring с velocity handoff (§3, §5) ---
+   Читаем presentation-значение (текущий translateX) перед сменой таргета,
+   чтобы при быстром переключении 0→2 индикатор не прыгал через 1,
+   а плавно догонял. */
+const tabsIndicatorEl = ref<HTMLElement | null>(null)
+let tabsIndicatorSpring: SpringHandle | null = null
+
+const ensureTabsIndicatorSpring = () => {
+  if (tabsIndicatorSpring || reducedMotion.value) return
+  if (!tabsIndicatorEl.value) return
+  // Читаем текущее presentation-значение из inline-transform, не из логики.
+  const m = new DOMMatrixReadOnly(getComputedStyle(tabsIndicatorEl.value).transform || 'none')
+  const currentTx = m.m41
+  tabsIndicatorSpring = createSpring({
+    from: currentTx,
+    to: currentTx,
+    damping: 1.0,
+    response: 0.32,
+    onUpdate: (v) => {
+      if (tabsIndicatorEl.value) tabsIndicatorEl.value.style.transform = `translateX(${v}px)`
+    },
+  })
+}
+
+watch(clsTab, (n) => {
+  ensureTabsIndicatorSpring()
+  if (reducedMotion.value) {
+    if (tabsIndicatorEl.value) tabsIndicatorEl.value.style.transform = `translateX(calc(100% * ${n}))`
+    return
+  }
+  // Прежде чем перенацелить — синхронизировать "from" с presentation,
+  // чтобы при быстром повторном клике не было скачка.
+  if (tabsIndicatorEl.value && tabsIndicatorSpring) {
+    const m = new DOMMatrixReadOnly(getComputedStyle(tabsIndicatorEl.value).transform || 'none')
+    tabsIndicatorSpring.jumpTo(m.m41)
+  }
+  nextTick(() => {
+    if (!tabsIndicatorEl.value) return
+    const parent = tabsIndicatorEl.value.parentElement
+    if (!parent) return
+    const targetPx = (parent.clientWidth - 6) / 3 * n
+    tabsIndicatorSpring?.set(targetPx)
+  })
+})
+
+/* --- Tabs-indicator в Subject AI: spring с velocity handoff (§3, §5) --- */
 
 const visibleMsgs = computed(() => dict.value.msgs.slice(0, visibleCount.value))
 let stopChat: (() => void) | null = null
 
+/* --- Bento progress bars (pg-fill) и AI Grader criteria (gc-fill):
+       при попадании в viewport заполняются spring'ом с разной скоростью. --- */
+const fillSprings: SpringHandle[] = []
+const miscSprings: SpringHandle[] = []
+
+const animateBar = (el: HTMLElement, target: number, delay: number) => {
+  const start = () => {
+    if (reducedMotion.value) {
+      el.style.width = `${target}%`
+      return
+    }
+    el.style.width = '0%'
+    const h = createSpring({
+      from: 0,
+      to: target,
+      damping: 0.85,
+      response: 0.6,
+      onUpdate: (v) => { el.style.width = `${v}%` },
+    })
+    fillSprings.push(h)
+  }
+  if (delay > 0) setTimeout(start, delay)
+  else start()
+}
+
 onMounted(() => {
-  if (!reducedMotion) stopChat = scheduleLoop()
+  if (!reducedMotion.value) stopChat = scheduleLoop()
 
   const root = document.querySelector('.landing')
   if (root) {
-    const els = root.querySelectorAll('.reveal')
-    if (reducedMotion) {
-      els.forEach(el => el.classList.add('revealed'))
+    const els = root.querySelectorAll<HTMLElement>('.reveal')
+    if (reducedMotion.value) {
+      els.forEach((el) => el.classList.add('revealed'))
     } else {
       revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
+        entries.forEach((e) => {
           if (e.isIntersecting) {
             e.target.classList.add('revealed')
             revealObserver?.unobserve(e.target)
           }
         })
       }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' })
-      els.forEach(el => revealObserver!.observe(el))
+      els.forEach((el) => revealObserver!.observe(el))
     }
   }
 
   if (!graderShown.value && graderSection.value) {
     graderObserver = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
+      entries.forEach((e) => {
         if (e.isIntersecting) { graderShown.value = true; graderObserver?.disconnect() }
       })
     }, { threshold: 0.25 })
     graderObserver.observe(graderSection.value)
   }
+
+  /* Bento progress bars: при первом попадании в viewport — spring-fill
+     с stagger между строками. */
+  const pgBars = Array.from(document.querySelectorAll<HTMLElement>('.pg-fill'))
+  if (pgBars.length) {
+    if (reducedMotion.value) {
+      pgBars.forEach((el) => {
+          const target = parseFloat(el.dataset.target ?? el.style.width ?? '0') || 0
+        el.style.width = target ? `${target}%` : ''
+      })
+    } else {
+      pgBars.forEach((el) => {
+        const orig = el.style.width
+        if (!orig) return
+        el.dataset.target = orig
+        el.style.width = '0%'
+      })
+      const pgObserver = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            const target = parseFloat((e.target as HTMLElement).dataset.target ?? '0')
+            const sibs = Array.from((e.target as HTMLElement).parentElement?.parentElement?.querySelectorAll('.pg-fill') ?? [])
+            const idx = sibs.indexOf(e.target)
+            animateBar(e.target as HTMLElement, target, idx * 110)
+            pgObserver.unobserve(e.target)
+          }
+        })
+      }, { threshold: 0.3 })
+      pgBars.forEach((el) => pgObserver.observe(el))
+    }
+  }
+
+  /* AI Grader criteria bars: spring-fill со stagger. Стратегия: даём
+     каждому .gc-fill финальную ширину через inline-style (graderShown
+     → true когда секция в viewport), а observer запускает лёгкий
+     spring-pulse от 0 → final для драматичного «добегания». */
+  const gcBars = Array.from(document.querySelectorAll<HTMLElement>('.gc-fill'))
+  if (gcBars.length) {
+    const gcObserver = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          const el = e.target as HTMLElement
+          const sibs = Array.from(el.parentElement?.parentElement?.querySelectorAll('.gc-fill') ?? [])
+          const idx = sibs.indexOf(el)
+          // Текущая inline-ширина — финальная (graderShown=true поставил её)
+          const finalPct = parseFloat(el.style.width) || 0
+          if (finalPct === 0) {
+            gcObserver.unobserve(el)
+            return
+          }
+          if (reducedMotion.value) {
+            gcObserver.unobserve(el)
+            return
+          }
+          // Сбросить до 0 и пружинить обратно — даёт ощущение «заполняется на глазах»
+          el.style.width = '0%'
+          const start = () => {
+            animateBar(el, finalPct, 0)
+          }
+          // Небольшая задержка, чтобы анимация «сообщила о начале»
+          setTimeout(start, Math.min(idx * 130, 400))
+          gcObserver.unobserve(el)
+        }
+      })
+    }, { threshold: 0.4 })
+    gcBars.forEach((el) => gcObserver.observe(el))
+  }
+
+  /* HighlightMenu (.hm): material-появление со spring scale (§12).
+     При попадании в viewport — materialize, не просто fade. */
+  const hms = Array.from(document.querySelectorAll<HTMLElement>('.hm'))
+  if (hms.length) {
+    const hmObserver = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          const el = e.target as HTMLElement
+          el.style.opacity = '0'
+          el.style.transformOrigin = '50% 100%'
+          if (reducedMotion.value) {
+            el.style.opacity = '1'
+          } else {
+            const h = createSpring({
+              from: 0,
+              to: 1,
+              damping: 0.85,
+              response: 0.4,
+              onUpdate: (p) => {
+                el.style.opacity = String(p)
+                el.style.transform = `translate(-50%, calc(-44px - ${(1 - p) * 6}px)) scale(${0.85 + p * 0.15})`
+              },
+              onRest: () => {
+                el.style.transform = ''
+                el.style.willChange = ''
+              },
+            })
+            miscSprings.push(h)
+          }
+          hmObserver.unobserve(el)
+        }
+      })
+    }, { threshold: 0.5 })
+    hms.forEach((el) => hmObserver.observe(el))
+  }
+
+  /* Join-code digits (.jd): появление по очереди, spring scale.
+     "Набираются" как код из SMS, после последней цифры — .jc-found. */
+  const jcCard = document.querySelector<HTMLElement>('.jc-card')
+  if (jcCard) {
+    const jcObserver = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          const digits = Array.from(jcCard.querySelectorAll<HTMLElement>('.jd'))
+          digits.forEach((d, i) => {
+            d.style.opacity = '0'
+            d.style.transform = 'translateY(8px) scale(.92)'
+            const start = () => {
+              if (reducedMotion.value) {
+                d.style.opacity = '1'
+                d.style.transform = ''
+                return
+              }
+              const h = createSpring({
+                from: 0,
+                to: 1,
+                damping: 0.85,
+                response: 0.3,
+                onUpdate: (p) => {
+                  d.style.opacity = String(p)
+                  d.style.transform = `translateY(${(1 - p) * 8}px) scale(${0.92 + p * 0.08})`
+                },
+                onRest: () => {
+                  d.style.transform = ''
+                },
+              })
+              miscSprings.push(h)
+            }
+            setTimeout(start, i * 60)
+          })
+          const found = jcCard.querySelector<HTMLElement>('.jc-found')
+          if (found) {
+            found.style.opacity = '0'
+            found.style.transform = 'translateY(10px)'
+            const startFound = () => {
+              if (reducedMotion.value) {
+                found.style.opacity = '1'
+                found.style.transform = ''
+                return
+              }
+              const h = createSpring({
+                from: 0,
+                to: 1,
+                damping: 1.0,
+                response: 0.4,
+                onUpdate: (p) => {
+                  found.style.opacity = String(p)
+                  found.style.transform = `translateY(${(1 - p) * 10}px)`
+                },
+                onRest: () => {
+                  found.style.transform = ''
+                },
+              })
+              miscSprings.push(h)
+            }
+            setTimeout(startFound, digits.length * 60 + 250)
+          }
+          jcObserver.unobserve(jcCard)
+        }
+      })
+    }, { threshold: 0.3 })
+    jcObserver.observe(jcCard)
+  }
+
+  /* Календарь: выбранный день (.cal-cell.sel) — micro-spring "snap" при
+     попадании в viewport, чтобы привлечь взгляд без визуального шума. */
+  const calSel = document.querySelector<HTMLElement>('.cal-cell.sel')
+  if (calSel) {
+    const calObserver = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          if (reducedMotion.value) return
+          // micro-bounce: scale 0.85 → 1.05 → 1
+          const h = createSpring({
+            from: 0,
+            to: 1,
+            damping: 0.55,
+            response: 0.45,
+            onUpdate: (p) => {
+              const s = 0.85 + Math.sin(p * Math.PI) * 0.18 + (1 - p) * 0
+              calSel.style.transform = `scale(${s})`
+            },
+            onRest: () => {
+              calSel.style.transform = ''
+            },
+          })
+          miscSprings.push(h)
+          calObserver.unobserve(calSel)
+        }
+      })
+    }, { threshold: 0.5 })
+    calObserver.observe(calSel)
+  }
+
+  /* Hover-микро-motion на CTA (§1, §4) */
+  setupHoverSpring('.bcard', { y: -4, scale: 1.005 })
+  setupHoverSpring('.hero-cta', { y: -1, scale: 1.015 })
+  setupHoverSpring('.cf-btn', { y: -2, scale: 1.02 })
+  setupHoverSpring('.rp-btn', { y: -1, scale: 1.03 })
+  setupHoverSpring('.jc-btn', { y: -1, scale: 1.03 })
+  setupHoverSpring('.sc-send', { y: -1, scale: 1.015 })
+
+  /* cf-arrow: при ховере на .cf-btn — синхронный spring translateX.
+     Сделано через CSS (transition), потому что это однократное
+     появление, а не gesture-driven loop. */
+
+  /* asgn-arrow / mli-chevron: тоже лёгкий shift при hover строки */
+  document.querySelectorAll<HTMLElement>('.asgn-row').forEach((row) => {
+    const arrow = row.querySelector<HTMLElement>('.asgn-arrow')
+    if (!arrow) return
+    row.addEventListener('pointerenter', () => {
+      arrow.style.transition = 'transform .25s cubic-bezier(.22,1,.36,1)'
+      arrow.style.transform = 'translateX(3px)'
+    })
+    row.addEventListener('pointerleave', () => {
+      arrow.style.transform = ''
+    })
+  })
 })
-onUnmounted(() => { stopChat?.(); graderObserver?.disconnect(); revealObserver?.disconnect() })
+
+onUnmounted(() => {
+  stopChat?.()
+  graderObserver?.disconnect()
+  revealObserver?.disconnect()
+  miscSprings.forEach((h) => h.stop())
+  fillSprings.forEach((h) => h.stop())
+  hoverSprings.forEach((h) => h.stop())
+  tabsIndicatorSpring?.stop()
+  cancelAnimationFrame(heroShiftRaf)
+})
 
 const year = new Date().getFullYear()
 </script>
@@ -1398,7 +1817,7 @@ html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
 html.dark .grad-text{background-image:linear-gradient(115deg,#f5f5f7 15%,#86868b 90%)}
 .hero-sub{font-size:18.5px;color:var(--text3);line-height:1.58;letter-spacing:-.012em;max-width:470px;margin-bottom:36px}
 .hero-ctas{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.hero-cta{height:52px;border-radius:980px;padding:0 28px;font-size:16px;font-weight:500;letter-spacing:-.01em;box-shadow:0 4px 16px rgba(var(--teal-rgb),.22);transition:transform .25s cubic-bezier(.32,.72,0,1),box-shadow .25s cubic-bezier(.32,.72,0,1),background .2s}
+.hero-cta{height:52px;border-radius:980px;padding:0 28px;font-size:16px;font-weight:500;letter-spacing:-.01em;box-shadow:0 4px 16px rgba(var(--teal-rgb),.22);transition:box-shadow .25s cubic-bezier(.32,.72,0,1),background .2s}
 .hero-cta:hover{box-shadow:0 8px 24px rgba(var(--teal-rgb),.28)}
 .hero-cta:active{transform:scale(.97)}
 
@@ -1455,6 +1874,24 @@ html.dark .band::before{background:#151517}
 .sec-sub.left{text-align:left}
 .kicker{font-size:12px;font-weight:650;letter-spacing:.055em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
 
+/* === Reveal (лёгкий fade+slide на CSS-transition, чтобы скролл был быстрым) === */
+.reveal{opacity:0;transform:translateY(14px);will-change:opacity,transform}
+.reveal.revealed{opacity:1;transform:none;transition:opacity .55s ease,transform .55s cubic-bezier(.22,1,.36,1);will-change:auto}
+.reveal-left.revealed{transform:translateX(-14px)}
+.reveal-right.revealed{transform:translateX(14px)}
+.reveal-left,.reveal-right{transform:translateY(0)}
+.reveal-left.revealed,.reveal-right.revealed{transition:opacity .55s ease,transform .55s cubic-bezier(.22,1,.36,1)}
+.reveal-delay-1{transition-delay:.06s}
+.reveal-delay-2{transition-delay:.12s}
+.reveal-delay-3{transition-delay:.18s}
+.reveal-delay-4{transition-delay:.24s}
+.reveal-scale{transform:scale(.96)}
+.reveal-scale.revealed{transform:scale(1)}
+@media (prefers-reduced-motion: reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  .reveal-left,.reveal-right,.reveal-scale{transform:none}
+}
+
 /* --- Bento --- */
 .sa-visual{position:relative;padding-bottom:84px}
 .sa-chat{position:absolute;left:-64px;bottom:-72px;width:min(350px,82%);z-index:2}
@@ -1467,11 +1904,9 @@ html.dark .band::before{background:#151517}
 .pg-bar{flex:1;height:5px;border-radius:100px;background:var(--surface);border:1px solid var(--border);overflow:hidden}
 .pg-fill{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal-d),var(--teal))}
 .pg-score{font-size:12px;font-weight:600;color:var(--text3);font-variant-numeric:tabular-nums;width:46px;text-align:right}
-.bcard{position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:26px;padding:34px 32px;box-shadow:0 1px 2px rgba(0,0,0,.02),0 16px 36px -28px rgba(0,0,0,.18);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s cubic-bezier(.22,1,.36,1),border-color .25s}
-@media (hover:hover){
-  .bcard:hover{transform:translateY(-4px);box-shadow:0 24px 48px -16px rgba(0,0,0,.1);border-color:var(--border2)}
-  html.dark .bcard:hover{box-shadow:0 24px 48px -16px rgba(0,0,0,.55)}
-}
+.bcard{position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:26px;padding:34px 32px;box-shadow:0 1px 2px rgba(0,0,0,.02),0 16px 36px -28px rgba(0,0,0,.18);transition:box-shadow .35s cubic-bezier(.22,1,.36,1),border-color .25s;will-change:transform}
+.bcard:hover{box-shadow:0 24px 48px -16px rgba(0,0,0,.1);border-color:var(--border2)}
+html.dark .bcard:hover{box-shadow:0 24px 48px -16px rgba(0,0,0,.55)}
 .bcard:active{transform:scale(.985)}
 .bcopy{min-width:0}
 .btitle{font-size:21px;font-weight:700;color:var(--text1);letter-spacing:-.022em;margin-bottom:10px;line-height:1.25}
@@ -1543,8 +1978,7 @@ html.dark .band::before{background:#151517}
 .gc-row{display:flex;align-items:center;gap:12px}
 .gc-name{width:38%;font-size:12.5px;font-weight:550;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gc-bar{flex:1;height:5px;border-radius:100px;background:var(--bg);border:1px solid var(--border);overflow:hidden}
-.gc-fill{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal-d),var(--teal));transition:width 1s cubic-bezier(.22,1,.36,1) .35s}
-@media (prefers-reduced-motion: reduce){.gc-fill{transition:none}}
+.gc-fill{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal-d),var(--teal))}
 .gc-score{width:38px;text-align:right;font-size:12px;font-weight:600;color:var(--text3);font-variant-numeric:tabular-nums}
 .grc-teacher{display:flex;align-items:center;gap:11px;padding:14px 24px;background:rgba(52,199,89,.05);border-top:1px solid var(--border)}
 .gt-check{width:26px;height:26px;border-radius:50%;background:rgba(52,199,89,.14);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -1652,7 +2086,7 @@ html.dark .mock-window{box-shadow:0 2px 6px rgba(0,0,0,.3),0 40px 80px -24px rgb
 .cls-spark{color:var(--teal);flex-shrink:0}
 
 .tabs-bar{position:relative;display:flex;align-items:stretch;padding:3px;background:var(--bg);border-bottom:1px solid var(--border)}
-.tabs-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / 3);background:var(--surface);border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.1);transition:transform .32s cubic-bezier(.32,.72,0,1)}
+.tabs-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / 3);background:var(--surface);border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.1);will-change:transform}
 html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .tab-btn{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 6px;font-size:12px;font-weight:550;color:var(--text3);background:transparent;border:none;border-radius:10px;cursor:pointer;transition:color .2s,transform .1s ease-out;white-space:nowrap;font-family:inherit;letter-spacing:-.01em}
 .tab-btn:active{transform:scale(.96)}
@@ -1684,7 +2118,7 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .msg-bubble{padding:11px 15px;border-radius:18px;font-size:12.5px;line-height:1.6;word-break:break-word;animation:msg-in .55s cubic-bezier(.16,1,.3,1) both}
 .msg-row.assistant .msg-bubble{background:var(--bg);border:1px solid var(--border);color:var(--text1);border-bottom-left-radius:6px;transform-origin:0% 100%}
 .msg-row.user .msg-bubble{background:linear-gradient(135deg,var(--teal),var(--teal-h));color:#fff;border-bottom-right-radius:6px;box-shadow:0 4px 14px rgba(var(--teal-rgb),.22);transform-origin:100% 100%}
-@keyframes msg-in{from{opacity:0;transform:translateY(12px) scale(.92)}to{opacity:1;transform:none}}
+@keyframes msg-in{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.msg-bubble{animation:none}}
 .mw-input{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--border);background:var(--surface)}
 .ai-textarea.sm{padding:9px 14px;font-size:12.5px}
@@ -1756,25 +2190,34 @@ html.dark .grc-bullet-title.warn{color:#F0A94B}
 .grc-dot.ok{background:var(--green)}
 .grc-dot.warn{background:#E8973A}
 
-/* --- Deadlines: единая сгруппированная поверхность в стиле iOS --- */
-.asgn-group{max-width:780px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:28px;box-shadow:0 2px 6px rgba(0,0,0,.03),0 32px 64px -24px rgba(0,0,0,.12);overflow:hidden}
-html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba(0,0,0,.6)}
-.asgn-row{position:relative;display:flex;align-items:center;gap:18px;padding:20px 26px;min-height:84px;transition:background .15s ease,transform .1s ease-out}
-@media (hover:hover){.asgn-row:hover{background:var(--glass)}}
-.asgn-row:active{transform:scale(.99)}
-.asgn-row:not(:last-child)::after{content:'';position:absolute;left:90px;right:26px;bottom:0;height:1px;background:var(--border)}
-.asgn-ico{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg);color:var(--text3);border:1px solid var(--border)}
-.asgn-ico.overdue{background:var(--red-l);color:var(--red);border-color:rgba(248,113,113,.18)}
+/* --- Deadlines: отдельные карточки заданий как в AssignmentCard.vue --- */
+.asgn-list{display:flex;flex-direction:column;gap:10px;max-width:none}
+.asgn-card{position:relative;display:flex;align-items:center;gap:16px;padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-radius:22px;box-shadow:0 1px 2px rgba(0,0,0,.02),0 16px 36px -28px rgba(0,0,0,.12);overflow:hidden;transition:background .18s,border-color .18s,box-shadow .18s,transform .18s}
+html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(0,0,0,.5)}
+.asgn-card:hover{background:var(--surface2);border-color:var(--border2);box-shadow:0 4px 14px rgba(0,0,0,.04),0 24px 48px -28px rgba(0,0,0,.18)}
+.asgn-card:active{transform:scale(.995)}
+/* Accent-полоска 3px слева от карточки (как в AssignmentCard.vue) */
+.asgn-accent{position:absolute;left:0;top:0;bottom:0;width:3px;flex-shrink:0;border-radius:0}
+.asgn-card.accent-blue .asgn-accent{background:var(--text4)}
+.asgn-card.accent-green .asgn-accent{background:var(--green)}
+.asgn-card.accent-red .asgn-accent{background:var(--red)}
+.asgn-card.accent-purple .asgn-accent{background:var(--purple)}
+.asgn-ico-wrap{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--surface3);color:var(--text3);border:1px solid var(--border)}
+.ico-blue{background:var(--surface3);color:var(--text3);border:1px solid var(--border)}
+.ico-green{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.15)}
+.ico-red{background:var(--red-l);color:var(--red);border:1px solid rgba(248,113,113,.15)}
 .asgn-main{flex:1;min-width:0}
-.asgn-title{font-size:15.5px;font-weight:600;color:var(--text1);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.012em}
-.asgn-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.asgn-title{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.012em}
+.asgn-desc{font-size:12px;color:var(--text3);margin-bottom:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asgn-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .meta-sep{width:3px;height:3px;border-radius:50%;background:var(--surface3);flex-shrink:0}
-.meta-due,.meta-score{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text4);font-weight:500}
+.meta-due,.meta-score,.meta-files{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text4);font-weight:500}
 .meta-due{color:var(--text3)}
-.meta-due.overdue{color:var(--red);font-weight:600}
-.meta-due.soon{color:var(--yellow);font-weight:600}
-.meta-score{color:var(--text2);font-weight:550}
-.asgn-arrow{color:var(--text4);flex-shrink:0}
+.meta-due.overdue{color:var(--red)}
+.meta-due.soon{color:var(--yellow)}
+.meta-score{color:var(--text2);font-weight:600}
+.asgn-status-wrap{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.asgn-arrow{color:var(--text4);flex-shrink:0;transition:transform .25s cubic-bezier(.22,1,.36,1)}
 
 /* --- Final CTA --- */
 .cta-final{position:relative;width:100%;padding:180px 24px 190px;text-align:center;overflow:hidden;background:#1D1D1F}
@@ -1785,7 +2228,7 @@ html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba
 .cta-final .grad-text{background-image:linear-gradient(115deg,#f5f5f7 15%,#86868b 90%)}
 .cf-sub{font-size:17.5px;color:#a1a1a6;line-height:1.6;letter-spacing:-.01em;margin-bottom:38px}
 .cf-actions{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
-.cf-btn{height:54px;border-radius:980px;padding:0 32px;font-size:16px;font-weight:500;letter-spacing:-.01em;box-shadow:0 4px 16px rgba(var(--teal-rgb),.22);transition:transform .25s cubic-bezier(.32,.72,0,1),box-shadow .25s cubic-bezier(.32,.72,0,1),background .2s}
+.cf-btn{height:54px;border-radius:980px;padding:0 32px;font-size:16px;font-weight:500;letter-spacing:-.01em;box-shadow:0 4px 16px rgba(var(--teal-rgb),.22);transition:box-shadow .25s cubic-bezier(.32,.72,0,1),background .2s}
 .cf-btn:hover{box-shadow:0 8px 24px rgba(var(--teal-rgb),.28)}
 .cf-btn:active{transform:scale(.97)}
 .cf-arrow{transition:transform .22s cubic-bezier(.32,.72,0,1)}
@@ -1925,13 +2368,11 @@ html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba
   .cal-grid-wrap{grid-template-columns:1fr;gap:32px}
   .cal-win{padding:14px;border-radius:20px}
   .cal-cell{height:37px;border-radius:10px}
-  .asgn-group,.subm-card,.cal-win,.notif-card{width:100%;max-width:none}
-  .asgn-group{border-radius:22px}
+  .asgn-card,.subm-card,.cal-win,.notif-card{width:100%;max-width:none}
+  .asgn-card{padding:14px 16px;border-radius:18px;gap:12px}
+  .asgn-ico-wrap{width:40px;height:40px;border-radius:12px}
   .asgn-title{white-space:normal;overflow-wrap:break-word}
-  .asgn-row{flex-wrap:nowrap}
-  .asgn-row{gap:12px;padding:15px 16px;min-height:74px}
-  .asgn-row:not(:last-child)::after{left:70px;right:16px}
-  .asgn-ico{width:40px;height:40px;border-radius:12px}
+  .asgn-meta{flex-wrap:nowrap}
   .asgn-arrow{display:none}
   .status-pill{font-size:11.5px;padding:5px 11px}
   .subm-card{border-radius:20px;padding:17px}
