@@ -44,11 +44,27 @@ const onBodyClick = (e: MouseEvent) => {
 .lip-desc :deep(.link-inline) { color: var(--teal); text-decoration: none; }
 .lip-desc :deep(.link-inline:hover) { text-decoration: underline; }
 .lip-desc :deep(.file-attachment) {
-  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 6px;
-  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-sm);
-  color: var(--text1); text-decoration: none; font-weight: 600; font-size: 13px;
+  display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 4px 11px 4px 5px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: var(--sh-xs); color: var(--text1); text-decoration: none; font-weight: 650; font-size: 13px;
+  vertical-align: middle; transition: background .12s ease-out, border-color .15s ease-out, transform .1s ease-out, box-shadow .18s ease-out;
 }
+.lip-desc :deep(.file-attachment:hover) { background: var(--glass); border-color: var(--border2); box-shadow: var(--sh-sm); }
+.lip-desc :deep(.file-attachment:active) { transform: scale(.97); }
 .lip-desc :deep(.file-type-badge) {
-  font-size: 9px; font-weight: 800; color: var(--text4); letter-spacing: .02em;
+  position: relative; display: inline-flex; align-items: flex-end; justify-content: center;
+  width: 28px; height: 29px; padding-bottom: 4px; overflow: hidden;
+  border-radius: 8px; background: linear-gradient(145deg,var(--surface2),var(--surface));
+  border: 1px solid var(--border2); color: var(--text3);
+  font-size: 6px; line-height: 1; font-weight: 800; letter-spacing: .035em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5),0 2px 5px rgba(15,23,42,.06);
+}
+.lip-desc :deep(.file-type-badge::before) {
+  content: ''; position: absolute; left: 7px; right: 7px; top: 7px; height: 7px;
+  border-top: 1px solid var(--text4); border-bottom: 1px solid var(--text4); opacity: .38;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lip-desc :deep(.file-attachment) { transition-duration: .12s; }
+  .lip-desc :deep(.file-attachment:active) { transform: none; }
 }
 </style>

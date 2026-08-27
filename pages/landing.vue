@@ -117,17 +117,17 @@
             <div class="bvisual">
               <div class="mli-demo" aria-hidden="true">
                 <div class="mli-row">
-                  <div class="mli-icon" style="color:#E5484D;background:#E5484D22">PDF</div>
+                  <FileTypeIcon url="lecture_02.pdf" />
                   <div class="mli-info"><div class="mli-name">lecture_02.pdf</div><div class="mli-meta">PDF · 2.4 MB</div></div>
                   <svg class="mli-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
                 <div class="mli-row">
-                  <div class="mli-icon" style="color:#3B9FF2;background:#3B9FF222">DOC</div>
+                  <FileTypeIcon url="seminar_notes.docx" />
                   <div class="mli-info"><div class="mli-name">seminar_notes.docx</div><div class="mli-meta">DOCX · 480 KB</div></div>
                   <svg class="mli-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
                 <div class="mli-row">
-                  <div class="mli-icon" style="color:#F2A93B;background:#F2A93B22">PPT</div>
+                  <FileTypeIcon url="slides_week2.pptx" />
                   <div class="mli-info"><div class="mli-name">slides_week2.pptx</div><div class="mli-meta">PPTX · 5.1 MB</div></div>
                   <svg class="mli-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
@@ -185,7 +185,7 @@
               <!-- Лекции -->
               <div v-if="clsTab === 0" class="cls-list">
                 <div v-for="(l, i) in lectures" :key="i" class="mli-row">
-                  <div class="mli-icon" style="color:#E5484D;background:#E5484D24">PDF</div>
+                  <FileTypeIcon url="lecture.pdf" />
                   <div class="mli-info"><div class="mli-name">{{ l }}</div><div class="mli-meta">PDF</div></div>
                   <svg class="mli-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
@@ -260,9 +260,9 @@
         <div class="split-visual reveal reveal-left">
           <div class="mock-window lec-win">
             <div class="mw-bar">
-              <span></span><span></span><span></span>
+              <span class="mw-dot"></span><span class="mw-dot"></span><span class="mw-dot"></span>
               <span class="mw-file">
-                <span class="ftb" style="background:#E5484D">PDF</span>
+                <FileTypeIcon url="lecture_02.pdf" size="compact" />
                 lecture_02.pdf
               </span>
             </div>
@@ -319,17 +319,17 @@
                 <div class="hp-label" style="margin-top:16px">{{ d('hl.files_title') }}</div>
                 <div class="hp-list files">
                   <div class="mli-row">
-                    <div class="mli-icon" style="color:#E5484D;background:#E5484D24">PDF</div>
+                    <FileTypeIcon url="lecture_02.pdf" />
                     <div class="mli-info"><div class="mli-name">lecture_02.pdf</div><div class="mli-meta">PDF</div></div>
                     <svg class="mli-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
                   <div class="mli-row">
-                    <div class="mli-icon" style="color:#3B9FF2;background:#3B9FF224">DOC</div>
+                    <FileTypeIcon url="seminar_notes.docx" />
                     <div class="mli-info"><div class="mli-name">seminar_notes.docx</div><div class="mli-meta">DOC</div></div>
                     <svg class="mli-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
                   <div class="mli-row">
-                    <div class="mli-icon" style="color:#F2A93B;background:#F2A93B24">PPT</div>
+                    <FileTypeIcon url="slides_week2.pptx" />
                     <div class="mli-info"><div class="mli-name">slides_week2.pptx</div><div class="mli-meta">PPT</div></div>
                     <svg class="mli-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
@@ -742,7 +742,7 @@
               <div class="sc-head">{{ d('subm.head') }}</div>
               <div class="sc-sub">{{ d('dl.item3_t') }} · {{ d('dl.item3_score') }}</div>
               <div class="sc-file">
-                <span class="ftb" style="background:#3B9FF2">DOC</span>
+                <FileTypeIcon url="student_answer.docx" size="compact" />
                 <span class="sc-fname">{{ d('subm.attach') }}</span>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.6"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
@@ -1388,8 +1388,8 @@ html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
 .hero-grid{position:relative;z-index:1;max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.02fr .98fr;gap:64px;align-items:center}
 
 .orb{position:absolute;border-radius:50%;filter:blur(110px);pointer-events:none}
-.orb-a{width:620px;height:620px;top:-220px;left:-160px;background:rgba(var(--teal-rgb),.07);animation:orb-drift 16s ease-in-out infinite alternate}
-.orb-b{width:480px;height:480px;bottom:-200px;right:-120px;background:rgba(var(--teal-rgb),.05);animation:orb-drift 19s ease-in-out infinite alternate-reverse}
+.orb-a{width:620px;height:620px;top:-220px;left:-160px;background:rgba(120,120,128,.065);animation:orb-drift 16s ease-in-out infinite alternate}
+.orb-b{width:480px;height:480px;bottom:-200px;right:-120px;background:rgba(174,174,178,.05);animation:orb-drift 19s ease-in-out infinite alternate-reverse}
 @keyframes orb-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(40px,26px,0) scale(1.06)}}
 @media (prefers-reduced-motion: reduce){.orb{animation:none}}
 
@@ -1412,8 +1412,8 @@ html.dark .hc-card{box-shadow:0 2px 6px rgba(0,0,0,.3),0 24px 48px -16px rgba(0,
 .hc-spark{position:absolute;right:-6px;top:-6px;color:var(--teal)}
 .hc-name{font-size:14.5px;font-weight:650;color:var(--text1);letter-spacing:-.01em;margin-top:12px}
 .hc-meta{font-size:12px;color:var(--text4);font-weight:500;margin-top:3px}
-.hc-card.on{border-color:rgba(var(--teal-rgb),.35)}
-.hc-card.on .hc-glyph{background:rgba(var(--teal-rgb),.08);border-color:rgba(var(--teal-rgb),.22);color:var(--teal)}
+.hc-card.on{border-color:var(--border2);box-shadow:0 2px 7px rgba(0,0,0,.04),0 26px 52px -18px rgba(0,0,0,.14)}
+.hc-card.on .hc-glyph{background:var(--text1);border-color:var(--text1);color:var(--surface)}
 .hc-chip{position:absolute;display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-md);font-size:12.5px;font-weight:600;color:var(--text1);white-space:nowrap;z-index:2}
 .hcc-ico{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .hcc-ico.green{background:rgba(74,222,128,.14);color:var(--green)}
@@ -1453,7 +1453,7 @@ html.dark .band::before{background:#151517}
 .sec-title.left{text-align:left}
 .sec-sub{font-size:17px;color:var(--text3);line-height:1.6;letter-spacing:-.01em}
 .sec-sub.left{text-align:left}
-.kicker{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--teal);margin-bottom:14px}
+.kicker{font-size:12px;font-weight:650;letter-spacing:.055em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
 
 /* --- Bento --- */
 .sa-visual{position:relative;padding-bottom:84px}
@@ -1467,7 +1467,7 @@ html.dark .band::before{background:#151517}
 .pg-bar{flex:1;height:5px;border-radius:100px;background:var(--surface);border:1px solid var(--border);overflow:hidden}
 .pg-fill{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal-d),var(--teal))}
 .pg-score{font-size:12px;font-weight:600;color:var(--text3);font-variant-numeric:tabular-nums;width:46px;text-align:right}
-.bcard{position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:34px 32px;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s cubic-bezier(.22,1,.36,1),border-color .25s}
+.bcard{position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:26px;padding:34px 32px;box-shadow:0 1px 2px rgba(0,0,0,.02),0 16px 36px -28px rgba(0,0,0,.18);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s cubic-bezier(.22,1,.36,1),border-color .25s}
 @media (hover:hover){
   .bcard:hover{transform:translateY(-4px);box-shadow:0 24px 48px -16px rgba(0,0,0,.1);border-color:var(--border2)}
   html.dark .bcard:hover{box-shadow:0 24px 48px -16px rgba(0,0,0,.55)}
@@ -1487,10 +1487,9 @@ html.dark .band::before{background:#151517}
 .st.on .st-glyph{background:var(--text1);color:#fff;border-color:transparent}
 .st.on .st-name{color:var(--text1)}
 
-.mli-demo{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border);border-radius:22px;overflow:hidden}
-.mli-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 15px;border-bottom:1px solid var(--border);text-align:left}
+.mli-demo{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--sh-xs)}
+.mli-row{display:flex;align-items:center;gap:12px;width:100%;padding:11px 14px;border-bottom:1px solid var(--border);text-align:left}
 .mli-row:last-child{border-bottom:none}
-.mli-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;letter-spacing:.02em;flex-shrink:0}
 .mli-info{flex:1;min-width:0}
 .mli-name{font-size:13.5px;font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
 .mli-meta{font-size:11.5px;color:var(--text4);letter-spacing:.02em;margin-top:1px}
@@ -1673,9 +1672,8 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .cls-asgn-m{font-size:11.5px;color:var(--text4);flex-shrink:0}
 
 .mw-bar{display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--glass);align-items:center}
-.mw-bar span{width:9px;height:9px;border-radius:50%;background:var(--surface3);flex-shrink:0}
+.mw-dot{width:9px;height:9px;border-radius:50%;background:var(--surface3);flex-shrink:0}
 .mw-file{display:flex;align-items:center;gap:7px;margin-left:10px;font-size:12px;font-weight:550;color:var(--text3)}
-.ftb{display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:4px;line-height:1.4;min-width:28px}
 .mw-chat{flex:1;padding:16px;display:flex;align-items:center}
 
 .cai-msgs{display:flex;flex-direction:column;gap:12px;width:100%}
@@ -1780,8 +1778,8 @@ html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba
 
 /* --- Final CTA --- */
 .cta-final{position:relative;width:100%;padding:180px 24px 190px;text-align:center;overflow:hidden;background:#1D1D1F}
-.cf-orb-a{width:640px;height:640px;top:-200px;left:-160px;margin:0;background:rgba(var(--teal-rgb),.08)}
-.cf-orb-b{width:560px;height:560px;bottom:-260px;right:-140px;background:rgba(var(--teal-rgb),.05)}
+.cf-orb-a{width:640px;height:640px;top:-200px;left:-160px;margin:0;background:rgba(142,142,147,.09)}
+.cf-orb-b{width:560px;height:560px;bottom:-260px;right:-140px;background:rgba(99,99,102,.07)}
 .cf-inner{position:relative;z-index:1;max-width:720px;margin:0 auto}
 .cf-title{font-size:clamp(35px,5vw,60px);font-weight:700;line-height:1.06;letter-spacing:-.035em;color:#f5f5f7;margin-bottom:20px}
 .cta-final .grad-text{background-image:linear-gradient(115deg,#f5f5f7 15%,#86868b 90%)}
@@ -1866,7 +1864,6 @@ html.dark .asgn-group{box-shadow:0 2px 6px rgba(0,0,0,.3),0 32px 64px -24px rgba
   .bcard{padding:24px 20px;border-radius:24px}
   .btitle{font-size:19px}
   .prog-demo,.mli-demo{border-radius:18px}
-  .mli-icon{width:36px;height:36px;border-radius:10px}
 
   /* --- ИИ предмета: окно + живой чат стопкой --- */
   .sa-visual{padding-bottom:0;flex-direction:column;align-items:center}

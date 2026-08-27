@@ -1,7 +1,7 @@
 <template>
   <button type="button" class="mli-row" :class="{ active }" @click="$emit('click')">
     <img v-if="isImageUrl(file.url)" :src="file.url" class="mli-thumb" alt="" />
-    <div v-else class="mli-icon" :style="{ background: fileVisual(file.url).bg, color: fileVisual(file.url).color }">{{ fileVisual(file.url).label }}</div>
+    <FileTypeIcon v-else :url="file.url" />
     <div class="mli-info">
       <div class="mli-name">{{ file.name }}</div>
       <div class="mli-meta">{{ fileVisual(file.url).label }}</div>
@@ -25,15 +25,20 @@ defineEmits<{ (e: 'click'): void }>()
   transition: background .1s ease-out;
 }
 .mli-row:last-child { border-bottom: none; }
-.mli-row:hover { background: var(--surface3); }
-.mli-row:active { background: var(--surface3); }
-.mli-row.active { background: var(--teal-l); }
-.mli-icon, .mli-thumb { width: 40px; height: 40px; border-radius: var(--r-md); flex-shrink: 0; }
-.mli-icon { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; letter-spacing: .02em; }
+.mli-row:hover { background: var(--glass); }
+.mli-row:active { background: var(--glass2); }
+.mli-row:active :deep(.fti), .mli-row:active .mli-thumb { transform: scale(.96); }
+.mli-row.active { background: var(--surface2); box-shadow: inset 3px 0 0 var(--teal); }
+.mli-thumb { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; transition: transform .1s ease-out; }
 .mli-thumb { object-fit: cover; }
 .mli-info { flex: 1; min-width: 0; }
 .mli-name { font-size: 14px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mli-meta { font-size: 12px; color: var(--text4); letter-spacing: .02em; margin-top: 1px; }
-.mli-chevron { color: var(--text4); flex-shrink: 0; }
+.mli-chevron { color: var(--text4); flex-shrink: 0; opacity: .55; transition: color .15s ease-out, transform .18s cubic-bezier(.22,1,.36,1), opacity .15s; }
+.mli-row:hover .mli-chevron { transform: translateX(2px); opacity: 1; }
 .mli-row.active .mli-chevron { color: var(--teal); }
+@media (prefers-reduced-motion: reduce) {
+  .mli-row,.mli-chevron,.mli-thumb,.mli-row :deep(.fti) { transition-duration: .12s; }
+  .mli-row:hover .mli-chevron,.mli-row:active :deep(.fti),.mli-row:active .mli-thumb { transform: none; }
+}
 </style>

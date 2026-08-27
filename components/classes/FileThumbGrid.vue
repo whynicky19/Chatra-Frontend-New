@@ -3,7 +3,7 @@
     <a v-for="url in files" :key="url" href="#" class="ftg-tile" @click.prevent="$emit('open', url, fileNameFromUrl(url))">
       <div class="ftg-box">
         <img v-if="isImageUrl(url)" :src="fixFileUrlSafe(url)" class="ftg-img" alt="" />
-        <div v-else class="ftg-icon" :style="{ background: fileVisual(url).bg, color: fileVisual(url).color }">{{ fileVisual(url).label }}</div>
+        <div v-else class="ftg-file-art"><FileTypeIcon :url="url" size="large" /></div>
       </div>
       <div class="ftg-name">{{ fileNameFromUrl(url) }}</div>
     </a>
@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { isImageUrl, fileVisual } from '~/composables/useFileVisual'
+import { isImageUrl } from '~/composables/useFileVisual'
 import { fileNameFromUrl } from '~/composables/useAttachments'
 import { fixFileUrlSafe } from '~/composables/useFileUrl'
 
@@ -35,10 +35,11 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
   .ftg-tile:hover .ftg-box { box-shadow: var(--sh-sm); border-color: var(--border2); }
 }
 .ftg-img { width: 100%; height: 100%; object-fit: cover; }
-.ftg-icon { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; letter-spacing: .02em; }
+.ftg-file-art { width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,var(--surface),var(--bg)); }
 .ftg-name { font-size: 11.5px; font-weight: 650; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
 
 @media (max-width: 480px) {
   .ftg-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
 }
+@media (prefers-reduced-motion:reduce){.ftg-tile,.ftg-box{transition-duration:.12s}.ftg-tile:hover,.ftg-tile:active{transform:none}}
 </style>

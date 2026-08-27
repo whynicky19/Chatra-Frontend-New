@@ -2,7 +2,7 @@
   <div class="flc-list">
     <a v-for="f in files" :key="f.url" href="#" class="flc-row" @click.prevent="$emit('open', f.url, f.name)">
       <img v-if="isImageUrl(f.url)" :src="fixFileUrlSafe(f.url)" class="flc-thumb" alt="" />
-      <div v-else class="flc-icon" :style="{ background: fileVisual(f.url).bg, color: fileVisual(f.url).color }">{{ fileVisual(f.url).label }}</div>
+      <FileTypeIcon v-else :url="f.url" />
       <div class="flc-info">
         <div class="flc-name">{{ f.name }}</div>
         <div class="flc-type">{{ fileVisual(f.url).label }}</div>
@@ -37,12 +37,12 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
 .flc-row:hover { background: var(--glass); }
 .flc-row:hover .flc-chevron { color: var(--teal); transform: translateX(2px); opacity: 1; }
 .flc-row:active { background: var(--glass2); }
-.flc-row:active .flc-icon, .flc-row:active .flc-thumb { transform: scale(.96); }
-.flc-icon, .flc-thumb { width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0; transition: transform .1s ease-out; }
-.flc-icon { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; letter-spacing: .02em; }
+.flc-row:active :deep(.fti), .flc-row:active .flc-thumb { transform: scale(.96); }
+.flc-thumb { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; transition: transform .1s ease-out; }
 .flc-thumb { object-fit: cover; }
 .flc-info { flex: 1; min-width: 0; }
 .flc-name { font-size: 13.5px; font-weight: 650; letter-spacing: -.01em; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .flc-type { font-size: 11.5px; color: var(--text4); letter-spacing: .02em; margin-top: 1px; }
 .flc-chevron { color: var(--text4); flex-shrink: 0; opacity: .55; transition: color .15s ease-out, transform .18s cubic-bezier(.22,1,.36,1), opacity .15s; }
+@media (prefers-reduced-motion:reduce){.flc-row,.flc-chevron,.flc-thumb,.flc-row :deep(.fti){transition-duration:.12s}.flc-row:hover .flc-chevron{transform:none}.flc-row:active :deep(.fti),.flc-row:active .flc-thumb{transform:none}}
 </style>

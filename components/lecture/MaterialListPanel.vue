@@ -27,8 +27,9 @@ const { t } = useI18n()
 .mlp-label { font-size: 12px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
 .mlp-list {
   display: flex; flex-direction: column;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r-lg); overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--sh-xs);
 }
 .mlp-empty { font-size: 13px; color: var(--text4); padding: 4px 0; }
+@media (prefers-contrast: more) { .mlp-list { border-width: 2px; } }
 </style>
