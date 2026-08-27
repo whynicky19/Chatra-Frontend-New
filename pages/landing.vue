@@ -826,7 +826,7 @@ import { useI18n } from '~/composables/useI18n'
 import { useOrgStore, applyOrgTheme } from '~/stores/org.store'
 
 definePageMeta({ layout: false })
-useHead({ title: 'Chatra — AI for Education' })
+useHead({ title: 'Chatra - AI for Education' })
 
 const { lang, setLang } = useI18n()
 const org = useOrgStore()
@@ -852,18 +852,18 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       title_1: { ru: 'Ваша учёба.', en: 'Your studies.', kk: 'Оқуыңыз.' }[l],
       title_2: { ru: 'Теперь эффективнее.', en: 'Now more effective.', kk: 'Енді тиімдірек.' }[l],
       sub: {
-        ru: 'Лекции, ИИ для каждого предмета и все дедлайны — в одном приложении.',
-        en: 'Lectures, an AI for every subject and every deadline — in one app.',
-        kk: 'Дәрістер, әр пәнге арналған ЖИ және барлық мерзімдер — бір қосымшада.',
+        ru: 'Лекции, ИИ для каждого предмета и все дедлайны - в одном приложении.',
+        en: 'Lectures, an AI for every subject and every deadline - in one app.',
+        kk: 'Дәрістер, әр пәнге арналған ЖИ және барлық мерзімдер - бір қосымшада.',
       }[l],
     },
     hero: {
       title_1: { ru: 'Всё для учёбы.', en: 'Everything for studying.', kk: 'Барлығы оқу үшін.' }[l],
       title_2: { ru: 'В одном месте.', en: 'In one place.', kk: 'Бір жерде.' }[l],
       sub: {
-        ru: 'Лекции, задания, дедлайны и помощь с учёбой — Chatra собирает всё необходимое в одном приложении.',
-        en: 'Lectures, assignments, deadlines and study help — Chatra brings everything you need into one app.',
-        kk: 'Дәрістер, тапсырмалар, мерзімдер және оқу көмекші — Chatra барлық қажеттіні бір қосымшада жинайды.',
+        ru: 'Лекции, задания, дедлайны и помощь с учёбой - Chatra собирает всё необходимое в одном приложении.',
+        en: 'Lectures, assignments, deadlines and study help - Chatra brings everything you need into one app.',
+        kk: 'Дәрістер, тапсырмалар, мерзімдер және оқу көмекші - Chatra барлық қажеттіні бір қосымшада жинайды.',
       }[l],
     },
     demo: {
@@ -873,13 +873,13 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
     },
     msgs: [
       { own: true, text: { ru: 'Объясни квантовый туннельный эффект простыми словами', en: 'Explain quantum tunneling in simple words', kk: 'Кванттық туннель эффектісін қарапайым тілмен түсіндір' }[l] },
-      { text: { ru: 'Согласно лекции №8: представьте мяч, который отскакивает от стены. Квантовая частица иногда оказывается «по ту сторону» — с некоторой вероятностью она проходит через барьер…', en: "From lecture №8: imagine a ball bouncing off a wall. A quantum particle sometimes ends up 'on the other side' — with some probability it passes through the barrier…", kk: '№8 дәріс бойынша: доп қабырғадан секіреді елестетіңіз. Кванттық бөлшек кейде «екінші жағында» болады — белгілі бір ықтималдықпен кедергіден өтеді…' }[l] },
+      { text: { ru: 'Согласно лекции №8: представьте мяч, который отскакивает от стены. Квантовая частица иногда оказывается «по ту сторону» - с некоторой вероятностью она проходит через барьер…', en: "From lecture №8: imagine a ball bouncing off a wall. A quantum particle sometimes ends up 'on the other side' - with some probability it passes through the barrier…", kk: '№8 дәріс бойынша: доп қабырғадан секіреді елестетіңіз. Кванттық бөлшек кейде «екінші жағында» болады - белгілі бір ықтималдықпен кедергіден өтеді…' }[l] },
       { own: true, text: { ru: 'Составь план ответа к семинару', en: 'Make me a seminar answer outline', kk: 'Семинарға жауап жоспарын құр' }[l] },
       { text: { ru: 'Вот структура из трёх шагов: определение → физический смысл → эксперименты. Развернуть каждый пункт?', en: 'Here is a three-step structure: definition → physical meaning → experiments. Expand each point?', kk: 'Үш қадамдық құрылым: анықтама → физикалық мағына → тәжірибелер. Әр пунктті ашайын ба?' }[l] },
     ],
     features: {
       kicker: { ru: 'ВОЗМОЖНОСТИ', en: 'FEATURES', kk: 'МҮМКІНДІКТЕР' }[l],
-      title: { ru: 'Всё, что нужно для учёбы — в одном месте', en: 'Everything you need to study — in one place', kk: 'Оқуға қажеттінің бәрі — бір жерде' }[l],
+      title: { ru: 'Всё, что нужно для учёбы - в одном месте', en: 'Everything you need to study - in one place', kk: 'Оқуға қажеттінің бәрі - бір жерде' }[l],
       sub: {
         ru: 'Chatra объединяет ИИ, материалы предметов и успеваемость в одном продуманном приложении.',
         en: 'Chatra brings AI, course materials and progress together in one thoughtfully designed app.',
@@ -890,19 +890,19 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       chat: {
         title: { ru: 'ИИ-ассистент', en: 'AI assistant', kk: 'ЖИ-көмекші' }[l],
         text: {
-          ru: 'Задавайте вопросы — от разбора темы до подготовки к экзамену. Важные диалоги сохраняются и всегда под рукой.',
-          en: 'Ask anything — from topic breakdowns to exam prep. Important conversations are saved and always at hand.',
-          kk: 'Кез келген сұрақ қойыңыз — тақырыптан емтиханға дейін. Маңызды диалогтер сақталып, әрқашан қол астында.',
+          ru: 'Задавайте вопросы - от разбора темы до подготовки к экзамену. Важные диалоги сохраняются и всегда под рукой.',
+          en: 'Ask anything - from topic breakdowns to exam prep. Important conversations are saved and always at hand.',
+          kk: 'Кез келген сұрақ қойыңыз - тақырыптан емтиханға дейін. Маңызды диалогтер сақталып, әрқашан қол астында.',
         }[l],
         q: { ru: 'Как взять интеграл по частям?', en: 'How does integration by parts work?', kk: 'Бөліктер бойынша интегралдау қалай?' }[l],
         a: { ru: 'Разберём формулу на примере…', en: 'Let’s walk through the formula with an example…', kk: 'Формуланы мысалмен талдайық…' }[l],
       },
       subjects: {
-        title: { ru: 'Все предметы — в одном месте', en: 'Every subject in one place', kk: 'Барлық пән бір жерде' }[l],
+        title: { ru: 'Все предметы - в одном месте', en: 'Every subject in one place', kk: 'Барлық пән бір жерде' }[l],
         text: {
-          ru: 'Материалы, задания и прогресс по каждому предмету — в одной аккуратной сетке с обложками.',
-          en: 'Materials, assignments and progress for every subject — in one tidy grid with covers.',
-          kk: 'Әр пәннің материалдары, тапсырмалары мен үлгерімі — мұқабалары бар бір ретте тізімінде.',
+          ru: 'Материалы, задания и прогресс по каждому предмету - в одной аккуратной сетке с обложками.',
+          en: 'Materials, assignments and progress for every subject - in one tidy grid with covers.',
+          kk: 'Әр пәннің материалдары, тапсырмалары мен үлгерімі - мұқабалары бар бір ретте тізімінде.',
         }[l],
         s1: { ru: 'Физика', en: 'Physics', kk: 'Физика' }[l],
         s2: { ru: 'Математика', en: 'Math', kk: 'Математика' }[l],
@@ -913,7 +913,7 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         text: {
           ru: 'Баллы, проценты успеваемости и ближайший дедлайн видны прямо на карточке предмета.',
           en: 'Scores, performance and the next deadline are right on the subject card.',
-          kk: 'Ұпай, үлгерім пайызы және келесі мерзім — тікелей пән карточкасында.',
+          kk: 'Ұпай, үлгерім пайызы және келесі мерзім - тікелей пән карточкасында.',
         }[l],
       },
       files: {
@@ -936,7 +936,7 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       tasks: {
         title: { ru: 'Задания и дедлайны', en: 'Assignments & deadlines', kk: 'Тапсырмалар мен мерзімдер' }[l],
         text: {
-          ru: 'Все задания и сроки — в одном календаре. Сразу видно, что сдано, что на проверке и что требует внимания.',
+          ru: 'Все задания и сроки - в одном календаре. Сразу видно, что сдано, что на проверке и что требует внимания.',
           en: 'All assignments and due dates in one calendar. See at a glance what’s done, in review, or overdue.',
           kk: 'Барлық тапсырма мен мерзім бір күнтізбеде. Не тапсырылғаны, не тексерілуде, не кешіктірілгені бірден көрінеді.',
         }[l],
@@ -944,9 +944,9 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       notif: {
         title: { ru: 'Уведомления в реальном времени', en: 'Real-time notifications', kk: 'Нақты уақыттағы хабарламалар' }[l],
         text: {
-          ru: 'Новые материалы, оценки и ответы ИИ приходят мгновенно — ничего не нужно обновлять вручную.',
-          en: 'New materials, grades and AI replies arrive instantly — no manual refresh needed.',
-          kk: 'Жаңа материалдар, бағалар мен ЖИ жауаптары бірден келеді — қолмен жаңартудың қажеті жоқ.',
+          ru: 'Новые материалы, оценки и ответы ИИ приходят мгновенно - ничего не нужно обновлять вручную.',
+          en: 'New materials, grades and AI replies arrive instantly - no manual refresh needed.',
+          kk: 'Жаңа материалдар, бағалар мен ЖИ жауаптары бірден келеді - қолмен жаңартудың қажеті жоқ.',
         }[l],
       },
     },
@@ -959,30 +959,30 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       tab_ai: { ru: 'ИИ-чат', en: 'AI chat', kk: 'ЖИ-чат' }[l],
       title: { ru: 'ИИ, который прочитал все лекции вашего предмета', en: 'An AI that has read every lecture of your subject', kk: 'Пәніңіздің барлық дәрісін оқыған ЖИ' }[l],
       text: {
-        ru: 'Выберите предмет — с ним будет работать собственный ассистент, отвечающий со ссылками на конкретные лекции и файлы.',
+        ru: 'Выберите предмет - с ним будет работать собственный ассистент, отвечающий со ссылками на конкретные лекции и файлы.',
         en: 'Pick a subject and its dedicated assistant answers with references to specific lectures and files.',
-        kk: 'Пәнді таңдаңыз — оның жеке көмекшісі нақты дәрістер мен файлдарға сілтеме жасап жауап береді.',
+        kk: 'Пәнді таңдаңыз - оның жеке көмекшісі нақты дәрістер мен файлдарға сілтеме жасап жауап береді.',
       }[l],
       points: [
-        { ru: 'Знает контекст каждой лекции — темы, термины и формулы', en: 'Knows the context of every lecture — topics, terms and formulas', kk: 'Әр дәрістің контекстін біледі — тақырыптан формулаларға дейін' }[l],
-        { ru: 'Каждый ответ — со ссылкой на источник: лекцию или файл', en: 'Every answer cites its source — a lecture or a file', kk: 'Әр жауап дереккөзді көрсетеді — дәріс немесе файл' }[l],
+        { ru: 'Знает контекст каждой лекции - темы, термины и формулы', en: 'Knows the context of every lecture - topics, terms and formulas', kk: 'Әр дәрістің контекстін біледі - тақырыптан формулаларға дейін' }[l],
+        { ru: 'Каждый ответ - со ссылкой на источник: лекцию или файл', en: 'Every answer cites its source - a lecture or a file', kk: 'Әр жауап дереккөзді көрсетеді - дәріс немесе файл' }[l],
         { ru: 'Понимает графики и обозначения именно вашего курса', en: 'Understands your course’s graphs and notation', kk: 'Сіздің курсіңіздің графиктері мен белгіленімін түсінеді' }[l],
         { ru: 'Хранит историю ваших диалогов по каждому предмету', en: 'Keeps your per-subject conversation history', kk: 'Пән бойынша диалог тарихын сақтайды' }[l],
       ] as string[],
     },
     hl: {
       kicker: { ru: 'МАТЕРИАЛЫ И ВЫДЕЛЕНИЯ', en: 'MATERIALS & HIGHLIGHTS', kk: 'МАТЕРИАЛДАР МЕН БЕЛГІЛЕУЛЕР' }[l],
-      title: { ru: 'Выделяйте главное — и сразу спрашивайте ИИ', en: 'Highlight what matters — ask the AI right away', kk: 'Бастысын белгілеңіз — ЖИ-ден бірден сұраңыз' }[l],
+      title: { ru: 'Выделяйте главное - и сразу спрашивайте ИИ', en: 'Highlight what matters - ask the AI right away', kk: 'Бастысын белгілеңіз - ЖИ-ден бірден сұраңыз' }[l],
       text: {
-        ru: 'Откройте лекцию, выделите фрагмент и задайте вопрос по нему. Каждый отрывок сохраняется в панель «Мои выделения» — вместе с заметкой и номером страницы.',
-        en: 'Open a lecture, highlight a passage and ask about it. Every highlight is saved to “My highlights” — with its note and page number.',
+        ru: 'Откройте лекцию, выделите фрагмент и задайте вопрос по нему. Каждый отрывок сохраняется в панель «Мои выделения» - вместе с заметкой и номером страницы.',
+        en: 'Open a lecture, highlight a passage and ask about it. Every highlight is saved to “My highlights” - with its note and page number.',
         kk: 'Дәрісті ашыңыз, үзіндіні белгілеңіз және одан сұраңыз. Әр үзінді «Менің белгілеулерім» панелінде жазбасымен және бет нөмірімен сақталады.',
       }[l],
       points: [
         { ru: 'Четыре цвета выделения: жёлтый, зелёный, синий, красный', en: 'Four highlight colors: yellow, green, blue, red', kk: 'Төрт түс: сары, жасыл, көк, қызыл' }[l],
-        { ru: '«Спросить AI» — прямо из меню выделения', en: '“Ask AI” — straight from the selection menu', kk: '«AI-дан сұрау» — белгілеу мәзірінен бірден' }[l],
+        { ru: '«Спросить AI» - прямо из меню выделения', en: '“Ask AI” - straight from the selection menu', kk: '«AI-дан сұрау» - белгілеу мәзірінен бірден' }[l],
         { ru: 'Заметки к каждому выделению и переход на страницу', en: 'Notes on every highlight, with jump-to-page', kk: 'Әр белгілеуге жазба және бетке өту' }[l],
-        { ru: 'Все выделения предмета — в одной панели', en: 'All highlights of a subject in one panel', kk: 'Пәннің барлық белгілеулері бір панельде' }[l],
+        { ru: 'Все выделения предмета - в одной панели', en: 'All highlights of a subject in one panel', kk: 'Пәннің барлық белгілеулері бір панельде' }[l],
       ] as string[],
       doc_h: { ru: 'Лекция 2 · Динамика', en: 'Lecture 2 · Dynamics', kk: '2-дәріс · Динамика' }[l],
       doc_p1: {
@@ -1020,9 +1020,9 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         kk: 'дененің үдеуі resultant күшке тура пропорционал…',
       }[l],
       item1_note: {
-        ru: 'Классическое определение — спросить на семинаре',
-        en: 'Classic definition — ask at the seminar',
-        kk: 'Классикалық анықтама — семинарда сұрайық',
+        ru: 'Классическое определение - спросить на семинаре',
+        en: 'Classic definition - ask at the seminar',
+        kk: 'Классикалық анықтама - семинарда сұрайық',
       }[l],
       item1_meta: { ru: 'Лекция 2 · стр. 4', en: 'Lecture 2 · p. 4', kk: '2-дәріс · 4-бет' }[l],
       item2_text: {
@@ -1036,9 +1036,9 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       kicker: { ru: 'AI GRADER', en: 'AI GRADER', kk: 'AI GRADER' }[l],
       title: { ru: 'Проверка работ за секунды, а не дни', en: 'Grading in seconds, not days', kk: 'Тексеру күндер емес, секундтар ішінде' }[l],
       text: {
-        ru: 'Сдайте работу — AI Grader оценит её по критериям преподавателя и подробно объяснит, что получилось и что улучшить.',
-        en: 'Submit your work — AI Grader scores it against the teacher’s criteria and explains what worked and what to improve.',
-        kk: 'Жұмысты тапсырыңыз — AI Grader оны мұғалімнің критерийлері бойынша бағалап, не жақсы, не жақсарту керегін түсіндіреді.',
+        ru: 'Сдайте работу - AI Grader оценит её по критериям преподавателя и подробно объяснит, что получилось и что улучшить.',
+        en: 'Submit your work - AI Grader scores it against the teacher’s criteria and explains what worked and what to improve.',
+        kk: 'Жұмысты тапсырыңыз - AI Grader оны мұғалімнің критерийлері бойынша бағалап, не жақсы, не жақсарту керегін түсіндіреді.',
       }[l],
       points: [
         { ru: 'Балл и процент сразу после сдачи', en: 'Score and percentage right after submission', kk: 'Ұпай мен пайыз тапсырғаннан кейін' }[l],
@@ -1068,16 +1068,16 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       p4: { ru: 'Помощь с учёбой', en: 'Study help', kk: 'Оқуға көмек' }[l],
       m1: { ru: '12 материалов по физике', en: '12 materials in Physics', kk: 'Физика бойынша 12 материал' }[l],
       m2: { ru: '3 к сдаче на этой неделе', en: '3 due this week', kk: 'Осы аптада 3 тапсыру' }[l],
-      m3: { ru: 'ближайший — в пятницу', en: 'next one on Friday', kk: 'жакыны — жұма' }[l],
+      m3: { ru: 'ближайший - в пятницу', en: 'next one on Friday', kk: 'жакыны - жұма' }[l],
       m4: { ru: 'формулы, темы, черновики', en: 'formulas, topics, drafts', kk: 'формулалар, тақырыптар, жобалар' }[l],
     },
     jc: {
       kicker: { ru: 'ПРИСОЕДИНЕНИЕ', en: 'GET STARTED', kk: 'ҚОСЫЛУ' }[l],
-      title: { ru: 'Один код — и вы в предмете', en: 'One code and you are in', kk: 'Бір код — және сіз топта' }[l],
+      title: { ru: 'Один код - и вы в предмете', en: 'One code and you are in', kk: 'Бір код - және сіз топта' }[l],
       sub: {
-        ru: 'Преподаватель делится шестизначным кодом. Введите его — Chatra найдёт предмет и добавит вас к группе.',
-        en: 'The teacher shares a six-digit code. Enter it — Chatra finds the subject and adds you to the class.',
-        kk: 'Мұғалім алты таңбалы кодпен бөліседі. Енгізіңіз — Chatra пәнді тауып, топқа қосады.',
+        ru: 'Преподаватель делится шестизначным кодом. Введите его - Chatra найдёт предмет и добавит вас к группе.',
+        en: 'The teacher shares a six-digit code. Enter it - Chatra finds the subject and adds you to the class.',
+        kk: 'Мұғалім алты таңбалы кодпен бөліседі. Енгізіңіз - Chatra пәнді тауып, топқа қосады.',
       }[l],
       label: { ru: 'Код предмета', en: 'Class code', kk: 'Пән коды' }[l],
       join: { ru: 'Вступить', en: 'Join', kk: 'Қосылу' }[l],
@@ -1101,14 +1101,14 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
     },
     ai: {
       kicker: { ru: 'CHATRA AI', en: 'CHATRA AI', kk: 'CHATRA AI' }[l],
-      title: { ru: 'Ваш ИИ — за пределами предметов', en: 'Your AI, beyond every subject', kk: 'ЖИіңіз — пәндерден тыс' }[l],
+      title: { ru: 'Ваш ИИ - за пределами предметов', en: 'Your AI, beyond every subject', kk: 'ЖИіңіз - пәндерден тыс' }[l],
       sub: {
         ru: 'Отдельный ассистент для всего остального: подготовка к экзаменам, разбор сложных тем, черновики и идеи. Все диалоги сохраняются и всегда под рукой.',
         en: 'A separate assistant for everything else: exam prep, hard topics, drafts and ideas. Every conversation is saved and always at hand.',
         kk: 'Қалғанының бәріне арналған жеке көмекші: емтиханға дайындық, күрделі тақырыптар, жобалар мен идеялар. Әр диалог сақталады.',
       }[l],
       points: [
-        { ru: 'История всех диалогов — с поиском и закреплением', en: 'Full chat history — with search and pins', kk: 'Диалогтер тарихы — іздеу мен бекітумен' }[l],
+        { ru: 'История всех диалогов - с поиском и закреплением', en: 'Full chat history - with search and pins', kk: 'Диалогтер тарихы - іздеу мен бекітумен' }[l],
         { ru: 'Понимает формулы и академические обозначения', en: 'Understands formulas and academic notation', kk: 'Формулалар мен академиялық белгілерді түсінеді' }[l],
         { ru: 'Продолжайте разговор с места, где остановились', en: 'Pick up any conversation where you left off', kk: 'Әңгімені қалдырған жерден жалғастырыңыз' }[l],
       ] as string[],
@@ -1130,9 +1130,9 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       kicker: { ru: 'СТУДЕНТАМ И ПРЕПОДАВАТЕЛЯМ', en: 'FOR STUDENTS & TEACHERS', kk: 'СТУДЕНТЕРГЕ МЕН МҰҒАЛІМДЕРГЕ' }[l],
       title: { ru: 'Одна платформа для всей учебной группы', en: 'One platform for the whole class', kk: 'Толық топ үшін бір платформа' }[l],
       sub: {
-        ru: 'Студенты учатся и сдают работы. Преподаватели создают задания с критериями и принимают решения об оценках. AI ускоряет рутину — финальное слово всегда за человеком.',
-        en: 'Students study and submit work. Teachers create assignments with criteria and decide on grades. AI speeds up the routine — humans make the final call.',
-        kk: 'Студенттер оқып, жұмыс тапсырады. Мұғалімдер критерийлері бар тапсырмалар жасап, бағаны шешеді. ЖИ рутинді жылдамдатады — соңғы сөз әрқашан адамда.',
+        ru: 'Студенты учатся и сдают работы. Преподаватели создают задания с критериями и принимают решения об оценках. AI ускоряет рутину - финальное слово всегда за человеком.',
+        en: 'Students study and submit work. Teachers create assignments with criteria and decide on grades. AI speeds up the routine - humans make the final call.',
+        kk: 'Студенттер оқып, жұмыс тапсырады. Мұғалімдер критерийлері бар тапсырмалар жасап, бағаны шешеді. ЖИ рутинді жылдамдатады - соңғы сөз әрқашан адамда.',
       }[l],
       st_badge: { ru: 'Студент', en: 'Student', kk: 'Студент' }[l],
       te_badge: { ru: 'Преподаватель', en: 'Teacher', kk: 'Мұғалім' }[l],
@@ -1143,20 +1143,20 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       sub2: { ru: 'Задачи по рядам · Дана К.', en: 'Series problem set · Dana K.', kk: 'Қатарлар есептері · Дана К.' }[l],
       ai_suggested: { ru: 'предложено ИИ', en: 'suggested by AI', kk: 'ЖИ ұсынған' }[l],
       approve: { ru: 'Принять', en: 'Approve', kk: 'Қабылдау' }[l],
-      bridge: { ru: 'AI предлагает — преподаватель решает', en: 'AI suggests — the teacher decides', kk: 'ЖИ ұсынады — мұғалім шешеді' }[l],
+      bridge: { ru: 'AI предлагает - преподаватель решает', en: 'AI suggests - the teacher decides', kk: 'ЖИ ұсынады - мұғалім шешеді' }[l],
     },
     cal: {
       month: { ru: 'Октябрь', en: 'October', kk: 'Қазан' }[l],
       week: { ru: ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'], en: ['MO','TU','WE','TH','FR','SA','SU'], kk: ['ДҰ','СЙ','СӘ','БЕ','ЖҮ','СБ','ЖЕ'] }[l] as string[],
       n1: { ru: 'Новое задание: эссе «Этика ИИ»', en: 'New assignment: “Ethics of AI” essay', kk: 'Жаңа тапсырма: «ЖИ этикасы» эссе' }[l],
-      n2: { ru: '«Лабораторная №3» — дедлайн через 2 дня', en: '“Lab report №3” — due in 2 days', kk: '«№3 зертханалық жұмыс» — мерзім 2 күннен кейін' }[l],
-      n3: { ru: 'Работа «Задачи по рядам» оценена на 87/100', en: '“Series problem set” was graded 87/100', kk: '«Қатарлар есептері» — 87/100 болып бағаланды' }[l],
+      n2: { ru: '«Лабораторная №3» - дедлайн через 2 дня', en: '“Lab report №3” - due in 2 days', kk: '«№3 зертханалық жұмыс» - мерзім 2 күннен кейін' }[l],
+      n3: { ru: 'Работа «Задачи по рядам» оценена на 87/100', en: '“Series problem set” was graded 87/100', kk: '«Қатарлар есептері» - 87/100 болып бағаланды' }[l],
     },
     dl: {
       kicker: { ru: 'ЗАДАНИЯ И ДЕДЛАЙНЫ', en: 'ASSIGNMENTS & DEADLINES', kk: 'ТАПСЫРМАЛАР МЕН МЕРЗІМДЕР' }[l],
       title: { ru: 'Дедлайны больше не застают врасплох', en: 'Deadlines never sneak up on you', kk: 'Мерзімдер кенеттен таңқалдырмайды' }[l],
       sub: {
-        ru: 'У каждого задания — срок, баллы и статус. Сразу видно, что сдано, что на проверке и что просрочено.',
+        ru: 'У каждого задания - срок, баллы и статус. Сразу видно, что сдано, что на проверке и что просрочено.',
         en: 'Every assignment has a due date, points and a status. See at a glance what’s done, in review, or overdue.',
         kk: 'Әр тапсырмада мерзім, ұпай және статус. Не тапсырылғаны, не тексерілуде, не кешіктірілгені бірден көрінеді.',
       }[l],
