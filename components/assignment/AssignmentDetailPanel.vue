@@ -904,7 +904,7 @@ onMounted(async () => {
    сгруппированных таблицах iOS: раньше всё было одного тона и страница
    читалась как один длинный лист без структуры. */
 .adp { background: var(--bg); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-.adp.panel { border-radius: var(--r-xl); border: 1px solid var(--border); box-shadow: var(--sh-md); }
+.adp.panel { border-radius: 22px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(15,23,42,.05),0 18px 48px rgba(15,23,42,.10); }
 .adp.fullpage { border-radius: 0; }
 
 .adp-back {
@@ -920,7 +920,7 @@ onMounted(async () => {
 /* ── Шапка ─────────────────────────────────────────────────────────────── */
 .am-head {
   position: relative; z-index: 3;
-  display: flex; flex-direction: column; padding: 20px 26px 18px;
+  display: flex; flex-direction: column; padding: 22px 28px 19px;
   background: var(--surface);
   flex-shrink: 0;
   transition: box-shadow .25s ease-out;
@@ -931,7 +931,7 @@ onMounted(async () => {
 html.dark .am-head.scrolled { box-shadow: 0 1px 0 var(--border), 0 10px 24px rgba(0,0,0,.5); }
 .am-head-wash {
   position: absolute; inset: 0 0 auto 0; height: 100%;
-  background: linear-gradient(180deg, rgba(var(--teal-rgb), .07), rgba(var(--teal-rgb), 0) 78%);
+  background: radial-gradient(ellipse 75% 115% at 0% 0%, rgba(var(--teal-rgb), .12), rgba(var(--teal-rgb), 0) 72%);
   pointer-events: none;
 }
 .adp.panel .am-head-wash { border-radius: var(--r-xl) var(--r-xl) 0 0; }
@@ -941,12 +941,12 @@ html.dark .am-head.scrolled { box-shadow: 0 1px 0 var(--border), 0 10px 24px rgb
 .am-ico {
   width: 46px; height: 46px; flex-shrink: 0;
   background: linear-gradient(150deg, var(--teal-h), var(--teal-d)); color: #fff;
-  border-radius: 14px;
+  border-radius: 15px; border: 1px solid rgba(255,255,255,.28);
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 2px 5px rgba(var(--teal-rgb), .28), 0 8px 20px rgba(var(--teal-rgb), .26);
 }
 .am-title {
-  font-size: 21px; font-weight: 800; letter-spacing: -.025em; line-height: 1.2;
+  font-size: 22px; font-weight: 750; letter-spacing: -.028em; line-height: 1.15; font-optical-sizing: auto;
   color: var(--text1); margin-bottom: 9px; word-break: break-word;
 }
 .am-badges { display: flex; gap: 7px; flex-wrap: wrap; }
@@ -966,7 +966,7 @@ html.dark .am-head.scrolled { box-shadow: 0 1px 0 var(--border), 0 10px 24px rgb
 .am-tabs-wrap { position: relative; z-index: 2; background: var(--surface); padding: 0 26px 14px; flex-shrink: 0; }
 .am-tabs {
   display: flex; gap: 3px; padding: 3px;
-  background: var(--surface2);
+  background: var(--surface2); border: 1px solid var(--border);
   border-radius: 12px;
 }
 .am-tab {
@@ -997,14 +997,14 @@ html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rg
 .am-body {
   flex: 1; overflow-y: auto; padding: 20px 26px 32px;
   display: flex; flex-direction: column; gap: 20px;
-  background: var(--bg);
+  background: linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 88%, var(--surface) 12%));
 }
 .adp.panel .am-body { border-radius: 0 0 var(--r-xl) var(--r-xl); }
 
 /* Двухколоночная раскладка: слева описание/ответ, справа статус/оценка. */
-.ad-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 22px; align-items: start; }
+.ad-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px; align-items: start; }
 .ad-col-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-.ad-col-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; position: sticky; top: 0; }
+.ad-col-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; position: sticky; top: 12px; }
 
 /* ── Секции: заголовок «врезкой» над карточкой (iOS grouped list) ──────── */
 .section { display: flex; flex-direction: column; gap: 9px; }
@@ -1026,7 +1026,7 @@ html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rg
 
 .desc-block, .answer-text {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-xl); box-shadow: var(--sh-xs);
+  border-radius: 18px; box-shadow: 0 1px 2px rgba(15,23,42,.035),0 8px 20px rgba(15,23,42,.035);
 }
 .desc-block {
   font-size: 14px; color: var(--text2); line-height: 1.7;
@@ -1043,8 +1043,8 @@ html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rg
 .criterion {
   position: relative; overflow: hidden;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); padding: 13px 15px 14px 17px;
-  box-shadow: var(--sh-xs);
+  border-radius: 16px; padding: 14px 16px 15px 18px;
+  box-shadow: 0 1px 2px rgba(15,23,42,.035),0 6px 16px rgba(15,23,42,.025);
   transition: border-color .18s ease-out, box-shadow .18s ease-out, transform .18s cubic-bezier(.22,1,.36,1);
 }
 .criterion::before {
@@ -1083,8 +1083,8 @@ html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rg
 /* ── Форма сдачи ───────────────────────────────────────────────────────── */
 .submit-form {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-xl); box-shadow: var(--sh-xs);
-  padding: 18px; display: flex; flex-direction: column; gap: 16px;
+  border-radius: 18px; box-shadow: 0 1px 2px rgba(15,23,42,.04),0 10px 24px rgba(15,23,42,.04);
+  padding: 20px; display: flex; flex-direction: column; gap: 16px;
 }
 .field { display: flex; flex-direction: column; gap: 8px; }
 .field-label { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--text4); }
@@ -1097,7 +1097,7 @@ html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rg
 .inp-ta { resize: vertical; min-height: 130px; line-height: 1.65; }
 .btn-full { width: 100%; justify-content: center; padding: 12px 18px; font-size: 14px; }
 .file-drop {
-  border: 1.5px dashed var(--border2); border-radius: var(--r-lg); padding: 22px 16px;
+  border: 1.5px dashed var(--border2); border-radius: 16px; padding: 24px 16px;
   display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;
   background: var(--bg);
   transition: border-color .18s ease-out, background .18s ease-out, transform .12s cubic-bezier(.32,.72,0,1);
@@ -1486,6 +1486,11 @@ html.dark .status-mini.needs_review { color: #F0A94B; }
   .mgf-score-row { gap: 10px; }
   .mgf-input { width: 72px; font-size: 19px; }
   .mgf-pct { min-width: 48px; font-size: 13px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .am-head,.am-tab,.criterion,.file-drop,.attached-file-row .af-rm,.upload-bar-sm { transition-duration:.12s; }
+  .am-tab:active,.criterion:hover,.file-drop:active { transform:none; }
+  .grading-dots span { animation:none; }
 }
 @media (max-width:480px) {
   .am-head { padding: 12px 14px; }

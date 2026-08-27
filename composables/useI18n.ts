@@ -337,6 +337,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'assign.status.submitted': { ru: 'СДАНО', en: 'SUBMITTED', kk: 'ТАПСЫРЫЛДЫ' },
   'assign.status.overdue': { ru: 'ПРОСРОЧЕНО', en: 'OVERDUE', kk: 'МЕРЗІМІ ӨТКЕН' },
   'assign.status.not_started': { ru: 'НЕ НАЧАТО', en: 'NOT STARTED', kk: 'БАСТАЛМАҒАН' },
+  'assign.status.not_submitted': { ru: 'НЕ СДАНО', en: 'NOT SUBMITTED', kk: 'ТАПСЫРЫЛМАҒАН' },
   'assign.status.grading': { ru: 'ПРОВЕРЯЕТСЯ', en: 'GRADING', kk: 'ТЕКСЕРІЛУДЕ' },
   'assign.status.needs_review': { ru: 'НУЖНА ПРОВЕРКА УЧИТЕЛЕМ', en: 'NEEDS TEACHER REVIEW', kk: 'МҰҒАЛІМ ТЕКСЕРУІ ҚАЖЕТ' },
 

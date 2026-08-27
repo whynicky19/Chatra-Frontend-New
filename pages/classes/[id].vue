@@ -170,11 +170,10 @@
                     <div class="item-body">
                       <div class="item-row-top">
                         <div class="item-title">{{ a.title }}</div>
-                        <div v-if="isGraded(a)" :class="['status-badge', getStatusClass(a)]">{{ getStatusLabel(a) }}</div>
                       </div>
                       <div class="item-desc">{{ stripFilesFromText(a.description) }}</div>
                       <div class="item-meta">
-                        <span class="meta-date">
+                        <span v-if="a.deadline" class="meta-date">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                           {{ fmtDate(a.deadline) }}
                         </span>
@@ -184,9 +183,11 @@
                       <button v-if="canManage" class="item-menu-btn" @click.stop="toggleItemMenu($event, 'assignment-'+a.id)" :title="lang==='ru'?'Ещё':'More'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
                       </button>
-                      <button v-if="!isTeacher && isLate(a)" class="btn-late" @click.stop="goAssignment(a)">{{ t('class.submit_late') }}</button>
-                      <span v-else-if="!isTeacher && isInProgress(a)" class="btn-continue-link" @click.stop="goAssignment(a)">{{ t('class.continue') }}</span>
-                      <span v-else-if="!isTeacher" class="item-preview-link" @click.stop="goAssignment(a)">{{ t('class.preview') }}</span>
+                      <button
+                        v-if="!isTeacher"
+                        :class="['assignment-status-action', getStudentActionClass(a)]"
+                        @click.stop="goAssignment(a)"
+                      >{{ getStudentActionLabel(a) }}</button>
                     </div>
                   </div>
                 </div>
@@ -722,26 +723,22 @@ const mySubmissionsMap = computed(() => {
   return m
 })
 const isLate = (a: Assignment) => a.deadline && parseUtc(a.deadline) < new Date() && !mySubmissionsMap.value[a.id]
-const isInProgress = (a: Assignment) => mySubmissionsMap.value[a.id]?.status === 'submitted'
-const isGraded = (a: Assignment) => mySubmissionsMap.value[a.id]?.status === 'graded'
-const getStatusIconClass = (a: Assignment) => {
-  if (isLate(a)) return 'icon-late'
-  if (isInProgress(a)) return 'icon-progress'
-  return 'icon-default'
+const getStudentActionLabel = (a: Assignment) => {
+  const status = mySubmissionsMap.value[a.id]?.status
+  if (isLate(a)) return t('class.submit_late')
+  if (status === 'graded') return t('assign.status.graded')
+  if (status === 'submitted' || status === 'late') return t('assign.status.submitted')
+  if (status === 'grading') return t('assign.status.grading')
+  if (status === 'needs_review') return t('assign.status.needs_review')
+  return t('assign.status.not_submitted')
 }
-const getStatusClass = (a: Assignment) => {
-  const sub = mySubmissionsMap.value[a.id]
-  if (sub?.status === 'graded') return 'status-done'
-  if (sub?.status === 'submitted') return 'status-progress'
-  if (isLate(a)) return 'status-late'
-  return 'status-new'
-}
-const getStatusLabel = (a: Assignment) => {
-  const sub = mySubmissionsMap.value[a.id]
-  if (sub?.status === 'graded') return t('assign.status.graded')
-  if (sub?.status === 'submitted') return t('assign.status.submitted')
-  if (isLate(a)) return t('assign.status.overdue')
-  return t('assign.status.not_started')
+const getStudentActionClass = (a: Assignment) => {
+  const status = mySubmissionsMap.value[a.id]?.status
+  if (isLate(a)) return 'status-action-late'
+  if (status === 'graded') return 'status-action-graded'
+  if (status === 'submitted' || status === 'late') return 'status-action-submitted'
+  if (status === 'grading' || status === 'needs_review') return 'status-action-grading'
+  return 'status-action-pending'
 }
 const pendingCount = computed(() => assignments.value.filter(a => !mySubmissionsMap.value[a.id] && a.is_active).length)
 const doneCount = computed(() => mySubmissions.value.filter(s => s.status === 'submitted' || s.status === 'graded').length)
@@ -1165,13 +1162,6 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .item-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .meta-date,.meta-files{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--text4);background:var(--surface2);padding:3px 9px;border-radius:100px}
 
-.status-badge{flex-shrink:0;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:100px;letter-spacing:.04em;white-space:nowrap}
-.status-progress{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}
-.status-late{background:rgba(220,38,38,.1);color:var(--red);border:1px solid rgba(220,38,38,.2)}
-.status-new{background:var(--surface2);color:var(--text4);border:1px solid var(--border)}
-.status-done{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2)}
-.status-pending{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
-
 .item-row.item-disabled{cursor:default;opacity:.75}
 .item-row.item-disabled:hover{background:transparent}
 
@@ -1215,26 +1205,32 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .criterion-del-btn:hover:not(:disabled){background:var(--red-l);border-color:rgba(220,38,38,.2);color:var(--red)}
 .criterion-del-btn:disabled{opacity:.3;cursor:not-allowed}
 .criteria-total{font-size:12px;color:var(--text4);text-align:right;padding-top:4px}
-.item-preview-link{font-size:13px;font-weight:500;color:var(--text4);white-space:nowrap;cursor:pointer}
-.item-preview-link:hover{color:var(--teal)}
-.btn-continue-link{font-size:13px;font-weight:600;color:var(--teal);white-space:nowrap;cursor:pointer}
-.btn-continue-link:hover{opacity:.8}
-.btn-late{padding:7px 16px;border-radius:var(--r-md);background:var(--red);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:.04em;transition:opacity .15s}
-.btn-late:hover{opacity:.85}
+.assignment-status-action{min-height:26px;padding:6px 9px;border:0;border-radius:9px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;font-size:10px;font-weight:700;line-height:1;white-space:nowrap;letter-spacing:.025em;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 1px 2px rgba(15,23,42,.18);transition:transform .16s cubic-bezier(.2,.8,.2,1),filter .16s ease,box-shadow .16s ease}
+.assignment-status-action:hover{filter:brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 2px 5px rgba(15,23,42,.2)}
+.assignment-status-action:active{transform:scale(.96);filter:brightness(.94);box-shadow:inset 0 1px 2px rgba(0,0,0,.16)}
+.status-action-late{background:var(--red);color:#fff}
+.status-action-graded{background:var(--green);color:#fff}
+.status-action-submitted{background:var(--teal);color:#fff}
+.status-action-grading{background:var(--yellow);color:#342900}
+.status-action-pending{background:var(--text3);color:#fff}
+
+@media (prefers-reduced-motion:reduce){.assignment-status-action{transition:filter .12s ease}.assignment-status-action:active{transform:none}}
 
 .empty-state-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 40px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-2xl);gap:6px;text-align:center}
 .es-h{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:16.5px;font-weight:700;color:var(--text2)}
 .es-p{font-size:13px;color:var(--text4);max-width:260px;line-height:1.5}
 
-.sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px}
-/* Рейтинг — тёмная карточка с акцентом бренд-цвета (не сплошная заливка):
-   тонкая цветная рамка/подсветка по краю + сам номер и прогресс-бары в
-   акцентном цвете, а не просто белым по серому. */
-.score-card{background:linear-gradient(135deg,#2c2c2e,#1c1c1e);border:1px solid rgba(var(--teal-rgb),.35);box-shadow:0 8px 22px rgba(var(--teal-rgb),.16);color:#fff}
+.sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 28px rgba(15,23,42,.055)}
+/* В светлой теме карточка рейтинга — чистая приподнятая поверхность, как
+   секция iOS; цвет остаётся только у числа и прогресса. Тёмный материал
+   нужен лишь в тёмной теме, где он создаёт достаточный контраст. */
+.score-card{background:var(--surface);border-color:rgba(var(--teal-rgb),.22);box-shadow:0 1px 2px rgba(15,23,42,.04),0 12px 30px rgba(var(--teal-rgb),.10);color:var(--text1)}
+html.dark .score-card{background:linear-gradient(145deg,#2c2c2e,#1c1c1e);border-color:rgba(var(--teal-rgb),.35);box-shadow:0 8px 22px rgba(var(--teal-rgb),.16);color:#fff}
 .score-no-grades{font-size:12px;opacity:.7;margin-top:8px;font-style:italic}
 
 .mobile-stats{display:none}
-.ms-score{flex:1;min-width:140px;background:linear-gradient(135deg,#2c2c2e,#1c1c1e);border:1px solid rgba(var(--teal-rgb),.35);box-shadow:0 8px 22px rgba(var(--teal-rgb),.16);border-radius:var(--r-xl);padding:14px 16px;color:#fff}
+.ms-score{flex:1;min-width:140px;background:var(--surface);border:1px solid rgba(var(--teal-rgb),.22);box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 24px rgba(var(--teal-rgb),.08);border-radius:var(--r-xl);padding:14px 16px;color:var(--text1)}
+html.dark .ms-score{background:linear-gradient(145deg,#2c2c2e,#1c1c1e);border-color:rgba(var(--teal-rgb),.35);box-shadow:0 8px 22px rgba(var(--teal-rgb),.16);color:#fff}
 .ms-deadline{flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:14px 16px}
 .ms-score-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .ms-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
@@ -1244,7 +1240,8 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .ms-bar-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 .ms-bar-label{font-size:11px;opacity:.8}
 .ms-bar-val{font-size:11px;font-weight:700}
-.ms-bar{height:4px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden}
+.ms-bar{height:4px;background:var(--surface2);border-radius:4px;overflow:hidden}
+html.dark .ms-bar{background:rgba(255,255,255,.2)}
 .ms-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal-h),var(--teal));border-radius:4px;transition:width .4s}
 .ms-deadline .ms-label{color:var(--text4)}
 .ms-deadline-row{display:flex;align-items:center;gap:10px;margin-top:8px}
@@ -1262,7 +1259,8 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 .score-progress-row{display:flex;justify-content:space-between;margin-bottom:6px}
 .sp-label{font-size:10px;font-weight:700;letter-spacing:.06em;opacity:.7}
 .sp-value{font-size:11px;font-weight:700}
-.progress-bar{height:5px;background:rgba(255,255,255,.2);border-radius:100px;overflow:hidden;margin-bottom:4px}
+.progress-bar{height:5px;background:var(--surface2);border-radius:100px;overflow:hidden;margin-bottom:4px}
+html.dark .progress-bar{background:rgba(255,255,255,.2)}
 .pb-fill{height:100%;background:linear-gradient(90deg,var(--teal-h),var(--teal));border-radius:100px;transition:width .5s ease}
 .perf-fill{background:rgba(var(--teal-rgb),.55)}
 
@@ -1316,9 +1314,6 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
   .item-actions{gap:4px}
   .item-del{opacity:1;width:44px;height:44px}
   .item-menu-btn{width:44px;height:44px}
-  /* Карточка сама кликабельна — на мобильном текст "Предпросмотр задания"
-     лишний, как раньше была лишней кнопка "Открыть". */
-  .item-preview-link{display:none}
   /* Заголовок ближайшего дедлайна обрезался эллипсисом в узкой колонке —
      переносим на 2 строки вместо жёсткого обрезания. */
   .ms-deadline-title{white-space:normal;overflow:hidden;text-overflow:ellipsis;max-width:none;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
