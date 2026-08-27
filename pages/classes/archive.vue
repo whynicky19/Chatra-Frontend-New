@@ -127,7 +127,7 @@ onMounted(() => load())
 
 .pg-head{display:flex;align-items:center;gap:16px;margin-bottom:28px}
 .head-icon{width:52px;height:52px;border-radius:15px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0}
-.pg-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:30px;font-weight:800;color:var(--text1);letter-spacing:-.02em;line-height:1.1}
+.pg-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:30px;font-weight:800;color:var(--text1);letter-spacing:-.02em;line-height:1.1}
 .pg-sub{font-size:14px;color:var(--text4);margin-top:4px;line-height:1.4}
 
 .classes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
@@ -143,7 +143,7 @@ onMounted(() => load())
 .card-cover-dim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,transparent 55%,rgba(0,0,0,.18))}
 .card-archive-badge{position:absolute;top:10px;left:10px;z-index:2;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(0,0,0,.5);color:rgba(255,255,255,.95);padding:4px 10px;border-radius:100px;letter-spacing:.03em;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18)}
 .card-body{padding:16px 18px 14px}
-.card-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:16px;font-weight:700;color:var(--text1);line-height:1.25;margin-bottom:5px}
+.card-name{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:var(--text1);line-height:1.25;margin-bottom:5px}
 .card-desc{font-size:13px;color:var(--text4);line-height:1.5;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px}
 .card-action-btn{font-size:13px;font-weight:600;color:var(--teal);background:none;border:none;cursor:pointer;padding:0;font-family:inherit;transition:opacity .15s}

@@ -104,7 +104,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 .pg-head{padding:28px 32px 0;flex-shrink:0}
 .back-link{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--text4);text-decoration:none;margin-bottom:10px;transition:color .15s}
 .back-link:hover{color:var(--teal)}
-.pg-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:26px;font-weight:800;color:var(--text1);margin-bottom:4px}
+.pg-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:26px;font-weight:800;color:var(--text1);margin-bottom:4px}
 .pg-sub{font-size:14px;color:var(--text4)}
 .pg-body{padding:20px 32px 40px;display:flex;flex-direction:column;gap:20px}
 .scard{background:var(--surface);border-radius:20px;padding:24px;box-shadow:var(--sh-sm)}
@@ -117,7 +117,7 @@ html.dark .ai-track{background:var(--bg2)}
 .ai-fill.warn{background:linear-gradient(90deg,#f59e0b,#d97706)}
 .ai-fill.over{background:linear-gradient(90deg,var(--red),#dc2626)}
 .ai-nums{display:flex;align-items:baseline;gap:7px;margin-top:14px}
-.ai-nums strong{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:24px;font-weight:800;color:var(--text1);letter-spacing:-.02em}
+.ai-nums strong{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:24px;font-weight:800;color:var(--text1);letter-spacing:-.02em}
 .ai-nums span{font-size:13px;color:var(--text4)}
 .ai-left{margin-top:2px;font-size:13px;font-weight:600;color:var(--text2)}
 .ai-left.warn{color:#b45309}

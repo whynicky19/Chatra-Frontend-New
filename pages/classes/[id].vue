@@ -1104,7 +1104,7 @@ onMounted(async () => {
 .page-header-body{margin-bottom:0}
 /* Always-on light shadow — keeps the title readable even on very light/washed-out
    covers; .title-dark layers a stronger one on top for photo covers. */
-.page-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:26px;font-weight:900;color:var(--text1);letter-spacing:-.02em;text-shadow:0 1px 3px rgba(0,0,0,.1)}
+.page-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:26px;font-weight:900;color:var(--text1);letter-spacing:-.02em;text-shadow:0 1px 3px rgba(0,0,0,.1)}
 .page-header-actions{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 
 /* Tabs — iOS-style segmented control: equal-width segments floating inside a
@@ -1135,7 +1135,7 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 
 /* Обе плитки — одного веса и стиля, как в приложении: ни одно из двух
    действий не важнее другого, поэтому нет выделения цветом. */
-.quick-action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;background:var(--surface2);border:none;border-radius:var(--r-lg);color:var(--text1);font-size:13px;font-weight:600;letter-spacing:-.01em;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;cursor:pointer;transition:background .18s ease,transform .12s cubic-bezier(.32,.72,0,1)}
+.quick-action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;background:var(--surface2);border:none;border-radius:var(--r-lg);color:var(--text1);font-size:13px;font-weight:600;letter-spacing:-.01em;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;cursor:pointer;transition:background .18s ease,transform .12s cubic-bezier(.32,.72,0,1)}
 .quick-action-btn svg{flex-shrink:0}
 .quick-action-btn:hover{background:var(--surface3)}
 .quick-action-btn:active{transform:scale(.97)}
@@ -1217,7 +1217,7 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 @media (prefers-reduced-motion:reduce){.assignment-status-action{transition:filter .12s ease}.assignment-status-action:active{transform:none}}
 
 .empty-state-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 40px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-2xl);gap:6px;text-align:center}
-.es-h{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:16.5px;font-weight:700;color:var(--text2)}
+.es-h{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16.5px;font-weight:700;color:var(--text2)}
 .es-p{font-size:13px;color:var(--text4);max-width:260px;line-height:1.5}
 
 .sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 28px rgba(15,23,42,.055)}
@@ -1234,7 +1234,7 @@ html.dark .ms-score{background:linear-gradient(145deg,#2c2c2e,#1c1c1e);border-co
 .ms-deadline{flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:14px 16px}
 .ms-score-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .ms-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
-.ms-num{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:24px;font-weight:900;line-height:1}
+.ms-num{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:24px;font-weight:900;line-height:1}
 .ms-denom{font-size:13px;font-weight:500;opacity:.7;margin-left:2px}
 .ms-empty{font-size:11px;opacity:.7;font-style:italic;margin-top:4px}
 .ms-bar-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
@@ -1247,13 +1247,13 @@ html.dark .ms-bar{background:rgba(255,255,255,.2)}
 .ms-deadline-row{display:flex;align-items:center;gap:10px;margin-top:8px}
 .ms-date-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);padding:6px 10px;text-align:center;flex-shrink:0}
 .ms-month{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
-.ms-day{font-size:20px;font-weight:900;color:var(--text1);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;line-height:1.1}
+.ms-day{font-size:20px;font-weight:900;color:var(--text1);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.1}
 .ms-deadline-title{font-size:13px;font-weight:600;color:var(--text1);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
 .ms-deadline-rem{font-size:11px;color:var(--text4)}
 .score-count{font-size:11px;opacity:.65;margin-top:8px}
 .score-label{font-size:10px;font-weight:700;letter-spacing:.1em;opacity:.7;margin-bottom:8px}
 .score-num{display:flex;align-items:baseline;gap:6px;margin-bottom:16px}
-.score-big{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:52px;font-weight:900;line-height:1;color:var(--teal)}
+.score-big{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:52px;font-weight:900;line-height:1;color:var(--teal)}
 .score-total{font-size:16px;font-weight:600;opacity:.8}
 .score-pts{font-size:11px}
 .score-progress-row{display:flex;justify-content:space-between;margin-bottom:6px}
@@ -1268,7 +1268,7 @@ html.dark .progress-bar{background:rgba(255,255,255,.2)}
 .next-deadline-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
 .deadline-date-box{width:48px;height:52px;border-radius:var(--r-md);background:var(--surface2);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
 .ddb-month{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em}
-.ddb-day{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:22px;font-weight:900;color:var(--text1);line-height:1}
+.ddb-day{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:22px;font-weight:900;color:var(--text1);line-height:1}
 .deadline-title{font-size:13px;font-weight:700;color:var(--text1);margin-bottom:3px}
 .deadline-remaining{font-size:11px;color:var(--text4)}
 

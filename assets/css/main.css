@@ -1,6 +1,6 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font-size:14px;-webkit-text-size-adjust:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;color:var(--text1);background:var(--bg);-webkit-font-smoothing:antialiased}
+html{font-size:14px;-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:var(--text1);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-synthesis:none}
 #__nuxt{height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column}
 a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
 button{cursor:pointer;border:none;background:none;font-family:inherit;font-size:inherit;-webkit-tap-highlight-color:transparent}
@@ -147,7 +147,7 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(142,142,147,.5)}
 .page-leave-to-old{opacity:1}
 
 /* ====== BUTTONS ====== */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:var(--r-md);font-size:14px;font-weight:590;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;transition:transform .22s cubic-bezier(.32,.72,0,1),box-shadow .22s cubic-bezier(.32,.72,0,1),background .22s ease,color .18s ease,border-color .18s ease;cursor:pointer;border:none;white-space:nowrap;letter-spacing:-.01em;position:relative;overflow:hidden}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:var(--r-md);font-size:14px;font-weight:590;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;transition:transform .22s cubic-bezier(.32,.72,0,1),box-shadow .22s cubic-bezier(.32,.72,0,1),background .22s ease,color .18s ease,border-color .18s ease;cursor:pointer;border:none;white-space:nowrap;letter-spacing:-.01em;position:relative;overflow:hidden}
 .btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .2s}
 .btn:hover::after{background:rgba(255,255,255,.08)}
 .btn:active{transform:scale(.96)!important;transition:transform .1s}
@@ -184,7 +184,7 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(142,142,147,.5)}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-2xl);padding:26px;width:100%;max-width:480px;box-shadow:var(--sh-lg);max-height:calc(100vh - 40px);overflow-y:auto}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.modal-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:17px;font-weight:800;color:var(--text1)}
+.modal-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:17px;font-weight:800;color:var(--text1)}
 .modal-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
 
 /* ====== FORM ====== */
@@ -229,7 +229,7 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(142,142,147,.5)}
 
 /* ====== EMPTY ====== */
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}
-.empty-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:15px;font-weight:700;color:var(--text3)}
+.empty-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:var(--text3)}
 .empty-sub{font-size:12px;color:var(--text4)}
 
 /* ====== MISC ====== */
@@ -256,7 +256,7 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:rgba(142,142,147,.5)}
    Display для крупного), поэтому пиннить конкретное начертание не нужно —
    достаточно не мешать. font-optical-sizing делает то же для переменных
    шрифтов в остальных браузерах. */
-* { font-family: -apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',Roboto,sans-serif; font-optical-sizing: auto; }
+* { font-family: -apple-system,BlinkMacSystemFont,system-ui,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-optical-sizing: auto; }
 
 /* Трекинг задаётся ПО РАЗМЕРУ, а не один на всё: по мере роста кегля буквы
    читаются слишком раскинутыми и их нужно поджимать, а мелкий текст,

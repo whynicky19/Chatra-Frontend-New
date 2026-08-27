@@ -607,7 +607,7 @@ watch(() => auth.user?.id, async (newId) => {
 
 .pg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;gap:20px}
 .pg-head-left{flex:1;text-align:center}
-.pg-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:28px;font-weight:900;color:var(--text1);margin-bottom:6px;letter-spacing:-.02em;text-align:center}
+.pg-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:28px;font-weight:900;color:var(--text1);margin-bottom:6px;letter-spacing:-.02em;text-align:center}
 .pg-sub{font-size:14px;color:var(--text4);line-height:1.5;max-width:500px;text-align:center;margin:0 auto}
 .pg-head-r{display:flex;gap:10px;align-items:center;flex-shrink:0}
 .btn-outline-teal{display:flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r-md);border:1.5px solid var(--teal);background:transparent;color:var(--teal);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
@@ -653,7 +653,7 @@ watch(() => auth.user?.id, async (newId) => {
 /* Название — единственный явный заголовок карточки (декоративная иконка
    предмета рядом с ним убрана: она была одинаковой для всех карточек и не
    несла информации, только конкурировала за внимание с названием). */
-.card-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:17px;font-weight:800;color:var(--text1);line-height:1.25;margin-bottom:6px}
+.card-name{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:17px;font-weight:800;color:var(--text1);line-height:1.25;margin-bottom:6px}
 .card-desc{font-size:13px;color:var(--text4);line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card-meta{font-size:12px;color:var(--text4);margin-bottom:14px}
 .card-footer{border-top:1px solid var(--border);padding-top:14px}
@@ -698,7 +698,7 @@ watch(() => auth.user?.id, async (newId) => {
 
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;gap:12px;text-align:center}
 .es-icon-wrap{width:72px;height:72px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);margin-bottom:8px}
-.es-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:20px;font-weight:700;color:var(--text2)}
+.es-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:var(--text2)}
 .es-sub{font-size:14px;color:var(--text4);max-width:300px;line-height:1.6}
 .es-btn{margin-top:8px}
 
@@ -717,7 +717,7 @@ watch(() => auth.user?.id, async (newId) => {
 .join-icon-wrap{width:56px;height:56px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--teal);margin:2px auto 14px}
 .join-hint{font-size:13.5px;color:var(--text3);text-align:center;margin-bottom:22px;line-height:1.6;max-width:280px;margin-left:auto;margin-right:auto}
 .code-boxes{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
-.code-box{width:44px;height:54px;border:1.5px solid var(--border);border-radius:14px;background:var(--surface2);color:var(--text1);font-size:22px;font-weight:800;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,monospace;letter-spacing:.05em;transition:all .18s cubic-bezier(.4,0,.2,1);outline:none}
+.code-box{width:44px;height:54px;border:1.5px solid var(--border);border-radius:14px;background:var(--surface2);color:var(--text1);font-size:22px;font-weight:800;text-align:center;font-family:'SF Mono','Cascadia Mono','Consolas','Liberation Mono',Menlo,monospace;letter-spacing:.05em;transition:all .18s cubic-bezier(.4,0,.2,1);outline:none}
 .code-box:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(var(--teal-rgb),.15);background:rgba(var(--teal-rgb),.05);transform:translateY(-1px)}
 .join-err{font-size:12px;color:var(--red);text-align:center;font-weight:500;margin-top:4px}
 .join-found{margin-top:12px;border-radius:var(--r-lg);overflow:hidden;border:1px solid rgba(var(--teal-rgb),.25)}

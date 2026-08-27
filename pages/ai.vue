@@ -485,7 +485,7 @@ watch(() => store.activeId, () => scroll())
 /* flex-end: поле растёт вверх при переносе строк, кнопка отправки остаётся
    прижатой к нижней грани строки ввода. */
 .chat-inp { display: flex; align-items: flex-end; gap: 10px; padding: 16px 20px; background: var(--surface); backdrop-filter: blur(12px); border-top: 1px solid var(--border); position: relative; z-index: 2; flex-shrink: 0 }
-.chat-field { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 22px; padding: 11px 20px; font-size: 14px; line-height: 1.5; color: var(--text1); transition: border-color .2s, box-shadow .2s; font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif }
+.chat-field { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 22px; padding: 11px 20px; font-size: 14px; line-height: 1.5; color: var(--text1); transition: border-color .2s, box-shadow .2s; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif }
 .chat-field:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(var(--teal-rgb),.1) }
 .chat-field::placeholder { color: var(--text4) }
 .chat-field:disabled { opacity: .5 }

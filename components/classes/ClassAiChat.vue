@@ -546,7 +546,7 @@ onMounted(async () => {
 .ai-msgs { flex: 1; overflow-y: auto; padding: 56px 20px 18px; display: flex; flex-direction: column; gap: 14px; }
 
 .welcome { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; margin: auto; max-width: 440px; padding: 20px; }
-.welcome-title { font-family: -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif; font-size: 21px; font-weight: 900; color: var(--text1); }
+.welcome-title { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size: 21px; font-weight: 900; color: var(--text1); }
 .welcome-desc { font-size: 13px; color: var(--text4); line-height: 1.5; }
 .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-top: 8px; }
 .quick-btn { display: flex; align-items: center; gap: 9px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); font-size: 12px; color: var(--text2); cursor: pointer; text-align: left; transition: all .17s; font-family: inherit; }

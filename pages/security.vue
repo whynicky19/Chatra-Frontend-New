@@ -111,7 +111,7 @@ const doDeleteAccount = async () => {
 .pg-head{padding:28px 32px 0;flex-shrink:0}
 .back-link{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--text4);text-decoration:none;margin-bottom:10px;transition:color .15s}
 .back-link:hover{color:var(--teal)}
-.pg-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;font-size:26px;font-weight:800;color:var(--text1);margin-bottom:4px}
+.pg-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:26px;font-weight:800;color:var(--text1);margin-bottom:4px}
 .pg-sub{font-size:14px;color:var(--text4)}
 .pg-body{padding:20px 32px 40px;display:flex;flex-direction:column;gap:20px}
 .scard{background:var(--surface);border-radius:20px;padding:24px;box-shadow:var(--sh-sm)}
