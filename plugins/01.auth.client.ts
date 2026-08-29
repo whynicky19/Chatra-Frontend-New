@@ -1,6 +1,7 @@
 import { setActivePinia } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import { useOrgStore } from '~/stores/org.store'
+import { useAuth } from '~/composables/useAuth'
 
 export default defineNuxtPlugin((nuxtApp) => {
   if (!import.meta.client) return
@@ -22,4 +23,12 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const org = useOrgStore()
   org.init()
+
+  // Подтягиваем профиль сразу после восстановления токена: без этого
+  // role-gated страницы (calendar/notifications, которые редиректят
+  // учителей/админов на /) видят auth.user === null до первого явного
+  // вызова useAuth() и пропускают запрещённый контент.
+  if (auth.token) {
+    useAuth().fetchMe()
+  }
 })

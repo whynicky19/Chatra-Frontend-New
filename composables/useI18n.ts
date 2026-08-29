@@ -1,9 +1,8 @@
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 
 type Lang = 'ru' | 'en' | 'kk'
 
 const _lang = ref<Lang>('ru')
-let _ready = false
 
 export const translations: Record<string, Record<Lang, string>> = {
   // Sidebar
@@ -483,14 +482,6 @@ export const translations: Record<string, Record<Lang, string>> = {
 export const useI18n = () => {
   const lang = _lang
 
-  if (!_ready) {
-    onMounted(() => {
-      _ready = true
-      const saved = localStorage.getItem('_lang') as Lang
-      if (saved === 'en' || saved === 'ru' || saved === 'kk') _lang.value = saved
-    })
-  }
-
   const t = (key: string): string => {
     const entry = translations[key]
     if (!entry) return key
@@ -503,4 +494,12 @@ export const useI18n = () => {
   }
 
   return { t, lang, setLang }
+}
+
+// Прямой сеттер для инициализации из app.vue (заменяет нелегальный
+// onMounted внутри composable). Экспортируется отдельно, чтобы компонент
+// мог вызвать до первого рендера переводов.
+export const setI18nLang = (l: Lang) => {
+  _lang.value = l
+  if (import.meta.client) localStorage.setItem('_lang', l)
 }

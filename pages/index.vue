@@ -552,7 +552,16 @@ const onCreated = async (cls: any) => {
   await preloadImage(cls?.cover_thumbnail || cls?.cover_image)
   await refresh(true)
   if (cls?.id) {
-    try { await classesSvc.join(cls.id) } catch {}
+    // Бэкенд не делает auto-join владельца при создании класса — требуется
+    // отдельный POST. 409 already_member глотаем (повторный вход), всё
+    // остальное — тост: лучше узнать, чем молча остаться без членства.
+    try {
+      await classesSvc.join(cls.id)
+    } catch (e: any) {
+      if (e?.response?.status !== 409) {
+        toast.err(e?.response?.data?.detail || t('general.error'))
+      }
+    }
     if (!joinedIds.value.includes(cls.id)) { joinedIds.value.push(cls.id); saveJoined() }
   }
 }

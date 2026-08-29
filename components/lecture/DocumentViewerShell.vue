@@ -180,13 +180,14 @@ const fitPdfZoom = async (doc: any) => {
 
 // Токен загрузки PDF: повторный watch при быстрой смене файла запускал
 // параллельные getDocument — поздний resolve устаревшего документа затирал
-// pdfDoc свежего. Устаревший результат отбрасывается, а его документ
-// уничтожается (иначе pdfjs держит worker-ресурсы за каждый файл).
+// pdfDoc свежего. Устаревший результат отбрасывается, а сам документ просто
+// отвязывается от компонента: pdfjs-dist 6.x не экспортирует destroy() на
+// PDFDocumentProxy, worker-ресурсы освобождаются сборщиком мусора вместе с
+// последней ссылкой на doc.
 let pdfLoadSeq = 0
 
 const destroyPdfDoc = () => {
   if (pdfDoc.value) {
-    try { pdfDoc.value.destroy() } catch {}
     pdfDoc.value = null
   }
 }
@@ -197,10 +198,7 @@ const loadPdfDoc = async (url: string) => {
   try {
     const pdfjsLib = await loadPdfjs()
     const doc = await pdfjsLib.getDocument({ url }).promise
-    if (seq !== pdfLoadSeq) {
-      try { doc.destroy() } catch {}
-      return
-    }
+    if (seq !== pdfLoadSeq) return
     destroyPdfDoc()
     pdfDoc.value = doc
     pageCount.value = doc.numPages
@@ -490,7 +488,10 @@ const askAi = () => {
 
 /* ── Переход к сохранённому выделению ──────────────────────────────────── */
 
-const findMark = (id: string) => rootEl.value?.querySelector<HTMLElement>(`[data-hl-id="${id}"]`) || null
+// id приходит числом из API (Annotation.id), но querySelector всё равно
+// приведёт его к строке в селекторе — принимаем оба типа, чтобы не падать
+// на type-check и не дублировать String() в каждом вызове.
+const findMark = (id: number | string) => rootEl.value?.querySelector<HTMLElement>(`[data-hl-id="${id}"]`) || null
 
 const waitUntil = async (cond: () => boolean, tries = 50): Promise<boolean> => {
   for (let i = 0; i < tries; i++) {
@@ -588,8 +589,8 @@ onUnmounted(() => {
   rootEl.value?.removeEventListener('scroll', onScrollCapture, true)
   if (resizeTimer) clearTimeout(resizeTimer)
   if (selTimer) clearTimeout(selTimer)
-  // pdfjs-документы держат worker-ресурсы: без destroy() каждый открытый
-  // PDF утекал до конца жизни страницы.
+  // Отвязываем pdfjs-документ от компонента: дальше worker-ресурсы
+  // освобождает GC по последней ссылке. Подробнее — см. destroyPdfDoc().
   pdfLoadSeq++
   destroyPdfDoc()
   if (surfaceEl.value) clearMarks(surfaceEl.value)

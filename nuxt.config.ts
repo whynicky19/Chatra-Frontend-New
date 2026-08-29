@@ -10,7 +10,7 @@ export default defineNuxtConfig({
       // Тот же бэкенд, что у мобильного приложения — данные общие. Дефолт —
       // локальный бэкенд для разработки; в проде задаётся через переменную
       // окружения NUXT_PUBLIC_API_BASE (реальный HTTPS-домен).
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api',
+      apiBase: import.meta.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api',
     },
   },
   app: {
