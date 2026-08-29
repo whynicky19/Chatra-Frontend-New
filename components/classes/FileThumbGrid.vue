@@ -34,7 +34,9 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
   .ftg-tile:hover { transform: translateY(-2px); }
   .ftg-tile:hover .ftg-box { box-shadow: var(--sh-sm); border-color: var(--border2); }
 }
-.ftg-img { width: 100%; height: 100%; object-fit: cover; }
+/* object-fit:contain + подложка: превью любой картинки (даже с альфа-каналом)
+   видно целиком в обеих темах, без обрезки и без «растворения» в фоне. */
+.ftg-img { width: 100%; height: 100%; object-fit: contain; background: var(--surface2); padding: 4px; }
 .ftg-file-art { width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,var(--surface),var(--bg)); }
 .ftg-name { font-size: 11.5px; font-weight: 650; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
 

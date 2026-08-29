@@ -635,7 +635,11 @@ onUnmounted(() => {
 .dvs-image-wrap { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 24px; }
 .dvs-image { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--r-sm); box-shadow: var(--sh-md); }
 
-.dvs-docx { flex: 1; width: 100%; padding: 32px; background: #fff; overflow: auto; }
+/* Документ оставляем «бумажным» (светлый фон), но явно красим текст — иначе
+   docx-preview наследует белый color от body в тёмной теме и весь контент
+   растворяется в белом фоне. */
+.dvs-docx { flex: 1; width: 100%; padding: 32px; background: #fff; color: #1C1C1E; overflow: auto; }
+.dvs-docx :deep(section), .dvs-docx :deep(article), .dvs-docx :deep(p), .dvs-docx :deep(span), .dvs-docx :deep(h1), .dvs-docx :deep(h2), .dvs-docx :deep(h3), .dvs-docx :deep(h4), .dvs-docx :deep(li), .dvs-docx :deep(td), .dvs-docx :deep(th) { color: inherit; }
 .dvs-docx > :deep(*) { margin-left: auto; margin-right: auto; }
 
 .dvs-sheet { width: 100%; padding: 20px; overflow: auto; }

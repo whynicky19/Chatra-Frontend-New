@@ -38,8 +38,11 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
 .flc-row:hover .flc-chevron { color: var(--teal); transform: translateX(2px); opacity: 1; }
 .flc-row:active { background: var(--glass2); }
 .flc-row:active :deep(.fti), .flc-row:active .flc-thumb { transform: scale(.96); }
-.flc-thumb { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; transition: transform .1s ease-out; }
-.flc-thumb { object-fit: cover; }
+/* object-fit:contain + тёмный фон-подложка: превью любой картинки (даже
+   с альфа-каналом) видно целиком в обеих темах. Раньше object-fit:cover
+   обрезал неквадратные фото по краям, а прозрачные PNG растворялись в
+   фоне карточки -- выглядело как «фото не показываются». */
+.flc-thumb { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; transition: transform .1s ease-out; background: var(--surface2); padding: 2px; object-fit: contain; }
 .flc-info { flex: 1; min-width: 0; }
 .flc-name { font-size: 13.5px; font-weight: 650; letter-spacing: -.01em; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .flc-type { font-size: 11.5px; color: var(--text4); letter-spacing: .02em; margin-top: 1px; }

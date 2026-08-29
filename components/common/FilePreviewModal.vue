@@ -89,8 +89,14 @@ watch(() => previewFile.value?.url, (url) => { if (url) load(previewFile.value) 
 .fp-iframe{width:100%;min-height:78vh;border:none}
 /* flex:1 — теперь это прямой flex-child .fp-modal (вынесен из .fp-body,
    см. комментарий в шаблоне), без display:flex — иначе сломало бы внутреннюю
-   постраничную вёрстку, которую генерирует docx-preview. */
-.fp-docx{flex:1;width:100%;padding:24px;background:#fff;overflow:auto}
+   постраничную вёрстку, которую генерирует docx-preview.
+   color: задаём явно — docx-preview рисует текст без своего цвета и он
+   наследуется от body, который в тёмной теме белый (#FFF). С захардкоженным
+   белым фоном .fp-docx получался белый текст на белом фоне — содержимое
+   docx в тёмной теме пропадало. Документ оставляем «бумажным» (светлый фон)
+   и принудительно красим текст в тёмный. */
+.fp-docx{flex:1;width:100%;padding:24px;background:#fff;color:#1C1C1E;overflow:auto}
+.fp-docx :deep(section),.fp-docx :deep(article),.fp-docx :deep(p),.fp-docx :deep(span),.fp-docx :deep(h1),.fp-docx :deep(h2),.fp-docx :deep(h3),.fp-docx :deep(h4),.fp-docx :deep(li),.fp-docx :deep(td),.fp-docx :deep(th){color:inherit}
 .fp-sheet{width:100%;padding:16px;overflow:auto}
 .fp-sheet :deep(table){border-collapse:collapse;font-size:13px}
 .fp-sheet :deep(td),.fp-sheet :deep(th){border:1px solid var(--border);padding:4px 8px;white-space:nowrap}
