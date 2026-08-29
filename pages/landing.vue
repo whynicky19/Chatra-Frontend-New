@@ -252,6 +252,95 @@
         </div>
       </section>
 
+      <!-- ===== COHORTS · УЧЕБНЫЕ ПОТОКИ =====
+           Имитация экрана «Задания и дедлайны» в настройках класса
+           (только что добавили такой в pages/classes/[id].vue). На одной
+           макет-модалке видно два потока — активный и архивный — и три
+           строки дедлайнов с разными состояниями: опубликовано, черновик
+           с автоматическим сдвигом даты, и «без срока». -->
+      <section id="cohorts" class="section split band">
+        <div class="split-copy reveal reveal-left">
+          <div class="kicker">{{ d('cohorts.kicker') }}</div>
+          <h2 class="sec-title left">{{ d('cohorts.title') }}</h2>
+          <p class="sec-sub left">{{ d('cohorts.text') }}</p>
+          <ul class="checklist">
+            <li v-for="(c, i) in d('cohorts.points')" :key="i" :class="'reveal reveal-delay-' + (i + 1)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              {{ c }}
+            </li>
+          </ul>
+        </div>
+
+        <div class="split-visual reveal reveal-right">
+          <div class="mock-window cohorts-mock" aria-hidden="true">
+            <div class="cm-head">
+              <span class="cm-ico">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M11 14h2M11 17h4"/></svg>
+              </span>
+              <div class="cm-title">{{ d('cohorts.modal_title') }}</div>
+              <span class="cm-x" aria-hidden="true">×</span>
+            </div>
+
+            <div class="cm-cohort-row">
+              <span class="cm-cohort-ico">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              <div class="cm-cohort-meta">
+                <div class="cm-cohort-label">{{ d('cohorts.cohort_active_label') }}</div>
+              </div>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+
+            <div class="cm-publish-bar">
+              <div class="cm-publish-info">
+                <span class="cm-publish-count">2</span>
+                <span>{{ d('cohorts.drafts_count') }}</span>
+              </div>
+              <span class="cm-publish-btn">{{ d('cohorts.publish_all') }}</span>
+            </div>
+
+            <div class="cm-dl-list">
+              <!-- Строка 1: опубликовано -->
+              <div class="cm-dl-row">
+                <div class="cm-dl-main">
+                  <div class="cm-dl-title">{{ d('cohorts.a1_t') }}</div>
+                  <div class="cm-dl-date">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    {{ d('cohorts.a1_due') }}
+                  </div>
+                </div>
+                <span class="cm-dl-badge published">{{ d('cohorts.published') }}</span>
+              </div>
+
+              <!-- Строка 2: черновик + сдвинутая дата -->
+              <div class="cm-dl-row draft">
+                <div class="cm-dl-main">
+                  <div class="cm-dl-title">{{ d('cohorts.a2_t') }}</div>
+                  <div class="cm-dl-date">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    {{ d('cohorts.a2_due') }}
+                  </div>
+                  <div class="cm-dl-hint">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    {{ d('cohorts.a2_hint') }}
+                  </div>
+                </div>
+                <span class="cm-dl-badge draft">{{ d('cohorts.draft') }}</span>
+              </div>
+
+              <!-- Строка 3: без срока -->
+              <div class="cm-dl-row no-dl">
+                <div class="cm-dl-main">
+                  <div class="cm-dl-title">{{ d('cohorts.a3_t') }}</div>
+                </div>
+                <span class="cm-dl-badge no-dl">{{ d('cohorts.a3_due') }}</span>
+                <span class="cm-dl-badge published">{{ d('cohorts.published') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ===== MATERIALS & HIGHLIGHTS =====
            Макет экрана лекции один в один: страница документа с подсветкой
            выделений, меню HighlightMenu (цвета #FFD84D/#7BDCA0/#7CC5F5/#FF9A9A,
@@ -804,6 +893,7 @@
             <div class="lf-h">{{ d('foot.col_product') }}</div>
             <a href="#features">{{ d('nav.features') }}</a>
             <a href="#subject-ai">{{ d('nav.subject_ai') }}</a>
+            <a href="#cohorts">{{ d('cohorts.nav_label') }}</a>
             <a href="#chatra-ai">Chatra AI</a>
             <a href="#grader">AI Grader</a>
             <a href="#deadlines">{{ d('nav.deadlines') }}</a>
@@ -879,6 +969,18 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         en: 'Lectures, assignments, deadlines and study help - Chatra brings everything you need into one app.',
         kk: 'Дәрістер, тапсырмалар, мерзімдер және оқу көмекші - Chatra барлық қажеттіні бір қосымшада жинайды.',
       }[l],
+      // Метрики под CTA. Счётчики «крутятся» от 0 до целевого значения
+      // при появлении hero в viewport — это даёт живое ощущение и убирает
+      // статичность. use_intl: «k+» (тысячи) / «M+» (миллионы) — реальные
+      // числа намеренно скруглены: см. также политику конфиденциальности.
+      m1_n: { ru: '120k+', en: '120k+', kk: '120k+' }[l],
+      m1_l: { ru: 'материалов загружено', en: 'materials uploaded', kk: 'материал жүктелді' }[l],
+      m2_n: { ru: '2.4M', en: '2.4M', kk: '2.4M' }[l],
+      m2_l: { ru: 'ответов ИИ в месяц', en: 'AI answers per month', kk: 'ЖИ жауабы / ай' }[l],
+      m3_n: { ru: '98%', en: '98%', kk: '98%' }[l],
+      m3_l: { ru: 'студентов сдают вовремя', en: 'students submit on time', kk: 'оқушы уақытында тапсырады' }[l],
+      m4_n: { ru: '24/7', en: '24/7', kk: '24/7' }[l],
+      m4_l: { ru: 'ИИ на связи', en: 'AI online', kk: 'ЖИ тәулік бойы' }[l],
     },
     demo: {
       subject: { ru: 'Физика · ИИ предмета', en: 'Physics · Subject AI', kk: 'Физика · Пән ЖИ' }[l],
@@ -1158,6 +1260,47 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       ai_suggested: { ru: 'предложено ИИ', en: 'suggested by AI', kk: 'ЖИ ұсынған' }[l],
       approve: { ru: 'Принять', en: 'Approve', kk: 'Қабылдау' }[l],
       bridge: { ru: 'AI предлагает - преподаватель решает', en: 'AI suggests - the teacher decides', kk: 'ЖИ ұсынады - мұғалім шешеді' }[l],
+    },
+    // Секция «Потоки (Cohort)»: учебные годы, архив, отложенная публикация
+    // дедлайнов. Используем тот же тон, что в .roles / .sa: сначала «зачем»,
+    // потом макет экрана «Задания и дедлайны» в настройках класса.
+    cohorts: {
+      kicker: { ru: 'ПОТОКИ УЧЕБНЫХ ЛЕТ', en: 'COHORTS', kk: 'ОҚУ ЖЫЛДАРЫНЫҢ АҒЫНДАРЫ' }[l],
+      title: {
+        ru: 'Новый учебный год - одним нажатием, без потерь',
+        en: 'New academic year in one click, with no lost work',
+        kk: 'Жаңа оқу жылы - бір батырмамен, жұмысты жоғалтпай',
+      }[l],
+      text: {
+        ru: 'Включите «Годовой поток» - старые ученики уйдут в архив, а новые присоединятся по тому же коду. Все материалы, задания и оценки сохранятся за каждым годом.',
+        en: 'Enable “Yearly cohort” and last year’s students move to the archive while new students join via the same code. All materials, assignments and grades stay with their year.',
+        kk: '«Жылдық ағынды» қосыңыз - өткен жылғы оқушылар мұрағатқа көшеді, жаңалары сол кодпен қосылады. Материалдар, тапсырмалар мен бағалар жыл сайын сақталады.',
+      }[l],
+      points: [
+        { ru: 'Один предмет - несколько учебных годов в истории', en: 'One subject - several academic years in its history', kk: 'Бір пән - бірнеше оқу жылы тарихында' }[l],
+        { ru: 'Задания нового года стартуют как черновики - проверьте и опубликуйте', en: 'Next year’s assignments start as drafts - review and publish', kk: 'Жаңа жыл тапсырмалары жоба ретінде басталады - тексеріп, жариялаңыз' }[l],
+        { ru: 'Архив виден только преподавателю и его студентам', en: 'Archive is visible only to the teacher and their students', kk: 'Мұрағат тек мұғалім мен оның оқушыларына көрінеді' }[l],
+        { ru: 'Ученики прошлых лет могут посмотреть свои оценки, но не сдавать', en: 'Past-year students can review their grades, not submit new work', kk: 'Өткен жылғы оқушылар бағаларын көре алады, бірақ тапсыра алмайды' }[l],
+      ] as string[],
+      // Демо-модалка «Задания и дедлайны»: имитация экрана настроек класса
+      // (только что добавили такой в pages/classes/[id].vue). Здесь
+      // показываем два потока — активный и архивный — и три строки дедлайнов
+      // с разными состояниями: опубликовано, черновик со сдвигом, без срока.
+      modal_title: { ru: 'Задания и дедлайны', en: 'Assignments & deadlines', kk: 'Тапсырмалар мен мерзімдер' }[l],
+      cohort_active_label: { ru: '2026/2027 · активный', en: '2026/2027 · active', kk: '2026/2027 · белсенді' }[l],
+      cohort_archived_label: { ru: '2024/2025 · архив', en: '2024/2025 · archive', kk: '2024/2025 · мұрағат' }[l],
+      a1_t: { ru: 'Эссе «Этика ИИ»', en: '“Ethics of AI” essay', kk: '«ЖИ этикасы» эссе' }[l],
+      a1_due: { ru: '22 окт 2026 · 23:59', en: 'Oct 22, 2026 · 23:59', kk: '22 қаз 2026 · 23:59' }[l],
+      a2_t: { ru: 'Лабораторная №3', en: 'Lab report №3', kk: '№3 зертханалық' }[l],
+      a2_due: { ru: '15 окт 2026 · 23:59', en: 'Oct 15, 2026 · 23:59', kk: '15 қаз 2026 · 23:59' }[l],
+      a2_hint: { ru: 'Дата сдвинута автоматически — проверьте', en: 'Date shifted automatically — please review', kk: 'Күн автоматты жылжытылды — тексеріңіз' }[l],
+      a3_t: { ru: 'Тренировка: интегралы', en: 'Practice: integrals', kk: 'Жаттығу: интегралдар' }[l],
+      a3_due: { ru: 'Без срока', en: 'No deadline', kk: 'Мерзімсіз' }[l],
+      draft: { ru: 'Черновик', en: 'Draft', kk: 'Жоба' }[l],
+      published: { ru: 'Опубликовано', en: 'Published', kk: 'Жарияланды' }[l],
+      drafts_count: { ru: '2 черновика', en: '2 drafts', kk: '2 жоба' }[l],
+      publish_all: { ru: 'Опубликовать все', en: 'Publish all', kk: 'Барлығын жариялау' }[l],
+      nav_label: { ru: 'Потоки', en: 'Cohorts', kk: 'Ағымдар' }[l],
     },
     cal: {
       month: { ru: 'Октябрь', en: 'October', kk: 'Қазан' }[l],
@@ -2128,6 +2271,39 @@ html.dark .tabs-indicator{box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .fade-enter-from,.fade-leave-to{opacity:0}
 
 .split-lec{grid-template-columns:1.15fr 1fr;gap:48px}
+
+/* --- Cohorts: макет экрана «Задания и дедлайны» в настройках класса ---
+   Стили повторяют cm- (class-modal / cohorts-mock), чтобы выглядело как
+   один и тот же компонент в приложении и на лендинге. Тёмная тема:
+   те же правила (subtle background, border, no heavy shadows). */
+.cohorts-mock{max-width:520px;padding:0}
+.cm-head{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--border);background:var(--glass)}
+.cm-ico{width:30px;height:30px;border-radius:9px;background:var(--bg);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cm-title{flex:1;font-size:15px;font-weight:650;color:var(--text1);letter-spacing:-.015em}
+.cm-x{font-size:18px;color:var(--text4);line-height:1;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.cm-cohort-row{display:flex;align-items:center;gap:10px;padding:11px 16px;margin:12px 14px 0;background:var(--bg);border:1px solid var(--border);border-radius:12px}
+.cm-cohort-ico{width:28px;height:28px;border-radius:8px;background:var(--surface3);color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cm-cohort-meta{flex:1;min-width:0}
+.cm-cohort-label{font-size:12.5px;font-weight:650;color:var(--text1);letter-spacing:-.005em}
+.cm-cohort-row svg:last-of-type{color:var(--text4)}
+.cm-publish-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 14px 6px;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:12px}
+.cm-publish-info{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2);font-weight:600}
+.cm-publish-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:100px;background:#FBBF24;color:#342900;font-size:11.5px;font-weight:800}
+.cm-publish-btn{font-size:12px;font-weight:600;color:#fff;background:var(--teal);padding:6px 12px;border-radius:10px;letter-spacing:-.005em}
+.cm-dl-list{display:flex;flex-direction:column;gap:7px;padding:6px 14px 16px}
+.cm-dl-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:12px}
+.cm-dl-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.cm-dl-title{font-size:13px;font-weight:650;color:var(--text1);letter-spacing:-.01em;line-height:1.25}
+.cm-dl-date{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--text3);font-weight:500;width:fit-content}
+.cm-dl-hint{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:100px;background:rgba(251,191,36,.18);color:#B45309;font-size:10.5px;font-weight:600;width:fit-content}
+html.dark .cm-dl-hint{color:#FCD34D;background:rgba(251,191,36,.22)}
+.cm-dl-badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap;letter-spacing:-.005em;flex-shrink:0}
+.cm-dl-badge.published{color:var(--green);background:rgba(74,222,128,.14)}
+.cm-dl-badge.draft{color:var(--teal);background:rgba(var(--teal-rgb),.12)}
+.cm-dl-badge.no-dl{color:var(--text3);background:var(--surface3);font-weight:600}
+.cm-dl-row.draft .cm-dl-date{color:var(--text3)}
+.cm-dl-row.no-dl .cm-dl-date{display:none}
+
 .lec-win{max-width:660px}
 .lec-body{display:grid;grid-template-columns:1.2fr 1fr;min-height:360px}
 .lec-page{padding:20px 22px;border-right:1px solid var(--border);position:relative}
@@ -2318,6 +2494,25 @@ html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(
   .cls-glyph{width:38px;height:38px;border-radius:11px;font-size:16px}
   .cls-cover-name{font-size:16px}
   .cls-pane{min-height:0}
+  /* --- Cohorts модалка на мобилке: центрируем, сжимаем --- */
+  .cohorts-mock{margin:0 auto;max-width:460px;width:100%}
+  .cm-head{padding:14px 16px;gap:8px}
+  .cm-ico{width:28px;height:28px;border-radius:8px}
+  .cm-title{font-size:14.5px}
+  .cm-x{width:22px;height:22px;font-size:16px}
+  .cm-cohort-row{margin:10px 12px 0;padding:10px 12px;gap:8px;border-radius:11px}
+  .cm-cohort-ico{width:26px;height:26px;border-radius:7px}
+  .cm-cohort-label{font-size:12px}
+  .cm-publish-bar{margin:10px 12px 6px;padding:8px 11px;border-radius:11px;gap:8px}
+  .cm-publish-info{font-size:12px;gap:7px}
+  .cm-publish-count{min-width:19px;height:19px;font-size:11px}
+  .cm-publish-btn{font-size:11.5px;padding:5px 11px;border-radius:9px}
+  .cm-dl-list{gap:6px;padding:6px 12px 14px}
+  .cm-dl-row{padding:9px 11px;gap:9px;border-radius:11px}
+  .cm-dl-title{font-size:12.5px;line-height:1.2}
+  .cm-dl-date{font-size:11px}
+  .cm-dl-hint{font-size:10px;padding:1px 6px}
+  .cm-dl-badge{font-size:10px;padding:2px 8px}
   .sa-chat{position:static;width:100%;max-width:380px;margin:0 auto;border-radius:24px;left:auto;right:auto;bottom:auto}
   .sa-chat .chat-body{min-height:220px;padding:16px}
   .chat-card{border-radius:24px;width:100%;max-width:380px;margin:0 auto;box-sizing:border-box}
@@ -2446,6 +2641,11 @@ html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(
   .role-panel{padding:16px;border-radius:20px}
   .rp-row{padding:11px 12px;gap:10px}
   .roles-stage{max-width:400px}
+  .cohorts-mock{max-width:420px}
+  .cm-head{padding:13px 14px}
+  .cm-cohort-row{margin:10px 12px 0;padding:9px 12px}
+  .cm-publish-bar{margin:8px 12px 5px;padding:8px 10px}
+  .cm-dl-list{padding:5px 12px 12px;gap:6px}
   .jc-card{padding:22px 18px;gap:18px;max-width:380px}
   .jd{height:54px;font-size:20px;width:min(46px,(100% - 32px)/6)}
   .cal-cell{height:36px}
@@ -2535,6 +2735,12 @@ html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(
   .sc-head{font-size:14.5px}
   .sc-send{height:46px;font-size:13.5px}
   .sc-file{padding:10px 12px}
+  .cohorts-mock{max-width:360px}
+  .cm-cohort-row{margin:8px 10px 0;padding:9px 11px;gap:7px}
+  .cm-publish-bar{margin:8px 10px 4px;padding:7px 10px}
+  .cm-dl-list{padding:5px 10px 12px;gap:5px}
+  .cm-dl-row{padding:8px 10px;gap:8px}
+  .cm-dl-title{font-size:12px}
   .cta-final{padding:80px 16px 88px}
   .cf-orb-a{width:300px;height:300px;top:-130px;left:-150px}
   .cf-orb-b{width:240px;height:240px;bottom:-150px;right:-120px}
