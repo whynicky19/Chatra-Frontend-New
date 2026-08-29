@@ -15,63 +15,26 @@
       </header>
 
     <main class="l-main">
-      <!-- ===== HERO ===== -->
+      <!-- ===== HERO =====
+           Apple-style: огромный центрированный заголовок в 2 строки, под ним
+           короткий подзаголовок, одна кнопка. Моков UI в hero нет — этот
+           экран для первого впечатления, не для демо функций (фичи и моки
+           показаны в следующих секциях). Aurora-облака (.orb-a/b/c) —
+           чисто фоновый декор, не отвлекают от текста. -->
       <section class="hero">
-          <!-- Живые "облака" в hero. Дрейфуют по @keyframes orb-drift с разной
-               фазой/duration, чтобы движение не выглядело "синхронным". На
-               prefers-reduced-motion паузятся через общий media-query ниже. -->
-          <div class="orb orb-a" aria-hidden="true"></div>
-          <div class="orb orb-b" aria-hidden="true"></div>
-          <div class="orb orb-c" aria-hidden="true"></div>
+        <div class="orb orb-a" aria-hidden="true"></div>
+        <div class="orb orb-b" aria-hidden="true"></div>
+        <div class="orb orb-c" aria-hidden="true"></div>
 
-        <div class="hero-grid">
-          <div class="hero-copy">
-            <h1 class="hero-title reveal">
-              {{ d('hero.title_1') }}<br/><span class="grad-text">{{ d('hero.title_2') }}</span>
-            </h1>
-            <p class="hero-sub reveal reveal-delay-1">{{ d('hero.sub') }}</p>
-            <div class="hero-ctas reveal reveal-delay-2">
-              <NuxtLink to="/org" class="btn btn-teal btn-lg hero-cta">{{ d('cta.main') }}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-              </NuxtLink>
-            </div>
-          </div>
-
-          <!-- Живой макет чата — один в один с ClassAiChat:
-               msg-row/msg-sender/msg-bubble + .ai-input-bar с круглой send-btn -->
-          <div class="hero-visual">
-            <div class="hero-collage" :style="!reducedMotion && heroShift ? { transform: `translateY(${-heroShift * 0.06}px)` } : undefined">
-              <div class="hc-grid">
-                <div class="hc-card reveal">
-                  <span class="hc-glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
-                  <span class="hc-name">{{ d('hx.p1') }}</span>
-                  <span class="hc-meta">{{ d('hx.m1') }}</span>
-                </div>
-                <div class="hc-card reveal reveal-delay-1">
-                  <span class="hc-glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>
-                  <span class="hc-name">{{ d('hx.p2') }}</span>
-                  <span class="hc-meta">{{ d('hx.m2') }}</span>
-                </div>
-                <div class="hc-card reveal reveal-delay-2">
-                  <span class="hc-glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-                  <span class="hc-name">{{ d('hx.p3') }}</span>
-                  <span class="hc-meta">{{ d('hx.m3') }}</span>
-                </div>
-                <div class="hc-card on reveal reveal-delay-3">
-                  <span class="hc-glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M9 2c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5Z"/><path d="M17.5 12c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3Z"/></svg></span>
-                  <span class="hc-name">{{ d('hx.p4') }}</span>
-                  <span class="hc-meta">{{ d('hx.m4') }}</span>
-                </div>
-              </div>
-              <div class="hc-chip hc-grade reveal reveal-delay-3">
-                <span class="hcc-ico green"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-                {{ d('dl.item3_t') }} · 87/100
-              </div>
-              <div class="hc-chip hc-due reveal reveal-delay-4">
-                <span class="hcc-ico yellow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-                {{ d('dl.item1_t') }} · {{ d('dl.item1_due') }}
-              </div>
-            </div>
+        <div class="hero-inner">
+          <h1 class="hero-title reveal">
+            {{ d('hero.title_1') }}<br/><span class="grad-text">{{ d('hero.title_2') }}</span>
+          </h1>
+          <p class="hero-sub reveal reveal-delay-1">{{ d('hero.sub') }}</p>
+          <div class="hero-ctas reveal reveal-delay-2">
+            <NuxtLink to="/org" class="btn btn-teal btn-lg hero-cta">{{ d('cta.main') }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </NuxtLink>
           </div>
         </div>
       </section>
@@ -987,11 +950,16 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
     ],
     features: {
       kicker: { ru: 'ВОЗМОЖНОСТИ', en: 'FEATURES', kk: 'МҮМКІНДІКТЕР' }[l],
-      title: { ru: 'Всё, что нужно для учёбы - в одном месте', en: 'Everything you need to study - in one place', kk: 'Оқуға қажеттінің бәрі - бір жерде' }[l],
+      // Заголовок и подзаголовок намеренно отличаются от hero («В одном месте»)
+      // — иначе hero и features «слипаются» в одно впечатление. Здесь фокус
+      // на том, ЧТО именно входит в платформу. В подзаголовке — 4 ключевые
+      // фичи в формате «ИИ для каждого предмета / выделения в лекциях /
+      // AI-проверка заданий с разбором / единый календарь дедлайнов».
+      title: { ru: 'Что вы получаете с Chatra', en: 'What you get with Chatra', kk: 'Chatra-мен не аласыз' }[l],
       sub: {
-        ru: 'Chatra объединяет ИИ, материалы предметов и успеваемость в одном продуманном приложении.',
-        en: 'Chatra brings AI, course materials and progress together in one thoughtfully designed app.',
-        kk: 'Chatra ЖИ, пән материалдары мен үлгерімді бір ойластырылған қосымшада біріктіреді.',
+        ru: 'ИИ для каждого предмета, выделения и заметки в лекциях, проверка заданий ИИ с разбором сильных сторон и зон роста, единый календарь дедлайнов.',
+        en: 'AI for every subject, highlights and notes in lectures, AI grading with strengths and growth areas, a single deadlines calendar.',
+        kk: 'Әр пәнге ЖИ, дәрістерде белгілеулер мен жазбалар, тапсырмаларды ЖИ тексеруі (күшті жақтар мен даму аймақтары), мерзімдердің бір күнтізбесі.',
       }[l],
     },
     f: {
@@ -1006,15 +974,20 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         a: { ru: 'Разберём формулу на примере…', en: 'Let’s walk through the formula with an example…', kk: 'Формуланы мысалмен талдайық…' }[l],
       },
       subjects: {
-        title: { ru: 'Все предметы - в одном месте', en: 'Every subject in one place', kk: 'Барлық пән бір жерде' }[l],
+        title: { ru: 'Все предметы под рукой', en: 'Every subject at hand', kk: 'Барлық пән қол астында' }[l],
         text: {
           ru: 'Материалы, задания и прогресс по каждому предмету - в одной аккуратной сетке с обложками.',
           en: 'Materials, assignments and progress for every subject - in one tidy grid with covers.',
           kk: 'Әр пәннің материалдары, тапсырмалары мен үлгерімі - мұқабалары бар бір ретте тізімінде.',
         }[l],
+        // Второй вопрос пользователя в bento-карточке Subject AI — имитирует
+        // живой диалог: "объясни подробнее" / "приведи пример".
+        q2: { ru: 'Можешь подробнее?', en: 'Can you elaborate?', kk: 'Толығырақ айта аласың ба?' }[l],
         s1: { ru: 'Физика', en: 'Physics', kk: 'Физика' }[l],
         s2: { ru: 'Математика', en: 'Math', kk: 'Математика' }[l],
         s3: { ru: 'Биология', en: 'Biology', kk: 'Биология' }[l],
+        q: { ru: 'Откуда формула в лекции 5?', en: 'Where does lecture 5 formula come from?', kk: '5-дәрістегі формула қайдан?' }[l],
+        a: { ru: 'Из определения предела, шаги 2–4 в лекции 5…', en: 'From the limit definition, see steps 2–4 in lecture 5…', kk: 'Шектің анықтамасынан, 5-дәріс, 2–4 қадам…' }[l],
       },
       prog: {
         title: { ru: 'Прогресс как на ладони', en: 'Progress at a glance', kk: 'Үлгерім алақанда' }[l],
@@ -1047,6 +1020,15 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
           ru: 'Все задания и сроки - в одном календаре. Сразу видно, что сдано, что на проверке и что требует внимания.',
           en: 'All assignments and due dates in one calendar. See at a glance what’s done, in review, or overdue.',
           kk: 'Барлық тапсырма мен мерзім бір күнтізбеде. Не тапсырылғаны, не тексерілуде, не кешіктірілгені бірден көрінеді.',
+        }[l],
+      },
+      // bento-карточка 05: Chatra AI (общий ассистент).
+      ai: {
+        title: { ru: 'Chatra AI для всего остального', en: 'Chatra AI for everything else', kk: 'Қалғанына Chatra ЖИ' }[l],
+        text: {
+          ru: 'Подготовка к экзаменам, разбор тем, черновики. Все диалоги сохраняются.',
+          en: 'Exam prep, hard topics, drafts. All conversations are saved.',
+          kk: 'Емтиханға дайындық, тақырып талдауы, жобалар. Барлық диалог сақталады.',
         }[l],
       },
       notif: {
@@ -1178,6 +1160,18 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
       m2: { ru: '3 к сдаче на этой неделе', en: '3 due this week', kk: 'Осы аптада 3 тапсыру' }[l],
       m3: { ru: 'ближайший - в пятницу', en: 'next one on Friday', kk: 'жакыны - жұма' }[l],
       m4: { ru: 'формулы, темы, черновики', en: 'formulas, topics, drafts', kk: 'формулалар, тақырыптар, жобалар' }[l],
+    },
+    // 4 мини-карточки вокруг главного превью в hero. Короткие заголовки +
+    // одна строка подписи — без выдуманных чисел.
+    hv: {
+      m1_t: { ru: 'ИИ для каждого предмета', en: 'AI for every subject', kk: 'Әр пәнге ЖИ' }[l],
+      m1_s: { ru: 'Отвечает со ссылками на лекции', en: 'Answers cite lectures', kk: 'Дәрістерге сілтеме жасайды' }[l],
+      m2_t: { ru: 'Дедлайны на виду', en: 'Deadlines in sight', kk: 'Мерзімдер көз алдында' }[l],
+      m2_s: { ru: 'Напомнит за день до сдачи', en: 'Reminds a day before', kk: 'Бір күн бұрын ескертеді' }[l],
+      m3_t: { ru: 'AI Grader за секунды', en: 'AI Grader in seconds', kk: 'AI Grader секундтарда' }[l],
+      m3_s: { ru: 'Оценка и разбор по критериям', en: 'Score and criteria feedback', kk: 'Ұпай мен критерий талдауы' }[l],
+      m4_t: { ru: 'Учебные потоки', en: 'Yearly cohorts', kk: 'Оқу жылдары' }[l],
+      m4_s: { ru: 'Каждый год — в архив', en: 'Each year — to the archive', kk: 'Әр жыл — мұрағатқа' }[l],
     },
     jc: {
       kicker: { ru: 'ПРИСОЕДИНЕНИЕ', en: 'GET STARTED', kk: 'ҚОСЫЛУ' }[l],
@@ -1364,57 +1358,13 @@ const { reducedMotion } = useReducedMotion()
 
 /* --- Навигационная шапка: hairline-граница появляется только при скролле --- */
 const scrolled = ref(false)
-const heroShift = ref(0)
 let scrollRaf = 0
-let lastScrollTop = 0
-let lastScrollT = 0
-
-/* Velocity-aware параллакс (§3, §5): не просто `top * k`, а критически
-   демпфированная "погоня" за таргетом с остаточной velocity от
-   пользовательского скролла. Это даёт правильное ощущение инерции —
-   при быстрой прокрутке коллаж чуть отстаёт и догоняет, при медленной
-   просто следует за пальцем. */
-let heroShiftVel = 0
-let heroShiftRaf = 0
-const tickHeroShift = (targetVal: number) => {
-  cancelAnimationFrame(heroShiftRaf)
-  const step = () => {
-    const dt = 1 / 60
-    // damping 1.0, response 0.4 → stiffness ≈ 6.25, coeff ≈ 5
-    const k = 6.25
-    const c = 5
-    const accel = -k * (heroShift.value - targetVal) - c * heroShiftVel
-    heroShiftVel += accel * dt
-    heroShift.value = Math.max(0, heroShift.value + heroShiftVel * dt)
-    if (Math.abs(heroShift.value - targetVal) < 0.05 && Math.abs(heroShiftVel) < 0.05) {
-      heroShift.value = targetVal
-      heroShiftVel = 0
-      return
-    }
-    heroShiftRaf = requestAnimationFrame(step)
-  }
-  step()
-}
 
 const onScroll = (e: Event) => {
   if (scrollRaf) return
   scrollRaf = requestAnimationFrame(() => {
     const target = e.target as HTMLElement
-    const now = performance.now()
-    const top = target.scrollTop
-    scrolled.value = top > 8
-    if (!reducedMotion.value) {
-      const dt = Math.max(1, now - lastScrollT)
-      const instVel = (top - lastScrollTop) / (dt / 1000)
-      // Передаём пользовательскую velocity в текущую spring'овую позицию —
-      // на быстром прокручивании вниз коллаж "убегает" чуть вперёд.
-      heroShiftVel = heroShiftVel * 0.5 + instVel * 0.06 * 0.5
-      lastScrollTop = top
-      lastScrollT = now
-      tickHeroShift(Math.max(0, Math.min(top, 900)) * 0.06)
-    } else {
-      heroShift.value = Math.max(0, Math.min(top, 900)) * 0.06
-    }
+    scrolled.value = target.scrollTop > 8
     scrollRaf = 0
   })
 }
@@ -1901,7 +1851,6 @@ onUnmounted(() => {
   fillSprings.forEach((h) => h.stop())
   hoverSprings.forEach((h) => h.stop())
   tabsIndicatorSpring?.stop()
-  cancelAnimationFrame(heroShiftRaf)
 })
 
 const year = new Date().getFullYear()
@@ -1926,7 +1875,7 @@ html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
 .lnav-inner{max-width:1160px;margin:0 auto;padding:13px 24px;display:flex;align-items:center;gap:22px}
 
 .l-brand{display:flex;align-items:center;gap:9px;cursor:pointer;flex-shrink:0}
-.l-logo{display:block;width:40px;aspect-ratio:1200/734;background:linear-gradient(180deg,var(--teal),var(--teal-d));-webkit-mask:url('/logo.png') center / contain no-repeat;mask:url('/logo.png') center / contain no-repeat;flex-shrink:0}
+.l-logo{display:block;width:38px;aspect-ratio:1761/1839;background:linear-gradient(180deg,var(--teal),var(--teal-d));-webkit-mask:url('/logo-icon.png') center / contain no-repeat;mask:url('/logo-icon.png') center / contain no-repeat;flex-shrink:0}
 .l-logo.sm{width:28px}
 .l-brand-name{font-size:17px;font-weight:700;color:var(--text1);letter-spacing:-.02em}
 
@@ -1939,8 +1888,11 @@ html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
 .lang-p.active{background:var(--surface);color:var(--text1);box-shadow:var(--sh-xs)}
 
 /* ====== HERO ====== */
-.hero{position:relative;padding:calc(var(--topbar) + 104px) 24px 130px;overflow:hidden}
-.hero-grid{position:relative;z-index:1;max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.02fr .98fr;gap:64px;align-items:center}
+.hero{position:relative;padding:calc(var(--topbar) + 120px) 24px 160px;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:78vh}
+/* hero-inner: центрированный контейнер, текст внутри выровнен по центру.
+   Apple-style: max-width ограничивает строку, чтобы заголовок не
+   растягивался на всю ширину экрана, и на мобиле, и на десктопе. */
+.hero-inner{position:relative;z-index:1;max-width:920px;width:100%;margin:0 auto;text-align:center}
 
 .orb{position:absolute;border-radius:50%;filter:blur(110px);pointer-events:none}
 .orb-a{width:620px;height:620px;top:-220px;left:-160px;background:rgba(120,120,128,.065);animation:orb-drift 16s ease-in-out infinite alternate}
@@ -1953,29 +1905,22 @@ html.dark .orb-c{background:rgba(160,140,220,.07)}
 @keyframes orb-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(40px,26px,0) scale(1.06)}}
 @media (prefers-reduced-motion: reduce){.orb{animation:none}}
 
-.hero-title{font-size:clamp(38px,5vw,64px);font-weight:700;line-height:1.05;letter-spacing:-.035em;color:var(--text1);margin-bottom:24px}
+/* Apple-style hero: одна центрированная колонка, много воздуха. Все
+   блочные элементы (.hero-title, .hero-sub, .hero-ctas) внутри .hero-inner
+   выровнены по центру: text-align: center (для inline) + margin: 0 auto
+   (для block-элементов вроде <p>, на которых text-align не работает). */
+.hero-title{font-size:clamp(34px,5.4vw,62px);font-weight:700;line-height:1.06;letter-spacing:-.035em;color:var(--text1);margin:0 auto 22px;max-width:880px}
 .grad-text{background:linear-gradient(115deg,var(--text1) 15%,#6e6e73 85%);-webkit-background-clip:text;background-clip:text;color:transparent}
 html.dark .grad-text{background-image:linear-gradient(115deg,#f5f5f7 15%,#86868b 90%)}
-.hero-sub{font-size:18.5px;color:var(--text3);line-height:1.58;letter-spacing:-.012em;max-width:470px;margin-bottom:36px}
-.hero-ctas{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hero-sub{font-size:18px;color:var(--text3);line-height:1.55;letter-spacing:-.012em;max-width:620px;margin:0 auto 36px}
+.hero-ctas{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin:0}
 .hero-cta{height:52px;border-radius:980px;padding:0 28px;font-size:16px;font-weight:500;letter-spacing:-.01em;box-shadow:0 4px 16px rgba(var(--teal-rgb),.22);transition:box-shadow .25s cubic-bezier(.32,.72,0,1),background .2s}
-.hero-cta:hover{box-shadow:0 8px 24px rgba(var(--teal-rgb),.28)}
+.hero-cta:hover{box-shadow:0 8px 24px rgba(var(--teal-rgb,.28))}
 .hero-cta:active{transform:scale(.97)}
 
 /* --- Коллаж предметов в hero --- */
-.hero-visual{position:relative;display:flex;justify-content:center}
-.hero-collage{position:relative;width:100%;max-width:520px}
-.hc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.hc-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px;display:flex;flex-direction:column;box-shadow:0 2px 6px rgba(0,0,0,.03),0 24px 48px -16px rgba(0,0,0,.1)}
-html.dark .hc-card{box-shadow:0 2px 6px rgba(0,0,0,.3),0 24px 48px -16px rgba(0,0,0,.5)}
-.hc-glyph{width:40px;height:40px;border-radius:12px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;color:var(--text1);position:relative}
-.hc-spark{position:absolute;right:-6px;top:-6px;color:var(--teal)}
-.hc-name{font-size:14.5px;font-weight:650;color:var(--text1);letter-spacing:-.01em;margin-top:12px}
-.hc-meta{font-size:12px;color:var(--text4);font-weight:500;margin-top:3px}
-.hc-card.on{border-color:var(--border2);box-shadow:0 2px 7px rgba(0,0,0,.04),0 26px 52px -18px rgba(0,0,0,.14)}
-.hc-card.on .hc-glyph{background:var(--text1);border-color:var(--text1);color:var(--surface)}
-.hc-chip{position:absolute;display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-md);font-size:12.5px;font-weight:600;color:var(--text1);white-space:nowrap;z-index:2}
-.hcc-ico{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+/* Hero-визуал удалён (Apple-style: только текст + кнопка). Раньше здесь
+   были .hero-visual/.hv-main/.hv-mini* для product-preview. */
 .hcc-ico.green{background:rgba(74,222,128,.14);color:var(--green)}
 .hcc-ico.yellow{background:rgba(251,191,36,.16);color:var(--yellow)}
 .hc-grade{right:-22px;top:-16px}
@@ -2036,7 +1981,10 @@ html.dark .band::before{background:#151517}
 .sa-visual{position:relative;padding-bottom:84px}
 .sa-chat{position:absolute;left:-64px;bottom:-72px;width:min(350px,82%);z-index:2}
 .sa-chat .chat-body{min-height:300px;height:auto}
-.bento{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+/* Bento (старый формат: 2 карточки в один ряд на десктопе, 1 колонка на
+   мобиле). Был переделан в 5 карточек разного размера, но вернули к 2 — глаз
+   не успевает «считать» 5 моков в hero-зоне, а 2 — оптимально. */
+.bento{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;max-width:1080px;margin:0 auto}
 .prog-demo{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border);border-radius:22px;padding:6px 0}
 .pg-row{display:flex;align-items:center;gap:12px;padding:11px 15px}
 .pg-row + .pg-row{border-top:1px solid var(--border)}
@@ -2430,16 +2378,14 @@ html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(
 
 /* ====== RESPONSIVE ====== */
 @media (max-width:1020px){
-  .hero-grid{grid-template-columns:1fr;gap:56px}
-  .hero{padding-top:calc(var(--topbar) + 56px)}
-  .hero-copy{text-align:center}
+  .hero{padding-top:calc(var(--topbar) + 56px);min-height:auto;padding-bottom:120px}
   .grad-text{background-image:linear-gradient(115deg,var(--text1) 15%,#6e6e73 85%)}
   html.dark .grad-text{background-image:linear-gradient(115deg,#f5f5f7 15%,#86868b 90%)}
   .hero-sub{margin-left:auto;margin-right:auto}
-  .hero-ctas{justify-content:center}
+   .hero-ctas{justify-content:center}
   .split{grid-template-columns:1fr;gap:44px}
   .split.rev .split-visual{order:-1}
-  .bento{grid-template-columns:1fr 1fr}
+  .bento{grid-template-columns:1fr 1fr;gap:14px}
   .section{padding:104px 24px}
   .sa-chat{left:auto;right:-16px;bottom:-40px}
 }
@@ -2456,28 +2402,18 @@ html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(
   .l-cta-sm{height:38px;padding:0 18px}
 
   /* --- hero --- */
-  .hero{padding:calc(var(--topbar) + 44px) 20px 72px;box-sizing:border-box}
-  .hero-grid{grid-template-columns:1fr;gap:52px;justify-items:center;width:100%;max-width:100%}
-  .hero-copy{text-align:center;width:100%;max-width:520px;margin:0 auto}
-  .hero-sub{max-width:none;margin-left:auto;margin-right:auto}
-  .grad-text{background-image:linear-gradient(115deg,var(--text1) 15%,#6e6e73 85%)}
-  html.dark .grad-text{background-image:linear-gradient(115deg,#f5f5f7 15%,#86868b 90%)}
-  .hero-title{font-size:clamp(30px,8.6vw,38px);width:100%}
-.hero-ctas{justify-content:center}
-.hero-cta{width:100%;max-width:400px;margin:0 auto}
+  .hero{padding:calc(var(--topbar) + 48px) 20px 96px;box-sizing:border-box;min-height:auto}
   .orb{filter:blur(70px)}
   .hero .orb-a{width:340px;height:340px;top:-130px;left:-130px}
   .hero .orb-b{width:280px;height:280px;bottom:-120px;right:-100px}
+  .hero .orb-c{width:240px;height:240px;top:30%;right:5%}
 
-  /* --- коллаж предметов: центрирован --- */
-  .hero-visual{display:flex;justify-content:center;align-items:center;width:100%;max-width:100%;padding:0;margin:0 auto;box-sizing:border-box}
-  .hero-collage{width:100%;max-width:420px;margin:0 auto}
-  .hc-grid{gap:12px}
-  .hc-card{padding:14px;border-radius:18px;min-width:0;box-sizing:border-box}
-  .hc-glyph{width:36px;height:36px;border-radius:10px;font-size:15px}
-  .hc-name{font-size:13.5px;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .hc-meta{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .hc-chip{font-size:11.5px;padding:8px 12px;gap:6px;max-width:calc(100% - 24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;left:50%;right:auto;transform:translateX(-50%)}
+  /* --- hero (Apple-style: только текст) --- */
+  .hero{padding:calc(var(--topbar) + 48px) 20px 96px;box-sizing:border-box;min-height:auto}
+  .orb{filter:blur(70px)}
+  .hero .orb-a{width:340px;height:340px;top:-130px;left:-130px}
+  .hero .orb-b{width:280px;height:280px;bottom:-120px;right:-100px}
+  .hero .orb-c{width:240px;height:240px;top:30%;right:5%}
   .hc-grade{position:absolute;top:-14px;left:50%;transform:translateX(-50%)}
   .hc-due{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%)}
 
@@ -2616,13 +2552,6 @@ html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(
   .hero-title{font-size:clamp(28px,8.4vw,34px)}
   .hero-sub{font-size:16px;margin-bottom:26px}
   .hero-cta{height:50px;font-size:15.5px}
-  .hero-collage{max-width:380px}
-  .hc-grid{gap:10px}
-  .hc-card{padding:12px;border-radius:16px}
-  .hc-glyph{width:34px;height:34px;border-radius:10px;font-size:15px}
-  .hc-name{font-size:13px;margin-top:9px}
-  .hc-meta{font-size:11px}
-  .hc-chip{font-size:11px;padding:7px 11px}
   .section{padding:72px 18px}
   .sec-head{margin-bottom:42px}
   .bento{gap:16px}
@@ -2676,15 +2605,6 @@ html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(
   .hero{padding:calc(var(--topbar) + 36px) 16px 56px}
   .hero-title{font-size:clamp(27px,8.4vw,32px)}
   .hero-sub{font-size:15.5px}
-  .hero-collage{max-width:340px}
-  .hc-grid{gap:10px}
-  .hc-card{padding:12px;border-radius:16px;min-width:0}
-  .hc-glyph{width:32px;height:32px;border-radius:9px;font-size:14px}
-  .hc-name{font-size:12.5px;margin-top:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .hc-meta{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .hc-chip{font-size:10.5px;padding:7px 11px;gap:5px;max-width:calc(100% - 16px)}
-  .hcc-ico{width:17px;height:17px}
-  .hcc-ico svg{width:10px;height:10px}
   .hc-grade{top:-12px}
   .hc-due{bottom:-12px}
   .bento{gap:14px}
@@ -2769,16 +2689,6 @@ html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(
   .hero-title{font-size:clamp(26px,8.5vw,30px);line-height:1.08}
   .hero-sub{font-size:15px;margin-bottom:24px}
   .hero-cta{height:50px;font-size:15.5px;padding:0 20px}
-  .hero-collage{max-width:300px}
-  .hc-grid{gap:8px}
-  .hc-card{padding:11px;border-radius:14px;min-width:0}
-  .hc-glyph{width:28px;height:28px;border-radius:8px;font-size:13px}
-  .hc-glyph svg{width:14px;height:14px}
-  .hc-name{font-size:12px;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .hc-meta{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .hc-chip{font-size:10px;padding:6px 10px;gap:4px;max-width:calc(100% - 8px)}
-  .hcc-ico{width:15px;height:15px}
-  .hcc-ico svg{width:9px;height:9px}
   .bento{gap:12px}
   .bcard{padding:20px 16px;border-radius:20px;max-width:300px}
   .btitle{font-size:17px}
