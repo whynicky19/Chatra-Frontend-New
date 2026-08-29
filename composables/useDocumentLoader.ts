@@ -28,24 +28,42 @@ export const kindOf = (name: string | undefined | null): DocKind => {
 // и transform:scale() остаются валидны, картинка просто становится меньше целиком.
 export const fitDocxDrawings = (container: HTMLElement) => {
   const cs = getComputedStyle(container)
-  const available = container.clientWidth - parseFloat(cs.paddingLeft || '0') - parseFloat(cs.paddingRight || '0')
-  if (!available) return
+  const containerAvail = container.clientWidth - parseFloat(cs.paddingLeft || '0') - parseFloat(cs.paddingRight || '0')
+  if (!containerAvail) return
+  // docx-preview оборачивает страницу в <section style="padding: 72pt 90pt"> --
+  // это «поля страницы» Word (~1 дюйм сверху/снизу, ~1.25 по бокам), которые
+  // сужают доступное место под контент. Без учёта этого отступа fitDocxDrawings
+  // сравнивал бы ширину картинки с clientWidth модала, а картинка лежит внутри
+  // section -- и всё равно уезжала за section-scroll, вылезая за пределы экрана.
+  const section = container.querySelector<HTMLElement>('section')
+  const sectCs = section ? getComputedStyle(section) : null
+  const sectionAvail = section && sectCs
+    ? section.clientWidth - parseFloat(sectCs.paddingLeft || '0') - parseFloat(sectCs.paddingRight || '0')
+    : containerAvail
   container.querySelectorAll<HTMLDivElement>('div[style*="display: inline-block"]').forEach(wrap => {
-    const rect = wrap.getBoundingClientRect()
-    if (rect.width <= available) return
-    const scale = available / rect.width
-    const scaleProp = (el: HTMLElement, prop: 'width' | 'height' | 'left' | 'top') => {
-      const raw = parseFloat(el.style[prop])
-      if (!isNaN(raw)) el.style[prop] = `${raw * scale}pt`
+    // Итеративное уменьшение: один проход может не довести до конца --
+    // например, родительская section имеет padding 90pt, а картинка -- 720pt.
+    // После scale = 576/720 картинка становится 576pt, но обёртка inline-block
+    // могла чуть растянуться из-за вложенного img/clip-path, и второй проход
+    // добьёт остаток. Обычно хватает 2-3 итераций.
+    let safety = 4
+    while (safety-- > 0) {
+      const rect = wrap.getBoundingClientRect()
+      if (rect.width <= sectionAvail) break
+      const scale = sectionAvail / rect.width
+      const scaleProp = (el: HTMLElement, prop: 'width' | 'height' | 'left' | 'top') => {
+        const raw = parseFloat(el.style[prop])
+        if (!isNaN(raw)) el.style[prop] = `${raw * scale}pt`
+      }
+      scaleProp(wrap, 'width')
+      scaleProp(wrap, 'height')
+      wrap.querySelectorAll<HTMLImageElement>('img').forEach(img => {
+        scaleProp(img, 'width')
+        scaleProp(img, 'height')
+        scaleProp(img, 'left')
+        scaleProp(img, 'top')
+      })
     }
-    scaleProp(wrap, 'width')
-    scaleProp(wrap, 'height')
-    wrap.querySelectorAll<HTMLImageElement>('img').forEach(img => {
-      scaleProp(img, 'width')
-      scaleProp(img, 'height')
-      scaleProp(img, 'left')
-      scaleProp(img, 'top')
-    })
   })
 }
 
@@ -126,11 +144,14 @@ export function useDocumentLoader() {
             docxContainer.value.innerHTML = sanitized
           } catch {}
           if (seq !== loadSeq) return
-          if (isMobile) {
-            loading.value = false
-            await nextTick()
-            fitDocxDrawings(docxContainer.value)
-          }
+          // fitDocxDrawings прогоняем и на десктопе, не только на мобиле:
+          // docx-preview рисует встроенные картинки с фиксированной шириной
+          // в pt (Word-стиль), без этого шага широкая картинка уезжает за
+          // пределы модала/экрана. Раньше здесь стоял `if (isMobile)`,
+          // и на десктопе пользователь видел «картинка ушла вправо за экран».
+          loading.value = false
+          await nextTick()
+          fitDocxDrawings(docxContainer.value)
         }
       } else if (k === 'sheet') {
         const buf = await res.arrayBuffer()
