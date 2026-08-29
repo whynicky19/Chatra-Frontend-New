@@ -157,10 +157,14 @@ onMounted(async () => {
       })
     }
 
-    const submittedIds = new Set(subs.map((s: any) => s.assignment_id))
+    // assignment_id в сдачах может прийти строкой (см. фикс в
+    // AssignmentDetailPanel.vue), а a.id из /assignments — числом. Set.has()
+    // сравнивает строго (===), поэтому сравниваем через String(), иначе уже
+    // сданные задания продолжают показываться как "дедлайн близко".
+    const submittedIds = new Set(subs.map((s: any) => String(s.assignment_id)))
     const fortyEightH = 48 * 3600 * 1000
     for (const a of allAssignments) {
-      if (!a.deadline || submittedIds.has(a.id)) continue
+      if (!a.deadline || submittedIds.has(String(a.id))) continue
       const dl = parseUtc(a.deadline).getTime()
       if (dl < now || dl - now > fortyEightH) continue
       const key = `deadline:${a.id}`

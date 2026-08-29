@@ -14,6 +14,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '~/composables/useI18n'
+import { parseUtc } from '~/composables/useDeadline'
 import type { AiQuota } from '~/composables/useAiQuota'
 
 const props = defineProps<{ quota: AiQuota | null }>()
@@ -36,7 +37,9 @@ const sub = computed(() => {
     : `You have used all ${limit} messages for today.`
 
   const at = props.quota?.resets_at
-  const ms = at ? new Date(at).getTime() - nowTs.value : NaN
+  // Бэкенд иногда отдаёт resets_at без суффикса Z (как и deadline у заданий) —
+  // без parseUtc обратный отсчёт "плывёт" на величину локального смещения от UTC.
+  const ms = at ? parseUtc(at).getTime() - nowTs.value : NaN
   if (!Number.isFinite(ms) || ms <= 0) {
     return `${used} ${lang.value==='ru' ? 'Обнуляется раз в сутки.'
       : lang.value==='kk' ? 'Тәулігіне бір рет жаңарады.' : 'Resets once a day.'}`

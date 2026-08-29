@@ -253,7 +253,10 @@ onMounted(async () => {
     )
     const allAssignments: any[] = perClass.flat()
 
-    const submittedIds = new Set(subs.map((s: any) => s.assignment_id))
+    // assignment_id в сдачах может прийти строкой, а a.id — числом. Set.has()
+    // сравнивает строго (===), поэтому сравниваем через String(), иначе уже
+    // сданные задания в календаре продолжают отображаться как несданные.
+    const submittedIds = new Set(subs.map((s: any) => String(s.assignment_id)))
 
     dlItems.value = allAssignments
       .filter((a: any) => !!a.deadline)
@@ -263,7 +266,7 @@ onMounted(async () => {
         class_name: classMap.get(a.class_id) ?? `Предмет #${a.class_id}`,
         title: a.title,
         deadline: a.deadline,
-        submitted: submittedIds.has(a.id),
+        submitted: submittedIds.has(String(a.id)),
       }))
   } catch {
     // classesSvc.list() упал (сетевая ошибка/5xx) — раньше это молча давало

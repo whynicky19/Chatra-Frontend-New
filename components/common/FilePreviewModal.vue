@@ -78,14 +78,20 @@ watch(() => previewFile.value?.url, (url) => { if (url) load(previewFile.value) 
 </script>
 
 <style scoped>
-.fp-modal{background:var(--surface);border-radius:var(--r-xl);width:min(900px,92vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--sh-lg)}
+/* min-width:0 на обоих flex-родителях: иначе в column-flex-цепочке
+   .fp-modal → .fp-body → <img> дочерний img задаёт min-content, и модал
+   сжимается под реальную ширину картинки (180px), а не тянется на свои
+   min(900px, 92vw). */
+.fp-modal{background:var(--surface);border-radius:var(--r-xl);width:min(900px,92vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--sh-lg);min-width:0}
 .fp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
 .fp-title{font-size:14px;font-weight:700;color:var(--text1)}
 .fp-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.fp-body{flex:1;overflow:auto;background:var(--bg);display:flex}
+.fp-body{flex:1;min-width:0;overflow:auto;background:var(--bg);display:flex;align-items:stretch;justify-content:center}
 .fp-state{margin:auto;display:flex;flex-direction:column;align-items:center;gap:14px;padding:60px 20px}
 .fp-error-text{font-size:13px;color:var(--text4);text-align:center;max-width:320px}
-.fp-image{max-width:100%;max-height:100%;margin:auto;object-fit:contain}
+/* Картинка растягивается по доступной ширине/высоте, object-fit сохраняет
+   пропорции (поля остаются внутри модала, а не «расползаются» по краям). */
+.fp-image{max-width:100%;max-height:100%;width:100%;height:100%;margin:auto;object-fit:contain;background:var(--surface2)}
 .fp-iframe{width:100%;min-height:78vh;border:none}
 /* flex:1 — теперь это прямой flex-child .fp-modal (вынесен из .fp-body,
    см. комментарий в шаблоне), без display:flex — иначе сломало бы внутреннюю

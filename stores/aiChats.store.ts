@@ -211,11 +211,26 @@ export const useAiChatsStore = defineStore('aiChats', {
           thread_id: threadId,
         })
 
-        this.messages = [
-          ...this.messages,
-          { id: ++this._nextId, role: 'assistant', text: data.content || '', ts: new Date() },
-        ]
-        this._persistMsgs()
+        // Пользователь мог переключиться на другой чат (или создать новый),
+        // пока ответ летел — this.messages/this._nextId теперь принадлежат
+        // ДРУГОМУ треду. Раньше ответ дописывался в них не глядя и портил
+        // историю/кэш чужого чата. id считаем от um, а не от общего счётчика,
+        // чтобы не задеть нумерацию треда, который сейчас реально открыт.
+        const am: Msg = { id: um.id + 1, role: 'assistant', text: data.content || '', ts: new Date() }
+        if (this.activeId === threadId) {
+          this._nextId = Math.max(this._nextId, am.id)
+          this.messages = [...this.messages, am]
+          this._persistMsgs()
+        } else if (import.meta.client) {
+          // Не тот чат сейчас открыт — сохраняем ответ прямо в кэш ИСХОДНОГО
+          // треда, он подхватится при следующем открытии этого чата.
+          try {
+            const key = msgsKey(this._uid(), threadId)
+            const raw = localStorage.getItem(key)
+            const arr = raw ? JSON.parse(raw) : []
+            if (Array.isArray(arr)) localStorage.setItem(key, JSON.stringify([...arr, am]))
+          } catch {}
+        }
 
         applyQuota(data.quota)
 
@@ -227,8 +242,12 @@ export const useAiChatsStore = defineStore('aiChats', {
         }
       } catch (e: any) {
         useToast().err('AI: ' + (e?.response?.data?.detail || e?.message || 'ошибка'))
-        this.messages = this.messages.filter(m => m.id !== um.id)
-        this._persistMsgs()
+        // Аналогично: откатываем "висящее" сообщение пользователя только если
+        // всё ещё смотрим на тот же тред, которому оно принадлежит.
+        if (this.activeId === threadId) {
+          this.messages = this.messages.filter(m => m.id !== um.id)
+          this._persistMsgs()
+        }
         if (e?.response?.status === 429) refreshQuota(this._uid())
       } finally {
         this.sending = false

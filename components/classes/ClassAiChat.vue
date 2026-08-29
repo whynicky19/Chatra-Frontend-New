@@ -144,6 +144,10 @@ const inputEl = ref<{ focus: () => void } | null>(null)
 const pendingSubs = ref<Submission[]>([])
 const gradingId = ref<number | null>(null)
 let nextId = 0
+// Токен треда: "Очистить чат" во время ожидания ответа ИИ раньше не мешал
+// уже летящему send() дописать ответ в msgs после того, как чат очищен —
+// сообщение "оживало" в пустом чате. Устаревший ответ теперь отбрасывается.
+let chatGen = 0
 
 const storageKey = computed(() => `ai_chat_class_${props.classId ?? 'x'}`)
 
@@ -426,6 +430,8 @@ const send = async (source?: AiHandoff) => {
     return
   }
 
+  const gen = chatGen
+
   // Высоту поля после очистки пересчитывает сама AutoTextarea (watch на value).
   inputTxt.value = ''
 
@@ -454,22 +460,29 @@ const send = async (source?: AiHandoff) => {
       } : {}),
     })
 
+    // Чат могли очистить, пока ответ летел — не оживляем сообщение в уже
+    // очищенном треде.
+    if (gen !== chatGen) return
+
     const reply = data.content || '...'
     msgs.value.push({ id: ++nextId, role: 'assistant', text: reply })
     scrollBottom()
     persist()
     aiQuota.applyQuota(data.quota)
   } catch (e: any) {
+    if (gen !== chatGen) return
     toast.err('ИИ: ' + (e?.response?.data?.detail || e.message || 'ошибка соединения'))
     // 429 — дневная квота исчерпана: обновляем счётчик, чтобы ввод заблокировался.
     if (e?.response?.status === 429) aiQuota.refreshQuota(auth.user?.id)
   } finally {
-    loading.value = false
+    if (gen === chatGen) loading.value = false
   }
 }
 
 const clearAll = () => {
+  chatGen++
   msgs.value = []
+  loading.value = false
   try { sessionStorage.removeItem(storageKey.value) } catch {}
   // Чистим тред этого класса и на сервере (синхронно с приложением).
   // .catch: отклонённый промис иначе стал бы unhandledrejection → тост.

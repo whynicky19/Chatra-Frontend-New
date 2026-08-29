@@ -110,9 +110,19 @@ export function useDocumentLoader() {
           // docx-preview рендерит содержимое документа императивно и без
           // санитизации (в отличие от xlsx-ветки ниже) — прогоняем результат
           // через DOMPurify, чтобы вредоносный .docx не внедрил скрипт.
+          // src добавляем в разрешённые атрибуты: docx-preview вставляет
+          // встроенные картинки как <img src="blob:..."> через createObjectURL
+          // (см. useFileUrl / previewPdf для тех же blob-URL), без него
+          // картинки внутри .docx пропадают. blob: и data: разрешаем явно —
+          // стандартный ALLOWED_URI_REGEXP в DOMPurify их режет, и тогда чистый
+          // .docx с рисунком показывался без картинок (только текст).
           try {
             const { default: DOMPurify } = await import('dompurify')
-            const sanitized = DOMPurify.sanitize(docxContainer.value.innerHTML, { ADD_ATTR: ['style'] })
+            const sanitized = DOMPurify.sanitize(docxContainer.value.innerHTML, {
+              ADD_ATTR: ['style', 'src'],
+              ADD_URI_SAFE_ATTR: ['src'],
+              ALLOWED_URI_REGEXP: /^(?:(?:https?|blob|data|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+            })
             docxContainer.value.innerHTML = sanitized
           } catch {}
           if (seq !== loadSeq) return
