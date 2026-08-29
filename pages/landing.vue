@@ -17,8 +17,12 @@
     <main class="l-main">
       <!-- ===== HERO ===== -->
       <section class="hero">
-        <div class="orb orb-a" aria-hidden="true"></div>
-        <div class="orb orb-b" aria-hidden="true"></div>
+          <!-- Живые "облака" в hero. Дрейфуют по @keyframes orb-drift с разной
+               фазой/duration, чтобы движение не выглядело "синхронным". На
+               prefers-reduced-motion паузятся через общий media-query ниже. -->
+          <div class="orb orb-a" aria-hidden="true"></div>
+          <div class="orb orb-b" aria-hidden="true"></div>
+          <div class="orb orb-c" aria-hidden="true"></div>
 
         <div class="hero-grid">
           <div class="hero-copy">
@@ -969,18 +973,6 @@ function makeDict(l: 'ru' | 'en' | 'kk') {
         en: 'Lectures, assignments, deadlines and study help - Chatra brings everything you need into one app.',
         kk: 'Дәрістер, тапсырмалар, мерзімдер және оқу көмекші - Chatra барлық қажеттіні бір қосымшада жинайды.',
       }[l],
-      // Метрики под CTA. Счётчики «крутятся» от 0 до целевого значения
-      // при появлении hero в viewport — это даёт живое ощущение и убирает
-      // статичность. use_intl: «k+» (тысячи) / «M+» (миллионы) — реальные
-      // числа намеренно скруглены: см. также политику конфиденциальности.
-      m1_n: { ru: '120k+', en: '120k+', kk: '120k+' }[l],
-      m1_l: { ru: 'материалов загружено', en: 'materials uploaded', kk: 'материал жүктелді' }[l],
-      m2_n: { ru: '2.4M', en: '2.4M', kk: '2.4M' }[l],
-      m2_l: { ru: 'ответов ИИ в месяц', en: 'AI answers per month', kk: 'ЖИ жауабы / ай' }[l],
-      m3_n: { ru: '98%', en: '98%', kk: '98%' }[l],
-      m3_l: { ru: 'студентов сдают вовремя', en: 'students submit on time', kk: 'оқушы уақытында тапсырады' }[l],
-      m4_n: { ru: '24/7', en: '24/7', kk: '24/7' }[l],
-      m4_l: { ru: 'ИИ на связи', en: 'AI online', kk: 'ЖИ тәулік бойы' }[l],
     },
     demo: {
       subject: { ru: 'Физика · ИИ предмета', en: 'Physics · Subject AI', kk: 'Физика · Пән ЖИ' }[l],
@@ -1953,6 +1945,11 @@ html.dark .lnav.scrolled{background:rgba(11,11,13,.78)}
 .orb{position:absolute;border-radius:50%;filter:blur(110px);pointer-events:none}
 .orb-a{width:620px;height:620px;top:-220px;left:-160px;background:rgba(120,120,128,.065);animation:orb-drift 16s ease-in-out infinite alternate}
 .orb-b{width:480px;height:480px;bottom:-200px;right:-120px;background:rgba(174,174,178,.05);animation:orb-drift 19s ease-in-out infinite alternate-reverse}
+/* Третий "фиолетовый" orb, дрейфует со своей фазой — добавляет объём и
+   не даёт картинке "замереть" на одном из двух orbs. На mobile отключаем. */
+.orb-c{width:380px;height:380px;top:35%;right:8%;background:rgba(120,120,200,.045);animation:orb-drift 22s ease-in-out infinite alternate}
+html.dark .orb-c{background:rgba(160,140,220,.07)}
+@media (max-width:768px){.orb-c{display:none}}
 @keyframes orb-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(40px,26px,0) scale(1.06)}}
 @media (prefers-reduced-motion: reduce){.orb{animation:none}}
 
@@ -2396,13 +2393,19 @@ html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(
 .asgn-arrow{color:var(--text4);flex-shrink:0;transition:transform .25s cubic-bezier(.22,1,.36,1)}
 
 /* --- Final CTA --- */
-.cta-final{position:relative;width:100%;padding:180px 24px 190px;text-align:center;overflow:hidden;background:#1D1D1F}
-.cf-orb-a{width:640px;height:640px;top:-200px;left:-160px;margin:0;background:rgba(142,142,147,.09)}
+.cta-final{position:relative;width:100%;padding:180px 24px 190px;text-align:center;overflow:hidden;background:#0c0c0d}
+/* Медленный "дышащий" градиент на фоне финального CTA. Ключевые кадры
+   панорамируют background-position на 200% width — создаёт ощущение
+   "живой" витрины, не уходя в неон. На reduced-motion паузится. */
+.cta-final::before{content:'';position:absolute;inset:0;background:linear-gradient(125deg,#0c0c0d 0%,#1a1a2e 30%,#16213e 55%,#1f1b3a 80%,#0c0c0d 100%);background-size:200% 100%;animation:cta-pan 18s ease-in-out infinite alternate;z-index:0;pointer-events:none}
+@keyframes cta-pan{from{background-position:0% 50%}to{background-position:100% 50%}}
+@media (prefers-reduced-motion: reduce){.cta-final::before{animation:none}}
+.cf-orb-a{width:640px;height:640px;top:-200px;left:-160px;margin:0;background:rgba(120,120,200,.10)}
 .cf-orb-b{width:560px;height:560px;bottom:-260px;right:-140px;background:rgba(99,99,102,.07)}
 .cf-inner{position:relative;z-index:1;max-width:720px;margin:0 auto}
-.cf-title{font-size:clamp(35px,5vw,60px);font-weight:700;line-height:1.06;letter-spacing:-.035em;color:#f5f5f7;margin-bottom:20px}
-.cta-final .grad-text{background-image:linear-gradient(115deg,#f5f5f7 15%,#86868b 90%)}
-.cf-sub{font-size:17.5px;color:#a1a1a6;line-height:1.6;letter-spacing:-.01em;margin-bottom:38px}
+.cf-title{font-size:clamp(35px,5vw,60px);font-weight:700;line-height:1.06;letter-spacing:-.035em;color:#fafafa;margin-bottom:20px}
+.cta-final .grad-text{background-image:linear-gradient(115deg,#fafafa 15%,#9b8cd9 60%,#5b8cd9 90%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.cf-sub{font-size:17.5px;color:#b8b8c4;line-height:1.6;letter-spacing:-.01em;margin-bottom:38px}
 .cf-actions{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
 .cf-btn{height:54px;border-radius:980px;padding:0 32px;font-size:16px;font-weight:500;letter-spacing:-.01em;box-shadow:0 4px 16px rgba(var(--teal-rgb),.22);transition:box-shadow .25s cubic-bezier(.32,.72,0,1),background .2s}
 .cf-btn:hover{box-shadow:0 8px 24px rgba(var(--teal-rgb),.28)}
@@ -2460,8 +2463,8 @@ html.dark .asgn-card{box-shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -24px rgba(
   .grad-text{background-image:linear-gradient(115deg,var(--text1) 15%,#6e6e73 85%)}
   html.dark .grad-text{background-image:linear-gradient(115deg,#f5f5f7 15%,#86868b 90%)}
   .hero-title{font-size:clamp(30px,8.6vw,38px);width:100%}
-  .hero-ctas{justify-content:center}
-  .hero-cta{width:100%;max-width:400px;margin:0 auto}
+.hero-ctas{justify-content:center}
+.hero-cta{width:100%;max-width:400px;margin:0 auto}
   .orb{filter:blur(70px)}
   .hero .orb-a{width:340px;height:340px;top:-130px;left:-130px}
   .hero .orb-b{width:280px;height:280px;bottom:-120px;right:-100px}
