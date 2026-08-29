@@ -23,6 +23,11 @@ const items = ref<Highlight[]>([])
 const loading = ref(false)
 let loadedFor: string | null = null
 let persisting = false
+// Сохраняем detached- scope, чтобы при смене uid (смена пользователя или
+// сначала зашли под 'anon', потом подтянулся auth.user) старый watcher
+// не продолжал писать в кэш предыдущего uid. Без dispose() на каждой
+// инициализации накапливались бы зомби-watchers.
+let persistScope: ReturnType<typeof effectScope> | null = null
 
 const CACHE_KEY = (uid: string) => `_annotations_${uid}`
 
@@ -56,11 +61,21 @@ const upsert = (row: Highlight) => {
 export const useHighlights = () => {
   const auth = useAuthStore()
   const svc = useAnnotationsSvc()
+  // auth.user подтягивается асинхронно (fetchMe в plugin), и если на момент
+  // первого вызова useHighlights() он ещё null, придётся подождать. Иначе
+  // кэш уйдёт в _annotations_anon, и под реальным uid прочитается пустота.
+  // uidFromToken() доступен сразу из _tk в localStorage.
+  const tokenUid = uidFromToken()
   const uid = import.meta.client
-    ? String(auth.user?.id ?? uidFromToken() ?? 'anon')
+    ? String(auth.user?.id ?? tokenUid ?? 'anon')
     : 'anon'
 
   if (import.meta.client && loadedFor !== uid) {
+    // Перед сменой uid сохраняем накопленные items под СТАРЫМ ключом — иначе
+    // (если первый вход был под 'anon' до загрузки auth.user) они потеряются.
+    if (loadedFor && items.value.length) {
+      try { localStorage.setItem(CACHE_KEY(loadedFor), JSON.stringify(items.value)) } catch {}
+    }
     loadedFor = uid
     items.value = readCache(uid)
     if (!persisting) {
@@ -68,7 +83,8 @@ export const useHighlights = () => {
       // Отдельный scope: обычный watch привязался бы к компоненту, из которого
       // композабл вызвали первым, и умер бы вместе с ним — кэш перестал бы
       // обновляться после закрытия просмотрщика.
-      effectScope(true).run(() => {
+      persistScope = effectScope(true)
+      persistScope.run(() => {
         watch(items, (v) => {
           try { localStorage.setItem(CACHE_KEY(loadedFor || 'anon'), JSON.stringify(v)) } catch {}
         }, { deep: true })

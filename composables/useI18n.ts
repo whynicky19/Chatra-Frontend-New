@@ -238,6 +238,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   // General
   'general.loading': { ru: 'Загрузка...', en: 'Loading...', kk: 'Жүктелуде...' },
   'general.error': { ru: 'Ошибка', en: 'Error', kk: 'Қате' },
+  'general.not_found': { ru: 'Не найдено', en: 'Not found', kk: 'Табылмады' },
   'general.cancel': { ru: 'Отмена', en: 'Cancel', kk: 'Болдырмау' },
   'general.save': { ru: 'Сохранить', en: 'Save', kk: 'Сақтау' },
   'general.delete': { ru: 'Удалить', en: 'Delete', kk: 'Жою' },

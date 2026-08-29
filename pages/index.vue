@@ -57,11 +57,11 @@
               <div class="card-cover" :style="cardCoverStyle(cls)">
                 <SubjectCover :src="cls.cover_thumbnail || cls.cover_image" :icon="cls.cover_icon"
                               :color="cls.cover_color" :size="78" class="card-cover-art"/>
-                <div v-if="(auth.isTeacher || auth.isAdmin) && cls.invite_code" class="card-code-chip" @click.stop="copyClassCode(cls)">
+                <div v-if="canManage(cls) && cls.invite_code" class="card-code-chip" @click.stop="copyClassCode(cls)">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                   {{ cls.invite_code }}
                 </div>
-                <button v-if="auth.isTeacher || auth.isAdmin" class="card-edit-btn" @click.stop="openEditClass(cls)" title="Редактировать">
+                <button v-if="canManage(cls)" class="card-edit-btn" @click.stop="openEditClass(cls)" title="Редактировать">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
               </div>
@@ -84,7 +84,7 @@
                       <button v-if="!auth.isTeacher" class="ctrl-btn" @click.stop="confirmLeave(cls)" :title="t('classes.left')">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                       </button>
-                      <button v-if="auth.isTeacher" class="ctrl-del ctrl-btn" @click.stop="confirmDelete(cls)">
+                      <button v-if="canManage(cls)" class="ctrl-del ctrl-btn" @click.stop="confirmDelete(cls)">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
                       </button>
                     </div>
@@ -256,7 +256,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from '#app'
 import { useAuthStore } from '~/stores/auth.store'
 import { useClassesStore } from '~/stores/classes.store'
@@ -284,6 +284,14 @@ const showJoin = ref(false); const joining = ref(false); const joinError = ref('
 const deletingClass = ref<any>(null); const deleting = ref(false)
 const leavingClass = ref<any>(null); const leaving = ref(false)
 const editingClass = ref<any>(null)
+
+// Право редактировать/удалять класс: владелец (created_by === user.id) или
+// админ организации. Учитель, не являющийся владельцем, теперь не видит
+// чужих классов на главной (бэкенд фильтрует list_classes по created_by),
+// но helper ниже страхует UI от случайного рассинхрона: если класс всё же
+// попал в список (например, из стора до фильтрации), кнопки не покажутся.
+const canManage = (cls: any) =>
+  !!cls && (auth.isAdmin || cls.created_by === auth.user?.id)
 const editForm = ref({
   title: '', description: '', teacher: '',
   cover_image: '', cover_color: 'teal', cover_icon: 'book', cover_source: '' as string | null,
@@ -291,6 +299,9 @@ const editForm = ref({
 const editSaving = ref(false)
 const coverGenerating = ref(false)
 const coverError = ref<string | null>(null)
+// Текущий AbortController для ожидания обложки (awaitPendingCover) —
+// отменяется при уходе со страницы или при начале новой генерации.
+const coverAbort = ref<AbortController | null>(null)
 
 const codeChars = ref<string[]>(['','','','','',''])
 const codeRefs = ref<HTMLInputElement[]>([])
@@ -407,6 +418,10 @@ const regenerateCover = async () => {
   const prevSource = editForm.value.cover_source
   coverGenerating.value = true
   coverError.value = null
+  // AbortController для отмены 160-секундного polling awaitPendingCover, если
+  // пользователь успел уйти со страницы или закрыть модалку.
+  const coverController = new AbortController()
+  coverAbort.value = coverController
   try {
     const res = await classesSvc.generateCover(
       editingClass.value.id, editForm.value.cover_color, editForm.value.cover_icon,
@@ -432,7 +447,9 @@ const regenerateCover = async () => {
         : 'Could not generate the cover. The previous one is kept.'
       return
     }
-    const recovered = await classesSvc.awaitPendingCover(editingClass.value.id, prevImage, prevSource)
+    const recovered = await classesSvc.awaitPendingCover(
+      editingClass.value.id, prevImage, prevSource, coverController.signal,
+    )
     if (recovered) {
       await preloadImage(recovered.cover_image)
       applyCoverResult(recovered)
@@ -443,8 +460,14 @@ const regenerateCover = async () => {
     }
   } finally {
     coverGenerating.value = false
+    coverAbort.value = null
   }
 }
+
+onUnmounted(() => {
+  // Отменяем polling обложки, если ушли со страницы посреди генерации.
+  coverAbort.value?.abort()
+})
 
 const applyCoverResult = (res: any) => {
   if (!editingClass.value) return

@@ -1016,7 +1016,16 @@ onMounted(async () => {
     if (isArchivedForUser.value && tab.value === 'ai') tab.value = 'lectures'
     // Преподавателю/админу yearly-класса — подгрузить список учебных лет.
     if (isOwnerOrAdmin.value && isYearly.value) loadCohorts()
-  } catch { toast.err(t('general.error')) } finally { loading.value = false }
+  } catch (e: any) {
+    // 404 для учителя-не-владельца (бэкенд не отдаёт чужие классы) — на главную,
+    // а не тост «общая ошибка». Админ и владелец 404 не получают.
+    if (e?.response?.status === 404 && auth.user?.role === 'teacher') {
+      toast.err(t('general.not_found'))
+      router.replace('/')
+      return
+    }
+    toast.err(t('general.error'))
+  } finally { loading.value = false }
 })
 </script>
 

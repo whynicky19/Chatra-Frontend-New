@@ -151,6 +151,7 @@ export const useClassesSvc = () => {
       classId: number,
       prevImage?: string | null,
       prevSource?: string | null,
+      signal?: AbortSignal,
     ): Promise<{
       cover_image: string | null
       cover_thumbnail: string | null
@@ -159,7 +160,18 @@ export const useClassesSvc = () => {
       cover_source: string | null
     } | null> => {
       for (let i = 0; i < 40; i++) {
-        await new Promise(r => setTimeout(r, 4000))
+        // AbortSignal позволяет вызывающей стороне (например, onUnmounted)
+        // прервать 160-секундный polling. Без этого цикл продолжает молотить
+        // и логировать setTimeout после ухода со страницы.
+        if (signal?.aborted) return null
+        await new Promise<void>((resolve) => {
+          const t = setTimeout(resolve, 4000)
+          if (signal) {
+            const onAbort = () => { clearTimeout(t); resolve() }
+            signal.addEventListener('abort', onAbort, { once: true })
+          }
+        })
+        if (signal?.aborted) return null
         try {
           const { data } = await api.get(`/classes/${classId}`)
           const img = data?.cover_image || ''
