@@ -32,7 +32,13 @@
 
       <div class="frow">
         <label class="flabel">{{ t('login.password') }}</label>
-        <input v-model="pw" type="password" class="input" :placeholder="t('register.pw_placeholder')" required minlength="8"/>
+        <div style="position:relative">
+          <input v-model="pw" :type="show?'text':'password'" class="input" :placeholder="t('register.pw_placeholder')" required minlength="8" style="padding-right:42px"/>
+          <button type="button" @click="show=!show" class="pw-eye" :title="show ? (lang==='ru'?'Скрыть пароль':'Hide password') : (lang==='ru'?'Показать пароль':'Show password')">
+            <svg v-if="!show" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
         <div v-if="pw" class="str-row">
           <div class="str-bar"><div :style="{width:score+'%',background:scoreColor}" class="str-fill"></div></div>
           <span class="str-lbl">{{scoreLabel}}</span>
@@ -65,7 +71,7 @@ const org = useOrgStore()
 
 const switchOrg = () => { org.clear(); if (import.meta.client) window.location.href = '/org' }
 
-const nick = ref(''); const fullname = ref(''); const email = ref(''); const pw = ref('')
+const nick = ref(''); const fullname = ref(''); const email = ref(''); const pw = ref(''); const show = ref(false)
 const role = ref('student'); const loading = ref(false)
 const emailTouched = ref(false)
 
@@ -116,6 +122,8 @@ const sub = async () => {
 .input{background:var(--bg)!important;border:1px solid var(--border)!important;border-radius:14px!important;padding:13px 18px!important;color:var(--text1)!important;transition:border-color .15s ease,box-shadow .15s ease}
 .input:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(var(--teal-rgb),.16)!important}
 .input::placeholder{color:var(--text4)!important}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text4);background:none;border:none;cursor:pointer;padding:4px;transition:color .15s;display:inline-flex;align-items:center;justify-content:center}
+.pw-eye:hover{color:var(--teal)}
 
 /* Плоская заливка и отсутствие цветного ореола теперь заданы в самом .btn-teal
    (assets/css/main.css) — здесь остаются только метрики кнопки. */
@@ -140,6 +148,7 @@ const sub = async () => {
   .btn-lg { min-height: 50px; font-size: 15px; }
   .auth-submit { height: 50px; }
   .frow { margin-bottom: 12px; }
+  .pw-eye { min-width: 44px; min-height: 44px; right: 0; }
   .org-badge-row { margin-bottom: 14px; }
   .org-pill::after{content:'';position:absolute;top:-7px;bottom:-7px;left:-4px;right:-4px}
   .reg-foot-link{position:relative;display:inline-flex;align-items:center}
