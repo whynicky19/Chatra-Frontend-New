@@ -31,8 +31,15 @@ export interface DeadlineResponse {
   cohort_id: number
   assignment_id: number
   assignment_title?: string | null
-  due_date: string
+  // null для no_deadline=True (бэк маскирует placeholder 2099-12-31).
+  due_date: string | null
   is_published: boolean
+  // true — дедлайн автоматически скопирован из архивного потока (rollover);
+  // UI показывает бейдж «проверьте дату» рядом с заданием.
+  was_shifted?: boolean
+  // true — задание «без срока сдачи» (тренировка, открытое). В UI вместо
+  // datetime-local показываем бейдж «Без срока» и кнопку «Добавить дату».
+  no_deadline?: boolean
 }
 
 export const useCohortsSvc = () => {
@@ -53,7 +60,7 @@ export const useCohortsSvc = () => {
     },
     updateDeadline: async (
       deadlineId: number,
-      body: { due_date?: string; is_published?: boolean },
+      body: { due_date?: string; is_published?: boolean; no_deadline?: boolean },
     ): Promise<DeadlineResponse> => {
       const { data } = await api.patch(`/deadlines/${deadlineId}`, body)
       return data as DeadlineResponse

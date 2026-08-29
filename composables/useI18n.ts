@@ -276,6 +276,64 @@ export const translations: Record<string, Record<Lang, string>> = {
     en: 'Viewing an archived cohort — read-only mode',
     kk: 'Мұрағат ағынын қарау — тек оқу режимі',
   },
+  // Экран «Задания и дедлайны» внутри настроек предмета (publish/unpublish/правка даты).
+  'cohort.deadlines_title': {
+    ru: 'Задания и дедлайны',
+    en: 'Assignments and deadlines',
+    kk: 'Тапсырмалар мен мерзімдер',
+  },
+  'cohort.deadlines_sub': {
+    ru: 'Управление дедлайнами выбранного учебного потока. Черновики не видны ученикам.',
+    en: 'Manage deadlines for the selected cohort. Drafts are hidden from students.',
+    kk: 'Таңдалған ағынның мерзімдерін басқару. Жобалар оқушыларға көрінбейді.',
+  },
+  'cohort.deadlines_select': {
+    ru: 'Учебный поток',
+    en: 'Cohort',
+    kk: 'Ағын',
+  },
+  'cohort.deadlines_no_drafts': {
+    ru: 'Черновиков нет — все дедлайны опубликованы',
+    en: 'No drafts — all deadlines are published',
+    kk: 'Жобалар жоқ — барлық мерзімдер жарияланды',
+  },
+  'cohort.deadlines_empty': {
+    ru: 'В этом потоке пока нет заданий',
+    en: 'No assignments in this cohort yet',
+    kk: 'Бұл ағында әзірге тапсырмалар жоқ',
+  },
+  'cohort.deadlines_shifted_hint': {
+    ru: 'Дата сдвинута автоматически — проверьте',
+    en: 'Date shifted automatically — please review',
+    kk: 'Күн автоматты түрде жылжытылды — тексеріңіз',
+  },
+  'cohort.deadlines_saved': { ru: 'Дедлайн сохранён', en: 'Deadline saved', kk: 'Мерзім сақталды' },
+  'cohort.deadlines_published': { ru: 'Опубликовано', en: 'Published', kk: 'Жарияланды' },
+  'cohort.deadlines_unpublish_blocked': {
+    ru: 'Нельзя снять публикацию: по этому дедлайну уже есть сдачи',
+    en: 'Cannot unpublish: submissions already exist for this deadline',
+    kk: 'Жариялауды алып тастау мүмкін емес: бұл мерзім бойынша тапсырулар бар',
+  },
+  'cohort.deadlines_published_all': {
+    ru: 'Опубликовано черновиков: {n}',
+    en: 'Drafts published: {n}',
+    kk: 'Жобалар жарияланды: {n}',
+  },
+  'cohort.deadlines_no_dl_badge': {
+    ru: 'Без срока',
+    en: 'No deadline',
+    kk: 'Мерзімсіз',
+  },
+  'cohort.deadlines_add_due': {
+    ru: 'Добавить дату',
+    en: 'Add date',
+    kk: 'Күн қосу',
+  },
+  'cohort.deadlines_drop_due': {
+    ru: 'Убрать срок',
+    en: 'Remove deadline',
+    kk: 'Мерзімді алып тастау',
+  },
   'cohort.students_short': { ru: 'учеников', en: 'students', kk: 'оқушы' },
 
   // Rotation mode (class settings)

@@ -292,7 +292,7 @@
          opens this instead of crowding the cover with separate buttons. -->
     <Transition name="modal">
     <div v-if="showClassInfo" class="overlay" @click.self="showClassInfo=false">
-      <div class="modal class-info-modal" style="max-width:420px;width:100%">
+      <div class="modal class-info-modal" style="max-width:540px;width:100%">
         <div class="modal-head">
           <span class="modal-title">{{ t('cohort.settings') }}</span>
           <button class="btn btn-icon btn-ghost" @click="showClassInfo=false">
@@ -337,6 +337,123 @@
             </div>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
+
+          <!-- Только для годовых классов: ведёт во вложенный экран «Задания и
+               дедлайны» (рендерится ниже в том же overlay, см. showDeadlines). -->
+          <button v-if="isYearly" class="ci-row ci-row-link" @click="openDeadlines">
+            <div class="ci-row-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M11 14h2M11 17h4"/></svg>
+            </div>
+            <div class="ci-row-body">
+              <div class="ci-row-label">{{ t('cohort.deadlines_title') }}</div>
+              <div class="ci-row-sub">{{ t('cohort.deadlines_sub') }}</div>
+            </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    </Transition>
+
+    <!-- Вложенный экран «Задания и дедлайны» — рендерится в том же overlay, что
+         и class-info-modal, чтобы шапка с кнопкой «назад» оставалась на месте,
+         а не прыгала. Открывается только по ссылке внутри class-info. -->
+    <Transition name="modal">
+    <div v-if="showClassInfo && showDeadlines" class="overlay" @click.self="closeDeadlines">
+      <div class="modal class-info-modal" style="max-width:760px;width:100%">
+        <div class="modal-head">
+          <button class="ci-back-btn" @click="closeDeadlines" :title="t('general.back')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <span class="modal-title">{{ t('cohort.deadlines_title') }}</span>
+          <button class="btn btn-icon btn-ghost" @click="showClassInfo=false; closeDeadlines()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="class-info-body">
+          <div v-if="cohorts.length > 1" class="ci-row">
+            <div class="ci-row-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="ci-row-body">
+              <div class="ci-row-label">{{ t('cohort.deadlines_select') }}</div>
+              <select class="ci-year-select" :value="deadlinesCohortId ?? ''" @change="onDeadlinesCohortChange($event)">
+                <option v-for="c in cohorts" :key="c.id" :value="c.id">
+                  {{ c.academic_year }}{{ c.status === 'active' ? ` (${t('cohort.active')})` : '' }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="isArchivedCohortSelected" class="archive-notice" style="margin:0">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            {{ t('cohort.viewing_archive') }}
+          </div>
+
+          <div v-if="deadlinesLoading" class="ro-load"><div class="spin-ring"></div></div>
+
+          <template v-else-if="!deadlines.length">
+            <div class="empty-state-card" style="padding:32px 24px">
+              <div class="es-icon-wrap"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+              <div class="es-p">{{ t('cohort.deadlines_empty') }}</div>
+            </div>
+          </template>
+
+          <template v-else>
+            <div v-if="draftsCount > 0" class="deadlines-publish-all">
+              <div class="dpa-info">
+                <span class="dpa-count">{{ draftsCount }}</span>
+                <span class="dpa-text">{{ t('rollover.draft') }}</span>
+              </div>
+              <button class="btn btn-teal btn-sm" :disabled="deadlinesSaving" @click="publishAll">
+                <div v-if="deadlinesSaving" class="spinner" style="width:11px;height:11px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
+                <span v-else>{{ t('rollover.publish_all') }}</span>
+              </button>
+            </div>
+            <div v-else class="deadlines-all-ok">✓ {{ t('cohort.deadlines_no_drafts') }}</div>
+
+            <div class="ro-dl-list">
+              <div v-for="d in deadlines" :key="d.id" class="ro-dl-row">
+                <div class="ro-dl-title-col">
+                  <div class="ro-dl-title">{{ d.assignment_title || ('#' + d.assignment_id) }}</div>
+                  <div v-if="d.was_shifted" class="ro-dl-shifted">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    {{ t('cohort.deadlines_shifted_hint') }}
+                  </div>
+                </div>
+                <!-- no_deadline=True: вместо datetime-local — бейдж и кнопка
+                     «Добавить дату» (снять no_deadline = перейти к обычному режиму). -->
+                <template v-if="d.no_deadline">
+                  <span class="ro-dl-badge no-dl">{{ t('cohort.deadlines_no_dl_badge') }}</span>
+                </template>
+                <input
+                  v-else
+                  type="datetime-local"
+                  class="field-input ro-dl-date"
+                  :value="toLocalInput(d.due_date)"
+                  @change="onDeadlineDate(d, $event)"
+                />
+                <div class="ro-dl-actions">
+                  <button
+                    v-if="d.no_deadline"
+                    class="btn btn-white btn-sm ro-dl-action"
+                    :title="t('cohort.deadlines_add_due')"
+                    @click="toggleNoDeadline(d)"
+                  >{{ t('cohort.deadlines_add_due') }}</button>
+                  <button
+                    v-else
+                    class="btn btn-ghost btn-sm ro-dl-action"
+                    :title="t('cohort.deadlines_drop_due')"
+                    @click="toggleNoDeadline(d)"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+                  </button>
+                  <span v-if="d.is_published" class="ro-dl-badge published">{{ t('cohort.deadlines_published') }}</span>
+                  <button v-else class="btn btn-white btn-sm ro-dl-publish" @click="publishOne(d)">{{ t('rollover.publish') }}</button>
+                </div>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -345,7 +462,7 @@
     <!-- Class settings (rotation mode) — owner/admin -->
     <Transition name="modal">
     <div v-if="showSettings" class="overlay" @click.self="showSettings=false">
-      <div class="modal" style="max-width:440px;width:100%">
+      <div class="modal" style="max-width:540px;width:100%">
         <div class="modal-head">
           <span class="modal-title">{{ t('cohort.rotation_title') }}</span>
           <button class="btn btn-icon btn-ghost" @click="showSettings=false">
@@ -533,6 +650,7 @@ import { useAssignmentsSvc } from '~/services/assignments'
 import { parseUtc } from '~/composables/useDeadline'
 import { useRatingSvc } from '~/services/rating'
 import { useClassesSvc, type CohortResponse, type RotationMode } from '~/services/classes'
+import { useCohortsSvc, type DeadlineResponse } from '~/services/cohorts'
 import { useAuthStore } from '~/stores/auth.store'
 import { useClassesStore } from '~/stores/classes.store'
 import { useI18n } from '~/composables/useI18n'
@@ -550,6 +668,7 @@ const uploadSvc = useUploadSvc()
 const assignmentsSvc = useAssignmentsSvc()
 const ratingSvc = useRatingSvc()
 const classesSvc = useClassesSvc()
+const cohortsSvc = useCohortsSvc()
 const classesStore = useClassesStore()
 const toast = useToast()
 const auth = useAuthStore()
@@ -637,11 +756,113 @@ const showClassInfo = ref(false)
 const rotationYearly = ref(false)
 const savingRotation = ref(false)
 
+// Вложенный экран «Задания и дедлайны» внутри class-info-modal. Не отдельная
+// страница, а второе состояние того же модального окна (та же высота, тот же
+// overlay, общая кнопка «назад» в шапке). Данные тянутся заново при каждом
+// открытии — дедлайны могут поменяться из другой вкладки.
+const showDeadlines = ref(false)
+const deadlinesLoading = ref(false)
+const deadlinesSaving = ref(false)
+const deadlines = ref<DeadlineResponse[]>([])
+const deadlinesCohortId = ref<number | null>(null)
+// datetime-local <-> ISO. Бэкенд отдаёт UTC; конвертируем в локальное время
+// пользователя (иначе на бэк прилетит «тот же час в UTC» и дата уедет на
+// сутки у студентов в других таймзонах).
+const toLocalInput = (iso: string) => {
+  try {
+    const d = new Date(iso.endsWith('Z') || iso.includes('+') ? iso : iso + 'Z')
+    const off = d.getTimezoneOffset()
+    return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16)
+  } catch { return '' }
+}
+const onDeadlineDate = async (d: DeadlineResponse, e: Event) => {
+  const val = (e.target as HTMLInputElement).value
+  if (!val) return
+  await saveDeadline(d, new Date(val).toISOString())
+}
+const openDeadlines = async () => {
+  if (!isYearly.value) return
+  showDeadlines.value = true
+  // По умолчанию выбираем активный поток.
+  if (deadlinesCohortId.value == null) {
+    deadlinesCohortId.value = activeCohort.value?.id ?? null
+  }
+  await loadDeadlines()
+}
+const loadDeadlines = async () => {
+  if (deadlinesCohortId.value == null) return
+  deadlinesLoading.value = true
+  try {
+    deadlines.value = await cohortsSvc.cohortDeadlines(deadlinesCohortId.value)
+  } catch (e: any) {
+    toast.err(e?.response?.data?.detail || t('general.error'))
+  } finally { deadlinesLoading.value = false }
+}
+const onDeadlinesCohortChange = async (e: Event) => {
+  const v = (e.target as HTMLSelectElement).value
+  deadlinesCohortId.value = v ? Number(v) : null
+  await loadDeadlines()
+}
+const closeDeadlines = () => {
+  showDeadlines.value = false
+  // Список и выбор потока не очищаем — при повторном открытии покажем
+  // последний выбранный поток (если он всё ещё в списке cohorts).
+}
+const saveDeadline = async (d: DeadlineResponse, newIso: string) => {
+  try {
+    const updated = await cohortsSvc.updateDeadline(d.id, { due_date: newIso })
+    Object.assign(d, updated)
+    toast.ok(t('cohort.deadlines_saved'))
+  } catch (e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
+}
+const publishOne = async (d: DeadlineResponse) => {
+  try {
+    const updated = await cohortsSvc.updateDeadline(d.id, { is_published: true })
+    Object.assign(d, updated)
+    toast.ok(t('rollover.published'))
+  } catch (e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
+}
+// Переключение no_deadline без задания конкретной даты — для «открытых» заданий.
+// Если учитель снимает no_deadline, бэкенд оставляет в БД прежнюю due_date
+// (placeholder 2099-12-31, маскируется в None), UI показывает «Без срока»
+// до тех пор, пока учитель не выберет дату через datetime-local.
+const toggleNoDeadline = async (d: DeadlineResponse) => {
+  const next = !d.no_deadline
+  try {
+    const updated = await cohortsSvc.updateDeadline(d.id, { no_deadline: next })
+    Object.assign(d, updated)
+    toast.ok(t('general.save'))
+  } catch (e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
+}
+const publishAll = async () => {
+  if (deadlinesCohortId.value == null) return
+  deadlinesSaving.value = true
+  try {
+    const res = await cohortsSvc.publishAllDeadlines(deadlinesCohortId.value)
+    deadlines.value = deadlines.value.map(x => ({ ...x, is_published: true }))
+    const msg = t('cohort.deadlines_published_all').replace('{n}', String(res.published))
+    toast.ok(msg)
+  } catch (e: any) { toast.err(e?.response?.data?.detail || t('general.error')) }
+  finally { deadlinesSaving.value = false }
+}
+const draftsCount = computed(() => deadlines.value.filter(d => !d.is_published).length)
+const isArchivedCohortSelected = computed(() => {
+  if (deadlinesCohortId.value == null) return false
+  const c = cohorts.value.find(x => x.id === deadlinesCohortId.value)
+  return c?.status === 'archived'
+})
+
 const loadCohorts = async () => {
   if (!isOwnerOrAdmin.value || !isYearly.value) return
   try {
     cohorts.value = await classesSvc.listCohorts(classId.value)
     if (selectedCohortId.value == null) selectedCohortId.value = activeCohort.value?.id ?? null
+    // Если ранее выбранный поток во вложенном экране «Задания и дедлайны»
+    // уже не существует (переключили класс, поток удалили) — откатываемся
+    // на активный, иначе запросы упадут с 404.
+    if (deadlinesCohortId.value != null && !cohorts.value.find(c => c.id === deadlinesCohortId.value)) {
+      deadlinesCohortId.value = activeCohort.value?.id ?? null
+    }
   } catch {}
 }
 const onCohortChange = (e: Event) => {
@@ -1076,7 +1297,7 @@ onMounted(async () => {
 .page-header:not([style*="url"]) .cohort-view-notice{background:var(--surface2);border-color:var(--border);color:var(--text3)}
 
 /* Class info modal — modern minimalist settings hub: code card + list rows */
-.class-info-body{padding:4px 0 6px;display:flex;flex-direction:column;gap:10px}
+.class-info-body{padding:6px 0 8px;display:flex;flex-direction:column;gap:12px;max-height:75vh;overflow-y:auto}
 .ci-code-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px}
 .ci-code-label{font-size:11px;font-weight:700;color:var(--text4);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
 .ci-code-row{display:flex;align-items:center;gap:8px}
@@ -1346,4 +1567,36 @@ html.dark .progress-bar{background:rgba(255,255,255,.2)}
 }
 
 .es-icon-wrap{width:64px;height:64px;border-radius:18px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);margin-bottom:4px;opacity:.8}
+
+/* ── «Задания и дедлайны» — вложенный экран внутри class-info-modal.
+      Шапка модалки общая (ci-back-btn слева в .modal-head), содержимое
+      использует уже знакомые строки из rollover.vue: .ro-dl-row / .ro-dl-title
+      / .ro-dl-date / .ro-dl-badge / .btn-sm, плюс две локальные обёртки
+      .deadlines-publish-all и .deadlines-all-ok. Ширина модалки увеличена
+      с 420 до 560 (см. style="max-width:560px" выше) — иначе длинный
+      заголовок задания в строке обрезается. ── */
+.ci-back-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:none;border:none;color:var(--text3);cursor:pointer;margin-right:6px;transition:all .15s;font-family:inherit}
+.ci-back-btn:hover{background:var(--surface2);color:var(--text1)}
+.deadlines-publish-all{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:4px}
+.dpa-info{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text3);font-weight:600}
+.dpa-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:100px;background:var(--yellow);color:#342900;font-size:11px;font-weight:800}
+.dpa-text{text-transform:lowercase}
+.deadlines-all-ok{font-size:12.5px;font-weight:600;color:var(--green);padding:6px 2px 2px}
+.ro-dl-list{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;padding:2px}
+.ro-dl-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md)}
+.ro-dl-title-col{flex:1;min-width:160px;display:flex;flex-direction:column;gap:3px}
+.ro-dl-title{font-size:13px;font-weight:600;color:var(--text1);line-height:1.35}
+.ro-dl-shifted{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#b45309;background:rgba(251,191,36,.16);padding:2px 8px;border-radius:100px;width:fit-content}
+html.dark .ro-dl-shifted{color:#fcd34d;background:rgba(251,191,36,.18)}
+.ro-dl-date{width:auto;padding:6px 9px;font-size:12.5px;min-width:175px}
+.ro-dl-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ro-dl-action{padding:5px 10px;font-size:12px}
+html.dark .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text3)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text3);transition:all .15s}
+.btn-ghost:hover{background:var(--surface2);color:var(--text1)}
+.ro-dl-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap}
+.ro-dl-badge.published{color:var(--green);background:var(--green-l)}
+.ro-dl-badge.no-dl{color:var(--text3);background:var(--surface3);font-weight:600}
+.ro-dl-publish{padding:5px 12px;font-size:12px}
+.ro-load{display:flex;justify-content:center;padding:40px}
 </style>
