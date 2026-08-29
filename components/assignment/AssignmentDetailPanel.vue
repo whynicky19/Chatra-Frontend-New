@@ -887,14 +887,34 @@ const doSubmit = async () => {
   finally { submitting.value = false; uploading.value = false }
 }
 
-onMounted(async () => {
-  if (!canSeeSubmissions.value) {
-    try {
-      const subs = await svc.mySubmissions()
-      mySubmission.value = subs.find(s => s.assignment_id === props.assignment.id) ?? null
-    } catch {}
+// Раньше загрузка была только в onMounted — на проде с реальной сетевой
+// задержкой это давало гонку: при быстром переключении между заданиями
+// pending-ответ по старому assignment.id мог перезаписать состояние после
+// того, как пользователь уже открыл другое задание (и в итоге оценка
+// привязывалась к неправильному заданию или не показывалась вообще).
+// Перевёл на watch с immediate + проверкой targetId после await.
+const loadMySubmission = async () => {
+  if (canSeeSubmissions.value) return
+  const targetId = props.assignment.id
+  if (targetId == null) return
+  try {
+    const subs = await svc.mySubmissions()
+    // Защита от гонки: если за время запроса пользователь уже переключился
+    // на другое задание — не трогаем состояние, актуальный ответ положит
+    // уже свежий watcher.
+    if (props.assignment.id !== targetId) return
+    // assignment_id в JSON может прийти и числом, и строкой (особенно на
+    // bigint), поэтому сравниваем через String() — иначе find молча вернёт
+    // undefined и у студента не отрендерится оценка.
+    mySubmission.value = subs.find(s => String(s.assignment_id) === String(targetId)) ?? null
+  } catch (e) {
+    // Раньше catch {} молча проглатывал любой сбой загрузки — на проде это
+    // значит, что пользователь видит «пустую» страницу без объяснений.
+    console.error('[AssignmentDetailPanel] mySubmissions load failed', e)
+    toast.err(t('general.error'))
   }
-})
+}
+watch(() => props.assignment.id, loadMySubmission, { immediate: true })
 </script>
 
 <style scoped>
