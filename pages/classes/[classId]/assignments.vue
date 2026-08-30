@@ -145,8 +145,8 @@ const goBack = () => router.push(`/classes/${classId.value}?tab=assignments`)
 }
 .asg-back:hover { color: var(--teal); }
 
-.asg-right { flex: 1; min-width: 0; padding: 20px 20px 20px 0; }
-.asg-right > * { height: 100%; }
+.asg-right { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.asg-right > * { flex: 1; min-height: 0; }
 
 @media (max-width: 900px) {
   .asg-left, .asg-left-inner { width: 360px; }

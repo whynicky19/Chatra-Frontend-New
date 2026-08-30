@@ -4,7 +4,7 @@
     <DocumentViewerShell
       v-else-if="file"
       :file="file"
-      :mode="isMobile ? 'fullpage' : 'panel'"
+      mode="fullpage"
       :context="context"
       @close="close"
     />
@@ -14,7 +14,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from '#app'
-import { useIsMobile } from '~/composables/useIsMobile'
 import { useLectureData } from '~/composables/useLectureData'
 import { cleanLectureTitle } from '~/composables/usePostBody'
 import type { HighlightContext } from '~/composables/useHighlights'
@@ -23,7 +22,6 @@ definePageMeta({ layout: 'default' })
 
 const route = useRoute()
 const router = useRouter()
-const isMobile = useIsMobile()
 const { post, files, loading, classId } = useLectureData()
 
 const lectureId = computed(() => Number(route.params.lectureId))
@@ -48,6 +46,7 @@ watch([loading, files], () => {
 </script>
 
 <style scoped>
-.fv-wrap { height: 100%; }
-.fv-loading { height: 100%; display: flex; align-items: center; justify-content: center; }
+.fv-wrap { height: 100%; min-height: 0; display: flex; flex-direction: column; }
+.fv-wrap > * { flex: 1; min-height: 0; }
+.fv-loading { display: flex; align-items: center; justify-content: center; }
 </style>

@@ -209,8 +209,8 @@ const fmtDate = (d: string) => { if (!d) return ''; try { return parseUtc(d).toL
 }
 .lec-back:hover { color: var(--teal); }
 
-.lec-right { flex: 1; min-width: 0; padding: 20px 20px 20px 0; }
-.lec-right > * { height: 100%; }
+.lec-right { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.lec-right > * { flex: 1; min-height: 0; }
 
 @media (max-width: 900px) {
   .lec-left, .lec-left-inner { width: 360px; }
@@ -227,6 +227,6 @@ const fmtDate = (d: string) => { if (!d) return ''; try { return parseUtc(d).toL
   .lec-left { border-right: none; flex: 1; min-height: 0; }
   .lec-left-scroll { padding: 0 16px 32px; }
   .lec-back { margin: 14px 16px 4px; }
-  .lec-right { flex: 1; min-width: 0; min-height: 0; padding: 0; width: 100%; }
+  .lec-right { flex: 1; min-width: 0; min-height: 0; width: 100%; }
 }
 </style>

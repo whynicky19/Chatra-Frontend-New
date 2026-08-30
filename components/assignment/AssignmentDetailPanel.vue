@@ -44,7 +44,7 @@
 
       <div v-if="assignmentFiles.length" class="section">
         <div class="section-label">{{ t('am.task_files') }}<span class="section-count">{{ assignmentFiles.length }}</span></div>
-        <FileListCard :files="assignmentFiles" @open="openPreview" />
+        <FileListCard :files="assignmentFiles" @open="openFile" />
       </div>
 
       <div v-if="referenceFiles.length" class="section">
@@ -53,12 +53,23 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           {{ t('am.reference_files_hint') }}
         </div>
-        <FileListCard :files="referenceFiles" @open="openPreview" />
+        <FileListCard :files="referenceFiles" @open="openFile" />
       </div>
 
       <div v-if="parsedCriteria.length" class="section">
-        <div class="section-label">{{ t('am.criteria') }}<span class="section-count">{{ parsedCriteria.length }}</span></div>
-        <div class="criteria-list">
+        <div class="section-label">
+          <span class="section-label-text">{{ t('am.criteria') }}<span class="section-count">{{ parsedCriteria.length }}</span></span>
+          <button
+            class="section-toggle"
+            :aria-expanded="!criteriaHidden"
+            :title="criteriaHidden ? 'Показать критерии' : 'Скрыть критерии'"
+            @click="toggleCriteria"
+          >
+            <svg v-if="criteriaHidden" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 15l-6-6-6 6"/></svg>
+          </button>
+        </div>
+        <div class="criteria-list" :class="{ collapsed: criteriaHidden }">
           <div v-for="(c, i) in parsedCriteria" :key="c.name" class="criterion">
             <div class="criterion-top">
               <span class="criterion-idx">{{ i + 1 }}</span>
@@ -83,7 +94,7 @@
 
       <div v-if="assignmentFiles.length" class="section">
         <div class="section-label">{{ t('am.task_files') }}<span class="section-count">{{ assignmentFiles.length }}</span></div>
-        <FileListCard :files="assignmentFiles" @open="openPreview" />
+        <FileListCard :files="assignmentFiles" @open="openFile" />
       </div>
 
       <!-- Read-only notice for archived students (no submission) -->
@@ -152,7 +163,7 @@
             <div class="section-label">{{ t('am.your_answer') }}</div>
             <div v-if="mySubmission.text_content" class="answer-text">{{ mySubmission.text_content }}</div>
             <div v-if="mySubmission.file_url || parsedSubmittedUrls.length" class="sub-file">
-              <FileThumbGrid :files="parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url]" @open="openPreview" />
+              <FileThumbGrid :files="parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url]" @open="openFile" />
             </div>
           </div>
           <!-- Разбор по критериям — слева, рядом с ответом, а не под кольцом справа -->
@@ -249,7 +260,7 @@
           </div>
           <div v-if="activeSub.file_url || parsedActiveUrls.length" class="section">
             <div class="section-label">{{ t('am.attached_files') }}</div>
-            <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openPreview" />
+            <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openFile" />
           </div>
 
           <div class="needs-review-banner">
@@ -315,7 +326,7 @@
             </div>
             <div v-if="activeSub.file_url || parsedActiveUrls.length" class="section">
               <div class="section-label">{{ t('am.attached_files') }}</div>
-              <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openPreview" />
+              <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openFile" />
             </div>
             <!-- Разбор по критериям — слева, рядом с ответом, а не под кольцом справа -->
             <GradeCriteriaCard
@@ -468,6 +479,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute, useRouter } from '#app'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useUploadSvc } from '~/services/uploads'
 import { useUsersSvc } from '~/services/users'
@@ -476,7 +488,6 @@ import { parseUtc } from '~/composables/useDeadline'
 import { useI18n } from '~/composables/useI18n'
 import { useCohortErrors } from '~/composables/useCohortErrors'
 import { useAuthStore } from '~/stores/auth.store'
-import { useFilePreview } from '~/composables/useFilePreview'
 import { scoreTone } from '~/composables/useScoreTone'
 import { extractFilesFromText, stripFilesFromText, fileNameFromUrl, withNameFragment } from '~/composables/useAttachments'
 import { validateFiles, ACCEPT_ATTR } from '~/composables/useFileUploadValidation'
@@ -485,9 +496,24 @@ import type { Assignment, Submission } from '~/services/assignments'
 const props = defineProps<{ assignment: Assignment; mode: 'panel' | 'fullpage'; isTeacher?: boolean; readonly?: boolean; cohortId?: number }>()
 const emit = defineEmits(['close', 'submitted'])
 
-const { openPreview } = useFilePreview()
 const auth = useAuthStore()
+const route = useRoute()
+const router = useRouter()
+// classId берём из роута (страница монтируется в /classes/[classId]/...)
+// — props.assignment.id знаем, а идентификатор класса нужен для ссылки «Назад».
+const classId = computed(() => route.params.classId)
 const canSeeSubmissions = computed(() => props.isTeacher || auth.isTeacher)
+
+// Открываем файл полностраничным просмотрщиком (как в лекциях), а не модалкой
+// — адрес кладём в query, чтобы роуту не приходилось парсить массивы
+// (файлы задания могут прийти из описания, референса или сдачи). fileIndex в
+// пути держим только ради совместимости со схемой лекционного роута; реальные
+// данные читаются из query.
+const openFile = (url: string, name: string) => {
+  const q = new URLSearchParams({ url, name })
+  if (props.cohortId != null) q.set('cohort', String(props.cohortId))
+  router.push(`/classes/${classId.value}/assignments/${props.assignment.id}/file/0?${q.toString()}`)
+}
 
 const svc = useAssignmentsSvc()
 const uploadSvc = useUploadSvc()
@@ -563,6 +589,22 @@ const pendingCount = computed(() => submissions.value.filter(s => s.status === '
 const gradedPct = computed(() => submissions.value.length ? Math.round(gradedCount.value / submissions.value.length * 100) : 0)
 
 const parsedCriteria = computed(() => { try { return JSON.parse(props.assignment.criteria) } catch { return [] } })
+
+// Скрытие блока критериев преподавателем: состояние лежит в localStorage,
+// чтобы при возврате к заданию сворачивалось так, как оставил пользователь.
+// Ключ per-assignment, иначе в одном задании «скрыто» применялось бы ко всем.
+const criteriaHiddenKey = computed(() => `_am_criteria_hidden_${props.assignment.id}`)
+const criteriaHidden = ref(false)
+const loadCriteriaHidden = () => {
+  if (!import.meta.client) return
+  try { criteriaHidden.value = localStorage.getItem(criteriaHiddenKey.value) === '1' } catch {}
+}
+const saveCriteriaHidden = (v: boolean) => {
+  if (!import.meta.client) return
+  try { localStorage.setItem(criteriaHiddenKey.value, v ? '1' : '0') } catch {}
+}
+const toggleCriteria = () => { criteriaHidden.value = !criteriaHidden.value; saveCriteriaHidden(criteriaHidden.value) }
+watch(() => props.assignment.id, loadCriteriaHidden, { immediate: true })
 const parsedCriteriaScores = computed(() => { if (!mySubmission.value?.grade?.criteria_scores) return null; try { return JSON.parse(mySubmission.value.grade.criteria_scores) } catch { return null } })
 const parsedActiveScores = computed(() => { if (!activeSub.value?.grade?.criteria_scores) return null; try { return JSON.parse(activeSub.value.grade.criteria_scores) } catch { return null } })
 const parsedActiveReviewReasons = computed(() => { if (!activeSub.value?.ai_review_reasons) return null; try { const arr = JSON.parse(activeSub.value.ai_review_reasons); return Array.isArray(arr) && arr.length ? arr : null } catch { return null } })
@@ -1033,6 +1075,18 @@ html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rg
   font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
   color: var(--text4);
 }
+.section-label-text { display: inline-flex; align-items: center; gap: 7px; }
+/* Кнопка-шеврон для сворачивания секции (критерии и т.п.). В правом углу
+   шапки секции, цветом и формой повторяет section-count, чтобы не выбиваться
+   из общей строки. */
+.section-toggle {
+  margin-left: auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; padding: 0; border: none; border-radius: 7px;
+  background: var(--surface2); color: var(--text4); cursor: pointer;
+  transition: background .15s ease-out, color .15s ease-out, transform .15s cubic-bezier(.32,.72,0,1);
+}
+.section-toggle:hover { background: var(--surface3); color: var(--text1); }
+.section-toggle:active { transform: scale(.9); }
 .section-count {
   font-size: 10.5px; font-weight: 700; letter-spacing: 0; text-transform: none;
   min-width: 18px; text-align: center; padding: 1px 6px; border-radius: 100px;
@@ -1060,6 +1114,14 @@ html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rg
 
 /* ── Критерии задания (рубрика) ────────────────────────────────────────── */
 .criteria-list { display: flex; flex-direction: column; gap: 8px; }
+/* Свёрнутое состояние: блок занимает примерно один criterion (≈52px),
+   остальное обрезается без fade — пользователь явно сворачивает секцию
+   и не ожидает, что под обрезом что-то скрывается через градиент. */
+.criteria-list { max-height: 9999px; transition: max-height .34s cubic-bezier(.22,1,.36,1); }
+.criteria-list.collapsed { max-height: 60px; overflow: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .criteria-list { transition: none; }
+}
 .criterion {
   position: relative; overflow: hidden;
   background: var(--surface); border: 1px solid var(--border);
