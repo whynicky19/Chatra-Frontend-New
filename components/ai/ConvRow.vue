@@ -31,23 +31,26 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
       </button>
 
-      <Teleport to="body">
-        <div v-if="menuOpen" class="row-menu" :style="{ top: menuPos.top + 'px', right: menuPos.right + 'px' }" @click.stop>
-          <button class="row-menu-item" @click="onRename">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg>
-            <span>{{ t('ai.rename') }}</span>
-          </button>
-          <div class="row-menu-divider"/>
-          <button class="row-menu-item" @click="onTogglePin">
-            <svg width="17" height="17" viewBox="0 0 24 24" :fill="conv.pinned ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 10.76a2 2 0 01-1.11 1.79l-1.78.9A2 2 0 005 15.24V16a1 1 0 001 1h12a1 1 0 001-1v-.76a2 2 0 00-1.11-1.79l-1.78-.9A2 2 0 0115 10.76V7a1 1 0 011-1 2 2 0 000-4H8a2 2 0 000 4 1 1 0 011 1z"/></svg>
-            <span>{{ conv.pinned ? t('ai.unpin') : t('ai.pin') }}</span>
-          </button>
-          <button class="row-menu-item danger" @click="onDelete">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-            <span>{{ t('ai.delete') }}</span>
-          </button>
-        </div>
-      </Teleport>
+      <!-- Inline position:fixed вместо <Teleport to="body">: быстрые
+           переключения между страницами через AppSidebar (/ai ↔ /settings)
+           размонтировали ConvRow до завершения teleport-операции, и Nuxt
+           падал в flush-цикле с "can't access property parentNode, e is null"
+           (см. аналогичный фикс в pages/classes/[id].vue). -->
+      <div v-if="menuOpen" class="row-menu" :style="{ top: menuPos.top + 'px', right: menuPos.right + 'px' }" @click.stop>
+        <button class="row-menu-item" @click="onRename">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg>
+          <span>{{ t('ai.rename') }}</span>
+        </button>
+        <div class="row-menu-divider"/>
+        <button class="row-menu-item" @click="onTogglePin">
+          <svg width="17" height="17" viewBox="0 0 24 24" :fill="conv.pinned ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 10.76a2 2 0 01-1.11 1.79l-1.78.9A2 2 0 005 15.24V16a1 1 0 001 1h12a1 1 0 001-1v-.76a2 2 0 00-1.11-1.79l-1.78-.9A2 2 0 0115 10.76V7a1 1 0 011-1 2 2 0 000-4H8a2 2 0 000 4 1 1 0 011 1z"/></svg>
+          <span>{{ conv.pinned ? t('ai.unpin') : t('ai.pin') }}</span>
+        </button>
+        <button class="row-menu-item danger" @click="onDelete">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          <span>{{ t('ai.delete') }}</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -97,7 +100,11 @@ const btnEl = ref<HTMLElement | null>(null)
 const closeMenu = () => { menuOpen.value = false }
 const toggleMenu = () => {
   if (menuOpen.value) { closeMenu(); return }
-  const r = btnEl.value!.getBoundingClientRect()
+  // btnEl может быть null, если компонент уже на пути к размонтированию:
+  // быстрые клики по NuxtLink в AppSidebar (/ai ↔ /settings) разрушают
+  // ConvRow посреди click-handler. Без проверки упали бы в getBoundingClientRect.
+  if (!btnEl.value) return
+  const r = btnEl.value.getBoundingClientRect()
   menuPos.value = { top: r.bottom + 6, right: window.innerWidth - r.right }
   menuOpen.value = true
 }
@@ -121,7 +128,12 @@ const renameInputEl = ref<HTMLInputElement | null>(null)
 const startRename = () => {
   renaming.value = true
   renameText.value = props.conv.title
-  nextTick(() => { renameInputEl.value?.focus(); renameInputEl.value?.select() })
+  nextTick(() => {
+    // Компонент мог уже размонтироваться пока ждали nextTick (быстрые
+    // переключения вкладок сайдбара) — focus() тогда упадёт в null.
+    if (!renaming.value) return
+    renameInputEl.value?.focus(); renameInputEl.value?.select()
+  })
 }
 const commit = () => {
   if (!renaming.value) return
