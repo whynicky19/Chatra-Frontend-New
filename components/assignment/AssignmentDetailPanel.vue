@@ -157,7 +157,7 @@
         </div>
       </div>
 
-      <div v-else class="ad-grid">
+      <div v-else class="ad-stack">
         <div class="ad-col-main">
           <div v-if="mySubmission.text_content || mySubmission.file_url || parsedSubmittedUrls.length" class="section">
             <div class="section-label">{{ t('am.your_answer') }}</div>
@@ -166,19 +166,45 @@
               <FileThumbGrid :files="parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url]" @open="openFile" />
             </div>
           </div>
-          <!-- Разбор по критериям — слева, рядом с ответом, а не под кольцом справа -->
+          <!-- Разбор по критериям и карточка оценки (сильные/слабые стороны) —
+               в одной колонке друг под другом: раньше карточка оценки стояла
+               справа в отдельной колонке grid'а и тянула layout по высоте
+               неравномерно (фидбек слева, кольцо справа, всё «плавало»). -->
+          <GradeResultCard
+            v-if="mySubmission.grade"
+            :grade="mySubmission.grade"
+            :max-score="assignment.max_score"
+            :criteria="parsedCriteriaScores || []"
+          />
           <GradeCriteriaCard
             v-if="mySubmission.grade"
             :grade="mySubmission.grade"
             :criteria="parsedCriteriaScores || []"
             :rubric="parsedCriteria"
           />
+          <div v-else-if="mySubmission.status === 'grading'" class="grading-pending">
+            <div class="grading-dots"><span></span><span></span><span></span></div>
+            {{ checkStepText }}
+          </div>
+          <div v-else-if="mySubmission.status === 'needs_review'" class="needs-review-student">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            {{ t('am.needs_review_student_msg') }}
+          </div>
+          <div v-else class="awaiting-card">
+            <div class="awaiting-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <div class="awaiting-title">{{ statusLabel(mySubmission.status) }}</div>
+              <div class="awaiting-sub">{{ fmtDate(mySubmission.submitted_at) }}</div>
+            </div>
+          </div>
         </div>
 
-        <div class="ad-col-side">
-          <!-- "Сдано"/"Оценено" больше не дублируются текстом — как на странице
-               задания в приложении, чип остаётся только для промежуточных
-               статусов (проверяется/на ручной проверке/просрочено). -->
+        <!-- Статус-бар и кнопка «Забрать/сдать заново» — отдельным блоком под
+             основной колонкой, а не в прижатой sticky-колонке (та тянулась по
+             высоте содержимого слева и оставляла пустоту под собой). -->
+        <div class="ad-col-foot">
           <div class="sub-status-bar">
             <div v-if="!['submitted','graded'].includes(mySubmission.status)" :class="['sub-status-chip', mySubmission.status]">
               <svg v-if="mySubmission.status === 'grading'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -191,33 +217,6 @@
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               {{ fmtDate(mySubmission.submitted_at) }}
             </span>
-          </div>
-
-          <GradeResultCard
-            v-if="mySubmission.grade"
-            :grade="mySubmission.grade"
-            :max-score="assignment.max_score"
-            :criteria="parsedCriteriaScores || []"
-          />
-
-          <div v-else-if="mySubmission.status === 'grading'" class="grading-pending">
-            <div class="grading-dots"><span></span><span></span><span></span></div>
-            {{ checkStepText }}
-          </div>
-
-          <div v-else-if="mySubmission.status === 'needs_review'" class="needs-review-student">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            {{ t('am.needs_review_student_msg') }}
-          </div>
-
-          <div v-else class="awaiting-card">
-            <div class="awaiting-ico">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <div>
-              <div class="awaiting-title">{{ statusLabel(mySubmission.status) }}</div>
-              <div class="awaiting-sub">{{ fmtDate(mySubmission.submitted_at) }}</div>
-            </div>
           </div>
 
           <button v-if="mySubmission.status !== 'graded' && !readonly" class="btn btn-ghost retract-btn" :disabled="retracting" @click="retract">
@@ -318,7 +317,7 @@
 
         <!-- Normal states: two-column layout — student answer on the left, same grade card the
              student sees + grading actions on the right (parity with app) -->
-        <div v-else class="ad-grid">
+        <div v-else class="ad-stack">
           <div class="ad-col-main">
             <div v-if="activeSub.text_content" class="section">
               <div class="section-label">{{ t('am.student_answer') }}</div>
@@ -328,16 +327,9 @@
               <div class="section-label">{{ t('am.attached_files') }}</div>
               <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openFile" />
             </div>
-            <!-- Разбор по критериям — слева, рядом с ответом, а не под кольцом справа -->
-            <GradeCriteriaCard
-              v-if="activeSub.grade"
-              :grade="activeSub.grade"
-              :criteria="parsedActiveScores || []"
-              :rubric="parsedCriteria"
-            />
-          </div>
-
-          <div class="ad-col-side">
+            <!-- Карточка оценки (кольцо+фидбек+сильные/слабые стороны) и разбор
+                 по критериям — в одной колонке друг под другом, чтобы правая
+                 граница была ровной (раньше стояли в двух колонках grid'а). -->
             <GradeResultCard
               v-if="activeSub.grade"
               :grade="activeSub.grade"
@@ -345,6 +337,12 @@
               :criteria="parsedActiveScores || []"
               :ai-confidence="activeSub.ai_confidence"
               :show-confidence="true"
+            />
+            <GradeCriteriaCard
+              v-if="activeSub.grade"
+              :grade="activeSub.grade"
+              :criteria="parsedActiveScores || []"
+              :rubric="parsedCriteria"
             />
             <div v-else class="ungraded-card">
               <div class="ungraded-ico">
@@ -556,6 +554,30 @@ const grading = ref(false)
 const scrolled = ref(false)
 const onBodyScroll = (e: Event) => { scrolled.value = (e.target as HTMLElement).scrollTop > 4 }
 
+// ── Polling статуса проверки ИИ для студента ────────────────────────────────
+// Раньше студент, открывший задание в момент проверки (status='grading'),
+// видел спиннер «Проверяется ИИ...» сколь угодно долго: бэкенд завершал оценку
+// и менял status на 'graded', но фронт не опрашивал бэкенд — приходилось
+// перезагружать страницу вручную, чтобы увидеть оценку/фидбек. Теперь пока
+// статус 'grading', раз в 5 с дёргаем mySubmissions(); когда статус сменился,
+// останавливаемся. Аналогично для ручной проверки (needs_review) — ждём,
+// пока учитель подтвердит/изменит оценку.
+const GRADING_POLL_MS = 5000
+let gradingPollTimer: ReturnType<typeof setInterval> | null = null
+const startGradingPoll = () => {
+  if (gradingPollTimer) return
+  gradingPollTimer = setInterval(() => {
+    // Проверка внутри колбэка: статус мог уже смениться с прошлого тика,
+    // а watch ещё не успел среагировать (микрозадержка между fetch и реактивностью).
+    if (mySubmission.value?.status === 'grading' || mySubmission.value?.status === 'needs_review') {
+      refreshMySubmissions()
+    }
+  }, GRADING_POLL_MS)
+}
+const stopGradingPoll = () => {
+  if (gradingPollTimer) { clearInterval(gradingPollTimer); gradingPollTimer = null }
+}
+
 // Проверка ИИ — единственный блокирующий HTTP-запрос без стадий на бэкенде,
 // поэтому прогресс симулируем на клиенте (одинаковый текст на Web и Flutter).
 const CHECK_STEPS = ['am.check_step_1', 'am.check_step_2', 'am.check_step_3', 'am.check_step_4', 'am.check_step_5']
@@ -572,10 +594,11 @@ const stopCheckSteps = () => {
   if (checkStepTimer) { clearInterval(checkStepTimer); checkStepTimer = null }
 }
 const checkStepText = computed(() => t(CHECK_STEPS[checkStepIdx.value]))
-onUnmounted(stopCheckSteps)
+onUnmounted(() => { stopCheckSteps(); stopGradingPoll() })
 watch(() => mySubmission.value?.status, (s) => {
-  if (s === 'grading') startCheckSteps()
-  else stopCheckSteps()
+  if (s === 'grading') { startCheckSteps(); startGradingPoll() }
+  else if (s === 'needs_review') { startGradingPoll(); stopCheckSteps() }
+  else { stopCheckSteps(); stopGradingPoll() }
 }, { immediate: true })
 
 const bulkGrading = ref(false)
@@ -747,12 +770,16 @@ const runAiGrade = async () => {
   startCheckSteps()
   try {
     const result = await svc.aiGrade(subId)
-    const patch = {
+    // result.grade может быть null (needs_review) — тогда сохраняем прежнее
+    // значение в submissions[]. Иначе spread c `grade: undefined` обнулил бы
+    // существующую оценку при re-check'е, и карточка GradeResultCard пропала бы
+    // до следующего перезахода на страницу.
+    const patch: Partial<Submission> = {
       status: result.status,
-      grade: result.grade || undefined,
       ai_confidence: result.ai_confidence,
       ai_review_reasons: result.ai_review_reasons,
     }
+    if (result.grade) patch.grade = result.grade
     // Учитель мог уйти «Назад к списку» (activeSub = null) или открыть другую
     // сдачу, пока запрос летел — применяем patch к activeSub, только если это
     // всё ещё та же сдача, иначе спред null дал бы объект без id/submitted_at
@@ -877,12 +904,15 @@ const runBulkAiGrade = async () => {
     try {
       const result = await svc.aiGrade(sub.id)
       const idx = submissions.value.findIndex(s => s.id === sub.id)
-      const patch = {
+      // patch не должен обнулять прежнюю оценку, если новый прогон вернул
+      // null (например, needs_review). Иначе карточка GradeResultCard
+      // в детали сдачи пропадёт до перезахода на страницу.
+      const patch: Partial<Submission> = {
         status: result.status,
-        grade: result.grade || undefined,
         ai_confidence: result.ai_confidence,
         ai_review_reasons: result.ai_review_reasons,
       }
+      if (result.grade) patch.grade = result.grade
       if (idx !== -1) submissions.value[idx] = { ...submissions.value[idx], ...patch }
       ok++
     } catch {}
@@ -1060,10 +1090,15 @@ html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rg
 }
 .adp.panel .am-body { border-radius: 0 0 var(--r-xl) var(--r-xl); }
 
-/* Двухколоночная раскладка: слева описание/ответ, справа статус/оценка. */
-.ad-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px; align-items: start; }
+/* Одна колонка вместо двух — раньше карточка оценки (кольцо + фидбек +
+   сильные/слабые стороны) стояла справа от разбора по критериям в grid'е,
+   тянулась по высоте содержимого слева, и правый край карточек прыгал
+   (фидбек слева, кольцо справа — всё «плавало»). Теперь все блоки
+   (ответ → оценка с фидбеком → критерии) идут друг под другом, нижний
+   колонтитул со статусом/датой — отдельной строкой под ними. */
+.ad-stack { display: flex; flex-direction: column; gap: 20px; }
 .ad-col-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-.ad-col-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; position: sticky; top: 12px; }
+.ad-col-foot { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; border-top: 1px solid var(--border); }
 
 /* ── Секции: заголовок «врезкой» над карточкой (iOS grouped list) ──────── */
 .section { display: flex; flex-direction: column; gap: 9px; }
@@ -1537,8 +1572,10 @@ html.dark .status-mini.needs_review { color: #F0A94B; }
 }
 
 @media (max-width:900px) {
-  .ad-grid { grid-template-columns: 1fr; gap: 18px; }
-  .ad-col-side { position: static; }
+  /* На узких экранах раньше grid схлопывался в одну колонку, теперь она
+     и так одна — просто уменьшаем зазоры. */
+  .ad-stack { gap: 16px; }
+  .ad-col-main { gap: 16px; }
 }
 @media (max-width:768px) {
   .am-head { padding: 14px 16px 14px; }
