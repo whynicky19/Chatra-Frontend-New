@@ -491,6 +491,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { scoreTone } from '~/composables/useScoreTone'
 import { extractFilesFromText, stripFilesFromText, fileNameFromUrl, withNameFragment } from '~/composables/useAttachments'
 import { validateFiles, ACCEPT_ATTR } from '~/composables/useFileUploadValidation'
+import { useAssignmentListData } from '~/composables/useAssignmentListData'
 import type { Assignment, Submission } from '~/services/assignments'
 
 const props = defineProps<{ assignment: Assignment; mode: 'panel' | 'fullpage'; isTeacher?: boolean; readonly?: boolean; cohortId?: number }>()
@@ -519,6 +520,15 @@ const svc = useAssignmentsSvc()
 const uploadSvc = useUploadSvc()
 const usersSvc = useUsersSvc()
 const toast = useToast()
+// Единый источник правды по сдачам студента — тот же самый mySubmissions,
+// который уже загрузила и дождалась родительская страница (assignments.vue)
+// и которым пользуется AssignmentListPanel (там баллы всегда показывались
+// верно). Раньше эта панель делала свой отдельный, независимый fetch
+// mySubmissions() при монтировании — тот же запрос дублировался, и на проде
+// с реальной сетевой задержкой это было источником гонки/несовпадения
+// состояния (см. историю ниже). Теперь панель просто читает из общих данных
+// — второго запроса и гонки как класса больше нет.
+const { mySubmissions: sharedMySubmissions, refreshMySubmissions } = useAssignmentListData()
 const { t, lang } = useI18n()
 const cohortErrors = useCohortErrors()
 // Локаль дат по языку интерфейса (раньше было жёстко 'ru-RU').
@@ -528,7 +538,13 @@ const studentMap = ref<Record<number, string>>({})
 
 const tab = ref<'info'|'submit'|'submissions'>('info')
 const searchQuery = ref('')
-const mySubmission = ref<Submission|null>(null)
+const mySubmission = computed<Submission|null>(() => {
+  if (canSeeSubmissions.value) return null
+  const targetId = props.assignment.id
+  // Сравнение через String() — assignment_id может прийти и числом, и
+  // строкой (см. историю бага ниже), find иначе молча вернёт undefined.
+  return sharedMySubmissions.value.find(s => String(s.assignment_id) === String(targetId)) ?? null
+})
 const submissions = ref<Submission[]>([])
 const activeSub = ref<Submission|null>(null)
 const loadingSubs = ref(false)
@@ -881,7 +897,7 @@ const retract = async () => {
   retracting.value = true
   try {
     await svc.retractSubmission(mySubmission.value.id)
-    mySubmission.value = null
+    await refreshMySubmissions()
     form.value = { text: '', file: null }
     uploadedUrl.value = ''
     // Полная очистка формы сдачи: раньше submittedFiles (уже выбранные, ещё
@@ -917,7 +933,7 @@ const doSubmit = async () => {
       file_urls: fileUrls.length ? fileUrls : undefined,
       student_name: auth.fullname || undefined,
     })
-    mySubmission.value = sub
+    await refreshMySubmissions()
     toast.ok(t('am.work_submitted'))
     emit('submitted', sub)
   } catch (e: any) {
@@ -929,34 +945,15 @@ const doSubmit = async () => {
   finally { submitting.value = false; uploading.value = false }
 }
 
-// Раньше загрузка была только в onMounted — на проде с реальной сетевой
-// задержкой это давало гонку: при быстром переключении между заданиями
-// pending-ответ по старому assignment.id мог перезаписать состояние после
-// того, как пользователь уже открыл другое задание (и в итоге оценка
-// привязывалась к неправильному заданию или не показывалась вообще).
-// Перевёл на watch с immediate + проверкой targetId после await.
-const loadMySubmission = async () => {
-  if (canSeeSubmissions.value) return
-  const targetId = props.assignment.id
-  if (targetId == null) return
-  try {
-    const subs = await svc.mySubmissions()
-    // Защита от гонки: если за время запроса пользователь уже переключился
-    // на другое задание — не трогаем состояние, актуальный ответ положит
-    // уже свежий watcher.
-    if (props.assignment.id !== targetId) return
-    // assignment_id в JSON может прийти и числом, и строкой (особенно на
-    // bigint), поэтому сравниваем через String() — иначе find молча вернёт
-    // undefined и у студента не отрендерится оценка.
-    mySubmission.value = subs.find(s => String(s.assignment_id) === String(targetId)) ?? null
-  } catch (e) {
-    // Раньше catch {} молча проглатывал любой сбой загрузки — на проде это
-    // значит, что пользователь видит «пустую» страницу без объяснений.
-    console.error('[AssignmentDetailPanel] mySubmissions load failed', e)
-    toast.err(t('general.error'))
-  }
-}
-watch(() => props.assignment.id, loadMySubmission, { immediate: true })
+// mySubmission больше не грузится здесь отдельным запросом — см. computed
+// выше и комментарий у sharedMySubmissions. Если пришло новое assignment.id,
+// а нужной сдачи ещё нет в общих данных (например, только что зашли в класс
+// и родитель ещё не успел прогрузиться) — refreshMySubmissions подтянет
+// актуальный список без риска гонки, так как пишет в общий, а не в
+// локальный per-панели стейт.
+watch(() => props.assignment.id, () => {
+  if (!canSeeSubmissions.value) refreshMySubmissions()
+}, { immediate: true })
 </script>
 
 <style scoped>
