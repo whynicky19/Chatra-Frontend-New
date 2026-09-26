@@ -84,7 +84,7 @@
                   <!-- SubjectCover заполняет контейнер целиком (иконку масштабирует
                        только size), поэтому ему нужна коробка фиксированного размера. -->
                   <span class="cl-cover">
-                    <SubjectCover :src="c.cover_thumbnail" :icon="c.cover_icon" :color="c.cover_color" :size="17"/>
+                    <SubjectCover :src="c.cover_thumbnail" :icon="c.cover_icon" :color="c.cover_color" :cover-source="c.cover_source" :size="17"/>
                   </span>
                   <span class="cl-name">{{ c.name }}</span>
                   <span v-if="c.role === 'creator'" class="chip chip-mini">создатель</span>

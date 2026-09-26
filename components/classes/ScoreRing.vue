@@ -1,12 +1,6 @@
 <template>
   <div class="score-ring" :class="`tone-${tone}`">
     <svg viewBox="0 0 200 200" class="ring-svg">
-      <defs>
-        <linearGradient :id="gradId" x1="10%" y1="0%" x2="90%" y2="100%">
-          <stop offset="0%" class="ring-stop-start" />
-          <stop offset="100%" class="ring-stop-end" />
-        </linearGradient>
-      </defs>
       <!-- Мягкая заливка внутри кольца: даёт кольцу «дно», из-за которого
            цифра читается как объект на подложке, а не висит в пустоте. -->
       <circle class="ring-fill" cx="100" cy="100" :r="radius - strokeWidth / 2 - 2" />
@@ -15,7 +9,6 @@
         class="ring-progress"
         cx="100" cy="100" :r="radius"
         :stroke-width="strokeWidth"
-        :stroke="`url(#${gradId})`"
         :stroke-dasharray="circumference"
         :stroke-dashoffset="mounted ? dashOffset : circumference"
       />
@@ -40,8 +33,6 @@ const circumference = 2 * Math.PI * radius
 const pct = computed(() => scoreRatio(props.score, props.maxScore))
 const tone = computed(() => scoreTone(props.score, props.maxScore))
 const dashOffset = computed(() => circumference * (1 - pct.value))
-const gradId = `ring-grad-${Math.random().toString(36).slice(2, 9)}`
-
 const mounted = ref(false)
 
 // Счётчик балла «набегает» вместе с заполнением дуги — цифра и дуга
@@ -74,12 +65,12 @@ onUnmounted(() => cancelAnimationFrame(raf))
 <style scoped>
 .score-ring {
   position: relative;
-  width: 100%;
-  max-width: 208px;
+  width: 188px; height: 188px;
+  max-width: 100%;
   aspect-ratio: 1;
   margin: 0 auto;
   container-type: inline-size;
-  filter: drop-shadow(0 14px 30px rgba(var(--tone-rgb), .3));
+  filter: drop-shadow(0 12px 24px rgba(var(--tone-rgb), .22));
 }
 /* Тон результата: цвет наконец что-то означает — 9/10 и 3/10 больше не
    выглядят одинаково бирюзовыми. */
@@ -94,11 +85,7 @@ html.dark .tone-ok { --tone: #F0A94B; --tone-rgb: 240,169,75; }
 .ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
 .ring-fill { fill: rgba(var(--tone-rgb), .06); }
 .ring-track { fill: none; stroke: var(--border2); }
-.ring-progress { fill: none; stroke-linecap: round; transition: stroke-dashoffset 1.3s cubic-bezier(.22,1,.36,1); }
-/* Первое объявление — фолбэк для движков без color-mix(): просто сплошной тон. */
-.ring-stop-start { stop-color: var(--tone); stop-color: color-mix(in oklab, var(--tone) 62%, white); }
-.ring-stop-end { stop-color: var(--tone); }
-html.dark .ring-stop-start { stop-color: color-mix(in oklab, var(--tone) 78%, white); }
+.ring-progress { fill: none; stroke: var(--tone); stroke-linecap: round; transition: stroke-dashoffset 1.3s cubic-bezier(.22,1,.36,1); }
 
 .ring-center {
   position: absolute; inset: 0;
@@ -106,12 +93,12 @@ html.dark .ring-stop-start { stop-color: color-mix(in oklab, var(--tone) 78%, wh
   text-align: center; gap: 2px; padding: 0 16%;
 }
 .ring-score {
-  font-size: clamp(26px, 9.5cqw, 44px); font-weight: 800; color: var(--text1);
+  font-size: 38px; font-size: clamp(26px, 9.5cqw, 42px); font-weight: 800; color: var(--text1);
   line-height: 1; letter-spacing: -.03em; font-variant-numeric: tabular-nums;
 }
 .ring-max { font-size: 0.4em; font-weight: 600; color: var(--text4); margin-left: 2px; letter-spacing: -.01em; }
 .ring-pct {
-  margin-top: 4px; font-size: clamp(10px, 3.4cqw, 13px); font-weight: 700;
+  margin-top: 5px; font-size: 12px; font-size: clamp(10px, 3.4cqw, 13px); font-weight: 700;
   letter-spacing: .02em; color: var(--tone); font-variant-numeric: tabular-nums;
 }
 </style>

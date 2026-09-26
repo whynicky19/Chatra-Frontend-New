@@ -16,7 +16,8 @@
           <div class="page-header" :class="{ 'header-collapsed': coverCollapsed }">
             <SubjectCover v-if="classMeta.cover_image || classMeta.cover_color"
                           :src="classMeta.cover_image" :icon="classMeta.cover_icon"
-                          :color="classMeta.cover_color" :size="92" class="page-header-art"/>
+                          :color="classMeta.cover_color" :cover-source="classMeta.cover_source"
+                          :size="92" class="page-header-art"/>
             <div class="page-header-overlay" v-if="classMeta.cover_image"></div>
             <div class="page-header-top">
               <NuxtLink to="/" class="back-link" :class="{'back-link-dark': classMeta.cover_image}">

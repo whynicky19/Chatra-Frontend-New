@@ -23,7 +23,7 @@
          Поэтому она белая с мягкой тенью — композиция теперь насыщенная, и
          яркость под иконкой заранее неизвестна. Иконка в тон на таком фоне
          давала контраст 1.5-2.0 и просто пропадала. -->
-    <svg v-if="icon" class="sc-icon" :style="{ width: `${size}px`, height: `${size}px` }"
+    <svg v-if="showIcon" class="sc-icon" :style="{ width: `${size}px`, height: `${size}px` }"
          viewBox="0 0 24 24" fill="none" stroke="#fff"
          :stroke-width="strokeWidth"
          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -45,6 +45,8 @@ const props = withDefaults(defineProps<{
   icon?: string | null
   /** Слаг цвета — из него строится подложка, пока картинка грузится. */
   color?: string | null
+  /** AI-обложка уже содержит крупный предметный 3D-объект; SVG нужен только фолбэку. */
+  coverSource?: string | null
   /** Размер иконки в px. Один на контекст, одинаковый для всех предметов. */
   size?: number
 }>(), { size: 44 })
@@ -56,6 +58,7 @@ watch(() => props.src, () => { failed.value = false })
 
 const coverArt = useCoverArt()
 const showImage = computed(() => !!props.src && !failed.value)
+const showIcon = computed(() => !!props.icon && props.coverSource !== 'ai')
 
 // Толщина линии масштабируется вместе с иконкой, поэтому визуальный вес
 // штриха одинаков и на мелкой плашке, и на крупной шапке.

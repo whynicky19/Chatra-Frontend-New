@@ -3,7 +3,7 @@
     <div v-if="classId" class="overlay" @click.self="$emit('close')">
       <div class="modal cl-modal">
         <header class="cl-cover" :style="coverFallback">
-          <SubjectCover :src="detail?.cover_image || card?.cover_thumbnail" :icon="detail?.cover_icon || card?.cover_icon"
+          <SubjectCover :src="detail?.cover_image || card?.cover_thumbnail" :icon="detail?.cover_icon || card?.cover_icon" :cover-source="detail?.cover_source || card?.cover_source"
                         :color="detail?.cover_color || card?.cover_color" :size="70" class="cl-cover-art"/>
           <button class="btn btn-icon cl-close" @click="$emit('close')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>

@@ -1,6 +1,6 @@
 <template>
-  <div class="gcc">
-    <div v-if="criteria.length" class="gcc-section">
+  <div v-if="criteria.length" class="gcc">
+    <div class="gcc-section">
       <div class="gcc-heading">
         <span class="gcc-heading-txt">{{ t('am.by_criteria') }}</span>
         <span class="gcc-heading-sum">{{ earned }} / {{ possible }}</span>
@@ -23,15 +23,6 @@
       </div>
     </div>
 
-    <div v-if="!gradedByAi && grade.feedback" class="gcc-teacher-comment">
-      <div class="gcc-tc-head">
-        <span class="gcc-tc-ava">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </span>
-        {{ t('am.teacher_comment') }}
-      </div>
-      <p class="gcc-tc-text">{{ grade.feedback }}</p>
-    </div>
   </div>
 </template>
 
@@ -51,8 +42,6 @@ const props = defineProps<{
 
 const { t } = useI18n()
 
-const gradedByAi = computed(() => props.grade.graded_by === 'ai' || props.grade.graded_by === 'ai_suggested')
-
 // Итог по критериям показываем в заголовке — иначе, чтобы понять «сколько
 // всего набрано в этом разборе», приходилось складывать строки глазами.
 const earned = computed(() => Math.round(props.criteria.reduce((s, c) => s + (c.score || 0), 0) * 10) / 10)
@@ -64,12 +53,12 @@ const barWidth = (score: number, max: number) => `${max > 0 ? Math.min(100, Math
 </script>
 
 <style scoped>
-.gcc { display: flex; flex-direction: column; gap: 16px; }
+.gcc { display: flex; flex-direction: column; }
 .gcc-section { display: flex; flex-direction: column; gap: 10px; }
 /* Тот же «eyebrow»-заголовок, что у остальных секций страницы задания, —
    иначе разбор по критериям выбивался из общей сетки заголовков. */
 .gcc-heading {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-left: 3px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 3px;
 }
 .gcc-heading-txt {
   font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
@@ -81,23 +70,26 @@ const barWidth = (score: number, max: number) => `${max > 0 ? Math.min(100, Math
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 
-.gcc-criteria-list { display: flex; flex-direction: column; gap: 8px; }
+.gcc-criteria-list {
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 22px; box-shadow: var(--sh-xs);
+}
 
 /* Каждый критерий — карточка с левой цветной кромкой: тон сразу говорит,
    где потеряны баллы, ещё до чтения цифр. */
 .gcc-criterion {
-  position: relative; overflow: hidden;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); padding: 13px 15px 14px 17px;
-  box-shadow: var(--sh-xs);
-  transition: border-color .18s ease-out, box-shadow .18s ease-out, transform .18s cubic-bezier(.22,1,.36,1);
+  position: relative; overflow: hidden; background: transparent;
+  padding: 16px 18px 17px 20px;
+  transition: background .14s ease-out;
 }
+.gcc-criterion:not(:last-child) { border-bottom: 1px solid var(--border); }
 .gcc-criterion::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  background: var(--tone); opacity: .85;
+  background: var(--tone); opacity: .72;
 }
 @media (hover:hover) {
-  .gcc-criterion:hover { border-color: var(--border2); box-shadow: var(--sh-sm); transform: translateY(-1px); }
+  .gcc-criterion:hover { background: var(--glass); }
 }
 
 .tone-excellent { --tone: var(--green); --tone-rgb: 22,163,74; }
@@ -121,13 +113,14 @@ html.dark .tone-ok { --tone: #F0A94B; --tone-rgb: 240,169,75; }
 .gcc-criterion-score {
   flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums;
   font-size: 13px; font-weight: 800; color: var(--tone);
-  background: rgba(var(--tone-rgb), .1); padding: 2px 9px; border-radius: 100px;
+  background: rgba(var(--tone-rgb), .09); padding: 3px 9px; border-radius: 100px;
 }
 .gcc-of { font-weight: 600; opacity: .65; }
 .gcc-criterion-desc { font-size: 12.5px; color: var(--text4); line-height: 1.45; margin: 4px 0 0 28px; }
 .gcc-criterion-bar { height: 6px; background: var(--surface2); border-radius: 100px; overflow: hidden; margin: 10px 0 0 28px; }
 .gcc-criterion-bar-fill {
   height: 100%; border-radius: 100px;
+  background: var(--tone);
   background: linear-gradient(90deg, color-mix(in oklab, var(--tone) 65%, white), var(--tone));
   transition: width .9s cubic-bezier(.22,1,.36,1);
 }
@@ -137,19 +130,8 @@ html.dark .tone-ok { --tone: #F0A94B; --tone-rgb: 240,169,75; }
 }
 .gcc-quote { position: absolute; left: 0; top: 3px; bottom: 3px; width: 2px; border-radius: 2px; background: var(--border2); }
 
-.gcc-teacher-comment {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-xl); padding: 15px 16px; box-shadow: var(--sh-xs);
+@media (max-width: 768px) {
+  .gcc-criteria-list { border-radius: 18px; }
+  .gcc-criterion { padding: 14px 14px 15px 17px; }
 }
-.gcc-tc-head {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 11.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
-  color: var(--text4); margin-bottom: 9px;
-}
-.gcc-tc-ava {
-  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
-  width: 22px; height: 22px; border-radius: 7px;
-  background: var(--surface2); color: var(--text3);
-}
-.gcc-tc-text { font-size: 13.5px; line-height: 1.65; color: var(--text2); margin: 0; white-space: pre-wrap; }
 </style>

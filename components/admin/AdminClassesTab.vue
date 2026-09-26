@@ -27,7 +27,7 @@
         <button v-for="cl in rows" :key="cl.id" class="card" @click="openedId = cl.id">
           <span class="cover" :style="coverStyle(cl)">
             <SubjectCover :src="cl.cover_thumbnail || cl.cover_image" :icon="cl.cover_icon"
-                          :color="cl.cover_color" :size="52" class="cover-art"/>
+                          :color="cl.cover_color" :cover-source="cl.cover_source" :size="52" class="cover-art"/>
             <span v-if="cl.member_count != null" class="cover-chip">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
               {{ cl.member_count }}

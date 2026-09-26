@@ -119,7 +119,10 @@ export const useAssignmentsSvc = () => {
 
     // Fixed path: /assignments/student/my-submissions (avoids route conflict with /{id})
     mySubmissions: async (opts?: { limit?: number; offset?: number }): Promise<Submission[]> => {
-      const params: Record<string, any> = {}
+      // Оценка может появиться, пока страница задания уже открыта или лежит в
+      // back/forward cache браузера. Уникальный параметр не даёт Safari и
+      // встроенным WebView вернуть устаревший персональный ответ из HTTP-кэша.
+      const params: Record<string, any> = { _fresh: Date.now() }
       if (opts?.limit != null) params.limit = opts.limit
       if (opts?.offset != null) params.offset = opts.offset
       const { data } = await api.get('/assignments/student/my-submissions', { params })

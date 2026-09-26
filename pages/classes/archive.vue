@@ -34,7 +34,7 @@
         <div v-else class="classes-grid">
           <div v-for="cls in archivedClasses" :key="cls.id" class="class-card arch-card" @click="goClass(cls.id)">
             <div class="card-cover" :style="(cls.cover_thumbnail || cls.cover_image || cls.cover_color) ? {} : {background: coverGrad(cls.id)}">
-              <SubjectCover :src="cls.cover_thumbnail || cls.cover_image" :icon="cls.cover_icon"
+              <SubjectCover :src="cls.cover_thumbnail || cls.cover_image" :icon="cls.cover_icon" :cover-source="cls.cover_source"
                             :color="cls.cover_color" :size="58" class="card-cover-art"/>
               <div class="card-cover-dim"></div>
               <div class="card-archive-badge">

@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from '#app'
 import { useAssignmentsSvc } from '~/services/assignments'
 import { useClassesSvc } from '~/services/classes'
@@ -77,7 +77,8 @@ const load = async () => {
     ])
     assignments.value = list
     readonly.value = !!cls?.is_archived_for_user
-    mySubmissions.value = isTeacher.value ? [] : await assignmentsSvc.mySubmissions()
+    if (isTeacher.value) mySubmissions.value = []
+    else await refreshMySubmissions()
   } catch {
     toast.err(t('general.error'))
   } finally {
@@ -86,10 +87,47 @@ const load = async () => {
 }
 onMounted(load)
 
-const refreshMySubmissions = async () => {
-  if (isTeacher.value) return
-  try { mySubmissions.value = await assignmentsSvc.mySubmissions() } catch {}
+let submissionsRefresh: Promise<void> | null = null
+const refreshMySubmissions = (options: { silent?: boolean } = {}) => {
+  if (isTeacher.value) return Promise.resolve()
+  // Фокус, pageshow и polling иногда срабатывают почти одновременно. Один
+  // общий promise предотвращает тройной запрос и гонку старого ответа с новым.
+  if (submissionsRefresh) return submissionsRefresh
+  submissionsRefresh = (async () => {
+    try {
+      mySubmissions.value = await assignmentsSvc.mySubmissions()
+    } catch (error) {
+      console.error('[assignments] Failed to refresh submissions', error)
+      if (!options.silent) toast.err(t('general.error'))
+    } finally {
+      submissionsRefresh = null
+    }
+  })()
+  return submissionsRefresh
 }
+
+const SUBMISSIONS_SYNC_MS = 15_000
+let submissionsSyncTimer: ReturnType<typeof setInterval> | null = null
+const syncWhenVisible = () => {
+  if (!document.hidden) refreshMySubmissions({ silent: true })
+}
+const onPageShow = () => refreshMySubmissions({ silent: true })
+
+onMounted(() => {
+  // Safari/Firefox могут восстановить страницу целиком из back-forward cache:
+  // setup/onMounted повторно не выполняются, но pageshow приходит всегда.
+  window.addEventListener('pageshow', onPageShow)
+  window.addEventListener('focus', syncWhenVisible)
+  document.addEventListener('visibilitychange', syncWhenVisible)
+  submissionsSyncTimer = setInterval(syncWhenVisible, SUBMISSIONS_SYNC_MS)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('pageshow', onPageShow)
+  window.removeEventListener('focus', syncWhenVisible)
+  document.removeEventListener('visibilitychange', syncWhenVisible)
+  if (submissionsSyncTimer) clearInterval(submissionsSyncTimer)
+})
 
 provideAssignmentListData({ assignments, mySubmissions, loading, classId, readonly, refreshMySubmissions })
 

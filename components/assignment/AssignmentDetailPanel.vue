@@ -159,17 +159,8 @@
 
       <div v-else class="ad-stack">
         <div class="ad-col-main">
-          <div v-if="mySubmission.text_content || mySubmission.file_url || parsedSubmittedUrls.length" class="section">
-            <div class="section-label">{{ t('am.your_answer') }}</div>
-            <div v-if="mySubmission.text_content" class="answer-text">{{ mySubmission.text_content }}</div>
-            <div v-if="mySubmission.file_url || parsedSubmittedUrls.length" class="sub-file">
-              <FileThumbGrid :files="parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url]" @open="openFile" />
-            </div>
-          </div>
-          <!-- Разбор по критериям и карточка оценки (сильные/слабые стороны) —
-               в одной колонке друг под другом: раньше карточка оценки стояла
-               справа в отдельной колонке grid'а и тянула layout по высоте
-               неравномерно (фидбек слева, кольцо справа, всё «плавало»). -->
+          <!-- Результат — главный объект страницы. Он идёт первым, а исходная
+               работа остаётся ниже как контекст, а не конкурирует с оценкой. -->
           <GradeResultCard
             v-if="mySubmission.grade"
             :grade="mySubmission.grade"
@@ -197,6 +188,14 @@
             <div>
               <div class="awaiting-title">{{ statusLabel(mySubmission.status) }}</div>
               <div class="awaiting-sub">{{ fmtDate(mySubmission.submitted_at) }}</div>
+            </div>
+          </div>
+
+          <div v-if="mySubmission.text_content || mySubmission.file_url || parsedSubmittedUrls.length" class="section">
+            <div class="section-label">{{ t('am.your_answer') }}</div>
+            <div v-if="mySubmission.text_content" class="answer-text">{{ mySubmission.text_content }}</div>
+            <div v-if="mySubmission.file_url || parsedSubmittedUrls.length" class="sub-file">
+              <FileThumbGrid :files="parsedSubmittedUrls.length ? parsedSubmittedUrls : [mySubmission.file_url]" @open="openFile" />
             </div>
           </div>
         </div>
@@ -319,17 +318,6 @@
              student sees + grading actions on the right (parity with app) -->
         <div v-else class="ad-stack">
           <div class="ad-col-main">
-            <div v-if="activeSub.text_content" class="section">
-              <div class="section-label">{{ t('am.student_answer') }}</div>
-              <div class="answer-text">{{ activeSub.text_content }}</div>
-            </div>
-            <div v-if="activeSub.file_url || parsedActiveUrls.length" class="section">
-              <div class="section-label">{{ t('am.attached_files') }}</div>
-              <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openFile" />
-            </div>
-            <!-- Карточка оценки (кольцо+фидбек+сильные/слабые стороны) и разбор
-                 по критериям — в одной колонке друг под другом, чтобы правая
-                 граница была ровной (раньше стояли в двух колонках grid'а). -->
             <GradeResultCard
               v-if="activeSub.grade"
               :grade="activeSub.grade"
@@ -350,6 +338,14 @@
               </div>
               <div class="ungraded-title">{{ statusLabel(activeSub.status) }}</div>
               <div class="ungraded-sub">{{ t('am.check_ai') }} · {{ t('am.grade_manual') }}</div>
+            </div>
+            <div v-if="activeSub.text_content" class="section">
+              <div class="section-label">{{ t('am.student_answer') }}</div>
+              <div class="answer-text">{{ activeSub.text_content }}</div>
+            </div>
+            <div v-if="activeSub.file_url || parsedActiveUrls.length" class="section">
+              <div class="section-label">{{ t('am.attached_files') }}</div>
+              <FileThumbGrid :files="parsedActiveUrls.length ? parsedActiveUrls : [activeSub.file_url]" @open="openFile" />
             </div>
           </div>
         </div>
@@ -1086,8 +1082,10 @@ html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rg
 .am-body {
   flex: 1; overflow-y: auto; padding: 20px 26px 32px;
   display: flex; flex-direction: column; gap: 20px;
+  background: var(--bg);
   background: linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 88%, var(--surface) 12%));
 }
+.am-body > * { width: 100%; max-width: 980px; margin-inline: auto; }
 .adp.panel .am-body { border-radius: 0 0 var(--r-xl) var(--r-xl); }
 
 /* Одна колонка вместо двух — раньше карточка оценки (кольцо + фидбек +

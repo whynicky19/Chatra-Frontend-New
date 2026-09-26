@@ -7,7 +7,7 @@ export interface AssignmentListDataCtx {
   loading: Ref<boolean>
   classId: ComputedRef<number>
   readonly: Ref<boolean>
-  refreshMySubmissions: () => Promise<void>
+  refreshMySubmissions: (options?: { silent?: boolean }) => Promise<void>
 }
 
 const ASSIGNMENT_LIST_KEY: InjectionKey<AssignmentListDataCtx> = Symbol('assignment-list-data')

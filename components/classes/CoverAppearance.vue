@@ -18,7 +18,7 @@
          приложении, поэтому здесь видно ровно то, что получит пользователь:
          фон (сохранённый или ровная заливка цвета) + иконка поверх. -->
     <div class="ca-preview">
-      <SubjectCover :src="coverUrl" :icon="icon" :color="color" :size="58">
+      <SubjectCover :src="coverUrl" :icon="icon" :color="color" :cover-source="coverSource" :size="58">
         <div v-if="generating" class="ca-preview-veil">
           <div class="spinner ca-spinner"></div>
           <span>{{ L.generating }}</span>
