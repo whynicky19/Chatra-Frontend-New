@@ -26,15 +26,16 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
 .flc-list {
   display: flex; flex-direction: column;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--sh-xs);
+  border-radius: 22px; overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,.03),0 12px 30px rgba(28,28,30,.05),inset 0 1px 0 rgba(255,255,255,.45);
 }
 .flc-row {
-  display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px;
+  display: flex; align-items: center; gap: 13px; width: 100%; padding: 13px 15px;
   border-bottom: 1px solid var(--border);
   text-decoration: none; transition: background .12s ease-out;
 }
 .flc-row:last-child { border-bottom: none; }
-.flc-row:hover { background: var(--glass); }
+.flc-row:hover { background: color-mix(in srgb,var(--surface2) 62%,transparent); }
 .flc-row:hover .flc-chevron { color: var(--teal); transform: translateX(2px); opacity: 1; }
 .flc-row:active { background: var(--glass2); }
 .flc-row:active :deep(.fti), .flc-row:active .flc-thumb { transform: scale(.96); }
@@ -42,9 +43,9 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
    с альфа-каналом) видно целиком в обеих темах. Раньше object-fit:cover
    обрезал неквадратные фото по краям, а прозрачные PNG растворялись в
    фоне карточки -- выглядело как «фото не показываются». */
-.flc-thumb { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; transition: transform .1s ease-out; background: var(--surface2); padding: 2px; object-fit: contain; }
+.flc-thumb { width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0; transition: transform .1s ease-out; background: var(--surface2); padding: 3px; object-fit: contain; box-shadow:inset 0 1px 0 rgba(255,255,255,.45); }
 .flc-info { flex: 1; min-width: 0; }
-.flc-name { font-size: 13.5px; font-weight: 650; letter-spacing: -.01em; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.flc-name { font-size: 13.5px; font-weight: 680; letter-spacing: -.012em; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .flc-type { font-size: 11.5px; color: var(--text4); letter-spacing: .02em; margin-top: 1px; }
 .flc-chevron { color: var(--text4); flex-shrink: 0; opacity: .55; transition: color .15s ease-out, transform .18s cubic-bezier(.22,1,.36,1), opacity .15s; }
 @media (prefers-reduced-motion:reduce){.flc-row,.flc-chevron,.flc-thumb,.flc-row :deep(.fti){transition-duration:.12s}.flc-row:hover .flc-chevron{transform:none}.flc-row:active :deep(.fti),.flc-row:active .flc-thumb{transform:none}}

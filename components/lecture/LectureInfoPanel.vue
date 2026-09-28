@@ -35,17 +35,19 @@ const onBodyClick = (e: MouseEvent) => {
 </script>
 
 <style scoped>
-.lip-title { font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--text1); margin: 0 0 8px; }
-.lip-date { font-size: 13px; color: var(--text4); margin-bottom: 20px; }
+.lip{display:flex;flex-direction:column}
+.lip-title { font-size: 30px; font-weight: 770; letter-spacing: -.035em; line-height:1.12; color: var(--text1); margin: 8px 0 7px; }
+.lip-date { display:inline-flex;align-self:flex-start;font-size: 12px;font-weight:600; color: var(--text4); margin-bottom: 22px;padding:4px 9px;border-radius:999px;background:var(--surface2) }
 .lip-desc {
   font-size: 14px; line-height: 1.65; color: var(--text2); margin-bottom: 28px;
-  padding: 14px; background: var(--surface2); border-radius: var(--r-lg); border: 1px solid var(--border);
+  padding: 18px 20px; background: var(--surface); border-radius: 22px; border: 1px solid color-mix(in srgb,var(--border2) 68%,transparent);
+  box-shadow:0 1px 2px rgba(0,0,0,.03),0 12px 30px rgba(28,28,30,.05),inset 0 1px 0 rgba(255,255,255,.44)
 }
 .lip-desc :deep(.link-inline) { color: var(--teal); text-decoration: none; }
 .lip-desc :deep(.link-inline:hover) { text-decoration: underline; }
 .lip-desc :deep(.file-attachment) {
   display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 4px 11px 4px 5px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
   box-shadow: var(--sh-xs); color: var(--text1); text-decoration: none; font-weight: 650; font-size: 13px;
   vertical-align: middle; transition: background .12s ease-out, border-color .15s ease-out, transform .1s ease-out, box-shadow .18s ease-out;
 }
@@ -67,4 +69,6 @@ const onBodyClick = (e: MouseEvent) => {
   .lip-desc :deep(.file-attachment) { transition-duration: .12s; }
   .lip-desc :deep(.file-attachment:active) { transform: none; }
 }
+@media (max-width:768px){.lip-title{font-size:25px}.lip-desc{padding:16px;border-radius:20px}}
+@media (prefers-contrast:more){.lip-desc{border-color:var(--text4)}}
 </style>

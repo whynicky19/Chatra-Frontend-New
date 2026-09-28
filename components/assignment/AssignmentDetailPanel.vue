@@ -1613,4 +1613,47 @@ html.dark .status-mini.needs_review { color: #F0A94B; }
   .am-tabs-wrap { padding: 0 14px 12px; }
   .sub-detail-header { padding: 12px 13px; gap: 11px; }
 }
+
+/* Assignment interior refresh: a stronger header, calmer grouped content and
+   clear separation between task material, submission and grading. */
+.adp.panel{border-radius:26px;border-color:color-mix(in srgb,var(--border2) 72%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.04),0 22px 58px rgba(28,28,30,.10)}
+.am-head{padding:24px 30px 21px;background:color-mix(in srgb,var(--surface) 94%,transparent);border-bottom:0;-webkit-backdrop-filter:blur(20px) saturate(165%);backdrop-filter:blur(20px) saturate(165%)}
+.am-head-wash{height:140%;background:radial-gradient(ellipse 72% 120% at 0 0,rgba(var(--teal-rgb),.15),transparent 70%)}
+.am-ico{width:50px;height:50px;border-radius:16px;background:linear-gradient(145deg,var(--teal),var(--teal-d));box-shadow:0 8px 22px rgba(var(--teal-rgb),.23),inset 0 1px 0 rgba(255,255,255,.34)}
+.am-title{font-size:24px;font-weight:770;letter-spacing:-.035em}
+.am-badge{padding:5px 11px;background:color-mix(in srgb,var(--surface2) 86%,transparent)}
+.am-tabs-wrap{padding:0 28px 15px;background:color-mix(in srgb,var(--surface) 94%,transparent);-webkit-backdrop-filter:blur(20px) saturate(165%);backdrop-filter:blur(20px) saturate(165%)}
+.am-tabs{border-radius:14px;padding:4px;background:var(--surface2)}
+.am-tab{min-height:38px;border-radius:10px}
+.am-body{padding:24px 28px 40px;gap:22px;background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 89%,var(--surface) 11%))}
+.section{gap:10px}
+.section-label{padding-left:5px;font-size:11px;letter-spacing:.075em}
+.desc-block,.answer-text{border-radius:20px;border-color:color-mix(in srgb,var(--border2) 68%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.03),0 10px 28px rgba(28,28,30,.045)}
+.desc-block{padding:18px 20px;font-size:14px;line-height:1.72}
+.answer-text{padding:17px 19px}
+.criteria-list{gap:10px}
+.criterion{border-radius:18px;padding:15px 17px 16px 19px;border-color:color-mix(in srgb,var(--border2) 68%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.03),0 8px 22px rgba(28,28,30,.04)}
+.criterion::before{width:4px;border-radius:0 4px 4px 0}
+.submit-form{border-radius:22px;padding:22px;border-color:color-mix(in srgb,var(--border2) 68%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.03),0 14px 34px rgba(28,28,30,.055)}
+.file-drop{border-radius:19px;padding:28px 18px;background:linear-gradient(145deg,var(--bg),color-mix(in srgb,var(--surface2) 62%,var(--bg)))}
+.drop-ico{width:48px;height:48px;border-radius:15px}
+.awaiting-card,.notice-panel,.grading-pending,.needs-review-student,.needs-review-banner,.subs-stats,.sub-detail-header,.manual-grade-form{border-radius:22px;border-color:color-mix(in srgb,var(--border2) 68%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.03),0 12px 30px rgba(28,28,30,.05)}
+.subs-list{border-radius:22px;border-color:color-mix(in srgb,var(--border2) 68%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.03),0 12px 30px rgba(28,28,30,.05)}
+.sub-row{padding:14px 16px}
+.grade-pill{padding:4px 10px}
+.grade-actions{padding:4px 0}
+.grade-actions .btn{border-radius:14px;min-height:44px}
+.manual-grade-form{padding:20px}
+
+@media (max-width:768px){
+  .am-head{padding:16px 16px 15px}
+  .am-ico{width:42px;height:42px;border-radius:14px}
+  .am-title{font-size:20px}
+  .am-tabs-wrap{padding:0 16px 12px}
+  .am-body{padding:18px 14px 96px;gap:18px}
+  .desc-block{padding:15px 16px}
+  .submit-form{padding:16px;border-radius:20px}
+}
+@media (prefers-reduced-transparency:reduce){.am-head,.am-tabs-wrap{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media (prefers-contrast:more){.adp.panel,.desc-block,.answer-text,.criterion,.submit-form,.subs-list{border-color:var(--text4)}}
 </style>

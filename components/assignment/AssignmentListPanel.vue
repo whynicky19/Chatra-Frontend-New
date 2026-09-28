@@ -35,8 +35,8 @@ const submissionsMap = computed(() => {
 .alp-list {
   display: flex; flex-direction: column;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-xl); overflow: hidden;
-  box-shadow: var(--sh-xs);
+  border-radius: 22px; overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,.035),0 12px 32px rgba(28,28,30,.055),inset 0 1px 0 rgba(255,255,255,.48);
 }
 .alp-empty { font-size: 13px; color: var(--text4); padding: 4px 0; }
 @media (prefers-contrast: more) { .alp-list { border-width: 2px; } }

@@ -37,28 +37,28 @@ const gradeChip = computed(() => {
 
 <style scoped>
 .ali-row {
-  display: flex; align-items: center; gap: 13px; width: 100%; padding: 12px 14px;
+  display: flex; align-items: center; gap: 13px; width: 100%; padding: 13px 14px;
   position: relative; background: transparent; border: none; border-bottom: 1px solid var(--border);
   text-align: left; cursor: pointer; font-family: inherit;
   transition: background .12s ease-out, transform .1s ease-out;
 }
 .ali-row:last-child { border-bottom: none; }
-.ali-row:hover { background: var(--glass); }
+.ali-row:hover { background: color-mix(in srgb,var(--surface2) 64%,transparent); }
 .ali-row:active { transform: scale(.98); }
-.ali-row.active { background: var(--surface2); }
+.ali-row.active { background:linear-gradient(90deg,rgba(var(--teal-rgb),.10),rgba(var(--teal-rgb),.035)); }
 .ali-row.active::before {
   content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px;
   border-radius: 0 3px 3px 0; background: var(--teal);
 }
 .ali-icon {
-  width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+  width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: var(--surface2); color: var(--text3); border: 1px solid var(--border);
+  background:linear-gradient(145deg,var(--surface2),color-mix(in srgb,var(--surface2) 74%,var(--surface))); color: var(--text3); border: 1px solid var(--border);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.42);
 }
-.ali-row.active .ali-icon { background: var(--surface); color: var(--text1); border-color: var(--border2); }
+.ali-row.active .ali-icon { background:var(--surface);color:var(--teal);border-color:rgba(var(--teal-rgb),.18);box-shadow:0 5px 14px rgba(var(--teal-rgb),.09),inset 0 1px 0 rgba(255,255,255,.55) }
 .ali-info { flex: 1; min-width: 0; }
-.ali-name { font-size: 14px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ali-name { font-size: 14px; font-weight: 680; letter-spacing:-.012em; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ali-meta { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text4); letter-spacing: .02em; margin-top: 1px; }
 .ali-dot { opacity: .6; }
 .ali-overdue { color: var(--red); }

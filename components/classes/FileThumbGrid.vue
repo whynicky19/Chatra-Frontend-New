@@ -22,13 +22,13 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
 <style scoped>
 /* auto-fill вместо жёстких 3 колонок: одна вложенная работа больше не
    раздувается в плитку на треть ширины панели. */
-.ftg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
+.ftg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 12px; }
 .ftg-tile { display: flex; flex-direction: column; gap: 7px; text-decoration: none; transition: transform .18s cubic-bezier(.22,1,.36,1); }
 .ftg-tile:active { transform: scale(.96); }
 .ftg-box {
   position: relative; width: 100%; aspect-ratio: 1; overflow: hidden;
-  border-radius: 14px; background: var(--surface); border: 1px solid var(--border);
-  box-shadow: var(--sh-xs); transition: box-shadow .2s ease-out, border-color .18s ease-out;
+  border-radius: 18px; background: var(--surface); border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0,0,0,.03),0 10px 26px rgba(28,28,30,.05),inset 0 1px 0 rgba(255,255,255,.4); transition: box-shadow .2s ease-out, border-color .18s ease-out;
 }
 @media (hover:hover) {
   .ftg-tile:hover { transform: translateY(-2px); }
@@ -36,9 +36,9 @@ defineEmits<{ (e: 'open', url: string, name: string): void }>()
 }
 /* object-fit:contain + подложка: превью любой картинки (даже с альфа-каналом)
    видно целиком в обеих темах, без обрезки и без «растворения» в фоне. */
-.ftg-img { width: 100%; height: 100%; object-fit: contain; background: var(--surface2); padding: 4px; }
+.ftg-img { width: 100%; height: 100%; object-fit: contain; background:linear-gradient(145deg,var(--surface2),var(--bg)); padding: 6px; }
 .ftg-file-art { width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,var(--surface),var(--bg)); }
-.ftg-name { font-size: 11.5px; font-weight: 650; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
+.ftg-name { font-size: 12px; font-weight: 650; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; }
 
 @media (max-width: 480px) {
   .ftg-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }

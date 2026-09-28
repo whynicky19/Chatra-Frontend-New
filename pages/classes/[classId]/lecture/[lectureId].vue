@@ -229,4 +229,19 @@ const fmtDate = (d: string) => { if (!d) return ''; try { return parseUtc(d).toL
   .lec-back { margin: 14px 16px 4px; }
   .lec-right { flex: 1; min-width: 0; min-height: 0; width: 100%; }
 }
+
+/* Lecture workspace mirrors the assignment split view. */
+.lec-page{background:var(--bg)}
+.lec-left{width:396px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 88%,transparent),color-mix(in srgb,var(--surface2) 36%,var(--bg)));border-right-color:var(--border);box-shadow:10px 0 34px rgba(28,28,30,.035)}
+.lec-left-inner{width:396px}
+.lec-left-scroll{padding:12px 22px 36px}
+.lec-back{margin:22px 24px 4px;padding:6px 9px 6px 5px;border-radius:999px}
+.lec-back:hover{background:var(--teal-l)}
+.lec-toggle{top:19px;right:18px;width:36px;height:36px;border-radius:11px;background:color-mix(in srgb,var(--surface) 76%,transparent);border:1px solid var(--border)}
+.lec-left.collapsed{width:60px}
+.lec-right{padding:14px;background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 90%,var(--surface) 10%))}
+.lec-right>:deep(*){border-radius:24px}
+@media (max-width:900px){.lec-left,.lec-left-inner{width:350px}}
+@media (max-width:768px){.lec-left,.lec-left-inner{width:100%}.lec-left-scroll{padding:8px 14px 32px}.lec-back{margin:14px 16px 4px}.lec-right{padding:0}}
+@media (prefers-reduced-transparency:reduce){.lec-left{background:var(--surface)}}
 </style>

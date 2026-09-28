@@ -686,11 +686,14 @@ watch(() => auth.user?.id, async (newId) => {
 .class-card:hover{transform:translateY(-4px) scale(1.006);box-shadow:0 2px 4px rgba(0,0,0,.04),0 18px 44px rgba(28,28,30,.11);border-color:color-mix(in srgb,var(--border2) 92%,transparent)}
 .class-card:active{transform:scale(.985);transition-duration:.1s}
 .class-card:focus-visible{outline:3px solid rgba(var(--teal-rgb),.32);outline-offset:3px;border-radius:24px}
-:global(html.dark) .class-card{background:color-mix(in srgb,var(--surface) 92%,transparent);box-shadow:0 1px 0 rgba(255,255,255,.03),0 16px 36px rgba(0,0,0,.28)}
-:global(html.dark) .class-card::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+:global(html.dark) .class-card{background:color-mix(in srgb,var(--surface) 94%,transparent);border-color:rgba(255,255,255,.04);box-shadow:0 16px 36px rgba(0,0,0,.3)}
+:global(html.dark) .class-card:hover{border-color:rgba(255,255,255,.065);box-shadow:0 20px 44px rgba(0,0,0,.36)}
+:global(html.dark) .class-card::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.018)}
 
 .card-cover{position:relative;height:194px;margin:8px 8px 0;overflow:hidden;border-radius:17px;background:linear-gradient(135deg,#3a3a3c,#232326);display:flex;align-items:flex-end;padding:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
 .card-cover::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.06),transparent 34%,rgba(0,0,0,.09));box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+:global(html.dark) .card-cover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
+:global(html.dark) .card-cover::after{box-shadow:inset 0 1px 0 rgba(255,255,255,.045)}
 .card-cover-art{position:absolute;inset:0}
 .card-cover :deep(.sc-img){transition:transform .42s cubic-bezier(.22,1,.36,1)}
 .class-card:hover .card-cover :deep(.sc-img){transform:scale(1.025)}

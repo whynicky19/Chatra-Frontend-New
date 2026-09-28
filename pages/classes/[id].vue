@@ -18,14 +18,14 @@
                           :src="classMeta.cover_image" :icon="classMeta.cover_icon"
                           :color="classMeta.cover_color" :cover-source="classMeta.cover_source"
                           :size="92" class="page-header-art"/>
-            <div class="page-header-overlay" v-if="classMeta.cover_image"></div>
+            <div class="page-header-overlay" v-if="classMeta.cover_image || classMeta.cover_color"></div>
             <div class="page-header-top">
-              <NuxtLink to="/" class="back-link" :class="{'back-link-dark': classMeta.cover_image}">
+              <NuxtLink to="/" class="back-link" :class="{'back-link-dark': classMeta.cover_image || classMeta.cover_color}">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 {{ t('nav.classes') }}
               </NuxtLink>
-              <span class="header-sep" :class="{'sep-dark': classMeta.cover_image}">›</span>
-              <span class="header-subject" :class="{'subject-dark': classMeta.cover_image}">{{ (classMeta.subject || '').toUpperCase() }}</span>
+              <span class="header-sep" :class="{'sep-dark': classMeta.cover_image || classMeta.cover_color}">›</span>
+              <span class="header-subject" :class="{'subject-dark': classMeta.cover_image || classMeta.cover_color}">{{ (classMeta.subject || '').toUpperCase() }}</span>
             </div>
 
             <!-- Single settings entry point — houses class code, regenerate code,
@@ -42,7 +42,7 @@
 
             <div class="page-header-body">
               <div class="page-title-row">
-                <h1 class="page-title" :class="{'title-dark': classMeta.cover_image}">{{ classTitle }}</h1>
+                <h1 class="page-title" :class="{'title-dark': classMeta.cover_image || classMeta.cover_color}">{{ classTitle }}</h1>
                 <span v-if="isArchivedForUser" class="header-archive-badge">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
                   {{ t('cohort.archived_badge') }}
@@ -206,7 +206,38 @@
              плавно схлопывается вместе с обложкой (:class ниже, тот же
              coverCollapsed, что двигает .page-header) при скролле чата, вместо
              того чтобы резко исчезать по v-if при переключении вкладки. -->
-        <div class="cd-sidebar" :class="{ 'cd-sidebar-collapsed': coverCollapsed }">
+        <button
+          v-if="showContextSidebar && contextSidebarCollapsed && !coverCollapsed"
+          type="button"
+          class="context-rail-reopen"
+          :title="lang === 'ru' ? 'Показать обзор' : 'Show overview'"
+          @click="contextSidebarCollapsed = false"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        <div v-if="showContextSidebar" class="cd-sidebar" :class="{ 'cd-sidebar-collapsed': coverCollapsed || contextSidebarCollapsed }">
+          <div class="context-rail-head">
+            <button type="button" class="rail-collapse-btn" :title="lang === 'ru' ? 'Скрыть обзор' : 'Hide overview'" @click="contextSidebarCollapsed = true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+            <div class="context-rail-title">
+              <span>{{ lang === 'ru' ? 'Курс' : lang === 'kk' ? 'Курс' : 'Course' }}</span>
+              <strong>{{ lang === 'ru' ? 'Обзор' : lang === 'kk' ? 'Шолу' : 'Overview' }}</strong>
+            </div>
+          </div>
+
+          <div v-if="lectures.length || assignments.length" class="course-overview-card">
+            <div class="overview-metric">
+              <span class="overview-value">{{ lectures.length }}</span>
+              <span class="overview-label">{{ t('class.lectures') }}</span>
+            </div>
+            <div class="overview-divider"></div>
+            <div class="overview-metric">
+              <span class="overview-value">{{ assignments.length }}</span>
+              <span class="overview-label">{{ t('class.assignments') }}</span>
+            </div>
+          </div>
+
           <!-- Score card — виден студенту на любой вкладке (раньше только на
                «Заданиях», из-за чего на «Лекциях» рейтинг был не виден). -->
           <div class="sidebar-card score-card" v-if="!isTeacher">
@@ -689,6 +720,7 @@ const tab = ref<'lectures' | 'assignments' | 'ai'>('lectures')
 // Cover collapses smoothly on scroll — only inside the AI chat tab (see the
 // LazyClassAiChat @scroll-state listener below). Reset whenever the tab changes.
 const coverCollapsed = ref(false)
+const contextSidebarCollapsed = ref(false)
 watch(tab, () => { coverCollapsed.value = false })
 const showCreate = ref(false)
 const showCreateAssignment = ref(false)
@@ -925,6 +957,13 @@ const aiGuideText = computed(() => {
   if (late.length) return `Based on the overdue status of ${late[0]?.title}, you may need to review the topic. Generate a brief overview?`
   return lang.value === 'ru' ? 'ИИ-ассистент поможет с учебными материалами и заданиями.' : 'AI assistant will help with study materials and assignments.'
 })
+const showContextSidebar = computed(() =>
+  !isTeacher.value
+  || !!nextDeadline.value
+  || lectures.value.length > 0
+  || assignments.value.length > 0
+  || (!isArchivedForUser.value && tab.value !== 'ai')
+)
 
 const fmtMonth = (d: string) => { try { return parseUtc(d).toLocaleString(lang.value === 'ru' ? 'ru-RU' : 'en-US', {month:'short'}).toUpperCase() } catch { return '' } }
 const fmtDay = (d: string) => { try { return parseUtc(d).getDate().toString() } catch { return '' } }
@@ -1258,7 +1297,7 @@ onMounted(async () => {
 .tab-load{display:flex;justify-content:center;padding:60px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.cd-layout{display:flex;flex:1;overflow:hidden;gap:0}
+.cd-layout{display:flex;flex:1;overflow:hidden;gap:0;position:relative}
 .cd-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 /* Правый сайдбар (рейтинг/дедлайн) остаётся в DOM даже на вкладке ИИ и
    схлопывается вместе с обложкой (см. .cd-sidebar-collapsed) — та же логика
@@ -1455,8 +1494,8 @@ html.dark .tab-action-bar{box-shadow:0 8px 12px -10px rgba(0,0,0,.4)}
 /* В светлой теме карточка рейтинга — чистая приподнятая поверхность, как
    секция iOS; цвет остаётся только у числа и прогресса. Тёмный материал
    нужен лишь в тёмной теме, где он создаёт достаточный контраст. */
-.score-card{background:var(--surface);border-color:rgba(var(--teal-rgb),.22);box-shadow:0 1px 2px rgba(15,23,42,.04),0 12px 30px rgba(var(--teal-rgb),.10);color:var(--text1)}
-html.dark .score-card{background:linear-gradient(145deg,#2c2c2e,#1c1c1e);border-color:rgba(var(--teal-rgb),.35);box-shadow:0 8px 22px rgba(var(--teal-rgb),.16);color:#fff}
+.score-card{background:var(--surface);border-color:var(--border);box-shadow:none;color:var(--text1)}
+html.dark .score-card{background:#242426;border-color:rgba(255,255,255,.055);box-shadow:none;color:#fff}
 .score-no-grades{font-size:12px;opacity:.7;margin-top:8px;font-style:italic}
 
 .mobile-stats{display:none}
@@ -1600,4 +1639,84 @@ html.dark .btn-ghost{background:transparent;border:1px solid var(--border);color
 .ro-dl-badge.no-dl{color:var(--text3);background:var(--surface3);font-weight:600}
 .ro-dl-publish{padding:5px 12px;font-size:12px}
 .ro-load{display:flex;justify-content:center;padding:40px}
+
+/* 2026 interior refresh — one calm material system for the subject workspace. */
+.cd-main{background:var(--bg)}
+.page-header{
+  min-height:258px;margin:16px 18px 0;padding:22px 26px 22px;border-radius:26px;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--surface2) 82%,var(--teal-l)),var(--surface2));
+  border:1px solid color-mix(in srgb,var(--border2) 72%,transparent);
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 18px 48px rgba(28,28,30,.09),inset 0 1px 0 rgba(255,255,255,.58)
+}
+.page-header-art{border-radius:inherit}
+.page-header-overlay{border-radius:inherit;background:linear-gradient(180deg,rgba(0,0,0,.08),transparent 38%,rgba(0,0,0,.64))}
+.page-header::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 1px rgba(255,255,255,.05)}
+.page-header .page-header-top{top:22px;left:26px;z-index:2;padding:7px 11px;border-radius:999px;background:rgba(30,30,32,.34);border:1px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}
+.page-header:not(:has(.page-header-art)) .page-header-top{background:color-mix(in srgb,var(--surface) 72%,transparent);border-color:var(--border)}
+.page-header .page-header-body{z-index:2}
+.page-title{font-size:clamp(28px,3vw,38px);font-weight:780;letter-spacing:-.035em;line-height:1.06;text-shadow:none}
+.title-dark{text-shadow:0 2px 16px rgba(0,0,0,.42)!important}
+.page-header-gear{top:22px;right:26px;z-index:3}
+.class-settings-btn{width:38px;height:38px;background:rgba(30,30,32,.38);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);transition:background .18s,color .18s,transform .12s}
+.page-header:has(.page-header-art) .class-settings-btn{background:rgba(30,30,32,.38);border-color:rgba(255,255,255,.2);color:#fff}
+.page-header:not(:has(.page-header-art)) .class-settings-btn{background:color-mix(in srgb,var(--surface) 82%,transparent);border-color:var(--border);color:var(--text3)}
+.class-settings-btn:hover{color:#fff;background:rgba(30,30,32,.58);border-color:rgba(255,255,255,.28);transform:scale(1.04)}
+.class-settings-btn:active{transform:scale(.92)}
+
+.tab-action-bar{padding:10px 18px 2px;background:transparent;box-shadow:none}
+.quick-action-btn{background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-xs)}
+.quick-action-btn:hover{background:var(--surface);border-color:var(--border2);box-shadow:var(--sh-sm);transform:translateY(-1px)}
+
+.tab-content{padding:18px;gap:12px;background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 91%,var(--surface) 9%))}
+.tab-content.ai-mode{width:100%;min-width:0;padding:0;background:var(--bg)}
+.items-list{gap:10px}
+.item-row{padding:14px 15px;border-radius:20px;border-color:color-mix(in srgb,var(--border2) 68%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.035),0 8px 22px rgba(28,28,30,.04)}
+.item-row:hover{transform:translateY(-2px) scale(1.002);box-shadow:0 2px 4px rgba(0,0,0,.04),0 14px 34px rgba(28,28,30,.09)}
+.item-title{font-size:15px;font-weight:720;letter-spacing:-.015em}
+.item-desc{color:var(--text3);margin-bottom:7px}
+.meta-date,.meta-files{background:transparent;padding:0;color:var(--text4);font-weight:550}
+.assignment-status-action{border-radius:999px!important}
+
+.cd-sidebar{width:292px;align-self:flex-start;max-height:calc(100% - 32px);margin:16px 16px 16px 0;padding:14px;gap:10px;border:1px solid color-mix(in srgb,var(--border2) 58%,transparent);border-radius:24px;background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.03),0 16px 40px rgba(28,28,30,.075),inset 0 1px 0 rgba(255,255,255,.42);-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);transition:width .32s cubic-bezier(.22,1,.36,1),padding .32s cubic-bezier(.22,1,.36,1),margin .32s cubic-bezier(.22,1,.36,1),opacity .2s ease,border-color .2s ease}
+.cd-sidebar-collapsed{margin-left:0!important;margin-right:0!important}
+.context-rail-head{display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:3px 3px 7px}
+.context-rail-title{display:flex;flex-direction:column;gap:1px;min-width:0}
+.context-rail-title span{font-size:9.5px;font-weight:720;letter-spacing:.09em;text-transform:uppercase;color:var(--text4)}
+.context-rail-title strong{font-size:17px;font-weight:730;letter-spacing:-.025em;color:var(--text1)}
+.rail-collapse-btn,.context-rail-reopen{display:flex;align-items:center;justify-content:center;border:1px solid color-mix(in srgb,var(--border2) 58%,transparent);background:color-mix(in srgb,var(--surface2) 76%,transparent);color:var(--text4);cursor:pointer;transition:background .15s,color .15s,transform .1s;box-shadow:0 1px 2px rgba(0,0,0,.025)}
+.rail-collapse-btn{width:30px;height:30px;border-radius:10px}
+.rail-collapse-btn:hover,.context-rail-reopen:hover{background:var(--surface2);color:var(--text1)}
+.rail-collapse-btn:active,.context-rail-reopen:active{transform:scale(.9)}
+.context-rail-reopen{width:38px;height:38px;flex:0 0 38px;margin:18px 12px 0 0;border-radius:13px;background:color-mix(in srgb,var(--surface) 84%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.course-overview-card{display:flex;align-items:center;padding:14px 10px;border-radius:18px;background:color-mix(in srgb,var(--surface2) 78%,transparent);border:1px solid color-mix(in srgb,var(--border2) 54%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+.overview-metric{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+.overview-value{font-size:22px;line-height:1;font-weight:760;letter-spacing:-.035em;color:var(--text1)}
+.overview-label{max-width:100%;font-size:10.5px;font-weight:580;color:var(--text4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.overview-divider{width:1px;height:30px;background:color-mix(in srgb,var(--border2) 58%,transparent)}
+.sidebar-card{border-radius:19px;padding:16px;background:color-mix(in srgb,var(--surface) 92%,transparent);border-color:color-mix(in srgb,var(--border2) 56%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.025),0 8px 24px rgba(28,28,30,.045),inset 0 1px 0 rgba(255,255,255,.38)}
+.score-card{background:color-mix(in srgb,var(--surface) 94%,transparent);border-color:color-mix(in srgb,var(--border2) 58%,transparent)!important;box-shadow:none!important}
+.score-label,.next-deadline-label{text-transform:uppercase;letter-spacing:.075em}
+.score-big{font-size:46px;font-weight:780;letter-spacing:-.045em}
+.deadline-date-box{border-radius:14px;background:linear-gradient(180deg,var(--surface2),color-mix(in srgb,var(--surface2) 76%,var(--surface)));box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+.ai-guide-head{color:var(--teal)}
+.ai-guide-link{display:inline-flex;padding:7px 10px;margin-left:-10px;border-radius:10px}
+.ai-guide-link:hover{opacity:1;background:var(--teal-l)}
+:global(html.dark) .cd-sidebar{background:rgba(28,28,30,.72);border-color:rgba(255,255,255,.045);box-shadow:0 18px 44px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.025)}
+:global(html.dark) .sidebar-card{border-color:rgba(255,255,255,.045);box-shadow:0 10px 28px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.025)}
+:global(html.dark) .score-card{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.055)!important;box-shadow:none!important}
+:global(html.dark) .course-overview-card{background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.045);box-shadow:inset 0 1px 0 rgba(255,255,255,.018)}
+
+@media (max-width:768px){
+  .page-header{margin:8px 10px 0;min-height:clamp(178px,45vw,224px);padding:calc(14px + env(safe-area-inset-top,0px)) 16px 16px;border-radius:22px}
+  .page-header .page-header-top{top:calc(14px + env(safe-area-inset-top,0px));left:14px;padding:6px 9px}
+  .page-header-gear{top:calc(14px + env(safe-area-inset-top,0px));right:14px}
+  .page-title{font-size:clamp(22px,7vw,30px)}
+  .tab-action-bar{padding:8px 10px 2px}
+  .tab-content{padding:12px 10px 86px}
+  .item-row{padding:12px;gap:11px;border-radius:18px}
+  .context-rail-reopen{display:none!important}
+}
+@media (prefers-reduced-motion:reduce){.item-row:hover,.quick-action-btn:hover,.rail-collapse-btn:active,.context-rail-reopen:active{transform:none}.cd-sidebar{transition:opacity .15s ease}}
+@media (prefers-reduced-transparency:reduce){.page-header .page-header-top,.class-settings-btn{backdrop-filter:none;-webkit-backdrop-filter:none}.cd-sidebar,.sidebar-card{background:var(--surface)}}
+@media (prefers-contrast:more){.page-header,.item-row,.sidebar-card{border-color:var(--text4)}}
 </style>

@@ -45,6 +45,9 @@
 
       <div ref="msgsEl" class="ai-msgs" @scroll="onAiMsgsScroll">
         <div v-if="!msgs.length" class="welcome">
+          <div class="welcome-mark" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 9.8 8.8 4 11l5.8 2.2L12 19l2.2-5.8L20 11l-5.8-2.2L12 3Z"/><path d="m5 3-.7 1.8L2.5 5.5l1.8.7L5 8l.7-1.8 1.8-.7-1.8-.7L5 3Z"/></svg>
+          </div>
           <div class="welcome-title">Готов помочь!</div>
           <div class="welcome-desc">Задайте вопрос по теме курса</div>
           <div class="quick-grid">
@@ -625,4 +628,54 @@ html.dark .send-btn.locked { background: var(--surface3, var(--surface2)); }
 .spin-xs { width: 12px; height: 12px; border: 2px solid var(--border2); border-top-color: var(--teal); border-radius: 50%; animation: spin .6s linear infinite; flex-shrink: 0; }
 .spin-xs.white { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
 @keyframes spin { to{transform:rotate(360deg)} }
+
+/* Calm, spatial chat surface: content stays readable and the composer floats
+   as a distinct control layer instead of becoming another hard toolbar. */
+.class-ai{width:100%;min-width:0;background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 88%,var(--surface) 12%))}
+.ai-body{width:100%;min-width:0}
+.ai-floating-actions{top:14px;right:18px}
+.hdr-btn{width:36px;height:36px;background:color-mix(in srgb,var(--surface) 82%,transparent);border-color:color-mix(in srgb,var(--border2) 72%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 20px rgba(0,0,0,.07);-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);transition:background .15s,color .15s,border-color .15s,transform .1s}
+.hdr-btn:active{transform:scale(.92)}
+.ai-sidebar{margin:12px 0 12px 12px;width:278px;border:1px solid var(--border);border-radius:22px;background:color-mix(in srgb,var(--surface) 92%,transparent);box-shadow:0 14px 38px rgba(28,28,30,.09);padding:16px 14px}
+.sb-sub{padding:10px 11px;border-radius:14px;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.grade-btn{border-radius:999px;padding:6px 11px}
+.ai-msgs{width:100%;min-width:0;padding:64px 24px 24px;gap:18px}
+.welcome{width:100%;max-width:none;gap:10px;padding:28px 24px}
+.welcome-mark{width:62px;height:62px;display:flex;align-items:center;justify-content:center;border-radius:20px;color:var(--teal);background:linear-gradient(145deg,color-mix(in srgb,var(--teal-l) 72%,var(--surface)),var(--surface));border:1px solid rgba(var(--teal-rgb),.16);box-shadow:0 1px 2px rgba(0,0,0,.03),0 14px 34px rgba(var(--teal-rgb),.11),inset 0 1px 0 rgba(255,255,255,.66);margin-bottom:4px}
+.welcome-title{font-size:25px;font-weight:760;letter-spacing:-.032em}
+.welcome-desc{font-size:14px;color:var(--text3)}
+.quick-grid{width:100%;max-width:none;gap:10px;margin-top:14px}
+.quick-btn{min-height:58px;padding:14px 16px;border-radius:18px;background:color-mix(in srgb,var(--surface) 95%,transparent);border-color:color-mix(in srgb,var(--border2) 66%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.03),0 8px 22px rgba(28,28,30,.045);font-size:13px;font-weight:600;transition:transform .18s cubic-bezier(.22,1,.36,1),box-shadow .18s,border-color .15s,color .15s}
+.quick-btn:hover{background:var(--surface);border-color:rgba(var(--teal-rgb),.22);transform:translateY(-2px);box-shadow:0 12px 30px rgba(28,28,30,.09);color:var(--text1)}
+.quick-btn svg{color:var(--teal);flex-shrink:0}
+.msg-row{max-width:86%;gap:7px}
+.msg-sender{padding-left:5px;font-size:11.5px;letter-spacing:.01em}
+.msg-bubble{padding:13px 17px;border-radius:21px;font-size:14px;line-height:1.65}
+.msg-row.assistant .msg-bubble{border-color:color-mix(in srgb,var(--border2) 68%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.03),0 8px 22px rgba(28,28,30,.045);border-bottom-left-radius:8px}
+.msg-row.user .msg-bubble{background:var(--teal);box-shadow:0 6px 18px rgba(var(--teal-rgb),.2);border-bottom-right-radius:8px}
+.ai-input-bar{width:auto;margin:0 18px 16px;padding:7px 7px 7px 16px;align-items:flex-end;border:1px solid color-mix(in srgb,var(--border2) 72%,transparent);border-radius:22px;background:color-mix(in srgb,var(--surface) 88%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.04),0 14px 36px rgba(28,28,30,.11),inset 0 1px 0 rgba(255,255,255,.55);-webkit-backdrop-filter:blur(22px) saturate(175%);backdrop-filter:blur(22px) saturate(175%)}
+.ai-textarea{padding:9px 0;background:transparent;border:none;border-radius:0;font-size:14px}
+.ai-textarea:focus{border-color:transparent}
+.send-btn{width:40px;height:40px;background:var(--teal);box-shadow:none;transition:background .15s,transform .1s}
+.send-btn:not(:disabled):hover{transform:scale(1.04);background:var(--teal-h);box-shadow:none}
+.send-btn:not(:disabled):active{transform:scale(.92)}
+
+@media (max-width:768px){
+  .ai-msgs{padding:58px 12px 18px;gap:14px}
+  .welcome{padding:20px 8px}
+  .welcome-mark{width:56px;height:56px;border-radius:18px}
+  .welcome-title{font-size:23px}
+  .quick-btn{min-height:52px;border-radius:16px}
+  .msg-row{max-width:90%}
+  .ai-input-bar{margin:0 10px calc(10px + env(safe-area-inset-bottom,0px));padding:6px 6px 6px 14px;border-radius:20px}
+  .ai-textarea{padding:8px 0;font-size:16px}
+  .ai-sidebar{inset:8px;width:auto;margin:0;border-radius:22px}
+}
+@media (min-width:1100px){
+  .quick-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .quick-btn{min-width:0}
+}
+@media (prefers-reduced-motion:reduce){.quick-btn:hover{transform:none}.send-btn:not(:disabled):hover,.hdr-btn:active{transform:none}}
+@media (prefers-reduced-transparency:reduce){.hdr-btn,.ai-input-bar,.ai-sidebar{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media (prefers-contrast:more){.quick-btn,.msg-row.assistant .msg-bubble,.ai-input-bar{border-color:var(--text4)}}
 </style>

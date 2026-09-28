@@ -4,6 +4,9 @@
       <template v-if="!isCollapsed">
         <span class="logo-img-new" role="img" aria-label="Chatra"></span>
         <span class="logo-name">Chatra</span>
+        <span class="collapse-hint" :title="lang === 'ru' ? 'Свернуть панель' : 'Collapse sidebar'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        </span>
       </template>
       <template v-else>
         <span class="logo-img-collapsed" role="img" aria-label="Chatra"></span>
@@ -46,33 +49,61 @@
     </div>
 
     <div class="sb-bottom">
+      <NuxtLink v-if="!isCollapsed && !isMobile" to="/settings" class="profile-card">
+        <span class="profile-avatar">{{ profileInitials }}</span>
+        <span class="profile-copy">
+          <span class="profile-name">{{ displayName }}</span>
+          <span class="profile-role">{{ roleLabel }}</span>
+        </span>
+        <svg class="profile-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+      </NuxtLink>
+      <button type="button" class="sb-item theme-item" :title="isDark ? (lang === 'ru' ? 'Светлая тема' : 'Light theme') : (lang === 'ru' ? 'Тёмная тема' : 'Dark theme')" @click="toggleTheme">
+        <div class="item-icon">
+          <svg v-if="isDark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></svg>
+          <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </div>
+        <span class="item-label" v-if="!isCollapsed || isMobile">{{ isDark ? (lang === 'ru' ? 'Светлая тема' : 'Light theme') : (lang === 'ru' ? 'Тёмная тема' : 'Dark theme') }}</span>
+      </button>
       <a href="https://t.me/whynickyy" target="_blank" class="sb-item help-item" :title="t('support.help_center')">
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
         <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('support.help_center') }}</span>
       </a>
-      <div class="sb-item logout-item" @click="doLogout" :title="t('nav.logout')">
+      <button type="button" class="sb-item logout-item" @click="doLogout" :title="t('nav.logout')">
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </div>
         <span class="item-label" v-if="!isCollapsed || isMobile">{{ t('nav.logout') }}</span>
-      </div>
+      </button>
     </div>
   </aside>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from '#app'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAuth } from '~/composables/useAuth'
 import { useI18n } from '~/composables/useI18n'
 const auth = useAuthStore(); const { logout } = useAuth(); const route = useRoute()
-const { t } = useI18n()
+const { t, lang } = useI18n()
 const doLogout = () => { logout() }
 
 const isCollapsed = ref(false)
 const isMobile = ref(false)
+const isDark = ref(false)
+const displayName = computed(() => (auth.fullname || auth.nickname || auth.user?.email?.split('@')[0] || 'Профиль').trim())
+const profileInitials = computed(() => displayName.value.split(/\s+/).slice(0, 2).map(part => part[0]?.toUpperCase()).join('') || 'C')
+const roleLabel = computed(() => {
+  if (auth.user?.role === 'admin') return lang.value === 'ru' ? 'Администратор' : lang.value === 'kk' ? 'Әкімші' : 'Administrator'
+  if (auth.user?.role === 'teacher') return lang.value === 'ru' ? 'Преподаватель' : lang.value === 'kk' ? 'Оқытушы' : 'Teacher'
+  return lang.value === 'ru' ? 'Студент' : lang.value === 'kk' ? 'Студент' : 'Student'
+})
+const toggleTheme = () => {
+  isDark.value = !isDark.value
+  document.documentElement.classList.toggle('dark', isDark.value)
+  localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+}
 let collapsedClassTimer: ReturnType<typeof setTimeout> | null = null
 const SB_TRANSITION_MS = 250
 const applyCollapsedClass = (collapsed: boolean) => {
@@ -96,6 +127,8 @@ let resizeHandler: (() => void) | null = null
 onMounted(() => {
   if (import.meta.client) {
     isCollapsed.value = localStorage.getItem('_sidebar_collapsed') === '1'
+    isDark.value = document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark'
+    document.documentElement.classList.toggle('dark', isDark.value)
     applyCollapsedClass(isCollapsed.value)
     resizeHandler = () => { isMobile.value = window.innerWidth <= 768 }
     resizeHandler()
@@ -108,10 +141,10 @@ onUnmounted(() => {
 })
 </script>
 <style scoped>
-.sb{width:220px;height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.78));-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border-right:1px solid var(--border);flex-shrink:0;overflow:hidden;transition:width .25s cubic-bezier(.4,0,.2,1);position:relative}
+.sb{width:204px;height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(247,247,249,.78));-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border-right:1px solid color-mix(in srgb,var(--border2) 58%,transparent);flex-shrink:0;overflow:hidden;transition:width .25s cubic-bezier(.22,1,.36,1);position:relative;box-shadow:inset -1px 0 0 rgba(255,255,255,.32)}
 html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22,.78))}
-.sb.collapsed{width:56px}
-.sb-logo{display:flex;align-items:center;gap:8px;padding:14px 12px 8px;cursor:pointer;flex-shrink:0;overflow:hidden;min-height:52px}
+.sb.collapsed{width:60px}
+.sb-logo{display:flex;align-items:center;gap:8px;padding:13px 10px 8px;cursor:pointer;flex-shrink:0;overflow:hidden;min-height:52px;-webkit-tap-highlight-color:transparent}
 .logo-img-new{width:34px;height:34px;flex-shrink:0;background:linear-gradient(180deg,var(--teal),var(--teal-d));-webkit-mask:url('/logo-icon.png') center / contain no-repeat;mask:url('/logo-icon.png') center / contain no-repeat}
 /* Иконка-марка без надписи "CHATRA" (logo.png её содержит и при 30px
    превращалась в нечитаемое пятно текста) — logo-icon.png, тот же файл,
@@ -120,16 +153,29 @@ html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22
    которую не трогаем. */
 .logo-img-collapsed{width:22px;height:22px;flex-shrink:0;margin:0 auto;background:linear-gradient(180deg,var(--teal),var(--teal-d));-webkit-mask:url('/logo-icon.png') center / contain no-repeat;mask:url('/logo-icon.png') center / contain no-repeat}
 .logo-name{font-size:16px;font-weight:800;color:var(--text1);letter-spacing:.04em;flex:1;overflow:hidden;white-space:nowrap}
-.sb-nav{flex:1;padding:4px 6px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;overflow-x:hidden}
-.sb-item{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:var(--r-md);font-size:14px;font-weight:500;color:var(--text3);transition:all .15s;cursor:pointer;text-decoration:none;position:relative;white-space:nowrap}
-.sb-item:hover{background:var(--surface2);color:var(--text1)}
-.sb-item.active{background:var(--teal-l);color:var(--teal)}
+.collapse-hint{width:27px;height:27px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--text4);background:color-mix(in srgb,var(--surface2) 68%,transparent);border:1px solid transparent;transition:color .15s,background .15s,transform .1s}
+.sb-logo:hover .collapse-hint{color:var(--text2);background:var(--surface2);border-color:var(--border)}
+.sb-logo:active .collapse-hint{transform:scale(.9)}
+.sb-nav{flex:1;padding:8px 7px;display:flex;flex-direction:column;gap:3px;overflow-y:auto;overflow-x:hidden}
+.sb-item{width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:12px;font-family:inherit;font-size:13.5px;font-weight:560;color:var(--text3);background:transparent;transition:background .15s,color .15s,transform .1s;cursor:pointer;text-decoration:none;position:relative;white-space:nowrap;text-align:left}
+.sb-item:hover{background:color-mix(in srgb,var(--surface2) 82%,transparent);color:var(--text1)}
+.sb-item:active{transform:scale(.975)}
+.sb-item.active{background:rgba(var(--teal-rgb),.1);color:var(--teal);font-weight:650}
 .sb-item.active .item-icon svg{stroke:var(--teal)}
-.collapsed .sb-item{justify-content:center;padding:10px 6px}
+.collapsed .sb-item{justify-content:center;padding:9px 6px}
 .collapsed .sb-logo{justify-content:center;padding:14px 6px 8px}
 .item-icon{position:relative;flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:inherit}
 .item-label{flex:1;overflow:hidden;text-overflow:ellipsis}
-.sb-bottom{padding:8px 6px 14px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:2px}
+.sb-bottom{padding:8px 7px 12px;border-top:1px solid color-mix(in srgb,var(--border2) 52%,transparent);flex-shrink:0;display:flex;flex-direction:column;gap:3px;background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--surface) 32%,transparent))}
+.profile-card{display:flex;align-items:center;gap:10px;margin-bottom:5px;padding:9px;border-radius:15px;color:inherit;text-decoration:none;background:color-mix(in srgb,var(--surface) 82%,transparent);border:1px solid color-mix(in srgb,var(--border2) 58%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.025),0 8px 20px rgba(28,28,30,.04);transition:background .15s,border-color .15s,transform .1s}
+.profile-card:hover{background:var(--surface);border-color:var(--border2)}
+.profile-card:active{transform:scale(.98)}
+.profile-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(145deg,var(--teal),var(--teal-h));color:#fff;font-size:11px;font-weight:760;letter-spacing:.02em;box-shadow:0 4px 12px rgba(var(--teal-rgb),.2)}
+.profile-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+.profile-name{font-size:12.5px;font-weight:680;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.profile-role{font-size:10.5px;font-weight:520;color:var(--text4)}
+.profile-chevron{color:var(--text4);flex-shrink:0}
+.theme-item{color:var(--text4)}
 .help-item{color:var(--text4)}
 .logout-item{color:var(--text4)}
 .logout-item:hover{background:var(--red-l)!important;color:var(--red)!important}
@@ -217,5 +263,10 @@ html.dark .fio-nudge{color:#fbbf24}
 @media (prefers-reduced-transparency: reduce){
   .sb{background:var(--surface)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
   html.dark .sb{background:var(--surface)!important}
+}
+@media (prefers-reduced-motion: reduce){
+  .sb{transition:none}
+  .sb-item,.profile-card,.collapse-hint{transition:color .12s,background .12s,border-color .12s}
+  .sb-item:active,.profile-card:active,.sb-logo:active .collapse-hint{transform:none}
 }
 </style>

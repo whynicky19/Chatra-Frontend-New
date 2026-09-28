@@ -204,4 +204,27 @@ const goBack = () => router.push(`/classes/${classId.value}?tab=assignments`)
   .asg-back { margin: 14px 16px 4px; }
   .asg-right { flex: 1; min-width: 0; min-height: 0; padding: 0; width: 100%; }
 }
+
+/* Workspace split-view: a light material rail beside a recessed detail area. */
+.asg-page{background:var(--bg)}
+.asg-left{width:396px;border-right-color:var(--border);background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 88%,transparent),color-mix(in srgb,var(--surface2) 36%,var(--bg)));box-shadow:10px 0 34px rgba(28,28,30,.035)}
+.asg-left-inner{width:396px}
+.asg-left-head{margin:8px 24px 18px;font-size:28px;font-weight:770;letter-spacing:-.035em}
+.asg-left-scroll{padding:0 20px 32px}
+.asg-back{margin:22px 24px 4px;padding:6px 9px 6px 5px;border-radius:999px}
+.asg-back:hover{background:var(--teal-l)}
+.asg-toggle{top:19px;right:18px;width:36px;height:36px;border-radius:11px;background:color-mix(in srgb,var(--surface) 76%,transparent);border:1px solid var(--border)}
+.asg-left.collapsed{width:60px}
+.asg-right{padding:14px;background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 90%,var(--surface) 10%))}
+.asg-right>:deep(.adp.panel){border-radius:26px}
+
+@media (max-width:900px){.asg-left,.asg-left-inner{width:350px}}
+@media (max-width:768px){
+  .asg-left,.asg-left-inner{width:100%}
+  .asg-left-head{margin:6px 16px 16px;font-size:26px}
+  .asg-left-scroll{padding:0 12px 32px}
+  .asg-back{margin:14px 16px 4px}
+  .asg-right{padding:0}
+}
+@media (prefers-reduced-transparency:reduce){.asg-left{background:var(--surface)}}
 </style>
