@@ -24,7 +24,6 @@
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 {{ t('nav.classes') }}
               </NuxtLink>
-              <span class="header-sep" :class="{'sep-dark': classMeta.cover_image || classMeta.cover_color}">›</span>
               <span class="header-subject" :class="{'subject-dark': classMeta.cover_image || classMeta.cover_color}">{{ (classMeta.subject || '').toUpperCase() }}</span>
             </div>
 
@@ -1368,7 +1367,7 @@ onMounted(async () => {
 .toggle-switch:disabled{opacity:.6;cursor:default}
 .toggle-knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
 .toggle-switch.on .toggle-knob{transform:translateX(20px)}
-.back-link{font-size:12px;color:var(--text4);text-decoration:none;transition:color .15s}.back-link:hover{color:var(--teal)}
+.back-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;line-height:1;color:var(--text4);text-decoration:none;transition:color .15s}.back-link svg{display:block;flex-shrink:0}.back-link:hover{color:var(--teal)}
 .header-sep{font-size:10px;color:var(--text4)}
 .header-subject{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.08em}
 .page-header-body{margin-bottom:0}

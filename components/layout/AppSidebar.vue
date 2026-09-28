@@ -105,6 +105,7 @@ const toggleTheme = () => {
   localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
 }
 let collapsedClassTimer: ReturnType<typeof setTimeout> | null = null
+let themeObserver: MutationObserver | null = null
 const SB_TRANSITION_MS = 250
 const applyCollapsedClass = (collapsed: boolean) => {
   if (import.meta.client) document.documentElement.classList.toggle('sidebar-collapsed', collapsed)
@@ -129,6 +130,10 @@ onMounted(() => {
     isCollapsed.value = localStorage.getItem('_sidebar_collapsed') === '1'
     isDark.value = document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark'
     document.documentElement.classList.toggle('dark', isDark.value)
+    themeObserver = new MutationObserver(() => {
+      isDark.value = document.documentElement.classList.contains('dark')
+    })
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
     applyCollapsedClass(isCollapsed.value)
     resizeHandler = () => { isMobile.value = window.innerWidth <= 768 }
     resizeHandler()
@@ -137,12 +142,18 @@ onMounted(() => {
 })
 onUnmounted(() => {
   if (import.meta.client && resizeHandler) window.removeEventListener('resize', resizeHandler)
+  themeObserver?.disconnect()
+  themeObserver = null
   if (collapsedClassTimer) { clearTimeout(collapsedClassTimer); collapsedClassTimer = null }
 })
 </script>
 <style scoped>
 .sb{width:204px;height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(247,247,249,.78));-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border-right:1px solid color-mix(in srgb,var(--border2) 58%,transparent);flex-shrink:0;overflow:hidden;transition:width .25s cubic-bezier(.22,1,.36,1);position:relative;box-shadow:inset -1px 0 0 rgba(255,255,255,.32)}
-html.dark .sb{background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22,.78))}
+html.dark .sb{
+  background:linear-gradient(180deg,rgba(28,28,30,.86),rgba(20,20,22,.78));
+  border-right-color:rgba(255,255,255,.025);
+  box-shadow:8px 0 24px rgba(0,0,0,.12)
+}
 .sb.collapsed{width:60px}
 .sb-logo{display:flex;align-items:center;gap:8px;padding:13px 10px 8px;cursor:pointer;flex-shrink:0;overflow:hidden;min-height:52px;-webkit-tap-highlight-color:transparent}
 .logo-img-new{width:34px;height:34px;flex-shrink:0;background:linear-gradient(180deg,var(--teal),var(--teal-d));-webkit-mask:url('/logo-icon.png') center / contain no-repeat;mask:url('/logo-icon.png') center / contain no-repeat}
