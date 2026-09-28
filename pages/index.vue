@@ -53,7 +53,9 @@
           </div>
 
           <template v-else>
-            <div v-for="cls in activeClasses" :key="cls.id" class="class-card" @click="goClass(cls.id)">
+            <div v-for="cls in activeClasses" :key="cls.id" class="class-card"
+                 role="link" tabindex="0" :aria-label="cls.name"
+                 @click="goClass(cls.id)" @keydown.enter.self="goClass(cls.id)" @keydown.space.self.prevent="goClass(cls.id)">
               <div class="card-cover" :style="cardCoverStyle(cls)">
                 <SubjectCover :src="cls.cover_thumbnail || cls.cover_image" :icon="cls.cover_icon"
                               :color="cls.cover_color" :cover-source="cls.cover_source"
@@ -76,8 +78,14 @@
                 </div>
                 <div class="card-footer">
                   <div class="card-action-row">
-                    <button v-if="!auth.isTeacher" class="card-action-btn" @click.stop="goClass(cls.id)">{{ getActionLabel(cls) }} →</button>
-                    <button v-else class="card-action-btn" @click.stop="goClass(cls.id)">{{ lang === 'ru' ? 'Открыть курс' : lang === 'kk' ? 'Курсты ашу' : 'Open course' }} →</button>
+                    <button v-if="!auth.isTeacher" class="card-action-btn" @click.stop="goClass(cls.id)">
+                      <span>{{ getActionLabel(cls) }}</span>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                    <button v-else class="card-action-btn" @click.stop="goClass(cls.id)">
+                      <span>{{ lang === 'ru' ? 'Открыть курс' : lang === 'kk' ? 'Курсты ашу' : 'Open course' }}</span>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
                     <!-- Второстепенное действие (выйти/удалить) — тихое по
                          умолчанию, проявляется на hover карточки, чтобы не
                          соперничать с основным CTA за внимание. -->
@@ -94,7 +102,9 @@
               </div>
             </div>
 
-            <div v-if="!auth.isTeacher && !auth.isAdmin" class="class-card add-card" @click="showJoin=true">
+            <div v-if="!auth.isTeacher && !auth.isAdmin" class="class-card add-card"
+                 role="button" tabindex="0"
+                 @click="showJoin=true" @keydown.enter.self="showJoin=true" @keydown.space.self.prevent="showJoin=true">
               <div class="add-card-inner">
                 <div class="add-plus"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
                 <div class="add-title">{{ lang === 'ru' ? 'Добавить новый предмет в программу' : lang === 'kk' ? 'Бағдарламаға жаңа пән қосу' : 'Add new subject to program' }}</div>
@@ -654,7 +664,7 @@ watch(() => auth.user?.id, async (newId) => {
 .btn-head-icon{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r-md);border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;font-family:inherit;white-space:nowrap}
 .btn-head-icon:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-l)}
 
-.classes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;margin-bottom:32px;width:100%}
+.classes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:22px;margin-bottom:32px;width:100%}
 @media (min-width:769px){
   :global(html.sidebar-collapsed .classes-grid){grid-template-columns:repeat(3,1fr)}
 }
@@ -671,35 +681,47 @@ watch(() => auth.user?.id, async (newId) => {
 /* transition намеренно не переопределяется здесь — берётся из общего правила
    .scard,.class-card,.card в main.css (единая спокойная кривая для всех
    поднимающихся карточек сайта). */
-.class-card{background:var(--surface);border-radius:var(--r-xl);overflow:hidden;cursor:pointer;box-shadow:var(--sh-xs);border:1px solid var(--border)}
-.class-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--border2)}
+.class-card{position:relative;isolation:isolate;display:flex;flex-direction:column;background:color-mix(in srgb,var(--surface) 94%,transparent);border-radius:24px;overflow:hidden;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 28px rgba(28,28,30,.055);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);transform:translateZ(0)}
+.class-card::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.72)}
+.class-card:hover{transform:translateY(-4px) scale(1.006);box-shadow:0 2px 4px rgba(0,0,0,.04),0 18px 44px rgba(28,28,30,.11);border-color:color-mix(in srgb,var(--border2) 92%,transparent)}
+.class-card:active{transform:scale(.985);transition-duration:.1s}
+.class-card:focus-visible{outline:3px solid rgba(var(--teal-rgb),.32);outline-offset:3px;border-radius:24px}
+:global(html.dark) .class-card{background:color-mix(in srgb,var(--surface) 92%,transparent);box-shadow:0 1px 0 rgba(255,255,255,.03),0 16px 36px rgba(0,0,0,.28)}
+:global(html.dark) .class-card::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
 
-.card-cover{position:relative;height:200px;overflow:hidden;background:linear-gradient(135deg,#3a3a3c,#232326);display:flex;align-items:flex-end;padding:0}
+.card-cover{position:relative;height:194px;margin:8px 8px 0;overflow:hidden;border-radius:17px;background:linear-gradient(135deg,#3a3a3c,#232326);display:flex;align-items:flex-end;padding:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.card-cover::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.06),transparent 34%,rgba(0,0,0,.09));box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
 .card-cover-art{position:absolute;inset:0}
-.card-code-chip{position:absolute;z-index:1;top:10px;left:10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(80,80,80,.75);color:rgba(255,255,255,.92);padding:4px 10px;border-radius:6px;letter-spacing:.08em;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:all .15s;line-height:1}
-.card-code-chip:hover{background:rgba(60,60,60,.9)}
+.card-cover :deep(.sc-img){transition:transform .42s cubic-bezier(.22,1,.36,1)}
+.class-card:hover .card-cover :deep(.sc-img){transform:scale(1.025)}
+.card-code-chip{position:absolute;z-index:2;top:10px;left:10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(30,30,32,.58);color:#fff;padding:6px 10px;border-radius:999px;letter-spacing:.07em;-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.2);cursor:pointer;transition:background .15s,transform .15s;line-height:1}
+.card-code-chip:hover{background:rgba(30,30,32,.75)}
+.card-code-chip:active{transform:scale(.96)}
 .card-code-chip svg{flex-shrink:0;display:block}
-.card-edit-btn{position:absolute;z-index:1;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;backdrop-filter:blur(4px)}
-.card-edit-btn:hover{background:rgba(var(--teal-rgb),.7);border-color:rgba(var(--teal-rgb),.5)}
+.card-edit-btn{position:absolute;z-index:2;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(30,30,32,.52);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,transform .15s;-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
+.card-edit-btn:hover{background:rgba(var(--teal-rgb),.82);border-color:rgba(255,255,255,.24)}
+.card-edit-btn:active{transform:scale(.92)}
 
-.card-body{padding:18px 18px 16px}
+.card-body{display:flex;flex:1;flex-direction:column;padding:18px 20px 18px}
 /* Название — единственный явный заголовок карточки (декоративная иконка
    предмета рядом с ним убрана: она была одинаковой для всех карточек и не
    несла информации, только конкурировала за внимание с названием). */
-.card-name{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:17px;font-weight:800;color:var(--text1);line-height:1.25;margin-bottom:6px}
-.card-desc{font-size:13px;color:var(--text4);line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card-meta{font-size:12px;color:var(--text4);margin-bottom:14px}
-.card-footer{border-top:1px solid var(--border);padding-top:14px}
+.card-name{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:18px;font-weight:750;color:var(--text1);line-height:1.22;margin-bottom:7px;letter-spacing:-.022em}
+.card-desc{font-size:13px;color:var(--text3);line-height:1.48;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-meta{font-size:12px;font-weight:500;color:var(--text4);margin-bottom:16px;letter-spacing:.005em}
+.card-footer{margin-top:auto;border-top:1px solid var(--border);padding-top:12px}
 .card-action-row{display:flex;align-items:center;justify-content:space-between}
-.card-action-btn{font-size:13px;font-weight:600;color:var(--teal);background:none;border:none;cursor:pointer;padding:0;transition:opacity .15s;font-family:inherit}
-.card-action-btn:hover{opacity:.75}
+.card-action-btn{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:650;color:var(--teal);background:none;border:none;cursor:pointer;padding:6px 0;transition:opacity .15s,gap .2s cubic-bezier(.22,1,.36,1);font-family:inherit}
+.card-action-btn:hover{opacity:.82;gap:7px}
+.card-action-btn:active{opacity:.62}
 /* Второстепенное действие (выйти/удалить) — приглушено по умолчанию и
    проявляется вместе с hover карточки, чтобы не спорить с CTA за внимание
    при обычном просмотре сетки (apple-design: restraint/иерархия). */
 .card-controls{display:flex;gap:6px;opacity:0;transform:translateX(4px);transition:opacity .15s,transform .15s}
 .class-card:hover .card-controls, .class-card:focus-within .card-controls{opacity:1;transform:translateX(0)}
-.ctrl-btn{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.ctrl-btn{width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,color .15s,border-color .15s,transform .1s}
 .ctrl-btn:hover{background:var(--surface3);color:var(--text2)}
+.ctrl-btn:active{transform:scale(.92)}
 .ctrl-del:hover{background:var(--red-l);border-color:rgba(220,38,38,.3);color:var(--red)}
 @media (hover:none){
   /* Без указателя-мыши (тач) второстепенное действие всегда видно — нет
@@ -721,11 +743,12 @@ watch(() => auth.user?.id, async (newId) => {
   .skel-cover, .skel-line{animation:none}
 }
 
-.add-card{background:var(--surface);border:2px dashed var(--border);cursor:pointer;transition:all .2s;min-height:360px;display:flex}
-.add-card:hover{border-color:var(--teal);background:var(--glass)}
+.add-card{background:color-mix(in srgb,var(--surface) 78%,transparent);border:1.5px dashed var(--border2);cursor:pointer;min-height:365px;display:flex;box-shadow:none}
+.add-card:hover{border-color:rgba(var(--teal-rgb),.65);background:color-mix(in srgb,var(--teal-l) 45%,var(--surface));box-shadow:0 14px 36px rgba(28,28,30,.07)}
+.add-card::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
 .add-card-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:12px;flex:1}
-.add-plus{width:48px;height:48px;border-radius:50%;border:2px dashed var(--border2);color:var(--text4);display:flex;align-items:center;justify-content:center;background:var(--surface2)}
-.add-card:hover .add-plus{border-color:var(--teal);color:var(--teal)}
+.add-plus{width:52px;height:52px;border-radius:50%;border:1px solid var(--border);color:var(--text4);display:flex;align-items:center;justify-content:center;background:var(--surface2);box-shadow:inset 0 1px 0 rgba(255,255,255,.55);transition:transform .2s cubic-bezier(.22,1,.36,1),color .15s,background .15s}
+.add-card:hover .add-plus{color:var(--teal);background:var(--teal-l);transform:scale(1.06)}
 .add-title{font-size:15px;font-weight:700;color:var(--text2);line-height:1.3}
 .add-sub{font-size:13px;color:var(--text4);max-width:160px;line-height:1.5}
 
@@ -778,7 +801,8 @@ watch(() => auth.user?.id, async (newId) => {
   .btn-head-icon .btn-head-label{display:none}
   .btn-head-icon{width:48px;height:48px;padding:0;justify-content:center;border-radius:14px;flex-shrink:0}
   .classes-grid{grid-template-columns:1fr;gap:14px}
-  .card-cover,.skel-cover{height:160px}
+  .card-cover{height:158px;margin:7px 7px 0;border-radius:16px}
+  .skel-cover{height:165px}
   .card-body{padding:16px}
   .add-card{min-height:120px}
   .add-card-inner{padding:24px 16px}
@@ -787,6 +811,19 @@ watch(() => auth.user?.id, async (newId) => {
   .code-boxes{gap:6px}
   .card-action-btn{position:relative}
   .card-action-btn::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-4px;right:-4px}
+}
+@media (prefers-reduced-motion:reduce){
+  .class-card:hover{transform:none}
+  .class-card:hover .card-cover :deep(.sc-img){transform:none}
+  .add-card:hover .add-plus{transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .class-card{background:var(--surface)}
+  .card-code-chip,.card-edit-btn{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(30,30,32,.86)}
+}
+@media (prefers-contrast:more){
+  .class-card{border-color:var(--text4)}
+  .card-code-chip,.card-edit-btn{border-color:#fff}
 }
 /* На планшетных ширинах (~600–768) единственная teal-кнопка растягивалась
    flex:1 на всю строку и выглядела непропорционально огромной рядом с

@@ -32,7 +32,9 @@
         </div>
 
         <div v-else class="classes-grid">
-          <div v-for="cls in archivedClasses" :key="cls.id" class="class-card arch-card" @click="goClass(cls.id)">
+          <div v-for="cls in archivedClasses" :key="cls.id" class="class-card arch-card"
+               role="link" tabindex="0" :aria-label="cls.name"
+               @click="goClass(cls.id)" @keydown.enter.self="goClass(cls.id)" @keydown.space.self.prevent="goClass(cls.id)">
             <div class="card-cover" :style="(cls.cover_thumbnail || cls.cover_image || cls.cover_color) ? {} : {background: coverGrad(cls.id)}">
               <SubjectCover :src="cls.cover_thumbnail || cls.cover_image" :icon="cls.cover_icon" :cover-source="cls.cover_source"
                             :color="cls.cover_color" :size="58" class="card-cover-art"/>
@@ -46,7 +48,10 @@
               <h3 class="card-name">{{ cls.name }}</h3>
               <p class="card-desc">{{ cls.description || (lang==='ru' ? 'Только просмотр' : 'View only') }}</p>
               <div class="card-footer">
-                <button class="card-action-btn" @click.stop="goClass(cls.id)">{{ lang==='ru' ? 'Открыть' : 'Open' }} →</button>
+                <button class="card-action-btn" @click.stop="goClass(cls.id)">
+                  <span>{{ lang==='ru' ? 'Открыть' : lang==='kk' ? 'Ашу' : 'Open' }}</span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
                 <button class="ctrl-btn" @click.stop="doLeave(cls)" :title="t('classes.left')">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 </button>
@@ -130,26 +135,34 @@ onMounted(() => load())
 .pg-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:30px;font-weight:800;color:var(--text1);letter-spacing:-.02em;line-height:1.1}
 .pg-sub{font-size:14px;color:var(--text4);margin-top:4px;line-height:1.4}
 
-.classes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.classes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:22px}
 
-.class-card{background:var(--surface);border-radius:var(--r-xl);overflow:hidden;cursor:pointer;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s;box-shadow:var(--sh-xs);border:1px solid var(--border)}
-.class-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
-.arch-card{opacity:.82;filter:grayscale(.28)}
-.arch-card:hover{opacity:1;filter:grayscale(0)}
-.card-cover{position:relative;height:150px;overflow:hidden;background:linear-gradient(135deg,#3a3a3c,#232326)}
+.class-card{position:relative;isolation:isolate;display:flex;flex-direction:column;background:color-mix(in srgb,var(--surface) 94%,transparent);border-radius:24px;overflow:hidden;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 28px rgba(28,28,30,.055);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);transform:translateZ(0)}
+.class-card::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.72)}
+.class-card:hover{transform:translateY(-4px) scale(1.006);box-shadow:0 2px 4px rgba(0,0,0,.04),0 18px 44px rgba(28,28,30,.11);border-color:var(--border2)}
+.class-card:active{transform:scale(.985);transition-duration:.1s}
+.class-card:focus-visible{outline:3px solid rgba(var(--teal-rgb),.32);outline-offset:3px;border-radius:24px}
+.arch-card{opacity:.84;filter:saturate(.76)}
+.arch-card:hover,.arch-card:focus-within{opacity:1;filter:saturate(1)}
+:global(html.dark) .class-card{background:color-mix(in srgb,var(--surface) 92%,transparent);box-shadow:0 1px 0 rgba(255,255,255,.03),0 16px 36px rgba(0,0,0,.28)}
+:global(html.dark) .class-card::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.card-cover{position:relative;height:150px;margin:8px 8px 0;overflow:hidden;border-radius:17px;background:linear-gradient(135deg,#3a3a3c,#232326);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
 .card-cover-art{position:absolute;inset:0}
+.card-cover :deep(.sc-img){transition:transform .42s cubic-bezier(.22,1,.36,1)}
+.class-card:hover .card-cover :deep(.sc-img){transform:scale(1.025)}
 /* Лёгкая вуаль только снизу: сплошная плёнка гасила пастельную обложку
    в серое, а бейдж «архив» и так лежит на собственной тёмной плашке. */
-.card-cover-dim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,transparent 55%,rgba(0,0,0,.18))}
-.card-archive-badge{position:absolute;top:10px;left:10px;z-index:2;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(0,0,0,.5);color:rgba(255,255,255,.95);padding:4px 10px;border-radius:100px;letter-spacing:.03em;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18)}
-.card-body{padding:16px 18px 14px}
-.card-name{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:var(--text1);line-height:1.25;margin-bottom:5px}
-.card-desc{font-size:13px;color:var(--text4);line-height:1.5;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px}
-.card-action-btn{font-size:13px;font-weight:600;color:var(--teal);background:none;border:none;cursor:pointer;padding:0;font-family:inherit;transition:opacity .15s}
-.card-action-btn:hover{opacity:.7}
-.ctrl-btn{width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.card-cover-dim{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.04),transparent 48%,rgba(0,0,0,.18));box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+.card-archive-badge{position:absolute;top:10px;left:10px;z-index:2;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(30,30,32,.58);color:#fff;padding:6px 10px;border-radius:100px;letter-spacing:.03em;-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.2)}
+.card-body{display:flex;flex:1;flex-direction:column;padding:17px 20px 17px}
+.card-name{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:18px;font-weight:750;color:var(--text1);line-height:1.22;margin-bottom:7px;letter-spacing:-.022em}
+.card-desc{font-size:13px;color:var(--text3);line-height:1.48;margin-bottom:16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;border-top:1px solid var(--border);padding-top:12px}
+.card-action-btn{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:650;color:var(--teal);background:none;border:none;cursor:pointer;padding:6px 0;font-family:inherit;transition:opacity .15s,gap .2s cubic-bezier(.22,1,.36,1)}
+.card-action-btn:hover{opacity:.82;gap:7px}
+.ctrl-btn{width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,color .15s,border-color .15s,transform .1s}
 .ctrl-btn:hover{background:var(--red-l);border-color:rgba(220,38,38,.25);color:var(--red)}
+.ctrl-btn:active{transform:scale(.92)}
 
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 40px;gap:10px;text-align:center}
 .es-icon-wrap{width:72px;height:72px;border-radius:20px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--text4);margin-bottom:6px}
@@ -167,10 +180,23 @@ onMounted(() => load())
   .content-area{padding:16px 12px 80px}
   .pg-title{font-size:24px}
   .classes-grid{grid-template-columns:1fr;gap:14px}
+  .card-cover{margin:7px 7px 0;border-radius:16px}
   .ctrl-btn{width:40px;height:40px}
   .card-action-btn{position:relative}
   .card-action-btn::after{content:'';position:absolute;top:-14px;bottom:-14px;left:-4px;right:-4px}
   .back-row{position:relative;min-height:44px;display:inline-flex}
   .back-row::after{content:'';position:absolute;top:-9px;bottom:-9px;left:-4px;right:-4px}
+}
+@media (prefers-reduced-motion:reduce){
+  .class-card:hover{transform:none}
+  .class-card:hover .card-cover :deep(.sc-img){transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .class-card{background:var(--surface)}
+  .card-archive-badge{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(30,30,32,.86)}
+}
+@media (prefers-contrast:more){
+  .class-card{border-color:var(--text4)}
+  .card-archive-badge{border-color:#fff}
 }
 </style>
