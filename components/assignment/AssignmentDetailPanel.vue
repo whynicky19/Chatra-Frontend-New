@@ -157,7 +157,7 @@
         </div>
       </div>
 
-      <div v-else class="ad-stack">
+      <div v-else class="assignment-content-stack">
         <div class="ad-col-main">
           <!-- Результат — главный объект страницы. Он идёт первым, а исходная
                работа остаётся ниже как контекст, а не конкурирует с оценкой. -->
@@ -316,7 +316,7 @@
 
         <!-- Normal states: two-column layout — student answer on the left, same grade card the
              student sees + grading actions on the right (parity with app) -->
-        <div v-else class="ad-stack">
+        <div v-else class="assignment-content-stack">
           <div class="ad-col-main">
             <GradeResultCard
               v-if="activeSub.grade"
@@ -324,6 +324,7 @@
               :max-score="assignment.max_score"
               :criteria="parsedActiveScores || []"
               :ai-confidence="activeSub.ai_confidence"
+              :ai-review-reasons="activeSub.ai_review_reasons"
               :show-confidence="true"
             />
             <GradeCriteriaCard
@@ -1094,7 +1095,7 @@ html.dark .am-tab.active { background: var(--surface3); box-shadow: 0 2px 6px rg
    (фидбек слева, кольцо справа — всё «плавало»). Теперь все блоки
    (ответ → оценка с фидбеком → критерии) идут друг под другом, нижний
    колонтитул со статусом/датой — отдельной строкой под ними. */
-.ad-stack { display: flex; flex-direction: column; gap: 20px; }
+.assignment-content-stack { display: flex; flex-direction: column; gap: 20px; }
 .ad-col-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .ad-col-foot { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; border-top: 1px solid var(--border); }
 
@@ -1572,7 +1573,7 @@ html.dark .status-mini.needs_review { color: #F0A94B; }
 @media (max-width:900px) {
   /* На узких экранах раньше grid схлопывался в одну колонку, теперь она
      и так одна — просто уменьшаем зазоры. */
-  .ad-stack { gap: 16px; }
+  .assignment-content-stack { gap: 16px; }
   .ad-col-main { gap: 16px; }
 }
 @media (max-width:768px) {

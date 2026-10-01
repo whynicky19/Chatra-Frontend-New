@@ -14,9 +14,6 @@
             <svg v-if="gradedByAi" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             {{ gradedByAi ? t('am.ai_check') : t('am.teacher') }}
-            <template v-if="showConfidence && aiConfidence != null">
-              <span class="grc-badge-sep"></span>{{ aiConfidence }}%
-            </template>
           </div>
 
           <div v-if="grade.feedback" class="grc-feedback">
@@ -31,6 +28,39 @@
           </div>
         </div>
       </div>
+
+      <section v-if="gradedByAi && showConfidence && aiConfidence != null" class="grc-verification" :aria-label="t('am.verification_title')">
+        <div class="grc-verification-summary">
+          <div class="grc-verification-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M12 3 5 6v5c0 4.6 2.8 8.5 7 10 4.2-1.5 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <div class="grc-verification-copy">
+            <div class="grc-verification-kicker">{{ t('am.verification_stage') }}</div>
+            <h3>{{ t('am.verification_title') }}</h3>
+            <p>{{ t('am.verification_description') }}</p>
+          </div>
+          <div class="grc-confidence" :aria-label="`${t('am.confidence_result')}: ${aiConfidence}%`">
+            <strong>{{ aiConfidence }}<span>%</span></strong>
+            <span>{{ t('am.confidence_result') }}</span>
+          </div>
+        </div>
+
+        <div class="grc-confidence-track" aria-hidden="true">
+          <span :style="{ width: `${Math.max(0, Math.min(aiConfidence, 100))}%` }"></span>
+        </div>
+
+        <div class="grc-verification-checks">
+          <div v-for="item in verificationChecks" :key="item" class="grc-verification-check">
+            <span aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 10 3 3 7-7"/></svg></span>
+            {{ item }}
+          </div>
+        </div>
+
+        <div v-if="reviewReasons.length" class="grc-review-note">
+          <strong>{{ t('am.review_reasons_label') }}</strong>
+          <span>{{ reviewReasons.join(' · ') }}</span>
+        </div>
+      </section>
 
       <div v-if="gradedByAi && (strengths.length || weaknesses.length)" class="grc-analysis-grid">
         <div v-if="strengths.length" class="grc-bullet-card ok">
@@ -69,6 +99,7 @@ const props = defineProps<{
   maxScore: number
   criteria: CriterionScore[]
   aiConfidence?: number | null
+  aiReviewReasons?: string | null
   showConfidence?: boolean
 }>()
 
@@ -77,6 +108,20 @@ const { t } = useI18n()
 const gradedByAi = computed(() => props.grade.graded_by === 'ai' || props.grade.graded_by === 'ai_suggested')
 const tone = computed(() => scoreTone(props.grade.score, props.maxScore))
 const verdictKey = computed(() => scoreToneKey(tone.value))
+const verificationChecks = computed(() => [
+  t('am.verification_check_criteria'),
+  t('am.verification_check_score'),
+  t('am.verification_check_feedback'),
+])
+const reviewReasons = computed(() => {
+  if (!props.aiReviewReasons) return []
+  try {
+    const parsed = JSON.parse(props.aiReviewReasons)
+    return Array.isArray(parsed) ? parsed.map(String).filter(Boolean) : []
+  } catch {
+    return [props.aiReviewReasons]
+  }
+})
 
 // Сильные/слабые стороны не приходят с бэка отдельным полем — они получены
 // перераспределением уже существующих per-критериальных комментариев ИИ
@@ -156,8 +201,6 @@ html.dark .tone-ok { --tone: #F0A94B; --tone-rgb: 240,169,75; }
   padding: 5px 10px; border-radius: 100px;
 }
 .grc-by-badge svg { color: var(--tone); }
-.grc-badge-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--text4); margin: 0 2px; }
-
 .grc-feedback {
   margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border);
 }
@@ -175,6 +218,33 @@ html.dark .tone-ok { --tone: #F0A94B; --tone-rgb: 240,169,75; }
   font-size: 14px; line-height: 1.65; color: var(--text2); margin: 10px 0 0;
   white-space: pre-wrap; max-width: 68ch;
 }
+
+.grc-verification {
+  padding: 20px 22px 22px; border-top: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(var(--teal-rgb), .075), rgba(var(--teal-rgb), .025));
+}
+.grc-verification-summary { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 13px; }
+.grc-verification-icon {
+  width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px;
+  color: var(--teal); background: rgba(var(--teal-rgb), .12); border: 1px solid rgba(var(--teal-rgb), .14);
+}
+.grc-verification-icon svg { width: 22px; height: 22px; }
+.grc-verification-copy { min-width: 0; }
+.grc-verification-kicker { color: var(--teal); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.grc-verification-copy h3 { margin: 3px 0 0; color: var(--text1); font-size: 15px; font-weight: 760; letter-spacing: -.015em; }
+.grc-verification-copy p { max-width: 64ch; margin: 4px 0 0; color: var(--text3); font-size: 12.5px; line-height: 1.45; }
+.grc-confidence { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
+.grc-confidence strong { color: var(--teal); font-size: 28px; line-height: 1; letter-spacing: -.045em; }
+.grc-confidence strong span { font-size: 15px; letter-spacing: -.015em; }
+.grc-confidence>span { margin-top: 4px; color: var(--text4); font-size: 9px; font-weight: 750; letter-spacing: .055em; text-transform: uppercase; }
+.grc-confidence-track { height: 5px; margin: 15px 0 14px; overflow: hidden; border-radius: 99px; background: rgba(var(--teal-rgb), .12); }
+.grc-confidence-track span { display: block; height: 100%; border-radius: inherit; background: var(--teal); transition: width .45s cubic-bezier(.22,1,.36,1); }
+.grc-verification-checks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.grc-verification-check { display: flex; align-items: center; gap: 7px; color: var(--text2); font-size: 11.5px; line-height: 1.35; }
+.grc-verification-check>span { width: 19px; height: 19px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; background: rgba(var(--teal-rgb), .12); color: var(--teal); }
+.grc-verification-check svg { width: 13px; height: 13px; }
+.grc-review-note { display: flex; gap: 8px; margin-top: 14px; padding: 10px 12px; border-radius: 12px; background: rgba(232,151,58,.1); color: var(--text2); font-size: 11.5px; line-height: 1.45; }
+.grc-review-note strong { flex: 0 0 auto; color: #B45309; }
 
 .grc-analysis-grid {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0;
@@ -205,6 +275,12 @@ html.dark .grc-bullet-card.warn .grc-bullet-title { color: #F0A94B; }
   .grc-copy { padding: 20px; }
   .grc-verdict { font-size: 26px; }
   .grc-feedback { margin-top: 18px; padding-top: 16px; }
+  .grc-verification { padding: 18px; }
+  .grc-verification-summary { grid-template-columns: 38px minmax(0, 1fr) auto; gap: 10px; }
+  .grc-verification-icon { width: 38px; height: 38px; border-radius: 12px; }
+  .grc-verification-copy p { display: none; }
+  .grc-confidence strong { font-size: 24px; }
+  .grc-verification-checks { grid-template-columns: 1fr; gap: 7px; }
   .grc-analysis-grid { grid-template-columns: 1fr; }
   .grc-bullet-card + .grc-bullet-card { border-left: none; border-top: 1px solid var(--border); }
 }
