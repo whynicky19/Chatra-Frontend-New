@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { refreshRegistries } from '~/composables/useUserRegistries'
+import { takeLegacyRefreshCredential } from '~/utils/sessionStorage'
 
 interface User { id: number; email: string; is_active: boolean; role: string; ai_unlimited?: boolean; org_type?: 'university' | 'school' }
 
@@ -14,7 +15,6 @@ function safeParse(raw: string | null): Record<string, any> {
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: null as string | null,
-    refreshToken: null as string | null,
     user: null as User | null,
     nickname: '' as string,
     fullname: '' as string,
@@ -29,12 +29,9 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     setToken(t: string) {
       this.token = t
-      if (import.meta.client) localStorage.setItem('_tk', t)
-    },
-
-    setRefreshToken(t: string) {
-      this.refreshToken = t
-      if (import.meta.client) localStorage.setItem('_rtk', t)
+      // Access credentials deliberately live in memory only. Remove the old
+      // key on every successful session in case this browser predates AUD-005.
+      if (import.meta.client) localStorage.removeItem('_tk')
     },
 
     setUser(u: User) {
@@ -60,7 +57,6 @@ export const useAuthStore = defineStore('auth', {
 
     logout() {
       this.token = null
-      this.refreshToken = null
       this.user = null
       this.nickname = ''
       this.fullname = ''
@@ -70,13 +66,12 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    loadFromStorage() {
-      if (import.meta.client) {
-        const t = localStorage.getItem('_tk')
-        if (t) this.token = t
-        const rt = localStorage.getItem('_rtk')
-        if (rt) this.refreshToken = rt
-      }
+    takeLegacyRefreshToken(): string | null {
+      if (!import.meta.client) return null
+      // A pre-migration refresh token is read exactly once, exchanged for an
+      // HttpOnly cookie by the startup plugin, and removed even if exchange
+      // fails. The access token is never restored from persistent storage.
+      return takeLegacyRefreshCredential(localStorage)
     },
 
     setFullname(fn: string) {

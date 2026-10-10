@@ -26,7 +26,7 @@
       <div class="sb-search">
         <div class="search-wrap">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input v-model="query" class="search-inp" :placeholder="t('ai.search_placeholder')"/>
+          <input v-model="query" class="search-inp" :placeholder="t('ai.search_placeholder')" :aria-label="t('ai.search_placeholder')"/>
         </div>
       </div>
 
@@ -77,7 +77,7 @@
           </div>
         </div>
 
-        <div v-else class="chat-msgs">
+        <div v-else class="chat-msgs" aria-live="polite">
           <div v-for="m in msgs" :key="m.id" :class="['chat-msg', m.role]">
             <div v-if="m.role==='assistant'" class="msg-avatar">
               <span class="msg-sender">Chatra AI</span>
@@ -85,7 +85,7 @@
             <div :class="['msg-bubble', m.role]" v-html="fmt(m.text)"></div>
           </div>
 
-          <div v-if="sending" class="chat-msg assistant">
+          <div v-if="sending" class="chat-msg assistant" role="status" :aria-label="tt('Chatra AI отвечает', 'Chatra AI жауап беруде', 'Chatra AI is responding')">
             <div class="msg-avatar">
               <span class="msg-sender">Chatra AI</span>
             </div>
@@ -105,13 +105,15 @@
           class="chat-field"
           :max-height="150"
           submit-on-enter
-          :placeholder="quota.aiLimitReached.value ? 'Лимит исчерпан' : 'Спросите Chatra AI'"
+          :placeholder="aiInputPlaceholder"
+          :aria-label="aiInputPlaceholder"
           :disabled="sending || quota.aiLimitReached.value"
           @submit="send"
         />
         <button
           :class="['send-btn', {active: txt.trim() && !quota.aiLimitReached.value, locked: quota.aiLimitReached.value}]"
           :disabled="!txt.trim() || sending || quota.aiLimitReached.value"
+          :aria-label="tt('Отправить сообщение', 'Хабарлама жіберу', 'Send message')"
           @click="send"
         >
           <div v-if="sending" class="spinner" style="width:14px;height:14px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
@@ -152,6 +154,9 @@ const SIDEBAR_COLLAPSE_KEY = '_ai_sidebar_collapsed'
 
 const tt = (ru: string, kk: string, en: string) =>
   lang.value === 'ru' ? ru : lang.value === 'kk' ? kk : en
+const aiInputPlaceholder = computed(() => quota.aiLimitReached.value
+  ? tt('Лимит исчерпан', 'Лимит аяқталды', 'Limit reached')
+  : tt('Спросите Chatra AI', 'Chatra AI-дан сұраңыз', 'Ask Chatra AI'))
 
 const filtered = computed(() => {
   const q = query.value.trim().toLowerCase()
@@ -257,7 +262,7 @@ const fmt = (t: string): string => {
   const codeBlocks: string[] = []
   s = s.replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, _lang, code) => {
     codeBlocks.push(`<pre class="code-bl"><code>${code}</code></pre>`)
-    return ` CODE${codeBlocks.length - 1} `
+    return `CODE${codeBlocks.length - 1}`
   })
 
   s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => renderMath(tex, true))
@@ -270,7 +275,7 @@ const fmt = (t: string): string => {
   let i = 0
   while (i < lines.length) {
     const line = lines[i]
-    if (/^ CODE\d+ $/.test(line.trim())) {
+    if (/^CODE\d+$/.test(line.trim())) {
       parts.push({ block: true, html: line.trim() })
       i++
       continue
@@ -303,7 +308,7 @@ const fmt = (t: string): string => {
     if (!p.block && idx > 0 && !parts[idx - 1].block) html += '<br>'
     html += p.html
   })
-  return html.replace(/ CODE(\d+) /g, (_, idx) => codeBlocks[Number(idx)])
+  return html.replace(/CODE(\d+)/g, (_, idx) => codeBlocks[Number(idx)])
 }
 
 const scroll = () => nextTick(() => {

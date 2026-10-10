@@ -40,6 +40,10 @@
                 'has-dead': cell.dots.length > 0,
               }]"
               @click="cell.inMonth && selectDay(cell.dateStr)"
+              :role="cell.inMonth ? 'button' : undefined"
+              :tabindex="cell.inMonth ? 0 : -1"
+              @keydown.enter="cell.inMonth && selectDay(cell.dateStr)"
+              @keydown.space.prevent="cell.inMonth && selectDay(cell.dateStr)"
             >
               <span class="cal-num">{{ cell.day }}</span>
               <span v-if="cell.dots.length === 1" class="dot-single" :style="{ background: cell.dots[0] }"></span>
@@ -60,6 +64,10 @@
             :key="s.dateStr"
             :class="['strip-day', { 'strip-sel': selectedDateStr === s.dateStr, 'strip-today': s.isToday }]"
             @click="selectDay(s.dateStr)"
+            role="button"
+            tabindex="0"
+            @keydown.enter="selectDay(s.dateStr)"
+            @keydown.space.prevent="selectDay(s.dateStr)"
           >
             <div class="strip-dow">{{ s.dow }}</div>
             <div class="strip-num">{{ s.num }}</div>
@@ -79,7 +87,10 @@
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <span>Нет заданий с дедлайном</span>
             </div>
-            <div v-for="item in dayItems" :key="item.id" class="detail-card" @click="goToAssignment(item)">
+            <div v-for="item in dayItems" :key="item.id" class="detail-card" role="button" tabindex="0"
+                 @click="goToAssignment(item)"
+                 @keydown.enter="goToAssignment(item)"
+                 @keydown.space.prevent="goToAssignment(item)">
               <div class="detail-check" :class="{ done: item.submitted }">
                 <svg v-if="item.submitted" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               </div>

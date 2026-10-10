@@ -8,7 +8,11 @@
     <div v-if="!items.length" class="hp-empty">{{ t('hl.empty') }}</div>
 
     <div v-else class="hp-list">
-      <div v-for="h in items" :key="h.id" class="hp-row" :class="`hp-${h.color}`" @click="$emit('go', h)">
+      <div v-for="h in items" :key="h.id" class="hp-row" :class="`hp-${h.color}`"
+           role="button" tabindex="0"
+           @click="$emit('go', h)"
+           @keydown.enter.self="$emit('go', h)"
+           @keydown.space.self.prevent="$emit('go', h)">
         <span class="hp-bar"></span>
         <div class="hp-main">
           <div class="hp-text">{{ h.selected_text.trim() }}</div>

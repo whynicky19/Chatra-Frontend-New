@@ -1,6 +1,5 @@
 <template>
-  <div class="overlay" @click.self="$emit('close')">
-    <div class="modal">
+  <AppDialog overlay-class="overlay" panel-class="modal" labelledby="create-post-title" describedby="create-post-subtitle" :busy="loading" @close="$emit('close')">
       <div class="sheet-grabber"></div>
 
       <div class="modal-head">
@@ -10,8 +9,8 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
           </div>
           <div class="modal-head-txt">
-            <div class="modal-title">Добавить лекцию</div>
-            <div class="modal-sub">Учебный материал для предмета</div>
+            <div id="create-post-title" class="modal-title">Добавить лекцию</div>
+            <div id="create-post-subtitle" class="modal-sub">Учебный материал для предмета</div>
           </div>
         </div>
         <button class="modal-close" aria-label="Закрыть" :disabled="loading" @click="loading || $emit('close')">
@@ -31,7 +30,7 @@
 
         <div class="field">
           <label class="field-label">Прикрепить файлы</label>
-          <div class="file-drop" :class="{ dragging: drag, 'has-file': selFiles.length }" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDrop" @click="fi?.click()">
+          <div class="file-drop" :class="{ dragging: drag, 'has-file': selFiles.length }" role="button" tabindex="0" aria-label="Выбрать файлы лекции" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDrop" @click="fi?.click()" @keydown.enter.self="fi?.click()" @keydown.space.self.prevent="fi?.click()">
             <input type="file" style="display:none" ref="fi" multiple :accept="ACCEPT_ATTR" @change="onPick" />
             <div class="drop-ico">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -68,8 +67,7 @@
           Опубликовать лекцию
         </button>
       </div>
-    </div>
-  </div>
+  </AppDialog>
 </template>
 
 <script setup lang="ts">
@@ -162,7 +160,7 @@ const submit = async () => {
 /* Та же ступень поверхностей, что и на странице задания: белые «шасси»
    шапки и подвала, утопленное тело формы и белые карточки полей внутри —
    как в сгруппированных формах iOS. */
-.modal {
+:deep(.modal) {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl);
   padding: 0; width: 100%; max-width: 780px; max-height: 94vh;
   display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden;
@@ -274,7 +272,7 @@ const submit = async () => {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width:768px) {
-  .modal { max-width: 100%; max-height: 96dvh; border: none; border-radius: 28px 28px 0 0; padding: 0; }
+  :deep(.modal) { max-width: 100%; max-height: 96dvh; border: none; border-radius: 28px 28px 0 0; padding: 0; }
   /* Свою «ручку» рисуем внутри шапки — глобальная .modal::before легла бы
      на самый край шторки, поверх градиента. */
   .modal::before { display: none; }

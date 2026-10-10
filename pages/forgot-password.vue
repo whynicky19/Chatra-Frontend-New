@@ -5,11 +5,11 @@
 
     <form v-if="!codeSent" @submit.prevent="sendCode" class="auth-form">
       <div class="frow">
-        <label class="flabel">Email</label>
-        <input v-model="email" type="email" class="input" :class="{'input-err':errorMsg}"
-               placeholder="you@example.com" required autocomplete="email" @input="errorMsg=''"/>
+        <label class="flabel" for="reset-email">Email</label>
+        <input id="reset-email" v-model="email" type="email" class="input" :class="{'input-err':errorMsg}"
+               placeholder="you@example.com" required autocomplete="email" :aria-invalid="!!errorMsg" :aria-describedby="errorMsg ? 'reset-email-error' : undefined" @input="errorMsg=''"/>
       </div>
-      <div v-if="errorMsg" class="login-error">{{ errorMsg }}</div>
+      <div v-if="errorMsg" id="reset-email-error" class="login-error" role="alert">{{ errorMsg }}</div>
       <button type="submit" class="btn btn-teal w-full btn-lg auth-submit" :disabled="loading || !emailOk">
         <div v-if="loading" class="spinner" style="width:15px;height:15px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
         <span v-else>{{ t('forgot.send') }}</span>
@@ -18,16 +18,16 @@
 
     <form v-else @submit.prevent="doReset" class="auth-form">
       <div class="frow">
-        <label class="flabel">{{ t('verify.code_label') }}</label>
-        <input v-model="code" inputmode="numeric" maxlength="6" class="input code-input"
+        <label class="flabel" for="reset-code">{{ t('verify.code_label') }}</label>
+        <input id="reset-code" v-model="code" inputmode="numeric" maxlength="6" class="input code-input"
                placeholder="••••••" @input="onCodeInput"/>
       </div>
       <div class="frow">
-        <label class="flabel">{{ t('reset.newpw') }}</label>
-        <input v-model="newPw" type="password" class="input" placeholder="••••••••" minlength="8" @input="errorMsg=''"/>
+        <label class="flabel" for="reset-password">{{ t('reset.newpw') }}</label>
+        <input id="reset-password" v-model="newPw" type="password" class="input" placeholder="••••••••" minlength="8" autocomplete="new-password" @input="errorMsg=''"/>
         <div class="hint">{{ t('auth.pw_min8') }}</div>
       </div>
-      <div v-if="errorMsg" class="login-error">{{ errorMsg }}</div>
+      <div v-if="errorMsg" class="login-error" role="alert">{{ errorMsg }}</div>
       <button type="submit" class="btn btn-teal w-full btn-lg auth-submit" :disabled="loading || code.length < 4 || newPw.length < 8">
         <div v-if="loading" class="spinner" style="width:15px;height:15px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div>
         <span v-else>{{ t('reset.btn') }}</span>

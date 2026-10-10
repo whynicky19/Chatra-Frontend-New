@@ -21,7 +21,7 @@ export const renderBody = (text: string): string => {
   // URL внутри скобок 📎-вложения может содержать пробелы (оригинальное имя
   // файла в пути, напр. "Lection 1.pptx") — границу задают сами скобки
   // markdown-ссылки, поэтому пробел из группы не исключаем, только ')'.
-  const combined = /📎\s*\[([^\]]+)\]\((https?:\/\/[^)]+)\)|(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g
+  const combined = /📎\s*\[([^]]+)\]\((https?:\/\/[^)]+)\)|(https?:\/\/[^\s<>"{}|\\^`\x5B\x5D]+)/g
   return escaped.replace(combined, (_m, name, attUrl, bareUrl) => {
     // name из attachment-формата уже прошёл &<>-экранирование (в `escaped`) —
     // добавляем только кавычку. bareUrl-имя (getFileName) сырое → полный escape.

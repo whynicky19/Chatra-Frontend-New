@@ -118,7 +118,7 @@
 
           <div class="field">
             <label class="field-label">{{ t('am.attach_files') }}</label>
-            <div class="file-drop" :class="{ 'has-file': submittedFiles.length }" @click="fileInputEl?.click()" @dragover.prevent @drop.prevent="onDrop">
+            <div class="file-drop" :class="{ 'has-file': submittedFiles.length }" role="button" tabindex="0" :aria-label="t('am.attach_files')" @click="fileInputEl?.click()" @keydown.enter.self="fileInputEl?.click()" @keydown.space.self.prevent="fileInputEl?.click()" @dragover.prevent @drop.prevent="onDrop">
               <input ref="fileInputEl" type="file" style="display:none" multiple :accept="ACCEPT_ATTR" @change="onFileSelect" />
               <template v-if="!submittedFiles.length">
                 <div class="drop-ico">
@@ -442,7 +442,7 @@
             {{ t('am.student_not_found') }}
           </div>
           <div v-else class="subs-list">
-            <div v-for="s in filteredSubmissions" :key="s.id" class="sub-row" @click="activeSub = s">
+            <button v-for="s in filteredSubmissions" :key="s.id" type="button" class="sub-row" @click="activeSub = s">
               <div class="sub-info">
                 <div class="sub-student">{{ getStudentName(s.student_id) }}</div>
                 <div class="sub-meta">
@@ -463,7 +463,7 @@
                 <span v-if="!s.grade || attentionStatus(s.status)" :class="['status-mini', s.status]">{{ statusLabel(s.status) }}</span>
               </div>
               <svg class="sub-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -624,7 +624,13 @@ const gradedCount = computed(() => submissions.value.filter(s => s.status === 'g
 const pendingCount = computed(() => submissions.value.filter(s => s.status === 'submitted' || s.status === 'late' || s.status === 'needs_review').length)
 const gradedPct = computed(() => submissions.value.length ? Math.round(gradedCount.value / submissions.value.length * 100) : 0)
 
-const parsedCriteria = computed(() => { try { return JSON.parse(props.assignment.criteria) } catch { return [] } })
+type RubricCriterion = { name: string; description?: string; weight: number }
+const parsedCriteria = computed<RubricCriterion[]>(() => {
+  try {
+    const value = JSON.parse(props.assignment.criteria)
+    return Array.isArray(value) ? value : []
+  } catch { return [] }
+})
 
 // Скрытие блока критериев преподавателем: состояние лежит в localStorage,
 // чтобы при возврате к заданию сворачивалось так, как оставил пользователь.
@@ -1408,6 +1414,8 @@ html.dark .nrb-title { color: #F0A94B; }
 .sub-row {
   display: flex; align-items: center; gap: 12px; padding: 12px 14px;
   border-bottom: 1px solid var(--border);
+  border-top: 0; border-left: 0; border-right: 0; width: 100%;
+  background: transparent; color: inherit; font: inherit; text-align: left;
   cursor: pointer; transition: background .12s ease-out;
 }
 .sub-row:last-child { border-bottom: none; }

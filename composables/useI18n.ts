@@ -1,8 +1,16 @@
 import { ref, computed } from 'vue'
 
-type Lang = 'ru' | 'en' | 'kk'
+export type Lang = 'ru' | 'en' | 'kk'
 
 const _lang = ref<Lang>('ru')
+
+export const applyDocumentLanguage = (doc: Pick<Document, 'documentElement'>, lang: Lang) => {
+  doc.documentElement.lang = lang
+}
+
+const syncDocumentLanguage = (lang: Lang) => {
+  if (import.meta.client) applyDocumentLanguage(document, lang)
+}
 
 export const translations: Record<string, Record<Lang, string>> = {
   // Sidebar
@@ -556,7 +564,10 @@ export const useI18n = () => {
 
   const setLang = (l: Lang) => {
     lang.value = l
-    if (import.meta.client) localStorage.setItem('_lang', l)
+    if (import.meta.client) {
+      localStorage.setItem('_lang', l)
+      syncDocumentLanguage(l)
+    }
   }
 
   return { t, lang, setLang }
@@ -567,5 +578,8 @@ export const useI18n = () => {
 // мог вызвать до первого рендера переводов.
 export const setI18nLang = (l: Lang) => {
   _lang.value = l
-  if (import.meta.client) localStorage.setItem('_lang', l)
+  if (import.meta.client) {
+    localStorage.setItem('_lang', l)
+    syncDocumentLanguage(l)
+  }
 }

@@ -1,6 +1,5 @@
 <template>
-  <div class="overlay" @click.self="close">
-    <div class="modal">
+  <AppDialog overlay-class="overlay" panel-class="modal" labelledby="create-class-title" describedby="create-class-subtitle" @close="close">
       <div class="sheet-grabber"></div>
 
       <div class="modal-head">
@@ -11,11 +10,11 @@
             <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
           </div>
           <div class="modal-head-txt">
-            <div class="modal-title">{{ created ? 'Обложка предмета' : 'Создать предмет' }}</div>
-            <div class="modal-sub">{{ created ? 'Подберите цвет, иконку и картинку' : 'Название, период и преподаватель' }}</div>
+            <div id="create-class-title" class="modal-title">{{ created ? L.coverTitle : L.createTitle }}</div>
+            <div id="create-class-subtitle" class="modal-sub">{{ created ? L.coverSub : L.createSub }}</div>
           </div>
         </div>
-        <button class="modal-close" aria-label="Закрыть" @click="close">
+        <button class="modal-close" :aria-label="L.close" @click="close">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
@@ -26,11 +25,11 @@
              первый — они идут до обложки: раскрытый выбор иконок иначе
              утаскивает главное поле («Название») ниже видимой части шторки. -->
         <template v-if="!created">
-          <div class="field"><label class="field-label">Название предмета<span class="req">*</span></label><AutoTextarea v-model="title" class="inp" :max-height="110" placeholder="Например: Математика 10А" autofocus/></div>
-          <div class="field"><label class="field-label">Описание</label><AutoTextarea v-model="description" class="inp" :max-height="130" placeholder="Краткое описание курса"/></div>
+          <div class="field"><label class="field-label" for="create-class-name">{{ L.name }}<span aria-hidden="true" class="req">*</span></label><AutoTextarea id="create-class-name" v-model="title" class="inp" :max-height="110" :placeholder="L.namePlaceholder" autofocus/></div>
+          <div class="field"><label class="field-label" for="create-class-description">{{ L.description }}</label><AutoTextarea id="create-class-description" v-model="description" class="inp" :max-height="130" :placeholder="L.descriptionPlaceholder"/></div>
           <div class="field-row">
-            <div class="field"><label class="field-label">Период</label><input v-model="period" class="inp" placeholder="2024-2025"/></div>
-            <div class="field"><label class="field-label">Преподаватель</label><input v-model="teacher" class="inp" placeholder="Ваше имя"/></div>
+            <div class="field"><label class="field-label" for="create-class-period">{{ L.period }}</label><input id="create-class-period" v-model="period" class="inp" :placeholder="academicYearPlaceholder"/></div>
+            <div class="field"><label class="field-label" for="create-class-teacher">{{ L.teacher }}</label><input id="create-class-teacher" v-model="teacher" class="inp" :placeholder="L.teacherPlaceholder" autocomplete="name"/></div>
           </div>
         </template>
 
@@ -51,22 +50,22 @@
       </div>
 
       <div class="modal-foot">
-        <button v-if="!created" class="btn btn-white" @click="close">Отмена</button>
+        <button v-if="!created" class="btn btn-white" @click="close">{{ L.cancel }}</button>
         <button v-if="!created" class="btn btn-teal" :disabled="!title.trim() || loading" @click="submit">
           <div v-if="loading" class="spinner"></div>
-          <span v-else>Создать предмет</span>
+          <span v-else>{{ L.create }}</span>
         </button>
         <!-- Предмет уже сохранён, поэтому это просто «закрыть»: обложка есть в
              любом случае, даже если генерацию не запускали или она не удалась. -->
-        <button v-else class="btn btn-teal" :disabled="generating" @click="close">Готово</button>
+        <button v-else class="btn btn-teal" :disabled="generating" @click="close">{{ L.done }}</button>
       </div>
-    </div>
-  </div>
+  </AppDialog>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useCoverArt } from '~/composables/useCoverArt'
+import { useI18n } from '~/composables/useI18n'
 import { useToast } from '~/composables/useToast'
 import { useClassesSvc, type ClassResponse } from '~/services/classes'
 
@@ -83,6 +82,37 @@ const emit = defineEmits<{
 const classesSvc = useClassesSvc()
 const coverArt = useCoverArt()
 const toast = useToast()
+const { lang } = useI18n()
+
+const COPY = {
+  coverTitle: { ru: 'Обложка предмета', en: 'Subject cover', kk: 'Пән мұқабасы' },
+  createTitle: { ru: 'Создать предмет', en: 'Create subject', kk: 'Пән құру' },
+  coverSub: { ru: 'Подберите цвет, иконку и картинку', en: 'Choose a color, icon and image', kk: 'Түс, белгіше және сурет таңдаңыз' },
+  createSub: { ru: 'Название, период и преподаватель', en: 'Name, period and teacher', kk: 'Атауы, кезеңі және оқытушысы' },
+  close: { ru: 'Закрыть', en: 'Close', kk: 'Жабу' },
+  name: { ru: 'Название предмета', en: 'Subject name', kk: 'Пән атауы' },
+  namePlaceholder: { ru: 'Например: Математика 10А', en: 'For example: Mathematics 10A', kk: 'Мысалы: Математика 10А' },
+  description: { ru: 'Описание', en: 'Description', kk: 'Сипаттама' },
+  descriptionPlaceholder: { ru: 'Краткое описание курса', en: 'Short course description', kk: 'Курстың қысқаша сипаттамасы' },
+  period: { ru: 'Период', en: 'Period', kk: 'Кезең' },
+  teacher: { ru: 'Преподаватель', en: 'Teacher', kk: 'Оқытушы' },
+  teacherPlaceholder: { ru: 'Ваше имя', en: 'Your name', kk: 'Атыңыз' },
+  cancel: { ru: 'Отмена', en: 'Cancel', kk: 'Бас тарту' },
+  create: { ru: 'Создать предмет', en: 'Create subject', kk: 'Пән құру' },
+  done: { ru: 'Готово', en: 'Done', kk: 'Дайын' },
+  created: { ru: 'Предмет создан', en: 'Subject created', kk: 'Пән құрылды' },
+  error: { ru: 'Ошибка', en: 'Something went wrong', kk: 'Қате' },
+  tooMany: { ru: 'Слишком много генераций подряд — попробуйте позже.', en: 'Too many cover generations — try again later.', kk: 'Мұқаба жасау әрекеті тым көп — кейінірек қайталап көріңіз.' },
+  coverError: { ru: 'Не удалось сгенерировать обложку. Обложка по умолчанию уже сохранена.', en: 'The cover could not be generated. The default cover has been saved.', kk: 'Мұқабаны жасау мүмкін болмады. Әдепкі мұқаба сақталды.' },
+} as const
+const L = computed(() => Object.fromEntries(
+  Object.entries(COPY).map(([key, values]) => [key, values[lang.value as keyof typeof values] || values.en]),
+) as Record<keyof typeof COPY, string>)
+const academicYearPlaceholder = computed(() => {
+  const now = new Date()
+  const start = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1
+  return `${start}–${start + 1}`
+})
 
 const title = ref(''); const period = ref(''); const teacher = ref(''); const description = ref('')
 const loading = ref(false)
@@ -115,12 +145,12 @@ const submit = async () => {
     // а дальнейшая генерация просто заменит картинку.
     emit('created', p)
 
-    toast.ok('Предмет создан')
+    toast.ok(L.value.created)
     // Первую генерацию запускаем сами — для пользователя это продолжение
     // нажатия «Создать предмет», а не отдельное непонятное действие.
     generateCover()
   } catch (e: any) {
-    toast.err(e?.response?.data?.detail || 'Ошибка')
+    toast.err(e?.response?.data?.detail || L.value.error)
   } finally {
     loading.value = false
   }
@@ -139,7 +169,7 @@ const generateCover = async () => {
   } catch (e: any) {
     const detail = e?.response?.data?.detail
     if (detail === 'too_many_cover_generations') {
-      coverError.value = 'Слишком много генераций подряд — попробуйте позже.'
+      coverError.value = L.value.tooMany
       return
     }
     // 409 «генерация уже идёт» или обрыв связи: сервер всё равно дорисует и
@@ -147,7 +177,7 @@ const generateCover = async () => {
     const recoverable = detail === 'cover_generation_in_progress'
       || e?.response == null || (e?.response?.status ?? 0) >= 500
     if (!recoverable) {
-      coverError.value = 'Не удалось сгенерировать обложку. Обложка по умолчанию уже сохранена.'
+      coverError.value = L.value.coverError
       return
     }
     const recovered = await classesSvc.awaitPendingCover(created.value.id, prevImage, prevSource)
@@ -155,7 +185,7 @@ const generateCover = async () => {
       created.value = { ...created.value, ...recovered } as ClassResponse
       emit('cover', created.value)
     } else {
-      coverError.value = 'Не удалось сгенерировать обложку. Обложка по умолчанию уже сохранена.'
+      coverError.value = L.value.coverError
     }
   } finally {
     generating.value = false
@@ -172,7 +202,7 @@ const close = () => {
 <style scoped>
 /* Та же ступень поверхностей, что и в остальных формах создания: белые
    «шасси» шапки и подвала, утопленное тело и белые карточки полей. */
-.modal {
+:deep(.modal) {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl);
   padding: 0; width: 100%; max-width: 720px; max-height: 94vh;
   display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden;
@@ -246,7 +276,7 @@ const close = () => {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width:768px) {
-  .modal { max-width: 100%; max-height: 96dvh; border: none; border-radius: 28px 28px 0 0; padding: 0; }
+  :deep(.modal) { max-width: 100%; max-height: 96dvh; border: none; border-radius: 28px 28px 0 0; padding: 0; }
   .modal::before { display: none; }
   .sheet-grabber { display: block; width: 36px; height: 5px; border-radius: 3px; background: var(--surface3); margin: 8px auto 0; flex-shrink: 0; }
   .modal-head { padding: 12px 16px 14px; }

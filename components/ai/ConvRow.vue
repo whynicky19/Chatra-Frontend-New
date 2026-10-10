@@ -1,5 +1,9 @@
 <template>
-  <div class="conv-row" :class="{ active }" @click="handleRowClick">
+  <div class="conv-row" :class="{ active }" role="button" tabindex="0"
+       :aria-current="active ? 'true' : undefined"
+       @click="handleRowClick"
+       @keydown.enter.self="handleRowClick"
+       @keydown.space.self.prevent="handleRowClick">
     <div class="row-main">
       <div class="row-top">
         <span v-if="conv.pinned" class="row-pin-ind">

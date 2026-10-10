@@ -10,9 +10,8 @@ export const useAuth = () => {
 
   // Общая пост-обработка успешно полученной пары токенов: тянем профиль,
   // применяем тему и отложенные ФИО/ник. Используется login/verifyEmail/reset.
-  const applyTokens = async (t: { access_token: string; refresh_token?: string }) => {
+  const applyTokens = async (t: { access_token: string }) => {
     auth.setToken(t.access_token)
-    if (t.refresh_token) auth.setRefreshToken(t.refresh_token)
     const u = await svc.me()
     auth.setUser(u)
     if (import.meta.client) {
@@ -107,7 +106,6 @@ export const useAuth = () => {
     try {
       const t = await svc.changePassword(current, next)
       auth.setToken(t.access_token)
-      if (t.refresh_token) auth.setRefreshToken(t.refresh_token)
       return null
     } catch (e: any) {
       const detail = e?.response?.data?.detail

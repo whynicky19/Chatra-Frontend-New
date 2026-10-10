@@ -1,23 +1,10 @@
-import { ref, nextTick, type Ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useUploadSvc } from '~/services/uploads'
+import { kindOf } from '~/utils/documentKind'
+
+export { extOf, kindOf, type DocKind } from '~/utils/documentKind'
 
 export interface DocFile { url: string; name: string }
-export type DocKind = 'image' | 'pdf' | 'docx' | 'office' | 'sheet' | 'text' | 'unsupported'
-
-export const extOf = (name: string) => name.split('.').pop()?.toLowerCase().split('?')[0] || ''
-
-export const kindOf = (name: string | undefined | null): DocKind => {
-  const ext = extOf(name || '')
-  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(ext)) return 'image'
-  if (ext === 'pdf') return 'pdf'
-  if (ext === 'docx') return 'docx'
-  // .doc/.rtf — старые бинарные форматы без разумной клиентской библиотеки,
-  // .ppt/.pptx — презентации: все конвертируются в PDF на бэкенде (LibreOffice).
-  if (['ppt', 'pptx', 'doc', 'rtf'].includes(ext)) return 'office'
-  if (['xlsx', 'xls', 'csv'].includes(ext)) return 'sheet'
-  if (['txt', 'md'].includes(ext)) return 'text'
-  return 'unsupported'
-}
 
 // docx-preview рисует вставленные картинки как <div style="width:...pt;height:...pt">
 // с <img> внутри, а обрезку (Word crop) — через clip-path (в %) + transform:scale()
@@ -73,7 +60,6 @@ export function useDocumentLoader() {
   const loading = ref(false)
   const errorMsg = ref('')
   const docxContainer = ref<HTMLElement | null>(null)
-  const sheetHtml = ref('')
   const textContent = ref('')
   const convertedPdfUrl = ref('')
   // Токен загрузки: быстрое переключение между двумя файлами раньше давало
@@ -84,7 +70,6 @@ export function useDocumentLoader() {
   const load = async (file: DocFile | null | undefined) => {
     const seq = ++loadSeq
     errorMsg.value = ''
-    sheetHtml.value = ''
     textContent.value = ''
     convertedPdfUrl.value = ''
     if (!file) return
@@ -126,8 +111,8 @@ export function useDocumentLoader() {
           const isMobile = window.innerWidth <= 768
           await renderAsync(blob, docxContainer.value, undefined, { className: 'docx-view', inWrapper: false, ignoreWidth: isMobile, ignoreHeight: isMobile })
           // docx-preview рендерит содержимое документа императивно и без
-          // санитизации (в отличие от xlsx-ветки ниже) — прогоняем результат
-          // через DOMPurify, чтобы вредоносный .docx не внедрил скрипт.
+          // санитизации — прогоняем результат через DOMPurify, чтобы
+          // вредоносный .docx не внедрил скрипт.
           // src добавляем в разрешённые атрибуты: docx-preview вставляет
           // встроенные картинки как <img src="blob:..."> через createObjectURL
           // (см. useFileUrl / previewPdf для тех же blob-URL), без него
@@ -139,7 +124,7 @@ export function useDocumentLoader() {
             const sanitized = DOMPurify.sanitize(docxContainer.value.innerHTML, {
               ADD_ATTR: ['style', 'src'],
               ADD_URI_SAFE_ATTR: ['src'],
-              ALLOWED_URI_REGEXP: /^(?:(?:https?|blob|data|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+              ALLOWED_URI_REGEXP: /^(?:(?:https?|blob|data|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
             })
             docxContainer.value.innerHTML = sanitized
           } catch {}
@@ -153,17 +138,6 @@ export function useDocumentLoader() {
           await nextTick()
           fitDocxDrawings(docxContainer.value)
         }
-      } else if (k === 'sheet') {
-        const buf = await res.arrayBuffer()
-        if (seq !== loadSeq) return
-        const XLSX = await import('xlsx')
-        const wb = XLSX.read(buf, { type: 'array' })
-        const sheetName = wb.SheetNames[0]
-        const sheet = wb.Sheets[sheetName]
-        const { default: DOMPurify } = await import('dompurify')
-        const html = DOMPurify.sanitize(XLSX.utils.sheet_to_html(sheet, { editable: false }))
-        if (seq !== loadSeq) return
-        sheetHtml.value = html
       } else if (k === 'text') {
         const text = await res.text()
         if (seq !== loadSeq) return
@@ -177,5 +151,5 @@ export function useDocumentLoader() {
     }
   }
 
-  return { loading, errorMsg, docxContainer, sheetHtml, textContent, convertedPdfUrl, load }
+  return { loading, errorMsg, docxContainer, textContent, convertedPdfUrl, load }
 }

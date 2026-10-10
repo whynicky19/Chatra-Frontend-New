@@ -27,7 +27,6 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const report = (err: any, info?: string) => {
     if (isChunkError(err)) { reloadOnce(); return }
-    // eslint-disable-next-line no-console
     console.error('[app-error]', info || '', err)
     try { useToastStore().err(String(err?.message || err).slice(0, 200)) } catch {}
   }

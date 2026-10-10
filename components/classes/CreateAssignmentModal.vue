@@ -1,6 +1,5 @@
 <template>
-  <div class="overlay" @click.self="$emit('close')">
-    <div class="modal">
+  <AppDialog overlay-class="overlay" panel-class="modal" labelledby="create-assignment-title" describedby="create-assignment-subtitle" :busy="saving" @close="$emit('close')">
       <div class="sheet-grabber"></div>
 
       <div class="modal-head">
@@ -10,8 +9,8 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </div>
           <div class="modal-head-txt">
-            <div class="modal-title">Новое задание</div>
-            <div class="modal-sub">Заполните данные задания</div>
+            <div id="create-assignment-title" class="modal-title">Новое задание</div>
+            <div id="create-assignment-subtitle" class="modal-sub">Заполните данные задания</div>
           </div>
         </div>
         <button class="modal-close" aria-label="Закрыть" :disabled="saving" @click="saving || $emit('close')">
@@ -32,7 +31,7 @@
 
         <div class="field">
           <label class="field-label">Прикрепить файлы к заданию</label>
-          <div class="file-drop" :class="{ dragging: drag, 'has-file': taskFiles.length }" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDropFiles" @click="taskFileInput?.click()">
+          <div class="file-drop" :class="{ dragging: drag, 'has-file': taskFiles.length }" role="button" tabindex="0" aria-label="Выбрать файлы задания" @dragover.prevent="drag=true" @dragleave="drag=false" @drop.prevent="onDropFiles" @click="taskFileInput?.click()" @keydown.enter.self="taskFileInput?.click()" @keydown.space.self.prevent="taskFileInput?.click()">
             <input type="file" style="display:none" ref="taskFileInput" multiple :accept="ACCEPT_ATTR" @change="onPickFiles" />
             <div class="drop-ico">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -83,8 +82,10 @@
 
           <!-- Зона загрузки (всегда видна — можно добавлять ещё) -->
           <div class="file-drop" :class="{ dragging: dragRef, 'has-file': refFiles.length }"
+               role="button" tabindex="0" aria-label="Выбрать файлы эталонного решения"
                @dragover.prevent="dragRef=true" @dragleave="dragRef=false"
-               @drop.prevent="onDropRef" @click="refFileInput?.click()">
+               @drop.prevent="onDropRef" @click="refFileInput?.click()"
+               @keydown.enter.self="refFileInput?.click()" @keydown.space.self.prevent="refFileInput?.click()">
             <input type="file" style="display:none" ref="refFileInput" multiple :accept="ACCEPT_ATTR" @change="onPickRef" />
             <div class="drop-ico">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -146,8 +147,7 @@
           Создать задание
         </button>
       </div>
-    </div>
-  </div>
+  </AppDialog>
 </template>
 
 <script setup lang="ts">
@@ -328,7 +328,7 @@ const submit = async () => {
 /* Та же ступень поверхностей, что и на странице задания: белые «шасси»
    шапки и подвала, утопленное тело формы и белые карточки полей внутри —
    как в сгруппированных формах iOS. */
-.modal {
+:deep(.modal) {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl);
   padding: 0; width: 100%; max-width: 880px; max-height: 94vh;
   display: flex; flex-direction: column; box-shadow: var(--sh-lg); overflow: hidden;
@@ -519,7 +519,7 @@ const submit = async () => {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width:768px) {
-  .modal { max-width: 100%; max-height: 96dvh; border: none; border-radius: 28px 28px 0 0; padding: 0; }
+  :deep(.modal) { max-width: 100%; max-height: 96dvh; border: none; border-radius: 28px 28px 0 0; padding: 0; }
   .modal::before { display: none; }
   .sheet-grabber { display: block; width: 36px; height: 5px; border-radius: 3px; background: var(--surface3); margin: 8px auto 0; flex-shrink: 0; }
   .modal-head { padding: 12px 16px 14px; }

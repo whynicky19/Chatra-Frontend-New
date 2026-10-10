@@ -137,7 +137,9 @@
                 <div class="es-p">{{ isTeacher ? t('class.no_lectures_teacher') : t('class.no_lectures_student') }}</div>
               </div>
               <div v-else class="items-list">
-                <div v-for="p in lectures" :key="p.id" class="item-row" @click="router.push(`/classes/${classId}/lecture/${p.id}`)">
+                <div v-for="p in lectures" :key="p.id" class="item-row" role="link" tabindex="0"
+                     @click="router.push(`/classes/${classId}/lecture/${p.id}`)"
+                     @keydown.enter="router.push(`/classes/${classId}/lecture/${p.id}`)">
                   <div class="item-body">
                     <div class="item-title">{{ cleanTitle(p.title) }}</div>
                     <div class="item-desc">{{ getPreview(p) }}</div>
@@ -166,7 +168,8 @@
                   <div class="es-p">{{ isTeacher ? t('class.no_assignments_teacher') : t('class.no_assignments_student') }}</div>
                 </div>
                 <div v-else class="items-list">
-                  <div v-for="a in assignments" :key="a.id" class="item-row assignment-item" @click="goAssignment(a)">
+                  <div v-for="a in assignments" :key="a.id" class="item-row assignment-item" role="link" tabindex="0"
+                       @click="goAssignment(a)" @keydown.enter="goAssignment(a)">
                     <div class="item-body">
                       <div class="item-row-top">
                         <div class="item-title">{{ a.title }}</div>
@@ -322,10 +325,9 @@
          entry point to rotation settings. Single gear button on the cover
          opens this instead of crowding the cover with separate buttons. -->
     <Transition name="modal">
-    <div v-if="showClassInfo" class="overlay" @click.self="showClassInfo=false">
-      <div class="modal class-info-modal" style="max-width:540px;width:100%">
+    <AppDialog v-if="showClassInfo" overlay-class="overlay" :panel-class="['modal', 'class-info-modal']" panel-style="max-width:540px;width:100%" labelledby="class-info-title" @close="showClassInfo=false">
         <div class="modal-head">
-          <span class="modal-title">{{ t('cohort.settings') }}</span>
+          <span id="class-info-title" class="modal-title">{{ t('cohort.settings') }}</span>
           <button class="btn btn-icon btn-ghost" @click="showClassInfo=false">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -382,21 +384,19 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
-      </div>
-    </div>
+    </AppDialog>
     </Transition>
 
     <!-- Вложенный экран «Задания и дедлайны» — рендерится в том же overlay, что
          и class-info-modal, чтобы шапка с кнопкой «назад» оставалась на месте,
          а не прыгала. Открывается только по ссылке внутри class-info. -->
     <Transition name="modal">
-    <div v-if="showClassInfo && showDeadlines" class="overlay" @click.self="closeDeadlines">
-      <div class="modal class-info-modal" style="max-width:760px;width:100%">
+    <AppDialog v-if="showClassInfo && showDeadlines" overlay-class="overlay" :panel-class="['modal', 'class-info-modal']" panel-style="max-width:760px;width:100%" labelledby="class-deadlines-title" @close="closeDeadlines">
         <div class="modal-head">
           <button class="ci-back-btn" @click="closeDeadlines" :title="t('general.back')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <span class="modal-title">{{ t('cohort.deadlines_title') }}</span>
+          <span id="class-deadlines-title" class="modal-title">{{ t('cohort.deadlines_title') }}</span>
           <button class="btn btn-icon btn-ghost" @click="showClassInfo=false; closeDeadlines()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -486,16 +486,14 @@
             </div>
           </template>
         </div>
-      </div>
-    </div>
+    </AppDialog>
     </Transition>
 
     <!-- Class settings (rotation mode) — owner/admin -->
     <Transition name="modal">
-    <div v-if="showSettings" class="overlay" @click.self="showSettings=false">
-      <div class="modal" style="max-width:540px;width:100%">
+    <AppDialog v-if="showSettings" overlay-class="overlay" panel-class="modal" panel-style="max-width:540px;width:100%" labelledby="rotation-settings-title" @close="showSettings=false">
         <div class="modal-head">
-          <span class="modal-title">{{ t('cohort.rotation_title') }}</span>
+          <span id="rotation-settings-title" class="modal-title">{{ t('cohort.rotation_title') }}</span>
           <button class="btn btn-icon btn-ghost" @click="showSettings=false">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -518,15 +516,13 @@
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </AppDialog>
     </Transition>
 
     <Transition name="modal">
-    <div v-if="editingPost" class="overlay" @click.self="editingPost=null">
-      <div class="modal" style="max-width:520px;width:100%">
+    <AppDialog v-if="editingPost" overlay-class="overlay" panel-class="modal" panel-style="max-width:520px;width:100%" labelledby="edit-lecture-title" @close="editingPost=null">
         <div class="modal-head">
-          <span class="modal-title">{{ lang==='ru' ? 'Редактировать лекцию' : 'Edit Lecture' }}</span>
+          <span id="edit-lecture-title" class="modal-title">{{ lang==='ru' ? 'Редактировать лекцию' : 'Edit Lecture' }}</span>
           <button class="btn btn-icon btn-ghost" @click="editingPost=null">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -573,15 +569,13 @@
             <span v-else>{{ t('general.save') }}</span>
           </button>
         </div>
-      </div>
-    </div>
+    </AppDialog>
     </Transition>
 
     <Transition name="modal">
-    <div v-if="editingAssignment" class="overlay" @click.self="editingAssignment=null">
-      <div class="modal" style="max-width:520px;width:100%">
+    <AppDialog v-if="editingAssignment" overlay-class="overlay" panel-class="modal" panel-style="max-width:520px;width:100%" labelledby="edit-assignment-title" @close="editingAssignment=null">
         <div class="modal-head">
-          <span class="modal-title">{{ lang==='ru'?'Редактировать задание':'Edit Assignment' }}</span>
+          <span id="edit-assignment-title" class="modal-title">{{ lang==='ru'?'Редактировать задание':'Edit Assignment' }}</span>
           <button class="btn btn-icon btn-ghost" @click="editingAssignment=null">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -666,8 +660,7 @@
             <span v-else>{{ t('general.save') }}</span>
           </button>
         </div>
-      </div>
-    </div>
+    </AppDialog>
     </Transition>
   </div>
 </template>

@@ -1,11 +1,10 @@
 <template>
   <Transition name="modal">
-    <div v-if="userId" class="overlay" @click.self="$emit('close')">
-      <div class="modal user-modal">
+    <AppDialog v-if="userId" overlay-class="overlay" :panel-class="['modal', 'user-modal']" labelledby="admin-user-dialog-title" :busy="busy" @close="$emit('close')">
         <header class="u-head">
           <span class="u-avatar" :style="{ background: avatarColor(userId) }">{{ initials(name) }}</span>
           <div class="u-id">
-            <h2 class="u-name">{{ name }}</h2>
+            <h2 id="admin-user-dialog-title" class="u-name">{{ name }}</h2>
             <a class="u-email" :href="`mailto:${row?.email}`">{{ row?.email }}</a>
           </div>
           <button class="btn btn-icon btn-ghost u-close" @click="$emit('close')">
@@ -177,8 +176,7 @@
 
           <p v-else class="u-empty">Не удалось загрузить карточку</p>
         </div>
-      </div>
-    </div>
+    </AppDialog>
   </Transition>
 </template>
 
@@ -240,12 +238,12 @@ watch(() => [props.row?.role, props.row?.is_active, props.row?.ai_unlimited], ()
 </script>
 
 <style scoped>
-.user-modal{
+:deep(.user-modal){
   --s-chat:#00B1C9;--s-grade:#AF52DE;--s-cover:#FF9500;--s-title:#FF2D55;--s-other:#8E8E93;
   max-width:520px;width:100%;padding:0;overflow:hidden;display:flex;flex-direction:column;
   max-height:calc(100vh - 64px);border-radius:var(--r-2xl)
 }
-html.dark .user-modal{--s-chat:#1ba4b9;--s-grade:#9d41ca;--s-cover:#d17a05;--s-title:#d31e43}
+:global(html.dark) :deep(.user-modal){--s-chat:#1ba4b9;--s-grade:#9d41ca;--s-cover:#d17a05;--s-title:#d31e43}
 
 .u-head{display:flex;align-items:center;gap:14px;padding:20px 20px 12px;flex-shrink:0}
 .u-avatar{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:800;letter-spacing:.02em;flex-shrink:0}
@@ -336,7 +334,7 @@ html.dark .chip-warn{color:#FF9F0A}
 .center-loading{display:flex;justify-content:center;padding:40px}
 
 @media (max-width:768px){
-  .user-modal{max-width:none;max-height:92vh}
+  :deep(.user-modal){max-width:none;max-height:92vh}
   .u-tiles{grid-template-columns:1fr 1fr}
   .facts{grid-template-columns:1fr 1fr}
   .kind{grid-template-columns:9px 1fr auto;gap:8px}

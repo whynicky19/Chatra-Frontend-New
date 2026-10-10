@@ -46,8 +46,6 @@
         <img :src="file?.url" class="dvs-image" :alt="file?.name" @error="onImgError" />
       </div>
 
-      <div v-else-if="kind === 'sheet'" ref="sheetEl" class="dvs-sheet" v-html="sheetHtml"></div>
-
       <pre v-else-if="kind === 'text'" ref="textEl" class="dvs-text">{{ textContent }}</pre>
 
       <div v-else class="dvs-state dvs-error">
@@ -127,7 +125,7 @@ const router = useRouter()
 const rootEl = ref<HTMLElement | null>(null)
 const { toggleFullscreen } = useFullscreen(rootEl)
 
-const { loading, errorMsg, docxContainer, sheetHtml, textContent, convertedPdfUrl, load } = useDocumentLoader()
+const { loading, errorMsg, docxContainer, textContent, convertedPdfUrl, load } = useDocumentLoader()
 
 const kind = computed(() => kindOf(props.file?.name))
 const isPaged = computed(() => kind.value === 'pdf' || kind.value === 'office')
@@ -146,10 +144,9 @@ const isLoading = computed(() => loading.value || pdfLoading.value)
 /* ── Состояние выделений ───────────────────────────────────────────────── */
 
 const highlights = useHighlights()
-const sheetEl = ref<HTMLElement | null>(null)
 const textEl = ref<HTMLElement | null>(null)
 // Поверхность — то, внутри чего живёт текст: страница PDF (текстовый слой),
-// контейнер docx, таблица или plain text. Смещения выделения считаются
+// контейнер docx или plain text. Смещения выделения считаются
 // относительно неё.
 const surfaceEl = ref<HTMLElement | null>(null)
 const showPanel = ref(false)
@@ -278,7 +275,6 @@ watch([isLoading, kind, () => props.file?.url], () => {
   if (!props.context || isPaged.value) return
   nextTick(() => {
     surfaceEl.value = kind.value === 'docx' ? docxContainer.value
-      : kind.value === 'sheet' ? sheetEl.value
       : kind.value === 'text' ? textEl.value
       : null
     fitDocxPage()
@@ -643,9 +639,6 @@ onUnmounted(() => {
 .dvs-docx :deep(section), .dvs-docx :deep(article), .dvs-docx :deep(p), .dvs-docx :deep(span), .dvs-docx :deep(h1), .dvs-docx :deep(h2), .dvs-docx :deep(h3), .dvs-docx :deep(h4), .dvs-docx :deep(li), .dvs-docx :deep(td), .dvs-docx :deep(th) { color: inherit; }
 .dvs-docx > :deep(*) { margin-left: auto; margin-right: auto; }
 
-.dvs-sheet { width: 100%; padding: 20px; overflow: auto; }
-.dvs-sheet :deep(table) { border-collapse: collapse; font-size: 13px; margin: 0 auto; }
-.dvs-sheet :deep(td), .dvs-sheet :deep(th) { border: 1px solid var(--border); padding: 4px 8px; white-space: nowrap; }
 
 .dvs-text {
   width: 100%; max-width: 860px; margin: 0 auto; padding: 24px;

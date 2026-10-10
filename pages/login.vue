@@ -15,20 +15,20 @@
     <p class="auth-sub">{{ t('login.sub') }}</p>
     <form @submit.prevent="sub" class="auth-form">
       <div class="frow">
-        <label class="flabel">Email</label>
-        <input v-model="email" type="email" class="input" :class="{'input-err':errorMsg}" placeholder="you@example.com" required autocomplete="email" @input="errorMsg=''"/>
+        <label class="flabel" for="login-email">Email</label>
+        <input id="login-email" v-model="email" type="email" class="input" :class="{'input-err':errorMsg}" placeholder="you@example.com" required autocomplete="email" :aria-invalid="!!errorMsg" :aria-describedby="errorMsg ? 'login-error' : undefined" @input="errorMsg=''"/>
       </div>
       <div class="frow">
-        <label class="flabel">{{ t('login.password') }}</label>
+        <label class="flabel" for="login-password">{{ t('login.password') }}</label>
         <div style="position:relative">
-          <input v-model="pw" :type="show?'text':'password'" class="input" :class="{'input-err':errorMsg}" placeholder="••••••••" required style="padding-right:42px" @input="errorMsg=''"/>
-          <button type="button" @click="show=!show" class="pw-eye">
+          <input id="login-password" v-model="pw" :type="show?'text':'password'" class="input" :class="{'input-err':errorMsg}" placeholder="••••••••" required autocomplete="current-password" style="padding-right:42px" :aria-invalid="!!errorMsg" :aria-describedby="errorMsg ? 'login-error' : undefined" @input="errorMsg=''"/>
+          <button type="button" @click="show=!show" class="pw-eye" :aria-label="passwordToggleLabel" :title="passwordToggleLabel" :aria-pressed="show">
             <svg v-if="!show" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           </button>
         </div>
       </div>
-      <div v-if="errorMsg" class="login-error">
+      <div v-if="errorMsg" id="login-error" class="login-error" role="alert">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         {{ errorMsg }}
       </div>
@@ -44,7 +44,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { navigateTo } from '#app'
 import { useAuth } from '~/composables/useAuth'
 import { useI18n } from '~/composables/useI18n'
@@ -54,6 +54,9 @@ const { login } = useAuth()
 const { t, lang } = useI18n()
 const org = useOrgStore()
 const email = ref(''); const pw = ref(''); const show = ref(false); const loading = ref(false); const errorMsg = ref('')
+const passwordToggleLabel = computed(() => show.value
+  ? (lang.value === 'ru' ? 'Скрыть пароль' : lang.value === 'kk' ? 'Құпиясөзді жасыру' : 'Hide password')
+  : (lang.value === 'ru' ? 'Показать пароль' : lang.value === 'kk' ? 'Құпиясөзді көрсету' : 'Show password'))
 const switchOrg = () => { org.clear(); if (import.meta.client) window.location.href = '/org' }
 const sub = async () => {
   errorMsg.value = ''

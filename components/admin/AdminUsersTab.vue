@@ -82,10 +82,9 @@
                      @block="doBlock" @unblock="doUnblock" @remove="doDelete"/>
 
     <Transition name="modal">
-      <div v-if="showCreate" class="overlay" @click.self="showCreate = false">
-        <div class="modal">
+      <AppDialog v-if="showCreate" overlay-class="overlay" panel-class="modal" labelledby="admin-create-user-title" :busy="creating" @close="showCreate = false">
           <div class="modal-head">
-            <span class="modal-title">Создать пользователя</span>
+            <span id="admin-create-user-title" class="modal-title">Создать пользователя</span>
             <button class="btn btn-icon btn-ghost" @click="showCreate = false">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
@@ -105,8 +104,7 @@
               <div v-if="creating" class="spinner spinner-btn"></div><span v-else>Создать</span>
             </button>
           </div>
-        </div>
-      </div>
+      </AppDialog>
     </Transition>
   </div>
 </template>

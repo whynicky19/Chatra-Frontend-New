@@ -1,14 +1,13 @@
 <template>
   <Transition name="modal">
-    <div v-if="classId" class="overlay" @click.self="$emit('close')">
-      <div class="modal cl-modal">
+    <AppDialog v-if="classId" overlay-class="overlay" :panel-class="['modal', 'cl-modal']" labelledby="admin-class-dialog-title" @close="$emit('close')">
         <header class="cl-cover" :style="coverFallback">
           <SubjectCover :src="detail?.cover_image || card?.cover_thumbnail" :icon="detail?.cover_icon || card?.cover_icon" :cover-source="detail?.cover_source || card?.cover_source"
                         :color="detail?.cover_color || card?.cover_color" :size="70" class="cl-cover-art"/>
           <button class="btn btn-icon cl-close" @click="$emit('close')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
-          <h2 class="cl-title">{{ detail?.name || card?.name }}</h2>
+          <h2 id="admin-class-dialog-title" class="cl-title">{{ detail?.name || card?.name }}</h2>
           <div class="cl-sub">
             <span v-if="detail?.creator">{{ detail.creator.full_name || detail.creator.email }}</span>
             <template v-if="detail?.created_at"><span class="dot">·</span><span>создан {{ fmtDateLong(detail.created_at) }}</span></template>
@@ -151,8 +150,7 @@
 
           <p v-else class="empty-line">Не удалось загрузить карточку предмета</p>
         </div>
-      </div>
-    </div>
+    </AppDialog>
   </Transition>
 </template>
 
@@ -251,12 +249,12 @@ const copyCode = async () => {
 </script>
 
 <style scoped>
-.cl-modal{
+:deep(.cl-modal){
   --s-chat:#00B1C9;--s-grade:#AF52DE;--s-cover:#FF9500;--s-title:#FF2D55;--s-other:#8E8E93;
   max-width:640px;width:100%;padding:0;overflow:hidden;display:flex;flex-direction:column;
   max-height:calc(100vh - 64px);border-radius:var(--r-2xl)
 }
-html.dark .cl-modal{--s-chat:#1ba4b9;--s-grade:#9d41ca;--s-cover:#d17a05;--s-title:#d31e43}
+:global(html.dark) :deep(.cl-modal){--s-chat:#1ba4b9;--s-grade:#9d41ca;--s-cover:#d17a05;--s-title:#d31e43}
 
 .cl-cover{position:relative;height:170px;flex-shrink:0;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:18px 22px}
 .cl-cover-art{position:absolute;inset:0;z-index:0}
@@ -329,7 +327,7 @@ html.dark .cl-modal{--s-chat:#1ba4b9;--s-grade:#9d41ca;--s-cover:#d17a05;--s-tit
 .spinner-btn{width:12px;height:12px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff}
 
 @media (max-width:768px){
-  .cl-modal{max-width:none;max-height:92vh}
+  :deep(.cl-modal){max-width:none;max-height:92vh}
   .cl-cover{height:150px;padding:16px}
   .cl-title{font-size:19px}
   .cl-body{padding:0 16px 18px}

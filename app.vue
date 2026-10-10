@@ -9,6 +9,7 @@ import { onMounted } from 'vue'
 import { setI18nLang } from '~/composables/useI18n'
 // Тема применяется до первой отрисовки, иначе моргает светлый фон.
 useHead({
+  htmlAttrs: { lang: 'ru' },
   script: [
     {
       innerHTML: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}})();`,
@@ -27,5 +28,4 @@ onMounted(() => {
   }
 })
 </script>
-
 

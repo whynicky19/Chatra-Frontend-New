@@ -31,14 +31,12 @@ let persistScope: ReturnType<typeof effectScope> | null = null
 
 const CACHE_KEY = (uid: string) => `_annotations_${uid}`
 
-// Профиль (auth.user) подтягивается асинхронно уже после первого рендера
-// страницы, поэтому на нём одном ключ кэша строить нельзя: он успел бы
-// записаться под «анонимным» ключом. sub из сохранённого токена доступен сразу.
-const uidFromToken = (): string | null => {
+// The access token exists only in memory; its subject bridges the brief period
+// between cookie-session restoration and the profile response.
+const uidFromToken = (token: string | null): string | null => {
   try {
-    const tk = localStorage.getItem('_tk')
-    if (!tk) return null
-    const payload = JSON.parse(atob(tk.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+    if (!token) return null
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
     return payload?.sub != null ? String(payload.sub) : null
   } catch { return null }
 }
@@ -64,8 +62,8 @@ export const useHighlights = () => {
   // auth.user подтягивается асинхронно (fetchMe в plugin), и если на момент
   // первого вызова useHighlights() он ещё null, придётся подождать. Иначе
   // кэш уйдёт в _annotations_anon, и под реальным uid прочитается пустота.
-  // uidFromToken() доступен сразу из _tk в localStorage.
-  const tokenUid = uidFromToken()
+  // uidFromToken() доступен сразу после cookie refresh, до ответа /me.
+  const tokenUid = uidFromToken(auth.token)
   const uid = import.meta.client
     ? String(auth.user?.id ?? tokenUid ?? 'anon')
     : 'anon'

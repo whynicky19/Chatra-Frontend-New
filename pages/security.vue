@@ -44,11 +44,10 @@
         <button class="deactivate-btn" @click="openDelete">{{ t('settings.delete_title') }}</button>
       </div>
 
-      <div v-if="showDelete" class="modal-overlay" @click.self="showDelete=false">
-        <div class="modal-card anim-scale">
+      <AppDialog v-if="showDelete" overlay-class="modal-overlay" :panel-class="['modal-card', 'anim-scale']" role="alertdialog" labelledby="delete-account-title" describedby="delete-account-warning" :busy="deleting" @close="showDelete=false">
           <div class="modal-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-          <h3 class="modal-title">{{ t('settings.delete_title') }}</h3>
-          <p class="modal-warning">{{ t('settings.delete_warning') }}</p>
+          <h3 id="delete-account-title" class="modal-title">{{ t('settings.delete_title') }}</h3>
+          <p id="delete-account-warning" class="modal-warning">{{ t('settings.delete_warning') }}</p>
           <input v-model="deletePw" type="password" class="input modal-input" :placeholder="t('settings.delete_confirm_pw')" @input="delErr=''"/>
           <div v-if="delErr" class="pw-err" style="text-align:center">{{ delErr }}</div>
           <div class="modal-actions">
@@ -58,8 +57,7 @@
               <span v-else>{{ t('settings.delete_confirm_btn') }}</span>
             </button>
           </div>
-        </div>
-      </div>
+      </AppDialog>
     </div>
   </div>
 </template>
@@ -134,7 +132,7 @@ html.dark .field-input{background:var(--surface2)!important}
 .deactivate-btn{color:var(--red);font-size:14px;font-weight:600;background:none;border:none;cursor:pointer;flex-shrink:0}
 .deactivate-btn:hover{opacity:.7}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
-.modal-card{background:var(--surface);border-radius:22px;padding:28px 26px;width:100%;max-width:400px;box-shadow:var(--sh-md);text-align:center}
+:deep(.modal-card){background:var(--surface);border-radius:22px;padding:28px 26px;width:100%;max-width:400px;box-shadow:var(--sh-md);text-align:center}
 .modal-icon{width:52px;height:52px;border-radius:50%;background:var(--red-l);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
 .modal-title{font-size:19px;font-weight:800;color:var(--text1);margin-bottom:8px}
 .modal-warning{font-size:13.5px;color:var(--text3);line-height:1.45;margin-bottom:18px}

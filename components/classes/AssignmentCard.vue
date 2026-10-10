@@ -1,5 +1,8 @@
 <template>
-  <div class="asgn-card" @click="$emit('open', assignment)">
+  <div class="asgn-card" role="button" tabindex="0"
+       @click="$emit('open', assignment)"
+       @keydown.enter="$emit('open', assignment)"
+       @keydown.space.prevent="$emit('open', assignment)">
     <div class="asgn-accent" :class="accentClass"></div>
 
     <div class="asgn-ico-wrap" :class="icoClass">

@@ -60,10 +60,10 @@
                 <SubjectCover :src="cls.cover_thumbnail || cls.cover_image" :icon="cls.cover_icon"
                               :color="cls.cover_color" :cover-source="cls.cover_source"
                               :size="78" class="card-cover-art"/>
-                <div v-if="canManage(cls) && cls.invite_code" class="card-code-chip" @click.stop="copyClassCode(cls)">
+                <button v-if="canManage(cls) && cls.invite_code" type="button" class="card-code-chip" :aria-label="`Copy code ${cls.invite_code}`" @click.stop="copyClassCode(cls)">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                   {{ cls.invite_code }}
-                </div>
+                </button>
                 <button v-if="canManage(cls)" class="card-edit-btn" @click.stop="openEditClass(cls)" title="Редактировать">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
@@ -131,10 +131,9 @@
     </Transition>
 
     <Transition name="modal">
-    <div v-if="editingClass" class="overlay" @click.self="editingClass=null">
-      <div class="modal edit-class-modal">
+    <AppDialog v-if="editingClass" overlay-class="overlay" :panel-class="['modal', 'edit-class-modal']" labelledby="edit-class-title" @close="editingClass=null">
         <div class="modal-head">
-          <span class="modal-title">{{ lang==='ru' ? 'Редактировать предмет' : lang==='kk' ? 'Пәнді өңдеу' : 'Edit Subject' }}</span>
+          <span id="edit-class-title" class="modal-title">{{ lang==='ru' ? 'Редактировать предмет' : lang==='kk' ? 'Пәнді өңдеу' : 'Edit Subject' }}</span>
           <button class="btn btn-icon btn-ghost" @click="editingClass=null">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -171,15 +170,13 @@
             <span v-else>{{ t('general.save') }}</span>
           </button>
         </div>
-      </div>
-    </div>
+    </AppDialog>
     </Transition>
 
     <Transition name="modal">
-    <div v-if="showJoin" class="overlay" @click.self="showJoin=false">
-      <div class="modal join-modal">
+    <AppDialog v-if="showJoin" overlay-class="overlay" :panel-class="['modal', 'join-modal']" labelledby="join-class-title" @close="showJoin=false">
         <div class="modal-head">
-          <span class="modal-title">{{ t('classes.join_title') }}</span>
+          <span id="join-class-title" class="modal-title">{{ t('classes.join_title') }}</span>
           <button class="btn btn-icon btn-ghost" @click="showJoin=false">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -212,15 +209,13 @@
             <span v-else>{{ t('classes.join') }}</span>
           </button>
         </div>
-      </div>
-    </div>
+    </AppDialog>
     </Transition>
 
     <Transition name="modal">
-    <div v-if="deletingClass" class="overlay" @click.self="deletingClass=null">
-      <div class="modal" style="max-width:400px">
+    <AppDialog v-if="deletingClass" overlay-class="overlay" panel-class="modal" panel-style="max-width:400px" role="alertdialog" labelledby="delete-class-title" @close="deletingClass=null">
         <div class="modal-head">
-          <span class="modal-title">{{ t('classes.delete_title') }}</span>
+          <span id="delete-class-title" class="modal-title">{{ t('classes.delete_title') }}</span>
           <button class="btn btn-icon btn-ghost" @click="deletingClass=null">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -236,15 +231,13 @@
             <span v-else>{{ t('classes.delete') }}</span>
           </button>
         </div>
-      </div>
-    </div>
+    </AppDialog>
     </Transition>
 
     <Transition name="modal">
-    <div v-if="leavingClass" class="overlay" @click.self="leavingClass=null">
-      <div class="modal" style="max-width:400px">
+    <AppDialog v-if="leavingClass" overlay-class="overlay" panel-class="modal" panel-style="max-width:400px" role="alertdialog" labelledby="leave-class-title" @close="leavingClass=null">
         <div class="modal-head">
-          <span class="modal-title">{{ t('classes.leave_title') }}</span>
+          <span id="leave-class-title" class="modal-title">{{ t('classes.leave_title') }}</span>
           <button class="btn btn-icon btn-ghost" @click="leavingClass=null">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -260,8 +253,7 @@
             <span v-else>{{ t('classes.leave_btn') }}</span>
           </button>
         </div>
-      </div>
-    </div>
+    </AppDialog>
     </Transition>
   </div>
 </template>
@@ -697,7 +689,7 @@ watch(() => auth.user?.id, async (newId) => {
 .card-cover-art{position:absolute;inset:0}
 .card-cover :deep(.sc-img){transition:transform .42s cubic-bezier(.22,1,.36,1)}
 .class-card:hover .card-cover :deep(.sc-img){transform:scale(1.025)}
-.card-code-chip{position:absolute;z-index:2;top:10px;left:10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;background:rgba(30,30,32,.58);color:#fff;padding:6px 10px;border-radius:999px;letter-spacing:.07em;-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.2);cursor:pointer;transition:background .15s,transform .15s;line-height:1}
+.card-code-chip{position:absolute;z-index:2;top:10px;left:10px;display:flex;align-items:center;gap:5px;font-family:inherit;font-size:11px;font-weight:700;background:rgba(30,30,32,.58);color:#fff;padding:6px 10px;border-radius:999px;letter-spacing:.07em;-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.2);cursor:pointer;transition:background .15s,transform .15s;line-height:1}
 .card-code-chip:hover{background:rgba(30,30,32,.75)}
 .card-code-chip:active{transform:scale(.96)}
 .card-code-chip svg{flex-shrink:0;display:block}
@@ -761,7 +753,7 @@ watch(() => auth.user?.id, async (newId) => {
 .es-sub{font-size:14px;color:var(--text4);max-width:300px;line-height:1.6}
 .es-btn{margin-top:8px}
 
-.edit-class-modal{max-width:480px;width:100%}
+:deep(.edit-class-modal){max-width:480px;width:100%}
 .edit-form{padding:4px 0 8px;display:flex;flex-direction:column;gap:16px}
 .edit-field{display:flex;flex-direction:column;gap:6px}
 .field-label{font-size:11px;font-weight:700;color:var(--text4);letter-spacing:.07em}
@@ -772,7 +764,7 @@ watch(() => auth.user?.id, async (newId) => {
 
 /* Join modal — нейтрально-серая подложка иконки (не заливаем весь модал
    акцентным цветом), сама иконка — фирменный тил сайта. */
-.join-modal{max-width:400px;width:100%;padding-top:4px}
+:deep(.join-modal){max-width:400px;width:100%;padding-top:4px}
 .join-icon-wrap{width:56px;height:56px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--teal);margin:2px auto 14px}
 .join-hint{font-size:13.5px;color:var(--text3);text-align:center;margin-bottom:22px;line-height:1.6;max-width:280px;margin-left:auto;margin-right:auto}
 .code-boxes{display:flex;gap:8px;justify-content:center;margin-bottom:12px}

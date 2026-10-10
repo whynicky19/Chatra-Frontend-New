@@ -1,9 +1,8 @@
 <template>
   <Transition name="modal">
-  <div v-if="previewFile" class="overlay" @click.self="closePreview">
-    <div class="fp-modal">
+  <AppDialog v-if="previewFile" overlay-class="overlay" panel-class="fp-modal" labelledby="file-preview-title" @close="closePreview">
       <div class="fp-head">
-        <div class="fp-title truncate">{{ previewFile.name }}</div>
+        <div id="file-preview-title" class="fp-title truncate">{{ previewFile.name }}</div>
         <div class="fp-actions">
           <button class="btn btn-white btn-sm" @click="download">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -41,8 +40,6 @@
 
         <iframe v-else-if="kind==='office'" :src="convertedPdfUrl" class="fp-iframe"></iframe>
 
-        <div v-else-if="kind==='sheet'" class="fp-sheet" v-html="sheetHtml"></div>
-
         <pre v-else-if="kind==='text'" class="fp-text">{{ textContent }}</pre>
 
         <div v-else class="fp-state fp-error">
@@ -50,8 +47,7 @@
           <button class="btn btn-teal btn-sm" @click="download">Скачать файл</button>
         </div>
       </div>
-    </div>
-  </div>
+  </AppDialog>
   </Transition>
 </template>
 
@@ -62,7 +58,7 @@ import { useDocumentLoader, kindOf } from '~/composables/useDocumentLoader'
 
 const { previewFile, closePreview } = useFilePreview()
 
-const { loading, errorMsg, docxContainer, sheetHtml, textContent, convertedPdfUrl, load } = useDocumentLoader()
+const { loading, errorMsg, docxContainer, textContent, convertedPdfUrl, load } = useDocumentLoader()
 
 const kind = computed(() => kindOf(previewFile.value?.name))
 
@@ -82,7 +78,7 @@ watch(() => previewFile.value?.url, (url) => { if (url) load(previewFile.value) 
    .fp-modal → .fp-body → <img> дочерний img задаёт min-content, и модал
    сжимается под реальную ширину картинки (180px), а не тянется на свои
    min(900px, 92vw). */
-.fp-modal{background:var(--surface);border-radius:var(--r-xl);width:min(900px,92vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--sh-lg);min-width:0}
+:deep(.fp-modal){background:var(--surface);border-radius:var(--r-xl);width:min(900px,92vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--sh-lg);min-width:0}
 .fp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
 .fp-title{font-size:14px;font-weight:700;color:var(--text1)}
 .fp-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
@@ -103,17 +99,14 @@ watch(() => previewFile.value?.url, (url) => { if (url) load(previewFile.value) 
    и принудительно красим текст в тёмный. */
 .fp-docx{flex:1;width:100%;padding:24px;background:#fff;color:#1C1C1E;overflow:auto}
 .fp-docx :deep(section),.fp-docx :deep(article),.fp-docx :deep(p),.fp-docx :deep(span),.fp-docx :deep(h1),.fp-docx :deep(h2),.fp-docx :deep(h3),.fp-docx :deep(h4),.fp-docx :deep(li),.fp-docx :deep(td),.fp-docx :deep(th){color:inherit}
-.fp-sheet{width:100%;padding:16px;overflow:auto}
-.fp-sheet :deep(table){border-collapse:collapse;font-size:13px}
-.fp-sheet :deep(td),.fp-sheet :deep(th){border:1px solid var(--border);padding:4px 8px;white-space:nowrap}
 .fp-text{width:100%;padding:20px;font-size:13px;line-height:1.6;color:var(--text1);white-space:pre-wrap;word-break:break-word;font-family:inherit}
 
 /* Mobile — тот же паттерн шторки снизу, что и у остальных модалок
    (.overlay уже получает padding:0/align-items:flex-end глобально из
    main.css, здесь адаптируем сам .fp-modal под .modal/.post-sheet). */
 @media (max-width: 768px) {
-  .fp-modal{width:100%;max-width:100%;max-height:92vh;max-height:92dvh;border-radius:28px 28px 0 0;padding-bottom:env(safe-area-inset-bottom, 0px)}
-  .fp-modal::before{content:'';display:block;width:36px;height:5px;border-radius:3px;background:var(--surface3);margin:10px auto 0;flex-shrink:0}
+  :deep(.fp-modal){width:100%;max-width:100%;max-height:92vh;max-height:92dvh;border-radius:28px 28px 0 0;padding-bottom:env(safe-area-inset-bottom, 0px)}
+  :deep(.fp-modal)::before{content:'';display:block;width:36px;height:5px;border-radius:3px;background:var(--surface3);margin:10px auto 0;flex-shrink:0}
   .fp-head{padding:10px 14px 12px}
   .fp-title{font-size:13px}
   .fp-actions .btn-sm{padding:8px 10px;font-size:12px;gap:4px}
@@ -129,6 +122,5 @@ watch(() => previewFile.value?.url, (url) => { if (url) load(previewFile.value) 
      clip-path/transform обрезки Word — здесь только таблицы, у них после
      ignoreWidth нет обёртки с transform, поэтому safe просто ограничить шириной. */
   .fp-docx :deep(table){max-width:100%;table-layout:fixed;word-break:break-word}
-  .fp-sheet{padding:10px}
 }
 </style>

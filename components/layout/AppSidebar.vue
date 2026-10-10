@@ -1,6 +1,6 @@
 <template>
   <aside :class="['sb', { collapsed: isCollapsed }]">
-    <div class="sb-logo" @click="toggleSidebar">
+    <button type="button" class="sb-logo" :aria-label="isCollapsed ? (lang === 'ru' ? 'Развернуть панель' : 'Expand sidebar') : (lang === 'ru' ? 'Свернуть панель' : 'Collapse sidebar')" @click="toggleSidebar">
       <template v-if="!isCollapsed">
         <span class="logo-img-new" role="img" aria-label="Chatra"></span>
         <span class="logo-name">Chatra</span>
@@ -11,7 +11,7 @@
       <template v-else>
         <span class="logo-img-collapsed" role="img" aria-label="Chatra"></span>
       </template>
-    </div>
+    </button>
 
     <nav class="sb-nav">
       <NuxtLink to="/" class="sb-item" :class="{active:route.path==='/'||route.path.startsWith('/classes')}">
@@ -43,10 +43,10 @@
       </NuxtLink>
     </nav>
 
-    <div v-if="!isCollapsed && !isMobile && !auth.fullname" class="fio-nudge" @click="$router.push('/settings')">
+    <button v-if="!isCollapsed && !isMobile && !auth.fullname" type="button" class="fio-nudge" @click="$router.push('/settings')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       <span>Укажите ваше ФИО в настройках</span>
-    </div>
+    </button>
 
     <div class="sb-bottom">
       <NuxtLink v-if="!isCollapsed && !isMobile" to="/settings" class="profile-card">
@@ -64,7 +64,7 @@
         </div>
         <span class="item-label" v-if="!isCollapsed || isMobile">{{ isDark ? (lang === 'ru' ? 'Светлая тема' : 'Light theme') : (lang === 'ru' ? 'Тёмная тема' : 'Dark theme') }}</span>
       </button>
-      <a href="https://t.me/whynickyy" target="_blank" class="sb-item help-item" :title="t('support.help_center')">
+      <a href="https://t.me/whynickyy" target="_blank" rel="noopener noreferrer" class="sb-item help-item" :title="t('support.help_center')">
         <div class="item-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
@@ -155,7 +155,7 @@ html.dark .sb{
   box-shadow:8px 0 24px rgba(0,0,0,.12)
 }
 .sb.collapsed{width:60px}
-.sb-logo{display:flex;align-items:center;gap:8px;padding:13px 10px 8px;cursor:pointer;flex-shrink:0;overflow:hidden;min-height:52px;-webkit-tap-highlight-color:transparent}
+.sb-logo{display:flex;align-items:center;gap:8px;width:100%;padding:13px 10px 8px;cursor:pointer;flex-shrink:0;overflow:hidden;min-height:52px;background:none;border:0;color:inherit;text-align:left;-webkit-tap-highlight-color:transparent}
 .logo-img-new{width:34px;height:34px;flex-shrink:0;background:linear-gradient(180deg,var(--teal),var(--teal-d));-webkit-mask:url('/logo-icon.png') center / contain no-repeat;mask:url('/logo-icon.png') center / contain no-repeat}
 /* Иконка-марка без надписи "CHATRA" (logo.png её содержит и при 30px
    превращалась в нечитаемое пятно текста) — logo-icon.png, тот же файл,
@@ -190,7 +190,7 @@ html.dark .sb{
 .help-item{color:var(--text4)}
 .logout-item{color:var(--text4)}
 .logout-item:hover{background:var(--red-l)!important;color:var(--red)!important}
-.fio-nudge{display:flex;align-items:center;gap:8px;margin:0 6px 8px;padding:10px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:var(--r-md);font-size:12px;font-weight:600;color:#b45309;cursor:pointer;transition:background .15s;}
+.fio-nudge{display:flex;align-items:center;gap:8px;margin:0 6px 8px;padding:10px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:var(--r-md);font:inherit;font-size:12px;font-weight:600;text-align:left;color:#b45309;cursor:pointer;transition:background .15s;}
 .fio-nudge:hover{background:rgba(245,158,11,.18);}
 /* Тёмная тема: #b45309 на затемнённом янтарном фоне даёт контраст ~3.4:1
    (ниже WCAG AA 4.5:1 для обычного текста) — светлее оттенок, как уже

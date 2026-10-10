@@ -80,6 +80,7 @@ export type AdminUserDetail = AdminUserRow & {
   classes: {
     id: number; name: string; role: 'creator' | 'member'
     cover_color: string | null; cover_icon: string | null; cover_thumbnail: string | null
+    cover_source: string | null
     total_tokens: number; request_count: number
   }[]
   activity: {
@@ -98,6 +99,7 @@ export type AdminClassDetail = {
   cover_thumbnail: string | null
   cover_color: string | null
   cover_icon: string | null
+  cover_source: string | null
   teacher: string | null
   creator: { id: number; full_name: string | null; email: string; role: string } | null
   members: {

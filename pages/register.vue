@@ -15,14 +15,14 @@
     <p class="auth-sub">{{ t('register.sub') }}</p>
     <form @submit.prevent="sub" class="auth-form">
       <div class="frow">
-        <label class="flabel">{{ t('register.fullname') }} <span style="color:var(--red)">*</span></label>
-        <input v-model="fullname" class="input" :placeholder="t('register.fullname_placeholder')" maxlength="80"/>
+        <label class="flabel" for="register-fullname">{{ t('register.fullname') }} <span aria-hidden="true" style="color:var(--red)">*</span></label>
+        <input id="register-fullname" v-model="fullname" class="input" :placeholder="t('register.fullname_placeholder')" maxlength="80" autocomplete="name" required/>
         <div v-if="fullname && fullname.trim().split(' ').filter(Boolean).length < 2" class="nick-hint err">{{ t('register.fullname_err') }}</div>
       </div>
 
       <div class="frow">
-        <label class="flabel">Email</label>
-        <input v-model="email" type="email" class="input" placeholder="you@example.com" @input="onEmailInput" @blur="emailTouched=true"/>
+        <label class="flabel" for="register-email">Email</label>
+        <input id="register-email" v-model="email" type="email" class="input" placeholder="you@example.com" autocomplete="email" required @input="onEmailInput" @blur="emailTouched=true"/>
         <div v-if="emailTouched && email" :class="['nick-hint', emailOk?'ok':'err']">
           <span v-if="!emailOk">{{ t('register.email_invalid') }}</span>
           <span v-else>{{ t('register.email_ok') }}</span>
@@ -31,10 +31,10 @@
       </div>
 
       <div class="frow">
-        <label class="flabel">{{ t('login.password') }}</label>
+        <label class="flabel" for="register-password">{{ t('login.password') }}</label>
         <div style="position:relative">
-          <input v-model="pw" :type="show?'text':'password'" class="input" :placeholder="t('register.pw_placeholder')" required minlength="8" style="padding-right:42px"/>
-          <button type="button" @click="show=!show" class="pw-eye" :title="show ? (lang==='ru'?'Скрыть пароль':'Hide password') : (lang==='ru'?'Показать пароль':'Show password')">
+          <input id="register-password" v-model="pw" :type="show?'text':'password'" class="input" :placeholder="t('register.pw_placeholder')" required minlength="8" autocomplete="new-password" style="padding-right:42px"/>
+          <button type="button" @click="show=!show" class="pw-eye" :aria-label="passwordToggleLabel" :title="passwordToggleLabel" :aria-pressed="show">
             <svg v-if="!show" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           </button>
@@ -74,6 +74,9 @@ const switchOrg = () => { org.clear(); if (import.meta.client) window.location.h
 const nick = ref(''); const fullname = ref(''); const email = ref(''); const pw = ref(''); const show = ref(false)
 const role = ref('student'); const loading = ref(false)
 const emailTouched = ref(false)
+const passwordToggleLabel = computed(() => show.value
+  ? (lang.value === 'ru' ? 'Скрыть пароль' : lang.value === 'kk' ? 'Құпиясөзді жасыру' : 'Hide password')
+  : (lang.value === 'ru' ? 'Показать пароль' : lang.value === 'kk' ? 'Құпиясөзді көрсету' : 'Show password'))
 
 // Любой корректный email — подтверждение всё равно идёт кодом на почту.
 const emailOk = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim()))
