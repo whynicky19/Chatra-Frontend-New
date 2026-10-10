@@ -1,63 +1,94 @@
-# Dependencies
+# Dependencies and package-manager caches
 node_modules/
-node_modules/
+.npm/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/install-state.gz
 
-# Nuxt build output
+# Nuxt/Vite/Nitro build output
+.nuxt/
+.output/
+.nitro/
+# `dist` may be a symlink to `.output/public`, so do not require a directory.
+dist
+.cache/
+.vite/
+*.tsbuildinfo
+# Legacy nested workspace output
 frontend_work/.nuxt/
 frontend_work/.output/
-frontend_work/.cache/
-
-# Generated files
 frontend_work/.nitro/
+frontend_work/.cache/
 frontend_work/dist/
 
-# Env files
+# Tests, coverage and local audits
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+blob-report/
+*.lcov
+_audit/
+*.qa.html
+
+# Environment and deployment-local state
 .env
 .env.*
 !.env.example
+.vercel/
+.netlify/
+.firebase/
 
-# Logs
+# Logs and temporary runtime files
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.pid
+*.seed
+*.swp
+*.swo
+*~
 
-# OS
-.DS_Store
-Thumbs.db
-
-# IDE
+# Editors and operating systems
 .idea/
 .vscode/
+.fleet/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
+.DS_Store
+Thumbs.db
+._*
+.Spotlight-V100/
+.Trashes/
 
-# Nuxt prepare
-frontend_work/.nuxt
+# Private keys and local certificates
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
 
-.nuxt
-dist
-node_modules
-.output
-.env
+# Accidental local Python environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
 
-
-
+# Local AI/agent tooling
 .agents/
 .claude/
-.claude/skills/
-
-
+.codex/
 skills.json
 skills-lock.json
 skill.json
 skill-lock.json
-
-# Audit files
-_audit/
-*.qa.html
-playwright-report/
-test-results/
-
-# macOS
-.DS_Store
